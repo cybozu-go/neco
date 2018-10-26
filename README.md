@@ -18,7 +18,7 @@ Architecture
 Neco adopts [network booting][netboot] to manage thousands of servers
 efficiently.  The center of Neco is therefore a few netboot servers.
 
-[neto-ubuntu][] creates a custom Ubuntu installer to setup netboot servers.
+[neco-ubuntu][] creates a custom Ubuntu installer to setup netboot servers.
 
 [Sabakan][sabakan], a product from Neco, implements functions necessary
 for netboot including [DHCP][], [UEFT HTTP Boot][], [iPXE][], [ignition][]
