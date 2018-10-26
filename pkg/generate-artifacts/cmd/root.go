@@ -21,6 +21,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -40,7 +41,7 @@ If --release is given, the generated source code will have a build
 tag "release".  If not, the generated code will have tag "!release".`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		err := generator.Generate(*flagRelease, os.Stdout)
+		err := generator.Generate(context.Background(), *flagRelease, os.Stdout)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			os.Exit(2)
