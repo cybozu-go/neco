@@ -21,7 +21,7 @@ efficiently.  The center of Neco is therefore a few netboot servers.
 [neco-ubuntu][] creates a custom Ubuntu installer to setup netboot servers.
 
 [Sabakan][sabakan], a product from Neco, implements functions necessary
-for netboot including [DHCP][], [UEFT HTTP Boot][], [iPXE][], [ignition][]
+for netboot including [DHCP][], [UEFI HTTP Boot][], [iPXE][], [ignition][]
 and file server service to download assets.
 
 To share and keep data between netboot servers, [etcd][] is used widely.
@@ -36,15 +36,15 @@ reduce route convergence and [ECMP][] for high availability.
 Repository contents
 -------------------
 
-### `neco`
+### neco
 
-A deploy automation tool written in Go.
+`neco` is a deploy automation tool written in Go.
 It installs and updates miscellaneous utilities in boot servers.
 
-### `neco-updater`
+### neco-updater
 
-A background service to detect new releases of `neco` and invokes
-`neco update-all` to automate maintenance of boot servers.
+`neco-updater` is a background service to detect new releases of `neco` and
+invokes `neco update-all` to automate maintenance of boot servers.
 
 Neco itself is released as a Debian package in [releases][].
 
@@ -67,6 +67,7 @@ Documentation
 [netboot]: https://en.wikipedia.org/wiki/Network_booting
 [neco-ubuntu]: https://github.com/cybozu/neco-ubuntu
 [sabakan]: https://github.com/cybozu-go/sabakan
+[DHCP]: https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol
 [UEFI HTTP Boot]: https://github.com/tianocore/tianocore.github.io/wiki/HTTP-Boot
 [iPXE]: https://ipxe.org/
 [ignition]: https://github.com/coreos/ignition
