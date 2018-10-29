@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/http"
 	"sort"
 
 	"github.com/containers/image/docker"
@@ -90,13 +91,16 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 		images[i] = img
 	}
 
-	debs := make([]*neco.DebianPackage, len(debRepos))
-	for i, name := range debRepos {
+	debs := make([]*neco.DebianPackage, 0, len(debRepos))
+	for _, name := range debRepos {
 		deb, err := getLatestDeb(ctx, name)
 		if err != nil {
 			return err
 		}
-		debs[i] = deb
+		if deb == nil {
+			continue
+		}
+		debs = append(debs, deb)
 	}
 
 	return render(out, cfg.Release, images, debs)
@@ -123,13 +127,13 @@ func getLatestImage(ctx context.Context, name string, cfg Config) (*neco.Contain
 		return nil, err
 	}
 
-	versions := make([]*version.Version, len(tags))
-	for i, tag := range tags {
+	versions := make([]*version.Version, 0, len(tags))
+	for _, tag := range tags {
 		v, err := version.NewVersion(tag)
 		if err != nil {
-			return nil, err
+			continue
 		}
-		versions[i] = v
+		versions = append(versions, v)
 	}
 	sort.Sort(sort.Reverse(version.Collection(versions)))
 	return &neco.ContainerImage{
@@ -141,8 +145,11 @@ func getLatestImage(ctx context.Context, name string, cfg Config) (*neco.Contain
 
 func getLatestDeb(ctx context.Context, name string) (*neco.DebianPackage, error) {
 	client := github.NewClient(nil)
-	release, _, err := client.Repositories.GetLatestRelease(ctx, "cybozu-go", name)
+	release, resp, err := client.Repositories.GetLatestRelease(ctx, "cybozu-go", name)
 	if err != nil {
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, nil
+		}
 		log.Error("failed to get the latest GitHub release", map[string]interface{}{
 			"owner":      "cybozu-go",
 			"repository": name,
