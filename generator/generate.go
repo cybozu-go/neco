@@ -12,11 +12,7 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/google/go-github/github"
-	"github.com/hashicorp/go-version"
-)
-
-const (
-	sabakanRepo = "//quay.io/cybozu/sabakan"
+	version "github.com/hashicorp/go-version"
 )
 
 var quayRepos = []string{
