@@ -60,3 +60,10 @@ func (c CoreOSImage) MarshalGo() string {
 	return fmt.Sprintf("var CoreOS = CoreOSImage{Channel: %q, Version: %q}\n",
 		c.Channel, c.Version)
 }
+
+// URLs returns kernel and initrd URLs.
+func (c CoreOSImage) URLs() (string, string) {
+	kernel := fmt.Sprintf("https://%s.release.core-os.net/amd64-usr/%s/coreos_production_pxe.vmlinuz", c.Channel, c.Version)
+	initrd := fmt.Sprintf("https://%s.release.core-os.net/amd64-usr/%s/coreos_production_pxe_image.cpio.gz", c.Channel, c.Version)
+	return kernel, initrd
+}
