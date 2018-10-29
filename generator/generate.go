@@ -8,6 +8,7 @@ import (
 
 	"github.com/containers/image/docker"
 	"github.com/containers/image/types"
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/google/go-github/github"
 	"github.com/hashicorp/go-version"
@@ -115,6 +116,10 @@ func getLatestImage(ctx context.Context, name string, cfg Config) (*neco.Contain
 	}
 	tags, err := docker.GetRepositoryTags(ctx, sc, ref)
 	if err != nil {
+		log.Error("failed to get the latest docker image tag", map[string]interface{}{
+			"repository": "quay.io/cybozu/" + name,
+			log.FnError:  err,
+		})
 		return nil, err
 	}
 
@@ -138,9 +143,19 @@ func getLatestDeb(ctx context.Context, name string) (*neco.DebianPackage, error)
 	client := github.NewClient(nil)
 	release, _, err := client.Repositories.GetLatestRelease(ctx, "cybozu-go", name)
 	if err != nil {
+		log.Error("failed to get the latest GitHub release", map[string]interface{}{
+			"owner":      "cybozu-go",
+			"repository": name,
+			log.FnError:  err,
+		})
 		return nil, err
 	}
 	if release.TagName == nil {
+		log.Error("no tagged release", map[string]interface{}{
+			"owner":      "cybozu-go",
+			"repository": name,
+			"release":    release.String(),
+		})
 		return nil, errors.New("no tagged release")
 	}
 	return &neco.DebianPackage{

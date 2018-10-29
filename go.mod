@@ -5,6 +5,7 @@ require (
 	github.com/containerd/continuity v0.0.0-20180216233310-d8fb8589b0e8 // indirect
 	github.com/containers/image v0.0.0-20181023201252-4b6d9cf918c1
 	github.com/containers/storage v0.0.0-20181019121456-bd5818eda840 // indirect
+	github.com/cybozu-go/log v1.5.0
 	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65 // indirect
 	github.com/docker/docker v0.7.3-0.20180522102801-da99009bbb11 // indirect

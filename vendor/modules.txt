@@ -13,6 +13,8 @@ github.com/containers/image/pkg/docker/config
 github.com/containers/image/pkg/tlsclientconfig
 github.com/containers/image/transports
 github.com/containers/image/pkg/strslice
+# github.com/cybozu-go/log v1.5.0
+github.com/cybozu-go/log
 # github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65
 github.com/docker/distribution/registry/api/errcode
 github.com/docker/distribution/registry/api/v2
