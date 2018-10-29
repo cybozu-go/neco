@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 	"sort"
-	"strings"
 
 	"github.com/containers/image/docker"
 	"github.com/containers/image/types"
@@ -106,7 +105,7 @@ func getLatestImage(ctx context.Context, name string, cfg Config) (*neco.Contain
 	}
 	sort.Sort(sort.Reverse(version.Collection(versions)))
 	return &neco.ContainerImage{
-		Name:       strings.Title(name),
+		Name:       name,
 		Repository: "quay.io/cybozu/" + name,
 		Tag:        versions[0].Original(),
 	}, nil
