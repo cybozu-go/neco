@@ -33,6 +33,9 @@ type DebianPackage struct {
 	// Package name.
 	Name string
 
+	// Github Owner
+	Owner string
+
 	// GitHub repository.
 	Repository string
 
@@ -42,8 +45,8 @@ type DebianPackage struct {
 
 // MarshalGo formats the struct in Go syntax.
 func (deb DebianPackage) MarshalGo() string {
-	return fmt.Sprintf(`var %sPackage = DebianPackage{Name: %q, Repository: %q, Release: %q}`,
-		strings.Title(deb.Name), deb.Name, deb.Repository, deb.Release)
+	return fmt.Sprintf(`var %sPackage = DebianPackage{Name: %q, Owner: %q, Repository: %q, Release: %q}`,
+		strings.Title(deb.Name), deb.Name, deb.Owner, deb.Repository, deb.Release)
 }
 
 // CoreOSImage represents CoreOS Container Linux kernel and initrd images.
