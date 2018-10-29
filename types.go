@@ -1,6 +1,9 @@
 package neco
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // ContainerImage represents a Docker container image.
 type ContainerImage struct {
@@ -19,15 +22,48 @@ func (c ContainerImage) URL() string {
 	return fmt.Sprintf("docker://%s:%s:", c.Repository, c.Tag)
 }
 
+// MarshalGo formats the struct in Go syntax.
+func (c ContainerImage) MarshalGo() string {
+	return fmt.Sprintf("var %sImage = ContainerImage{Name: %q, Repository: %q, Tag: %q}\n",
+		strings.Title(c.Name), c.Name, c.Repository, c.Tag)
+}
+
 // DebianPackage represents a Debian package hosted in GitHub releases.
 type DebianPackage struct {
-	Name       string
+	// Package name.
+	Name string
+
+	// Github Owner
+	Owner string
+
+	// GitHub repository.
 	Repository string
-	Release    string
+
+	// GitHub releases.
+	Release string
+}
+
+// MarshalGo formats the struct in Go syntax.
+func (deb DebianPackage) MarshalGo() string {
+	return fmt.Sprintf("var %sPackage = DebianPackage{Name: %q, Owner: %q, Repository: %q, Release: %q}\n",
+		strings.Title(deb.Name), deb.Name, deb.Owner, deb.Repository, deb.Release)
 }
 
 // CoreOSImage represents CoreOS Container Linux kernel and initrd images.
 type CoreOSImage struct {
 	Channel string
 	Version string
+}
+
+// MarshalGo formats the struct in Go syntax.
+func (c CoreOSImage) MarshalGo() string {
+	return fmt.Sprintf("var CoreOS = CoreOSImage{Channel: %q, Version: %q}\n",
+		c.Channel, c.Version)
+}
+
+// URLs returns kernel and initrd URLs.
+func (c CoreOSImage) URLs() (string, string) {
+	kernel := fmt.Sprintf("https://%s.release.core-os.net/amd64-usr/%s/coreos_production_pxe.vmlinuz", c.Channel, c.Version)
+	initrd := fmt.Sprintf("https://%s.release.core-os.net/amd64-usr/%s/coreos_production_pxe_image.cpio.gz", c.Channel, c.Version)
+	return kernel, initrd
 }

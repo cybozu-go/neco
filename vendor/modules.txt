@@ -1,6 +1,80 @@
+# github.com/Microsoft/go-winio v0.4.8-0.20180501170546-ab35fc04b636
+github.com/Microsoft/go-winio
+# github.com/containerd/continuity v0.0.0-20180216233310-d8fb8589b0e8
+github.com/containerd/continuity/pathdriver
+# github.com/containers/image v0.0.0-20181023201252-4b6d9cf918c1
+github.com/containers/image/docker
+github.com/containers/image/types
+github.com/containers/image/docker/policyconfiguration
+github.com/containers/image/docker/reference
+github.com/containers/image/image
+github.com/containers/image/manifest
+github.com/containers/image/pkg/docker/config
+github.com/containers/image/pkg/tlsclientconfig
+github.com/containers/image/transports
+github.com/containers/image/pkg/strslice
+# github.com/cybozu-go/log v1.5.0
+github.com/cybozu-go/log
+# github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65
+github.com/docker/distribution/registry/api/errcode
+github.com/docker/distribution/registry/api/v2
+github.com/docker/distribution/registry/client
+github.com/docker/distribution/reference
+github.com/docker/distribution
+github.com/docker/distribution/registry/client/auth/challenge
+github.com/docker/distribution/registry/client/transport
+github.com/docker/distribution/registry/storage/cache
+github.com/docker/distribution/registry/storage/cache/memory
+github.com/docker/distribution/digestset
+# github.com/docker/docker v0.7.3-0.20180522102801-da99009bbb11
+github.com/docker/docker/api/types/versions
+github.com/docker/docker/pkg/homedir
+github.com/docker/docker/pkg/idtools
+github.com/docker/docker/pkg/system
+github.com/docker/docker/pkg/mount
+# github.com/docker/docker-credential-helpers v0.6.0
+github.com/docker/docker-credential-helpers/client
+github.com/docker/docker-credential-helpers/credentials
+# github.com/docker/go-connections v0.3.1-0.20180212134524-7beb39f0b969
+github.com/docker/go-connections/tlsconfig
+github.com/docker/go-connections/sockets
+# github.com/docker/go-units v0.3.2
+github.com/docker/go-units
+# github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
+github.com/docker/libtrust
+# github.com/ghodss/yaml v0.0.0-20161207003320-04f313413ffd
+github.com/ghodss/yaml
+# github.com/google/go-github v17.0.0+incompatible
+github.com/google/go-github/github
+# github.com/google/go-querystring v1.0.0
+github.com/google/go-querystring/query
+# github.com/gorilla/context v1.1.1
+github.com/gorilla/context
+# github.com/gorilla/mux v1.3.1-0.20170217192616-94e7d24fd285
+github.com/gorilla/mux
+# github.com/hashicorp/go-version v1.0.0
+github.com/hashicorp/go-version
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/opencontainers/go-digest v1.0.0-rc1
+github.com/opencontainers/go-digest
+# github.com/opencontainers/image-spec v1.0.1
+github.com/opencontainers/image-spec/specs-go/v1
+github.com/opencontainers/image-spec/specs-go
+# github.com/opencontainers/runc v1.0.0-rc2.0.20170216015123-6b1d0e76f239
+github.com/opencontainers/runc/libcontainer/user
+# github.com/pkg/errors v0.8.1-0.20161029093637-248dadf4e906
+github.com/pkg/errors
+# github.com/sirupsen/logrus v1.0.0
+github.com/sirupsen/logrus
 # github.com/spf13/cobra v0.0.3
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
+# golang.org/x/net v0.0.0-20170218080159-6b27048ae5e6
+golang.org/x/net/proxy
+# golang.org/x/sys v0.0.0-20170817234608-43e60d72a8e2
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# gopkg.in/yaml.v2 v2.0.0-20170208141851-a3f3340b5840
+gopkg.in/yaml.v2
