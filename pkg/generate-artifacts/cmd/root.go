@@ -22,12 +22,20 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/cybozu-go/neco/generator"
 	"github.com/spf13/cobra"
 )
+
+var params = struct {
+	quayUser     string
+	quayPassword string
+}{
+	quayUser: "cybozu+neco_readonly",
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "generate-artifacts",
@@ -40,8 +48,28 @@ build Neco data center, and generates "artifacts.go".
 If --release is given, the generated source code will have a build
 tag "release".  If not, the generated code will have tag "!release".`,
 
+	Args: func(cmd *cobra.Command, args []string) error {
+		user := os.Getenv("QUAY_USER")
+		if len(user) > 0 {
+			params.quayUser = user
+		}
+
+		passwd := os.Getenv("QUAY_PASSWORD")
+		if len(passwd) == 0 {
+			return errors.New("QUAY_PASSWORD envvar is not set")
+		}
+		params.quayPassword = passwd
+
+		return nil
+	},
+
 	Run: func(cmd *cobra.Command, args []string) {
-		err := generator.Generate(context.Background(), *flagRelease, os.Stdout)
+		cfg := generator.Config{
+			User:     params.quayUser,
+			Password: params.quayPassword,
+			Release:  *flagRelease,
+		}
+		err := generator.Generate(context.Background(), cfg, os.Stdout)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			os.Exit(2)
