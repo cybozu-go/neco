@@ -31,8 +31,7 @@ As to network, Neco uses layer-3 technologies only.  Specifically,
 [BGP][] is used to advertise/receive routes together with [BFD][] to
 reduce route convergence and [ECMP][] for high availability.
 
-![architecture](http://www.plantuml.com/plantuml/png/ZPInZjim38PtFGNXAG5YFq26uj0Rsg50Xrkxo1BZ2d4aLvBlUZZatIl2jAG4QIwRHNxyHT8KdqAKFiwdKNXKKTfXHB2e77m8W4rocODKCNI3su8Ca0t9MmAQCFVgfFTWR98RnntCavOHs_JTK1ZRqTyEOph8NXBEPqzdSQuI6z2Y9pAdGJHRdOSFfaiPBKiHH-VrIAHGevirDDzC_3xt3I63YR_ddce7wpHtWaChtqKHvEiq9W46qtTYpgi6HgKd6SAR9g2S_gTNYAnQJAlsUKt-popVE-C80_eclLfDEHkbiUW3RAYVHsbte8wuWu3-q7NTTlb19pbWABBFpkFF5tXUe-67iVDVGa4bbmjNzomyDPLgXkQhSn5UqB-Yfo3ewVnmQZcjWbo6fZR09DMHaePDQKyLEXq72j8o9kc0m3UGIrCFDrkW3b3APO1QxTvi-wMC-JxFdA3kPY27xC5Zz0PV4LAjmJWh-CS-Wd8l7q55VaEGXhhEaU03-amMa7LB6nEhSHhT-ms86fRTopnaNwRtG9RHIIqkXl8koSDq3n7La_-ilWhDchgdBK9Ia5B267QGRkGgfDLW1cjYYWw2_Zgq7EDnC269BK_Ls8ExBhswxMP9To31so1ZrGQgiCfAfJEtRaLOzmlyik1dkooSUi6A9xGwRV1_)
-<!-- go to http://www.plantuml.com/plantuml/ and enter the above URL to edit the diagram. -->
+(TBW: diagram)
 
 Repository contents
 -------------------
@@ -42,12 +41,22 @@ Repository contents
 `neco` is a deploy automation tool written in Go.
 It installs and updates miscellaneous utilities in boot servers.
 
+See [docs/neco.md](docs/neco.md)
+
 ### neco-updater
 
 `neco-updater` is a background service to detect new releases of `neco` and
 invokes `neco update-all` to automate maintenance of boot servers.
 
 Neco itself is released as a Debian package in [releases][].
+
+See [docs/neco-updater.md](docs/neco-updater.md)
+
+### generate-artifacts
+
+`generate-artifacts` is a command-line tool to generate `artifacts.go` which is a collection of latest components.
+
+See [docs/generate-artifacts.md](docs/generate-artifacts.md)
 
 ### Test suite
 
@@ -57,6 +66,13 @@ tests in a virtual data center environment.
 [Placemat][placemat] and [placemat-menu], products from Neco, are tools
 to create complex network topology and virtual servers using Linux
 networking stacks, [rkt][], and [QEMU][].
+
+### CI/CD
+
+CI/CD in **Neco** is running by CircleCI. It will release neco deb package after passing all requirements. 
+Then `neco-updater` service is updated automatically.
+
+See [docs/cicd.md](docs/cicd.md)
 
 Documentation
 -------------
