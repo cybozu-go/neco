@@ -1,8 +1,9 @@
 neco
 ====
 
-`neco` is the integrated tool to install/update miscellaneous programs
-running on boot servers and worker nodes.
+`neco` is an interactive tool for administrators.
+
+It installs/updates miscellaneous programs as well as maintaining etcd database.
 
 Synopsis
 --------
@@ -25,20 +26,10 @@ Synopsis
     Initialize data for a program.  This command should not be executed
     more than once.
 
-* `neco update-all`
+* `neco add`
 
-    Update all installed programs in a boot server.
+    Add this server as a new boot server.
 
-    This command should be invoked at once on all boot servers.
-    To gracefully upgrade programs, the command elects a leader server one after one.
+* `neco remove SERVER`
 
-* `neco update-saba [--sabakan-url URL]`
-
-    Prepare assets and uploads them to [sabakan](https://github.com/cybozu-go/sabakan).
-
-Etcd
-----
-
-`neco` command saves status and elects leaders using etcd.
-
-The data structure in etcd is described in [etcd.md](etcd.md).
+    Unregister `SERVER` from etcd.

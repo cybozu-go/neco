@@ -1,10 +1,6 @@
 etcd schema
 ===========
 
-## `<prefix>/status/<host>/<name>`
-
-The value of this key is the current version of program `<name>` installed in `<host>`.
-
 ## `<prefix>/leader/`
 
 This prefix is used to elect a leader `neco-updater` who is responsible to invoke
