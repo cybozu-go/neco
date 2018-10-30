@@ -100,6 +100,8 @@ Updater elects one leader and does rolling update etcd members.
 
 Updater updates container image and restart `sabakan` in any timing.
 
+A leader of `neco-worker` uploads assets, OS images and ignitions.
+
 ### OMSA
 
 Updater updates container image and restart OMSA service in any timing.
