@@ -17,8 +17,10 @@ Option    | Default value               | Description
 ### Configuration file
 
 Configuration file is YAML format.
-Parameters are defined by [cybozu-go/etcdutil](https://github.com/cybozu-go/etcdutil), and not shown below will use default values of the etcdutil.
 
-Name         | Type   | Default | Description
-----         | ----   | ------- | -----------
-`http_proxy` | string | -       | http proxy URL for internet connection. It is ignored for etcd and sabakan connections.
+Name         | Type            | Default | Description
+----         | ----            | ------- | -----------
+`http_proxy` | string          | -       | http proxy URL for internet connection. It is ignored for etcd and sabakan connections.
+`etcd`       | etcdutil.Config | -       | etcd configuration defined in [etcdutil][]
+
+[etcdutil]: https://github.com/cybozu-go/etcdutil
