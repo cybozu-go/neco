@@ -62,11 +62,11 @@ When `neco-worker` needs to synchronize with others, it uses an etcd key as a co
 Once the counter becomes the same number of boot servers, `neco-worker` proceeds.
 If it takes too long, `neco-worker` should time-outs.
 
-`neco update-all`
------------------
+`neco-worker`
+-------------
 
-`neco update-all` sub-command updates applications with own strategy.
-Strategies are described for each applications as following:
+`neco-worker` service installs/updates applications with themselves strategies.
+Strategies are described for each applications as follows:
 
 ### CKE
 
