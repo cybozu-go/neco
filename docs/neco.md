@@ -48,8 +48,7 @@ Synopsis
 * `neco join LRN [LRN ...]`
 
     Join this server as a new boot server and an etcd member.
-    `LRN` is the logical rack number of current available boot servers. At least
-    3 LRNs should be specified.  
+    `LRN` is the logical rack number of current available boot servers.
     It asks vault user and password to generate a vault token, then issue client
     certificates for etcd and vault for a new boot server.
 
