@@ -51,7 +51,7 @@ Implementation of update process
     ```json
     {
         "version": "1.2.3-1",
-        "servers": ["boot-1", "boot-2"]
+        "servers": [1, 2, 3]
     }
     ```
 
@@ -66,7 +66,7 @@ If it takes too long, `neco-worker` should time-outs.
 -------------
 
 `neco-worker` service installs/updates applications with themselves strategies.
-Strategies are described for each applications as follows:
+Strategies are described for each applications as follows.
 
 ### CKE
 

@@ -6,34 +6,31 @@ etcd schema
 This prefix is used to elect a leader `neco-updater` who is responsible to invoke
 update process to `neco-worker`.
 
-## `<prefix>/bootservers`
+## `<prefix>/bootservers/LRN`
 
-This prefix is list of current available boot servers. This list is copied before 
-starting the update process.
-
-```json
-["boot-1", "boot-2"]
-```
+This prefix is current available boot servers. Current available boot server is
+registered as a key `LRN`.
 
 ## `<prefix>/current`
 
 This prefix is information of latest `neco` version and current `<prefix>/bootservers`.
 
+A leader of `neco-updater` creates this key.
+
 ```json
 {
     "version": "1.2.3-1",
-    "servers": ["boot-1", "boot-2"]
+    "servers": [1, 2, 3]
 }
 ```
 
-Name      | Type     | Description
-----      | ----     | -----------
-`version` | string   | Target `neco` version to be updated for all `servers`.
-`servers` | []string | Current available boot servers under update. This is created using `<prefix>/bootservers`.
+Name      | Type   | Description
+----      | ----   | -----------
+`version` | string | Target `neco` version to be updated for all `servers`.
+`servers` | []int  | LRNs of current available boot servers under update. This is created using `<prefix>/bootservers`.
 
-## `<prefix>/notification**
+## `<prefix>/notification`
 
-**TODO**
 This prefix is configuration of the notification service.
 
 ```json
@@ -46,21 +43,15 @@ Name      | Type   | Description
 ----      | ----   | -----------
 `webhook` | string | Slack web hook URL.
 
-**TODO**
-## `<prefix>/update/<version>`
+## `<prefix>/vault-unseal-key`
 
-This key is used to store the status of update process of `neco update-all`.
+Vault unseal key for unsealing automatically.
 
-`<version>` is the debian package version of `neco`.
+## `<prefix>/vault-root-token`
 
-The value is a JSON object with these fields:
+Vault root token for automatic setup for [dctest](../dctest/).
+This key does not exist by default.
 
-Name    | Type   | Description
-------  | ------ | -----------
-`abort` | bool   | If `true`, the update has been interrupted with an error.
-`error` | string | Error message, when aborted.
+## `<prefix>/stop`
 
-## `<prefix>/update-leader/`
-
-This prefix is used to elect a leader `neco update-all` process to update
-programs gracefully.
+`neco-worker` stop update process if the key exists.
