@@ -15,6 +15,7 @@ github.com/containers/image/transports
 github.com/containers/image/pkg/strslice
 # github.com/coreos/etcd v3.3.9+incompatible
 github.com/coreos/etcd/clientv3
+github.com/coreos/etcd/clientv3/clientv3util
 github.com/coreos/etcd/clientv3/namespace
 github.com/coreos/etcd/auth/authpb
 github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes
