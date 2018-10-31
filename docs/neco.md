@@ -20,6 +20,10 @@ Options are defined by [cybozu-go/etcdutil](https://github.com/cybozu-go/etcduti
 Synopsis
 --------
 
+* `neco config set slack URL`
+
+    Set Slack webhook URL for notification from `neco-updater`.
+
 * `neco setup [--no-revoke] LRN [LRN ...]`
 
     Install and setup etcd cluster as well as Vault using given boot servers.
@@ -28,22 +32,24 @@ Synopsis
 
     This command should be invoked at once on all boot servers specified by LRN.
 
-    When `--no-revoke` option is specified, it does not remove the etcd key 
+    When `--no-revoke` option is specified, it does not remove the etcd key
     `<prefix>/vault-root-token`. This option is used by automatic setup of
     [dctest](../dctest).
 
 * `neco init NAME`
 
     Initialize data for new application of the cluster.  
-    Setup etcd user/role for a new application `NAME`. This command should not 
+    Setup etcd user/role for a new application `NAME`. This command should not
     be executed more than once.
 
-* `neco init-local NAME`
+* `neco init-local [--start] NAME`
 
     Initialize data for new application of a boot server executes. This command
     should not be executed more than once.  
     It asks vault user and password to generate a vault token, then issue client
     certificates for new a application `NAME`.
+
+    If `--start` is given, the program is started after installation.
 
 * `neco join LRN [LRN ...]`
 
@@ -55,6 +61,10 @@ Synopsis
 * `neco leave LRN`
 
     Unregister `LRN` of the boot server from etcd.
+
+* `neco recover`
+
+    Removes the current update status from etcd to resolve the update failure.
 
 Use case
 --------
@@ -87,7 +97,7 @@ Use case
     1. Install etcd and vault.
     1. Access another vault server to issue client certificates for etcd and vault.
     1. Save client certificates as `/etc/neco/etcd.crt` and `/etc/neco/etcd.key`
-    1. Create `/etc/neco/neco-updater.yml` and `/etc/nec/neco-worker.yml`.
+    1. Create `/etc/neco/neco-updater.yml` and `/etc/neco/neco-worker.yml`.
     1. Add member to the etcd cluster.
     1. Add a new boot server to the etcd key `<prefix>/bootservers/LRN`.
 1. Run `neco init-local NAME` on a new boot server. Client certificates for `NAME` have issued.
@@ -99,9 +109,24 @@ Use case
     1. Unseal vault.
     1. Install and start other applications.
 
+Existing boot servers need to maintain application configuration files
+to update the list of etcd endpoints.
+
+### Setup a new program
+
+When a new program is added to `artifacts.go`, it should be setup as follows:
+
+0. `neco-worker` installs the program but does not start it yet.
+1. Run `neco init NAME` on a boot server.
+2. Run `neco init-local --start NAME` on all boot servers.
+
 ### Remove a dead boot server
 
 1. Run `neco leave LRN` on the current running boot server.
     1. Remove etcd key `<prefix>/bootservers/LRN`.
+
+Existing boot servers need to maintain application configuration files
+to update the list of etcd endpoints.
+
 
 `neco-updater` and `neco-worker` would no longer to update on the dead boot server.
