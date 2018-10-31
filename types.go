@@ -68,7 +68,7 @@ type CoreOSImage struct {
 
 // MarshalGo formats the struct in Go syntax.
 func (c CoreOSImage) MarshalGo() string {
-	return fmt.Sprintf("{Channel: %q, Version: %q}",
+	return fmt.Sprintf("CoreOSImage{Channel: %q, Version: %q}",
 		c.Channel, c.Version)
 }
 
