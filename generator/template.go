@@ -8,14 +8,14 @@ package neco
 var CurrentArtifacts = ArtifactSet{
 	Images: []ContainerImage{
 {{- range $image := .Images}}
- 			{{$image.MarshalGo}},
-{{end -}}
+		{{$image.MarshalGo}},
+{{- end}}
 	},
- 	Debs: []DebianPackage{
+	Debs: []DebianPackage{
 {{- range $deb := .Debs}}
- 			{{$deb.MarshalGo}},
-{{end -}}
+		{{$deb.MarshalGo}},
+{{- end}}
 	},
- 	CoreOS: {{.CoreOS.MarshalGo}},
+	CoreOS: {{.CoreOS.MarshalGo}},
 }
 `
