@@ -15,6 +15,11 @@ type Storage struct {
 	etcd *clientv3.Client
 }
 
+// NewStorage returns Storage that stores data in etcd.
+func NewStorage(etcd *clientv3.Client) Storage {
+	return Storage{etcd}
+}
+
 // DumpArtifactSet stores ArtifactSet to storage
 func (s Storage) DumpArtifactSet(ctx context.Context, lrn int) error {
 	data, err := json.Marshal(neco.CurrentArtifacts)

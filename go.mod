@@ -16,7 +16,7 @@ require (
 	github.com/docker/go-connections v0.3.1-0.20180212134524-7beb39f0b969 // indirect
 	github.com/docker/go-units v0.3.2 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
-	github.com/google/go-cmp v0.2.0 // indirect
+	github.com/google/go-cmp v0.2.0
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
