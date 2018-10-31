@@ -30,4 +30,5 @@ CD flow
 
 1. A back ground service `neco-updater` detect a new release of neco repository.
 1. If new release exists, `neco-updater` add information to the etcd key `<prefix>/current`.
-1. `neco-worker` to update `neco`, container images, and sabakan contents.
+1. `neco-worker` to update `neco` package, then restart `neco-worker` service.
+1. `neco-worker` installs/updates container images, and sabakan contents.

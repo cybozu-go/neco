@@ -100,7 +100,11 @@ Updater elects one leader and does rolling update etcd members.
 
 Updater updates container image and restart `sabakan` in any timing.
 
-A leader of `neco-worker` uploads assets, OS images and ignitions.
+### sabakan contents e.g. container images, OS images and ignitions
+
+1. Elect leader updater. Only a leader does procedures as follows.
+2. Checks if sabakan contents can be updated.
+3. Download artifacts, then upload them to sabakan.
 
 ### OMSA
 
