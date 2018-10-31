@@ -5,6 +5,8 @@ require (
 	github.com/containerd/continuity v0.0.0-20180216233310-d8fb8589b0e8 // indirect
 	github.com/containers/image v0.0.0-20181023201252-4b6d9cf918c1
 	github.com/containers/storage v0.0.0-20181019121456-bd5818eda840 // indirect
+	github.com/coreos/bbolt v1.3.1-coreos.6 // indirect
+	github.com/coreos/etcd v3.3.9+incompatible
 	github.com/cybozu-go/etcdutil v1.3.0
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/well v1.8.1
