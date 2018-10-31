@@ -35,7 +35,7 @@ func (c ContainerImage) URL() string {
 
 // MarshalGo formats the struct in Go syntax.
 func (c ContainerImage) MarshalGo() string {
-	return fmt.Sprintf("ContainerImage{Name: %q, Repository: %q, Tag: %q}",
+	return fmt.Sprintf("{Name: %q, Repository: %q, Tag: %q}",
 		c.Name, c.Repository, c.Tag)
 }
 
@@ -56,7 +56,7 @@ type DebianPackage struct {
 
 // MarshalGo formats the struct in Go syntax.
 func (deb DebianPackage) MarshalGo() string {
-	return fmt.Sprintf("DebianPackage{Name: %q, Owner: %q, Repository: %q, Release: %q}",
+	return fmt.Sprintf("{Name: %q, Owner: %q, Repository: %q, Release: %q}",
 		deb.Name, deb.Owner, deb.Repository, deb.Release)
 }
 
@@ -68,7 +68,7 @@ type CoreOSImage struct {
 
 // MarshalGo formats the struct in Go syntax.
 func (c CoreOSImage) MarshalGo() string {
-	return fmt.Sprintf("CoreOSImage{Channel: %q, Version: %q}",
+	return fmt.Sprintf("{Channel: %q, Version: %q}",
 		c.Channel, c.Version)
 }
 
