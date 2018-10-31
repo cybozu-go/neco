@@ -8,7 +8,7 @@ Continuous Integration in **Neco** is served by CircleCI workflow.
 Architecture
 ------------
 
-![architecture](http://www.plantuml.com/plantuml/png/ZPInZjim38PtFGNXAG5YFq26uj0Rsg50Xrkxo1BZ2d4aLvBlUZZatIl2jAG4QIwRHNxyHT8KdqAKFiwdKNXKKTfXHB2e77m8W4rocODKCNI3su8Ca0t9MmAQCFVgfFTWR98RnntCavOHs_JTK1ZRqTyEOph8NXBEPqzdSQuI6z2Y9pAdGJHRdOSFfaiPBKiHH-VrIAHGevirDDzC_3xt3I63YR_ddce7wpHtWaChtqKHvEiq9W46qtTYpgi6HgKd6SAR9g2S_gTNYAnQJAlsUKt-popVE-C80_eclLfDEHkbiUW3RAYVHsbte8wuWu3-q7NTTlb19pbWABBFpkFF5tXUe-67iVDVGa4bbmjNzomyDPLgXkQhSn5UqB-Yfo3ewVnmQZcjWbo6fZR09DMHaePDQKyLEXq72j8o9kc0m3UGIrCFDrkW3b3APO1QxTvi-wMC-JxFdA3kPY27xC5Zz0PV4LAjmJWh-CS-Wd8l7q55VaEGXhhEaU03-amMa7LB6nEhSHhT-ms86fRTopnaNwRtG9RHIIqkXl8koSDq3n7La_-ilWhDchgdBK9Ia5B267QGRkGgfDLW1cjYYWw2_Zgq7EDnC269BK_Ls8ExBhswxMP9To31so1ZrGQgiCfAfJEtRaLOzmlyik1dkooSUi6A9xGwRV1_)
+![architecture](http://www.plantuml.com/plantuml/png/ZPJFRXen4CRlVeeHfqJAKY0tL4LfSsWhHQtKN7Cnza1SlFRMVqAYYdVlxDhh3R1fkI3Z-StdRyRZlVM1kn1hpHoAmCr68nWKTYfn1NyOmB0zQVSdm7q7Y5gUHglOI1xGTLHUZr0xwxOPIajYBiY6MdCH_7HZBzjGsJXKsA11Hy9LYNT2UTiwjcTCQ1ibJBwey3MkKbY5fvWgCbQc6ljItiGElUO-b9ffJSo-ry0WPCEztyaM6FwzfpSGHNNOwhNtlVdVaRzELMfukpw-3M5DuCgWyt3X-OflkRa2iSKhyEZMq-dqiajLDT-W7sJlhCCV3t3NPyEzCl6bGmM5h3yw9_5jKz-S_SseeBW6eQFlhhlqTVBPsW0Fw9v9UjR9hcXdbhiXUI2hlkjTwTfihF7GSB4bwu-66mcU19L0_sYEQXqQM2eMjcvcXwVb78hsonROZvgU5zFpqolqlCPYffmsVrTiKSGMvuejyXYSYbqNiMiIenifCm-Lj3jJtGnlPWavYAmTdWAKb2Kv2KxXCm9fUsKDotDx3ff7vHoKfISELMmE3JfSeojOfh9YkiGbI6oqVMLfY4imiHIblzfooTZ1EtgVoyDVERLv2cF0aOqoBKk8JGi0znw3lteq99DSfG5Lc_P9MECPor-Aef6_WoEjoP52TezX2P-aX8yDjKUzt7mGqJaq8HixHdSyYATJcEKlTC7ReI6SlCS6xdz-9zUA3AVVIbl1zMZE_2JdN_JY_xJ6TSZqzH9-MMKoh94_OxjcjsXahFLV)
 <!-- go to http://www.plantuml.com/plantuml/ and enter the above URL to edit the diagram. -->
 
 CI flow
@@ -29,5 +29,6 @@ CD flow
 -------
 
 1. A back ground service `neco-updater` detect a new release of neco repository.
-1. If new release exists, download `neco` deb package, and update `neco` in the boot server.
-1. Invoke `neco update-all` to update `neco`, container images, and sabakan contents.
+1. If new release exists, `neco-updater` add information to the etcd key `<prefix>/current`.
+1. `neco-worker` to update `neco` package, then restart `neco-worker` service.
+1. `neco-worker` installs/updates container images, and sabakan contents.

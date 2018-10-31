@@ -70,7 +70,7 @@ Strategies are described for each applications as follows.
 
 ### CKE
 
-1. Wait until CKE services stop in all boot servers
+1. Wait until CKE services stop in all boot servers.
   - Stop CKE service in own boot server and commit state to etcd.
   - Watch all boot server commits stop state to etcd.
 2. Update container image and restart `cke` service in all boot servers.
@@ -81,7 +81,7 @@ Otherwise, other `neco-worker` may wait forever at this check point.
 
 ### Vault
 
-1. Wait until Vault services stop in all boot servers
+1. Wait until Vault services stop in all boot servers.
   - Stop Vault service in own boot server and commit state to etcd.
   - Watch all boot server commits stop state to etcd.
 2. Update container image and restart `vault` service in all boot servers.
@@ -91,14 +91,20 @@ Otherwise, other `neco-worker` may wait forever at this check point.
 
 Updater elects one leader and does rolling update etcd members.
 
-1. Elect leader updater
-2. Checks if own etcd can be updated
-3. Update etcd archive and restart a service
-4. Resign leader updater
+1. Elect leader updater.
+2. Checks if own etcd can be updated.
+3. Update etcd archive and restart a service.
+4. Resign leader updater.
 
 ### sabakan
 
 Updater updates container image and restart `sabakan` in any timing.
+
+### sabakan contents e.g. container images, OS images and ignitions
+
+1. Elect leader updater. Only a leader does procedures as follows.
+2. Checks if sabakan contents can be updated.
+3. Download artifacts, then upload them to sabakan.
 
 ### OMSA
 
@@ -106,10 +112,10 @@ Updater updates container image and restart OMSA service in any timing.
 
 ### Serf
 
-1. Elect leader updater
-2. Checks if own serf can be updated
-3. Update etcd archive and restart a service
-4. Resign leader updater
+1. Elect leader updater.
+2. Checks if own serf can be updated.
+3. Update etcd archive and restart a service.
+4. Resign leader updater.
 
 ### etcdpasswd
 
