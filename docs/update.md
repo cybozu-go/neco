@@ -62,6 +62,20 @@ When `neco-worker` needs to synchronize with others, it uses an etcd key as a co
 Once the counter becomes the same number of boot servers, `neco-worker` proceeds.
 If it takes too long, `neco-worker` should time-outs.
 
+Failure and recovery
+--------------------
+
+When something goes wrong, the update process need to be aborted.
+
+`neco-worker` inform `neco-updater` of an error during update process
+through etcd key `<prefix>/status/<LRN>`.
+
+`neco-updater` share any errors with `neco-worker` by updating `stop`
+field of etcd key `<prefix>/current` `stop` to `true`.
+
+To recover from failures, `neco recover` removes these keys from etcd.
+Then `neco-updater` re-creates `<prefix>/current` etcd key to restart jobs.
+
 `neco-worker`
 -------------
 
