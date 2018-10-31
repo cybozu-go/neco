@@ -24,14 +24,21 @@ efficiently.  The center of Neco is therefore a few netboot servers.
 for netboot including [DHCP][], [UEFI HTTP Boot][], [iPXE][], [ignition][]
 and file server service to download assets.
 
+![sabakan_architecture](http://www.plantuml.com/plantuml/svg/ZOv1IyGm58Jl-HN3BdZBOTkRY2ohu1uyBBX_uBLvhMAQIFAYYFZVBIbHIoruoOFvPZApZq91qc1Lu5R8zPQnOMaDMfkYSDZWGm66X1gAZ8mevhjR0zKQg4UWC8MXZNzpUWfWUnVe_IzKpr05hIrtekVmK_sUV_1UyC3XjQp_OP4QUYQ7xVrJ_oW7crXzbrvDFnTFQLpHwuK-Zd3UCF93CT_TKgfK1j3fHL-Ny2LkZpSdNE1uFf_G-O36Ur7P_o_ddfr9W_q2)
+<!-- go to http://www.plantuml.com/plantuml/ and enter the above URL to edit the diagram. -->
+
 To share and keep data between netboot servers, [etcd][] is used widely.
 To protect data and authorize users, [Vault][] is used too.
+
+![etcd_vault_architecture](http://www.plantuml.com/plantuml/svg/TOwzQWCn48HxFSLmgKM8hmiXc3HvW90kpKPQcmDPEdPN3YRatUEpyC-1hv5WFhwTMQkHMDqb9noCyZOnEhOG4L9LO-dmwu18Hj-aZ1CYFVrFIs2r1FeZS6WoV2m_sJS13-z2Xtkedw4Ll4-yCJ-7V-vs_bifXW-M_NdzbUsf9fiaFhXBsqixsU2bw5xQpzEfbu8LGVUfB2W26iSq1BAXv0wagCVSJS_PV6tgCyPgZrisA0TXqwyyg5P6OB5XCvrWdOjjxLMCPEJMd6FTfNy0)
+<!-- go to http://www.plantuml.com/plantuml/ and enter the above URL to edit the diagram. -->
 
 As to network, Neco uses layer-3 technologies only.  Specifically,
 [BGP][] is used to advertise/receive routes together with [BFD][] to
 reduce route convergence and [ECMP][] for high availability.
 
-(TBW: diagram)
+![network_architecture](http://www.plantuml.com/plantuml/svg/ZLB1Ri8m3BtdAopk7E8ZcYO6aoPkKxexYjeCAjgu2kdGDF7l2mviHR9eBr2_z_py77bvZ3R4lctKyL3xpWRRGbDx5xyx1nJYdbJPK5_1naSN4gw2AwFrkyR1R4t1GN6gOxcVWJq2rp_gFDGKNN8RYXZGqsJ8ijjeU9fNTFBpPnwaUDeVb6qb45Nc_c5ZD2p0hTxUCuKI9NIXt7L7gSwM1xjBAxqKinGVm5ELAfDWdG60mU8VPAvhW-R54w2px5veg8yEZFji4aQ1jMOWFIl-VU2FDt-SxezZ_YkY28KBNowtS2tOhpRcDGlIn_QYaltMr7QN8DaIT3wiGdoIZYgcqx_UwX4UHpBfINdmcWT7yk187XpDWuCynWpkaCF20kfqRZAB3rb-_7i5okuoYp8hkQlB0cUrTBxgs-ON)
+<!-- go to http://www.plantuml.com/plantuml/ and enter the above URL to edit the diagram. -->
 
 Repository contents
 -------------------
@@ -45,12 +52,19 @@ See [docs/neco.md](docs/neco.md)
 
 ### neco-updater
 
-`neco-updater` is a background service to detect new releases of `neco` and
-invokes `neco update-all` to automate maintenance of boot servers.
+`neco-updater` is a background service to detect new releases of `neco`.
+When detected, it sends the update information to `neco-worker` through etcd.
 
 Neco itself is released as a Debian package in [releases][].
 
 See [docs/neco-updater.md](docs/neco-updater.md)
+
+### neco-worker
+
+`neco-worker` is an automate maintenance service. It installs/updates `neco` package, applications,
+and sabakan contents when receives information from `neco-updater` through etcd.
+
+See [docs/neco-worker.md](docs/neco-worker.md)
 
 ### generate-artifacts
 
@@ -66,6 +80,8 @@ tests in a virtual data center environment.
 [Placemat][placemat] and [placemat-menu], products from Neco, are tools
 to create complex network topology and virtual servers using Linux
 networking stacks, [rkt][], and [QEMU][].
+
+See [dctest/README.md](dctest/README.md)
 
 ### CI/CD
 
