@@ -5,6 +5,18 @@ import (
 	"strings"
 )
 
+// ArtifactSet represents a artifact set
+type ArtifactSet struct {
+	// Container image list
+	Images []ContainerImage
+
+	// Debian package list
+	Debs []DebianPackage
+
+	// CoreOS image version
+	CoreOS CoreOSImage
+}
+
 // ContainerImage represents a Docker container image.
 type ContainerImage struct {
 	// A unique name for this container image.
