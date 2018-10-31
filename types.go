@@ -2,7 +2,6 @@ package neco
 
 import (
 	"fmt"
-	"strings"
 )
 
 // ArtifactSet represents a artifact set
@@ -36,8 +35,8 @@ func (c ContainerImage) URL() string {
 
 // MarshalGo formats the struct in Go syntax.
 func (c ContainerImage) MarshalGo() string {
-	return fmt.Sprintf("var %sImage = ContainerImage{Name: %q, Repository: %q, Tag: %q}\n",
-		strings.Title(c.Name), c.Name, c.Repository, c.Tag)
+	return fmt.Sprintf("ContainerImage{Name: %q, Repository: %q, Tag: %q}",
+		c.Name, c.Repository, c.Tag)
 }
 
 // DebianPackage represents a Debian package hosted in GitHub releases.
@@ -57,8 +56,8 @@ type DebianPackage struct {
 
 // MarshalGo formats the struct in Go syntax.
 func (deb DebianPackage) MarshalGo() string {
-	return fmt.Sprintf("var %sPackage = DebianPackage{Name: %q, Owner: %q, Repository: %q, Release: %q}\n",
-		strings.Title(deb.Name), deb.Name, deb.Owner, deb.Repository, deb.Release)
+	return fmt.Sprintf("DebianPackage{Name: %q, Owner: %q, Repository: %q, Release: %q}",
+		deb.Name, deb.Owner, deb.Repository, deb.Release)
 }
 
 // CoreOSImage represents CoreOS Container Linux kernel and initrd images.
@@ -69,7 +68,7 @@ type CoreOSImage struct {
 
 // MarshalGo formats the struct in Go syntax.
 func (c CoreOSImage) MarshalGo() string {
-	return fmt.Sprintf("var CoreOS = CoreOSImage{Channel: %q, Version: %q}\n",
+	return fmt.Sprintf("CoreOSImage{Channel: %q, Version: %q}",
 		c.Channel, c.Version)
 }
 

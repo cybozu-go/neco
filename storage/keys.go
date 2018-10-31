@@ -2,6 +2,7 @@ package storage
 
 import "strconv"
 
+// etcd keys
 const (
 	KeyLeader            = "leader/"
 	KeyBootserversPrefix = "bootservers/"

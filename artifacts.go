@@ -3,11 +3,22 @@
 
 package neco
 
-var CkeImage = ContainerImage{Name: "cke", Repository: "quay.io/cybozu/cke", Tag: "0.10-1"}
-var EtcdImage = ContainerImage{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.3.9-3"}
-var OmsaImage = ContainerImage{Name: "omsa", Repository: "quay.io/cybozu/omsa", Tag: "18.08.00-3"}
-var SabakanImage = ContainerImage{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "0.24-1"}
-var SerfImage = ContainerImage{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.8.1-3"}
-var VaultImage = ContainerImage{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "0.11"}
-var EtcdpasswdPackage = DebianPackage{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.5"}
-var CoreOS = CoreOSImage{Channel: "stable", Version: "1855.5.0"}
+var CurrentArtifacts = ArtifactSet{
+	Images: []ContainerImage{
+ 			ContainerImage{Name: "cke", Repository: "quay.io/cybozu/cke", Tag: "0.11-1"},
+
+ 			ContainerImage{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.3.9-3"},
+
+ 			ContainerImage{Name: "omsa", Repository: "quay.io/cybozu/omsa", Tag: "18.08.00-3"},
+
+ 			ContainerImage{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "0.24-1"},
+
+ 			ContainerImage{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.8.1-3"},
+
+ 			ContainerImage{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "0.11"},
+},
+ 	Debs: []DebianPackage{
+ 			DebianPackage{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.5"},
+},
+ 	CoreOS: CoreOSImage{Channel: "stable", Version: "1855.5.0"},
+}

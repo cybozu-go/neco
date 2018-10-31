@@ -1,5 +1,6 @@
 package neco
 
-type Notification struct {
+// NotificationConfig is configuration for notification
+type NotificationConfig struct {
 	Slack string `json:"slack"`
 }
