@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// ArtifactSet represents a artifact set
+// ArtifactSet represents a set of artifacts.
 type ArtifactSet struct {
 	// Container image list
 	Images []ContainerImage
