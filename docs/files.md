@@ -17,3 +17,9 @@ Stores the cluster ID where the boot server belongs.
 ### `etcd.crt` and `etcd.key`
 
 TLS client certificates for etcd authentication.
+
+### `config.yml`
+
+etcd configuration defined in [etcdutil][]
+
+[etcdutil]: https://github.com/cybozu-go/etcdutil

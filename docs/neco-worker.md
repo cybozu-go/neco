@@ -10,18 +10,9 @@ Usage
 $ neco-worker [OPTIONS]
 ```
 
-Option    | Default value               | Description
-------    | -------------               | -----------
-`-config` | `/etc/neco/neco-worker.yml` | Configuration file path.
-
-### Configuration file
-
-Configuration file is YAML format.
-
-Name         | Type            | Default | Description
-----         | ----            | ------- | -----------
-`http_proxy` | string          | -       | http proxy URL for internet connection. It is ignored for etcd and sabakan connections.
-`etcd`       | etcdutil.Config | -       | etcd configuration defined in [etcdutil][]
+Option     | Default value          | Description
+------     | -------------          | -----------
+`--config` | `/etc/neco/config.yml` | Configuration file path.
 
 Bootstrapping
 -------------
@@ -39,4 +30,3 @@ Updating programs
 When there is a new version of neco, it updates itself by installing
 the new debian package, then start automatic update process.
 
-[etcdutil]: https://github.com/cybozu-go/etcdutil

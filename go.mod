@@ -9,6 +9,7 @@ require (
 	github.com/coreos/etcd v3.3.9+incompatible
 	github.com/cybozu-go/etcdutil v1.3.0
 	github.com/cybozu-go/log v1.5.0
+	github.com/cybozu-go/netutil v1.2.0
 	github.com/cybozu-go/well v1.8.1
 	github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65 // indirect
 	github.com/docker/docker v0.7.3-0.20180522102801-da99009bbb11 // indirect

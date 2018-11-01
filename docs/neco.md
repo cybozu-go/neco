@@ -24,6 +24,10 @@ Synopsis
 
     Set Slack webhook URL for notification from `neco-updater`.
 
+* `neco config set proxy URL`
+
+    Set proxy URL to access Internet.
+
 * `neco setup [--no-revoke] LRN [LRN ...]`
 
     Install and setup etcd cluster as well as Vault using given boot servers.

@@ -10,6 +10,7 @@ import (
 
 var setupParams struct {
 	lrns []int
+	noRevoke bool
 }
 
 // setupCmd represents the setup command
@@ -48,5 +49,5 @@ When --no-revoke option is specified, it does not remove the etcd key
 func init() {
 	rootCmd.AddCommand(setupCmd)
 
-	setupCmd.Flags().BoolP("no-revoke", "", false, "does not remove the root token in etcd")
+	setupCmd.Flags().BoolVar(&setupParams.noRevoke, "no-revoke", false, "keep vault root token in etcd")
 }
