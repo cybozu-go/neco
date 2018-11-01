@@ -17,16 +17,25 @@ import (
 
 const vaultPath = "/usr/local/bin/vault"
 
+func writeFile(filename string, data []byte) error {
+	err := os.MkdirAll(filepath.Dir(filename), 0755)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(filename, data, 0644)
+}
+
 func dumpCertFiles(secret *api.Secret, caFile, certFile, keyFile string) error {
-	err := ioutil.WriteFile(certFile, secret.Data["certificate"].([]byte), 0644)
+	err := writeFile(certFile, secret.Data["certificate"].([]byte))
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(keyFile, secret.Data["private_key"].([]byte), 0644)
+	err = writeFile(keyFile, secret.Data["private_key"].([]byte))
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(caFile, secret.Data["issuing_ca"].([]byte), 0644)
+	return writeFile(caFile, secret.Data["issuing_ca"].([]byte))
 }
 
 func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
@@ -236,7 +245,11 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 			if secret != nil {
 				break
 			}
-			time.Sleep(1 * time.Second)
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(1 * time.Second):
+			}
 		}
 	}
 

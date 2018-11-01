@@ -11,6 +11,8 @@ const EtcdDir = "/etc/etcd"
 // VaultDir is the base directory to store vault related files.
 const VaultDir = "/etc/vault"
 
+const systemdDir = "/etc/systemd/system"
+
 // Vault CA paths
 const (
 	CAServer     = "ca/server"
@@ -22,6 +24,15 @@ const (
 const (
 	TTL100Year = "876000h"
 	TTL10Year  = "87600h"
+)
+
+// Etcd params
+const (
+	EtcdUID       = 10000
+	EtcdGID       = 10000
+	EtcdDataDir   = "/var/lib/etcd-container"
+	EtcdBackupDir = "/var/lib/etcd-backup"
+	EtcdService   = "etcd-container"
 )
 
 // File locations

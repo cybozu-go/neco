@@ -1,6 +1,9 @@
-package setup
+package etcd
 
-const etcdConfTemplate = `# This is the configuration file for the etcd server.
+import "html/template"
+
+var confTmpl = template.Must(template.New("etcd.conf.yml").
+	Parse(`# This is the configuration file for the etcd server.
 
 # Human-readable name for this member.
 name: 'boot-{{.LRN}}'
@@ -56,4 +59,39 @@ log-outputs: stderr
 # auto compaction
 auto-compaction-mode: periodic
 auto-compaction-retention: "24"
-`
+`))
+
+var serviceTmpl = template.Must(template.New("etcd-container.service").
+	Parse(`[Unit]
+Description=Etcd container on rkt
+Wants=network-online.target
+After=network-online.target
+Wants=etcd-backup.timer
+
+[Service]
+Slice=machine.slice
+Type=simple
+KillMode=mixed
+Restart=always
+RestartSec=3s
+OOMScoreAdjust=-1000
+ExecStart=/usr/bin/rkt run \
+  --pull-policy never --net=host \
+  --volume neco,kind=host,source=/etc/neco,readOnly=true \
+  --mount volume=neco,target=/etc/neco \
+  --volume certs,kind=host,source=/etc/ssl/certs,readOnly=true \
+  --mount volume=certs,target=/etc/ssl/certs \
+  --volume conf,kind=host,source=/etc/etcd,readOnly=true \
+  --mount volume=conf,target=/etc/etcd \
+  --volume data,kind=host,source=/var/lib/etcd-container \
+  --mount volume=data,target=/var/lib/etcd \
+  {{ .Image }} \
+    --user {{ .UID }} --group {{ .GID }} \
+    --name etcd \
+    --readonly-rootfs=true \
+  -- \
+    --config-file={{ .ConfFile }}
+
+[Install]
+WantedBy=multi-user.target
+`))

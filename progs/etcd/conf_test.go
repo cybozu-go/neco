@@ -1,4 +1,4 @@
-package setup
+package etcd
 
 import (
 	"bytes"
@@ -9,10 +9,11 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-func testGenerateEtcdConf(t *testing.T) {
-	buf := new(bytes.Buffer)
+func TestGenerateConf(t *testing.T) {
+	t.Parallel()
 
-	err := generateEtcdConf(context.Background(), buf, 0, []int{0, 1, 2})
+	buf := new(bytes.Buffer)
+	err := GenerateConf(context.Background(), buf, 0, []int{0, 1, 2})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,8 +38,4 @@ func testGenerateEtcdConf(t *testing.T) {
 	if !cmp.Equal(data["initial-cluster-state"], "new") {
 		t.Error("initial-cluster-state should be 'new', actual: ", data["initial-cluster-state"])
 	}
-}
-
-func TestEtcd(t *testing.T) {
-	t.Run("GenerateEtcdConf", testGenerateEtcdConf)
 }

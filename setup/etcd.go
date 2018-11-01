@@ -2,39 +2,22 @@ package setup
 
 import (
 	"context"
-	"fmt"
-	"html/template"
-	"io"
 	"os"
-	"strings"
+	"time"
 
+	"github.com/coreos/etcd/clientv3"
+	"github.com/cybozu-go/etcdutil"
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/etcd"
 )
 
-var templ = template.Must(template.New("etcd.config.yml").Parse(etcdConfTemplate))
-
-func generateEtcdConf(ctx context.Context, w io.Writer, mylrn int, lrns []int) error {
-	myNode0 := neco.BootNode0IP(mylrn)
-	initialClusters := make([]string, len(lrns))
-	for i, lrn := range lrns {
-		node0 := neco.BootNode0IP(lrn)
-		initialClusters[i] = fmt.Sprintf("boot-%d=https://%s:2380", lrn, node0)
-	}
-
-	err := templ.Execute(w, struct {
-		LRN                      int
-		InitialAdvertisePeerURLs string
-		AdvertiseClientURLs      string
-		InitialCluster           string
-		InitialClusterState      string
-	}{
-		LRN:                      mylrn,
-		InitialAdvertisePeerURLs: fmt.Sprintf("https://%s:2380", myNode0),
-		AdvertiseClientURLs:      fmt.Sprintf("https://%s:2379", myNode0),
-		InitialCluster:           strings.Join(initialClusters, ","),
-		InitialClusterState:      "new",
-	})
-	return err
+func etcdClient() (*clientv3.Client, error) {
+	cfg := etcdutil.NewConfig("")
+	cfg.Endpoints = []string{"127.0.0.1:2379"}
+	cfg.TLSCertFile = neco.VaultCertFile
+	cfg.TLSKeyFile = neco.VaultKeyFile
+	return etcdutil.NewClient(cfg)
 }
 
 func setupEtcd(ctx context.Context, mylrn int, lrns []int) error {
@@ -51,10 +34,65 @@ func setupEtcd(ctx context.Context, mylrn int, lrns []int) error {
 	}
 	defer f.Close()
 
-	err = generateEtcdConf(ctx, f, mylrn, lrns)
+	err = etcd.GenerateConf(ctx, f, mylrn, lrns)
 	if err != nil {
 		return err
 	}
+	err = f.Sync()
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(neco.EtcdDataDir, 0700)
+	if err != nil {
+		return err
+	}
+	err = os.Chown(neco.EtcdDataDir, neco.EtcdUID, neco.EtcdGID)
+	if err != nil {
+		return err
+	}
+
+	g, err := os.OpenFile(neco.ServiceFile(neco.EtcdService), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer g.Close()
+
+	err = etcd.GenerateService(ctx, g)
+	if err != nil {
+		return err
+	}
+	err = g.Sync()
+	if err != nil {
+		return err
+	}
+
+	err = neco.StartService(ctx, neco.EtcdService)
+	if err != nil {
+		return err
+	}
+
+	log.Info("etcd: waiting cluster...", nil)
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(1 * time.Second):
+		}
+
+		client, err := etcdClient()
+		if err != nil {
+			continue
+		}
+
+		_, err = client.MemberList(ctx)
+		client.Close()
+		if err == nil {
+			break
+		}
+	}
+
+	log.Info("etcd: setup completed", nil)
 
 	return nil
 }
