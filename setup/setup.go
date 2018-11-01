@@ -51,6 +51,5 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		// TODO
 	}
 
-	pems = pems
 	return nil
 }
