@@ -17,25 +17,25 @@ import (
 
 const vaultPath = "/usr/local/bin/vault"
 
-func writeFile(filename string, data []byte) error {
+func writeFile(filename string, data string) error {
 	err := os.MkdirAll(filepath.Dir(filename), 0755)
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(filename, data, 0644)
+	return ioutil.WriteFile(filename, []byte(data), 0644)
 }
 
 func dumpCertFiles(secret *api.Secret, caFile, certFile, keyFile string) error {
-	err := writeFile(certFile, secret.Data["certificate"].([]byte))
+	err := writeFile(certFile, secret.Data["certificate"].(string))
 	if err != nil {
 		return err
 	}
-	err = writeFile(keyFile, secret.Data["private_key"].([]byte))
+	err = writeFile(keyFile, secret.Data["private_key"].(string))
 	if err != nil {
 		return err
 	}
-	return writeFile(caFile, secret.Data["issuing_ca"].([]byte))
+	return writeFile(caFile, secret.Data["issuing_ca"].(string))
 }
 
 func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
@@ -182,10 +182,21 @@ func createCA(ctx context.Context, vault *api.Client, mylrn int) ([]*api.Secret,
 		return nil, err
 	}
 
-	vault.Logical().Write("secret/bootstrap", map[string]interface{}{
+	// mount v1 KV secret engine instead of v2 for easy operation
+	// https://www.vaultproject.io/api/secret/kv/kv-v1.html
+	err = vault.Sys().Unmount("secret")
+	if err != nil {
+		return nil, err
+	}
+	kv1 := &api.MountInput{Type: "kv", Options: map[string]string{"version": "1"}}
+	err = vault.Sys().Mount("secret", kv1)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = vault.Logical().Write("secret/bootstrap", map[string]interface{}{
 		"ready": "go",
 	})
-	err = setupLocalCerts(ctx, vault, mylrn)
 	if err != nil {
 		return nil, err
 	}
@@ -234,6 +245,11 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 	time.Sleep(1 * time.Second)
 
 	pems, err := createCA(ctx, vault, mylrn)
+	if err != nil {
+		return nil, err
+	}
+
+	err = setupLocalCerts(ctx, vault, mylrn)
 	if err != nil {
 		return nil, err
 	}

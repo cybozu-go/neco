@@ -34,7 +34,7 @@ func testCreateCA(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	secrets, err := createCA(ctx, vault)
+	secrets, err := createCA(ctx, vault, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
