@@ -9,7 +9,7 @@ import (
 )
 
 var setupParams struct {
-	lrns []int
+	lrns     []int
 	noRevoke bool
 }
 
