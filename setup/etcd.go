@@ -34,7 +34,7 @@ func setupEtcd(ctx context.Context, mylrn int, lrns []int) error {
 	}
 	defer f.Close()
 
-	err = etcd.GenerateConf(ctx, f, mylrn, lrns)
+	err = etcd.GenerateConf(f, mylrn, lrns)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func setupEtcd(ctx context.Context, mylrn int, lrns []int) error {
 	}
 	defer g.Close()
 
-	err = etcd.GenerateService(ctx, g)
+	err = etcd.GenerateService(g)
 	if err != nil {
 		return err
 	}

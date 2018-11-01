@@ -1,14 +1,13 @@
 package etcd
 
 import (
-	"context"
 	"io"
 
 	"github.com/cybozu-go/neco"
 )
 
 // GenerateService generate systemd service unit contents.
-func GenerateService(ctx context.Context, w io.Writer) error {
+func GenerateService(w io.Writer) error {
 	img, err := neco.CurrentArtifacts.FindContainerImage("etcd")
 	if err != nil {
 		return err

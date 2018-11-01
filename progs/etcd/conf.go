@@ -1,7 +1,6 @@
 package etcd
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -10,7 +9,7 @@ import (
 )
 
 // GenerateConf genenates etcd.conf.yml from template.
-func GenerateConf(ctx context.Context, w io.Writer, mylrn int, lrns []int) error {
+func GenerateConf(w io.Writer, mylrn int, lrns []int) error {
 	myNode0 := neco.BootNode0IP(mylrn)
 	initialClusters := make([]string, len(lrns))
 	for i, lrn := range lrns {

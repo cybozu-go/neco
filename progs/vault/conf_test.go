@@ -1,15 +1,15 @@
-package etcd
+package vault
 
 import (
 	"bytes"
 	"testing"
 )
 
-func TestGenerateService(t *testing.T) {
+func TestGenerateConf(t *testing.T) {
 	t.Parallel()
 
 	buf := new(bytes.Buffer)
-	err := GenerateService(buf)
+	err := GenerateConf(buf, 2, []int{0, 1, 2})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -13,19 +13,6 @@ const VaultDir = "/etc/vault"
 
 const systemdDir = "/etc/systemd/system"
 
-// Vault CA paths
-const (
-	CAServer     = "ca/server"
-	CAEtcdPeer   = "ca/boot-etcd-peer"
-	CAEtcdClient = "ca/boot-etcd-client"
-)
-
-// Vault TTL constants
-const (
-	TTL100Year = "876000h"
-	TTL10Year  = "87600h"
-)
-
 // Etcd params
 const (
 	EtcdUID       = 10000
@@ -33,6 +20,18 @@ const (
 	EtcdDataDir   = "/var/lib/etcd-container"
 	EtcdBackupDir = "/var/lib/etcd-backup"
 	EtcdService   = "etcd-container"
+)
+
+// Vault params
+const (
+	VaultUID     = 10000
+	VaultGID     = 10000
+	CAServer     = "ca/server"
+	CAEtcdPeer   = "ca/boot-etcd-peer"
+	CAEtcdClient = "ca/boot-etcd-client"
+	TTL100Year   = "876000h"
+	TTL10Year    = "87600h"
+	VaultService = "vault"
 )
 
 // File locations
@@ -56,4 +55,5 @@ var (
 	VaultCertFile = filepath.Join(VaultDir, "etcd.crt")
 	VaultKeyFile  = filepath.Join(VaultDir, "etcd.key")
 	VaultConfFile = filepath.Join(VaultDir, "config.hcl")
+	VaultUnseal   = "/usr/local/bin/vault-unseal"
 )

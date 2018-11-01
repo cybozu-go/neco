@@ -2,7 +2,6 @@ package etcd
 
 import (
 	"bytes"
-	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -13,7 +12,7 @@ func TestGenerateConf(t *testing.T) {
 	t.Parallel()
 
 	buf := new(bytes.Buffer)
-	err := GenerateConf(context.Background(), buf, 0, []int{0, 1, 2})
+	err := GenerateConf(buf, 0, []int{0, 1, 2})
 	if err != nil {
 		t.Fatal(err)
 	}

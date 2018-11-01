@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/vault"
 	"github.com/cybozu-go/well"
 	"github.com/hashicorp/vault/api"
 )
@@ -270,4 +272,143 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 	}
 
 	return pems, nil
+}
+
+func setupVault(ctx context.Context, mylrn int, lrns []int) error {
+	f, err := os.OpenFile(neco.VaultConfFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	err = vault.GenerateConf(f, mylrn, lrns)
+	if err != nil {
+		return err
+	}
+	err = f.Sync()
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(neco.VaultUnseal, []byte(vault.UnsealScript()), 0755)
+	if err != nil {
+		return err
+	}
+
+	g, err := os.OpenFile(neco.ServiceFile(neco.VaultService), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer g.Close()
+
+	err = vault.GenerateService(g)
+	if err != nil {
+		return err
+	}
+	err = g.Sync()
+	if err != nil {
+		return err
+	}
+
+	err = neco.StartService(ctx, neco.VaultService)
+	if err != nil {
+		return err
+	}
+
+	log.Info("vault: installed", nil)
+	return nil
+}
+
+func unsealVault(vault *api.Client, unsealKey string) error {
+	st, err := vault.Sys().Unseal(unsealKey)
+	if err != nil {
+		return err
+	}
+	if st.Sealed {
+		return errors.New("failed to unseal vault")
+	}
+	return nil
+}
+
+func bootVault(ctx context.Context, pems []*api.Secret) error {
+	cfg := api.DefaultConfig()
+	vault, err := api.NewClient(cfg)
+	if err != nil {
+		return err
+	}
+	req := &api.InitRequest{
+		SecretShares:    1,
+		SecretThreshold: 1,
+	}
+	resp, err := vault.Sys().Init(req)
+	if err != nil {
+		return err
+	}
+
+	unsealKey := resp.KeysB64[0]
+	rootToken := resp.RootToken
+	vault.SetToken(rootToken)
+
+	err = unsealVault(vault, unsealKey)
+	if err != nil {
+		return err
+	}
+
+	// output audit logs to stdout that should go to journald
+	auditOpts := &api.EnableAuditOptions{
+		Type: "file",
+		Options: map[string]string{
+			"file_path": "stdout",
+		},
+	}
+	err = vault.Sys().EnableAuditWithOptions("stdout", auditOpts)
+	if err != nil {
+		return err
+	}
+
+	for i, ca := range []string{neco.CAServer, neco.CAEtcdPeer, neco.CAEtcdClient} {
+		err := vault.Sys().Mount(ca, &api.MountInput{
+			Type: "pki",
+			Config: api.MountConfigInput{
+				MaxLeaseTTL:     neco.TTL100Year,
+				DefaultLeaseTTL: neco.TTL10Year,
+			},
+		})
+		if err != nil {
+			return err
+		}
+		cert := pems[i].Data["certificate"].(string)
+		_, err = vault.Logical().Write(ca+"/config/ca", map[string]interface{}{
+			"pem_bundle": cert,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	// lib.vault.vault(root_token, 'write', CA_SERVER+'/roles/system',
+	//                 'ttl='+TTL_10YEAR, 'max_ttl='+TTL_10YEAR,
+	//                 'client_flag=false', 'allow_any_name=true')
+	// lib.vault.vault(root_token, 'write', CA_ETCD_PEER+'/roles/system',
+	//                 'ttl='+TTL_10YEAR, 'max_ttl='+TTL_10YEAR,
+	//                 'allow_any_name=true')
+	// lib.vault.vault(root_token, 'write', lib.vault.CA_ETCD_CLIENT+'/roles/system',
+	//                 'ttl='+TTL_10YEAR, 'max_ttl='+TTL_10YEAR,
+	//                 'server_flag=false', 'allow_any_name=true')
+	// lib.vault.vault(root_token, 'write', lib.vault.CA_ETCD_CLIENT+'/roles/human',
+	//                 'ttl=2h', 'max_ttl=24h',
+	//                 'server_flag=false', 'allow_any_name=true')
+
+	// # add policies for admin
+	// lib.vault.vault(root_token, 'policy', 'write', 'admin', path.join(DIR, 'admin-policy.hcl'))
+	// lib.vault.vault(root_token, 'policy', 'write', 'ca-admin', path.join(DIR, 'ca-admin-policy.hcl'))
+
+	// lib.vault.vault(root_token, 'auth', 'enable', 'approle')
+
+	// # store unseal key and root token in etcd
+	// etcdctl('put', KEY_ROOT_TOKEN, input=root_token.encode('utf-8'))
+	// etcdctl('put', KEY_UNSEAL, input=unseal_key.encode('utf-8'))
+
+	// lib.log('vault: booted')
+	return nil
 }

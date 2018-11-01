@@ -38,6 +38,19 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		return err
 	}
 
+	if isLeader {
+		err = setupVault(ctx, mylrn, lrns)
+		if err != nil {
+			return err
+		}
+		err = bootVault(ctx, pems)
+		if err != nil {
+			return err
+		}
+	} else {
+		// TODO
+	}
+
 	pems = pems
 	return nil
 }
