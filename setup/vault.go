@@ -94,7 +94,8 @@ func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
 		return err
 	}
 
-	_, err = vault.Logical().Write(fmt.Sprintf("secret/bootstrap_done/%d", lrn), map[string]interface{}{"done": 1})
+	_, err = vault.Logical().Write(fmt.Sprintf("secret/bootstrap_done/%d", lrn),
+		map[string]interface{}{"done": 1})
 	if err != nil {
 		return err
 	}
@@ -103,7 +104,7 @@ func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
 	return nil
 }
 
-func createCA(ctx context.Context, vault *api.Client) ([]*api.Secret, error) {
+func createCA(ctx context.Context, vault *api.Client, mylrn int) ([]*api.Secret, error) {
 	for _, ca := range []string{neco.CAServer, neco.CAEtcdPeer, neco.CAEtcdClient} {
 		err := vault.Sys().Mount(ca, &api.MountInput{
 			Type: "pki",
@@ -175,6 +176,11 @@ func createCA(ctx context.Context, vault *api.Client) ([]*api.Secret, error) {
 	vault.Logical().Write("secret/bootstrap", map[string]interface{}{
 		"ready": "go",
 	})
+	err = setupLocalCerts(ctx, vault, mylrn)
+	if err != nil {
+		return nil, err
+	}
+
 	return []*api.Secret{serverPem, peerPem, clientPem}, nil
 }
 
@@ -194,30 +200,45 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 	}
 	vault.SetToken("cybozu")
 
-	if isLeader {
-		err := setupLocalCerts(ctx, vault, mylrn)
-		if err != nil {
-			return nil, err
-		}
-
-		tmpCtx, cancel := context.WithCancel(ctx)
-		defer cancel()
-
-		cmd := exec.CommandContext(tmpCtx, vaultPath, "server", "-dev",
-			"-dev-listen-address=0.0.0.0:8200", "-dev-root-token-id=cybozu")
-		err = cmd.Start()
-		if err != nil {
-			return nil, err
-		}
-
-		time.Sleep(1 * time.Second)
-
-		home := "/root"
-		if v, ok := os.LookupEnv("HOME"); ok {
-			home = v
-		}
-		defer os.Remove(filepath.Join(home, ".vault-token"))
+	if !isLeader {
+		return nil, setupLocalCerts(ctx, vault, mylrn)
 	}
 
-	return createCA(ctx, vault)
+	tmpCtx, cancel := context.WithCancel(ctx)
+	defer func() {
+		cancel()
+
+		home := os.Getenv("HOME")
+		if home == "" {
+			home = "/root"
+		}
+		os.Remove(filepath.Join(home, ".vault-token"))
+	}()
+
+	cmd := exec.CommandContext(tmpCtx, vaultPath, "server", "-dev",
+		"-dev-listen-address=0.0.0.0:8200", "-dev-root-token-id=cybozu")
+	err = cmd.Start()
+	if err != nil {
+		return nil, err
+	}
+
+	time.Sleep(1 * time.Second)
+
+	pems, err := createCA(ctx, vault, mylrn)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Info("prepare: sync", nil)
+	for _, lrn := range lrns {
+		for {
+			secret, _ := vault.Logical().Read(fmt.Sprintf("secret/bootstrap_done/%d", lrn))
+			if secret != nil {
+				break
+			}
+			time.Sleep(1 * time.Second)
+		}
+	}
+
+	return pems, nil
 }
