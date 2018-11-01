@@ -67,13 +67,13 @@ This prefix is configuration of the notification service.
 
 ```json
 {
-    "webhook": "https://<webhook url>"
+    "slack": "https://<slack webhook url>"
 }
 ```
 
-Name      | Type   | Description
-----      | ----   | -----------
-`webhook` | string | Slack web hook URL.
+Name    | Type   | Description
+----    | ----   | -----------
+`slack` | string | Slack web hook URL.
 
 ## `<prefix>/vault-unseal-key`
 

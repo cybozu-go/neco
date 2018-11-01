@@ -5,6 +5,8 @@ require (
 	github.com/containerd/continuity v0.0.0-20180216233310-d8fb8589b0e8 // indirect
 	github.com/containers/image v0.0.0-20181023201252-4b6d9cf918c1
 	github.com/containers/storage v0.0.0-20181019121456-bd5818eda840 // indirect
+	github.com/coreos/bbolt v1.3.1-coreos.6 // indirect
+	github.com/coreos/etcd v3.3.9+incompatible
 	github.com/cybozu-go/etcdutil v1.3.0
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/well v1.8.1
@@ -14,7 +16,7 @@ require (
 	github.com/docker/go-connections v0.3.1-0.20180212134524-7beb39f0b969 // indirect
 	github.com/docker/go-units v0.3.2 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
-	github.com/google/go-cmp v0.2.0 // indirect
+	github.com/google/go-cmp v0.2.0
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
