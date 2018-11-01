@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -72,32 +73,34 @@ func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
 		return err
 	}
 
+	// issue client certificate for etcd peer
 	secret, err = vault.Logical().Write(neco.CAEtcdPeer+"/issue/system", map[string]interface{}{
 		"common_name":          myname,
 		"ip_sans":              []string{myip.String(), bip.String()},
 		"exclude_cn_from_sans": true,
 	})
+	err = dumpCertFiles(secret, neco.EtcdPeerCAFile, neco.EtcdPeerCertFile, neco.EtcdPeerKeyFile)
+	if err != nil {
+		return err
+	}
+
+	// issue client certificate for vault to connect etcd
+	secret, err = vault.Logical().Write(neco.CAEtcdClient+"/issue/system", map[string]interface{}{
+		"common_name":          "vault",
+		"exclude_cn_from_sans": true,
+	})
+	err = dumpCertFiles(secret, neco.EtcdClientCAFile, neco.VaultCertFile, neco.VaultKeyFile)
+	if err != nil {
+		return err
+	}
+
+	_, err = vault.Logical().Write(fmt.Sprintf("secret/bootstrap_done/%s", lrn), map[string]interface{}{"done": 1})
+	if err != nil {
+		return err
+	}
+	log.Info("prepare: end", nil)
+
 	return nil
-	// # issue client certificate for etcd peer
-	// out = vault0('write', '-format=json', CA_ETCD_PEER+'/issue/system',
-	//              'common_name='+myname,
-	//              'ip_sans={!s},{}'.format(myip, bastion_ip()),
-	//              'exclude_cn_from_sans=true')
-	// j = json.loads(out)
-	// lib.dump_file(ETCD_PEER_CERT_FILE, j['data']['certificate'])
-	// lib.dump_file(ETCD_PEER_CERT_KEY, j['data']['private_key'])
-	// lib.dump_file(ETCD_PEER_CA_FILE, j['data']['issuing_ca'])
-
-	// # issue client certificate for vault to connect etcd
-	// out = vault0('write', '-format=json', lib.vault.CA_ETCD_CLIENT+'/issue/system',
-	//              'common_name=vault', 'exclude_cn_from_sans=true')
-	// j = json.loads(out)
-	// lib.dump_file(lib.vault.VAULT_CERT_FILE, j['data']['certificate'])
-	// lib.dump_file(lib.vault.VAULT_CERT_KEY, j['data']['private_key'])
-	// lib.dump_file(ETCD_CLIENT_CA_FILE, j['data']['issuing_ca'])
-
-	// vault0('kv', 'put', 'secret/bootstrap_done/{}'.format(lrn), 'done=1')
-	// lib.log('prepare: end')
 }
 
 func createCA(ctx context.Context, vault *api.Client) ([]*api.Secret, error) {
@@ -192,6 +195,11 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 	vault.SetToken("cybozu")
 
 	if isLeader {
+		err := setupLocalCerts(ctx, vault, mylrn)
+		if err != nil {
+			return nil, err
+		}
+
 		tmpCtx, cancel := context.WithCancel(ctx)
 		defer cancel()
 
@@ -204,9 +212,12 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 
 		time.Sleep(1 * time.Second)
 
-		return createCA(ctx, vault)
+		home := "/root"
+		if v, ok := os.LookupEnv("HOME"); ok {
+			home = v
+		}
+		defer os.Remove(filepath.Join(home, ".vault-token"))
 	}
 
-	// TODO
-	return nil, nil
+	return createCA(ctx, vault)
 }
