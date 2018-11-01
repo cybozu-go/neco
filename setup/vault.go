@@ -94,7 +94,7 @@ func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
 		return err
 	}
 
-	_, err = vault.Logical().Write(fmt.Sprintf("secret/bootstrap_done/%s", lrn), map[string]interface{}{"done": 1})
+	_, err = vault.Logical().Write(fmt.Sprintf("secret/bootstrap_done/%d", lrn), map[string]interface{}{"done": 1})
 	if err != nil {
 		return err
 	}

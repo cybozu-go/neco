@@ -33,6 +33,11 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		return err
 	}
 
+	err = setupEtcd(ctx, mylrn, lrns)
+	if err != nil {
+		return err
+	}
+
 	pems = pems
 	return nil
 }
