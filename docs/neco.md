@@ -36,8 +36,13 @@ Synopsis
 
 * `neco config set check-update-duration DURATION`
 
-    Set duration for checking new neco release. DURATION format must be parsable by
-    [`time.ParseDuration`](https://golang.org/pkg/time/#ParseDuration) such as `60m`.
+    Set polling duration for checking new neco release. DURATION format must be
+    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.
+
+* `neco config set worker-timeout-duration DURATION`
+
+    Set timeout from workers nodes on updating process. DURATION format must be
+    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.
 
 * `neco setup [--no-revoke] LRN [LRN ...]`
 
@@ -161,3 +166,5 @@ to update the list of etcd endpoints.
 
 
 `neco-updater` and `neco-worker` would no longer to update on the dead boot server.
+
+[ParseDuration]: https://golang.org/pkg/time/#ParseDuration
