@@ -20,6 +20,12 @@ Options are defined by [cybozu-go/etcdutil](https://github.com/cybozu-go/etcduti
 Synopsis
 --------
 
+* `neco config set env staging|prod`
+
+    Set cluster environment to use pre-released or released neco packages from
+    GitHub releases.  Latest pre-released is used if `staging` is set.
+    Otherwise, latest released is used if `prod` is set.
+
 * `neco config set slack URL`
 
     Set Slack webhook URL for notification from `neco-updater`.
@@ -27,6 +33,11 @@ Synopsis
 * `neco config set proxy URL`
 
     Set proxy URL to access Internet.
+
+* `neco config set check-update-duration DURATION`
+
+    Set duration for checking new neco release. DURATION format must be parsable by
+    [`time.ParseDuration`](https://golang.org/pkg/time/#ParseDuration) such as `60m`.
 
 * `neco setup [--no-revoke] LRN [LRN ...]`
 

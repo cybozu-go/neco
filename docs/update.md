@@ -45,8 +45,17 @@ restart `neco-updater`.
 Implementation of update process
 --------------------------------
 
-1. The leader `neco-updater` takes a copy of the list of boot servers.
-2. The leader puts the new version of `neco` package in etcd.  `<prefix>/current`
+`neco-updater` services is responsible to check if a new neco version exists,
+control workers, and notify the results of the update.  `neco-updater` does
+leader election and only one process works.
+
+`neco-worker` service responsible to do installing and updating application on
+each nodes.  The detailed update process follows below steps:
+
+1. Check latest version from GitHub releases.  Latest pre-released is used on
+   staging, or latest released is used on production.
+2. The leader `neco-updater` takes a copy of the list of boot servers.
+3. The leader puts the new version of `neco` package in etcd.  `<prefix>/current`
 
     ```json
     {
@@ -55,8 +64,8 @@ Implementation of update process
     }
     ```
 
-3. On each boot server, `neco-worker` watches etcd; when it finds 2, install the new version.
-4. If `neco-worker` is the same version, it starts update process.
+4. On each boot server, `neco-worker` watches etcd; when it finds 2, install the new version.
+5. If `neco-worker` is the same version, it starts update process.
 
 When `neco-worker` needs to synchronize with others, it uses an etcd key as a counter.
 Once the counter becomes the same number of boot servers, `neco-worker` proceeds.
