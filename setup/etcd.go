@@ -16,7 +16,7 @@ import (
 var leastClusterVersion = version.Must(version.NewVersion("3.1.0"))
 
 func etcdClient() (*clientv3.Client, error) {
-	cfg := etcdutil.NewConfig("")
+	cfg := etcdutil.NewConfig(neco.NecoPrefix)
 	cfg.Endpoints = []string{"127.0.0.1:2379"}
 	cfg.TLSCertFile = neco.VaultCertFile
 	cfg.TLSKeyFile = neco.VaultKeyFile

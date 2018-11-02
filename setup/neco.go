@@ -2,13 +2,11 @@ package setup
 
 import (
 	"context"
-	"io/ioutil"
 
-	"github.com/cybozu-go/etcdutil"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/etcd"
 	"github.com/hashicorp/vault/api"
-	yaml "gopkg.in/yaml.v2"
 )
 
 func setupNecoFiles(ctx context.Context, vc *api.Client, lrns []int) error {
@@ -21,16 +19,7 @@ func setupNecoFiles(ctx context.Context, vc *api.Client, lrns []int) error {
 		return err
 	}
 
-	cfg := etcdutil.NewConfig(neco.NecoPrefix)
-	cfg.Endpoints = neco.EtcdEndpoints(lrns)
-	cfg.TLSCertFile = neco.NecoCertFile
-	cfg.TLSKeyFile = neco.NecoKeyFile
-
-	data, err := yaml.Marshal(cfg)
-	if err != nil {
-		return err
-	}
-	err = ioutil.WriteFile(neco.NecoConfFile, data, 0644)
+	err = etcd.UpdateNecoConfig(lrns)
 	if err != nil {
 		return err
 	}

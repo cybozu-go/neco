@@ -49,8 +49,13 @@ $(DHCP_JSON):
 $(SABAKAN_DIR)/auto-config: auto-config $(DHCP_JSON)
 	cp $< $@
 
-$(SABAKAN_DIR)/neco:
+$(SABAKAN_DIR)/neco: $(OPERATION_SSH_DIR)
 	cd ..; GOBIN=$(realpath $(SABAKAN_DIR)) go install -mod=vendor ./...
+
+# workaround for placemat-menu
+$(OPERATION_SSH_DIR):
+	mkdir -p $(OPERATION_SSH_DIR)
+	cp dctest_key $(OPERATION_SSH_DIR)/boot_key
 
 # Targets
 test: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
