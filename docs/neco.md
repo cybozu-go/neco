@@ -70,6 +70,14 @@ Synopsis
 
     Removes the current update status from etcd to resolve the update failure.
 
+* `neco vault get-unseal-key`
+
+    Get initial vault unseal key.
+
+* `neco vault remove-unseal-key`
+
+    Remove initial vault unseal key from etcd.
+
 Use case
 --------
 

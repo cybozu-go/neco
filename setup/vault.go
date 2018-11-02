@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/cybozu-go/neco/storage"
+
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/vault"
@@ -332,7 +334,7 @@ func unsealVault(vault *api.Client, unsealKey string) error {
 
 func bootVault(ctx context.Context, pems []*api.Secret) error {
 	cfg := api.DefaultConfig()
-	vault, err := api.NewClient(cfg)
+	client, err := api.NewClient(cfg)
 	if err != nil {
 		return err
 	}
@@ -340,16 +342,16 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 		SecretShares:    1,
 		SecretThreshold: 1,
 	}
-	resp, err := vault.Sys().Init(req)
+	resp, err := client.Sys().Init(req)
 	if err != nil {
 		return err
 	}
 
 	unsealKey := resp.KeysB64[0]
 	rootToken := resp.RootToken
-	vault.SetToken(rootToken)
+	client.SetToken(rootToken)
 
-	err = unsealVault(vault, unsealKey)
+	err = unsealVault(client, unsealKey)
 	if err != nil {
 		return err
 	}
@@ -361,13 +363,13 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 			"file_path": "stdout",
 		},
 	}
-	err = vault.Sys().EnableAuditWithOptions("stdout", auditOpts)
+	err = client.Sys().EnableAuditWithOptions("stdout", auditOpts)
 	if err != nil {
 		return err
 	}
 
 	for i, ca := range []string{neco.CAServer, neco.CAEtcdPeer, neco.CAEtcdClient} {
-		err := vault.Sys().Mount(ca, &api.MountInput{
+		err := client.Sys().Mount(ca, &api.MountInput{
 			Type: "pki",
 			Config: api.MountConfigInput{
 				MaxLeaseTTL:     neco.TTL100Year,
@@ -378,7 +380,7 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 			return err
 		}
 		cert := pems[i].Data["certificate"].(string)
-		_, err = vault.Logical().Write(ca+"/config/ca", map[string]interface{}{
+		_, err = client.Logical().Write(ca+"/config/ca", map[string]interface{}{
 			"pem_bundle": cert,
 		})
 		if err != nil {
@@ -386,29 +388,75 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 		}
 	}
 
-	// lib.vault.vault(root_token, 'write', CA_SERVER+'/roles/system',
-	//                 'ttl='+TTL_10YEAR, 'max_ttl='+TTL_10YEAR,
-	//                 'client_flag=false', 'allow_any_name=true')
-	// lib.vault.vault(root_token, 'write', CA_ETCD_PEER+'/roles/system',
-	//                 'ttl='+TTL_10YEAR, 'max_ttl='+TTL_10YEAR,
-	//                 'allow_any_name=true')
-	// lib.vault.vault(root_token, 'write', lib.vault.CA_ETCD_CLIENT+'/roles/system',
-	//                 'ttl='+TTL_10YEAR, 'max_ttl='+TTL_10YEAR,
-	//                 'server_flag=false', 'allow_any_name=true')
-	// lib.vault.vault(root_token, 'write', lib.vault.CA_ETCD_CLIENT+'/roles/human',
-	//                 'ttl=2h', 'max_ttl=24h',
-	//                 'server_flag=false', 'allow_any_name=true')
+	_, err = client.Logical().Write(neco.CAServer+"/roles/system", map[string]interface{}{
+		"ttl":            neco.TTL10Year,
+		"max_ttl":        neco.TTL10Year,
+		"client_flag":    false,
+		"allow_any_name": true,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = client.Logical().Write(neco.CAEtcdPeer+"/roles/system", map[string]interface{}{
+		"ttl":            neco.TTL10Year,
+		"max_ttl":        neco.TTL10Year,
+		"allow_any_name": true,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = client.Logical().Write(neco.CAEtcdClient+"/roles/system", map[string]interface{}{
+		"ttl":            neco.TTL10Year,
+		"max_ttl":        neco.TTL10Year,
+		"server_flag":    false,
+		"allow_any_name": true,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = client.Logical().Write(neco.CAEtcdClient+"/roles/human", map[string]interface{}{
+		"ttl":            "2h",
+		"max_ttl":        "24h",
+		"server_flag":    false,
+		"allow_any_name": true,
+	})
+	if err != nil {
+		return err
+	}
 
-	// # add policies for admin
-	// lib.vault.vault(root_token, 'policy', 'write', 'admin', path.join(DIR, 'admin-policy.hcl'))
-	// lib.vault.vault(root_token, 'policy', 'write', 'ca-admin', path.join(DIR, 'ca-admin-policy.hcl'))
+	// add policies for admin
+	err = client.Sys().PutPolicy("admin", vault.AdminPolicy())
+	if err != nil {
+		return err
+	}
+	err = client.Sys().PutPolicy("ca-admin", vault.CAAdminPolicy())
+	if err != nil {
+		return err
+	}
 
-	// lib.vault.vault(root_token, 'auth', 'enable', 'approle')
+	opt := &api.EnableAuthOptions{
+		Type: "approle",
+	}
+	err = client.Sys().EnableAuthWithOptions("approle", opt)
+	if err != nil {
+		return err
+	}
 
-	// # store unseal key and root token in etcd
-	// etcdctl('put', KEY_ROOT_TOKEN, input=root_token.encode('utf-8'))
-	// etcdctl('put', KEY_UNSEAL, input=unseal_key.encode('utf-8'))
-
-	// lib.log('vault: booted')
+	// store unseal key and root token in etcd
+	ec, err := etcdClient()
+	if err != nil {
+		return err
+	}
+	defer ec.Close()
+	st := storage.NewStorage(ec)
+	err = st.PutVaultRootToken(ctx, rootToken)
+	if err != nil {
+		return err
+	}
+	err = st.PutVaultUnsealKey(ctx, unsealKey)
+	if err != nil {
+		return err
+	}
+	log.Info("vault: booted", nil)
 	return nil
 }

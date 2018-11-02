@@ -237,20 +237,27 @@ func testVault(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	err := st.PutVaultUnsealKey(ctx, "key")
+	_, err := st.GetVaultUnsealKey(ctx)
+	if err != ErrNotFound {
+		t.Error("unexpected error", err)
+	}
+
+	err = st.PutVaultUnsealKey(ctx, "key")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	resp, err := etcd.Get(ctx, KeyVaultUnsealKey)
+	resp, err := st.GetVaultUnsealKey(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.Count != 1 {
-		t.Fatal(`resp.Count != 1`, resp.Count)
-	}
-	if string(resp.Kvs[0].Value) != "key" {
+	if resp != "key" {
 		t.Error("wrong vault unseal key")
+	}
+
+	_, err = st.GetVaultRootToken(ctx)
+	if err != ErrNotFound {
+		t.Error("unexpected error", err)
 	}
 
 	err = st.PutVaultRootToken(ctx, "root")
@@ -258,15 +265,21 @@ func testVault(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resp, err = etcd.Get(ctx, KeyVaultRootToken)
+	resp, err = st.GetVaultRootToken(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.Count != 1 {
-		t.Fatal(`resp.Count != 1`, resp.Count)
-	}
-	if string(resp.Kvs[0].Value) != "root" {
+	if resp != "root" {
 		t.Error("wrong vault root token")
+	}
+
+	err = st.DeleteVaultRootToken(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = st.GetVaultRootToken(ctx)
+	if err != ErrNotFound {
+		t.Error("unexpected error", err)
 	}
 }
 
