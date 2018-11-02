@@ -10,11 +10,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/cybozu-go/neco/storage"
-
+	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/vault"
+	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
 	"github.com/hashicorp/vault/api"
 )
@@ -332,11 +332,11 @@ func unsealVault(vault *api.Client, unsealKey string) error {
 	return nil
 }
 
-func bootVault(ctx context.Context, pems []*api.Secret) error {
+func bootVault(ctx context.Context, pems []*api.Secret, ec *clientv3.Client) (*api.Client, error) {
 	cfg := api.DefaultConfig()
 	client, err := api.NewClient(cfg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req := &api.InitRequest{
 		SecretShares:    1,
@@ -344,7 +344,7 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 	}
 	resp, err := client.Sys().Init(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	unsealKey := resp.KeysB64[0]
@@ -353,7 +353,7 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 
 	err = unsealVault(client, unsealKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// output audit logs to stdout that should go to journald
@@ -365,7 +365,7 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 	}
 	err = client.Sys().EnableAuditWithOptions("stdout", auditOpts)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for i, ca := range []string{neco.CAServer, neco.CAEtcdPeer, neco.CAEtcdClient} {
@@ -377,14 +377,14 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 			},
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		cert := pems[i].Data["certificate"].(string)
 		_, err = client.Logical().Write(ca+"/config/ca", map[string]interface{}{
 			"pem_bundle": cert,
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -395,7 +395,7 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 		"allow_any_name": true,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	_, err = client.Logical().Write(neco.CAEtcdPeer+"/roles/system", map[string]interface{}{
 		"ttl":            neco.TTL10Year,
@@ -403,7 +403,7 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 		"allow_any_name": true,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	_, err = client.Logical().Write(neco.CAEtcdClient+"/roles/system", map[string]interface{}{
 		"ttl":            neco.TTL10Year,
@@ -412,7 +412,7 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 		"allow_any_name": true,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	_, err = client.Logical().Write(neco.CAEtcdClient+"/roles/human", map[string]interface{}{
 		"ttl":            "2h",
@@ -421,17 +421,17 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 		"allow_any_name": true,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// add policies for admin
 	err = client.Sys().PutPolicy("admin", vault.AdminPolicy())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = client.Sys().PutPolicy("ca-admin", vault.CAAdminPolicy())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	opt := &api.EnableAuthOptions{
@@ -439,24 +439,45 @@ func bootVault(ctx context.Context, pems []*api.Secret) error {
 	}
 	err = client.Sys().EnableAuthWithOptions("approle", opt)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// store unseal key and root token in etcd
-	ec, err := etcdClient()
-	if err != nil {
-		return err
-	}
-	defer ec.Close()
 	st := storage.NewStorage(ec)
 	err = st.PutVaultRootToken(ctx, rootToken)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = st.PutVaultUnsealKey(ctx, unsealKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
 	log.Info("vault: booted", nil)
+	return client, nil
+}
+
+func waitVault(ctx context.Context, ec *clientv3.Client) (string, error) {
+	st := storage.NewStorage(ec)
+
+	for {
+		unsealKey, err := st.GetVaultUnsealKey(ctx)
+		switch err {
+		case nil:
+			return unsealKey, nil
+		case storage.ErrNotFound:
+			select {
+			case <-ctx.Done():
+				return "", ctx.Err()
+			case <-time.After(1 * time.Second):
+			}
+			continue
+		default:
+			return "", err
+		}
+	}
+}
+
+func reissueCerts(ctx context.Context, vc *api.Client, mylrn int, rootToken string) error {
 	return nil
 }

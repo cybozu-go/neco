@@ -5,6 +5,8 @@ import (
 	"sort"
 
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/storage"
+	"github.com/hashicorp/vault/api"
 )
 
 // Setup installs and configures etcd and vault cluster.
@@ -33,22 +35,52 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		return err
 	}
 
-	err = setupEtcd(ctx, mylrn, lrns)
+	ec, err := setupEtcd(ctx, mylrn, lrns)
 	if err != nil {
 		return err
 	}
+
+	var vc *api.Client
 
 	if isLeader {
 		err = setupVault(ctx, mylrn, lrns)
 		if err != nil {
 			return err
 		}
-		err = bootVault(ctx, pems)
+		vc, err = bootVault(ctx, pems, ec)
 		if err != nil {
 			return err
 		}
 	} else {
-		// TODO
+		unsealKey, err := waitVault(ctx, ec)
+		if err != nil {
+			return err
+		}
+		err = setupVault(ctx, mylrn, lrns)
+		if err != nil {
+			return err
+		}
+		cfg := api.DefaultConfig()
+		vc, err = api.NewClient(cfg)
+		if err != nil {
+			return err
+		}
+		err = unsealVault(vc, unsealKey)
+		if err != nil {
+			return err
+		}
+	}
+
+	st := storage.NewStorage(ec)
+	rootToken, err := st.GetVaultRootToken(ctx)
+	if err != nil {
+		return err
+	}
+	vc.SetToken(rootToken)
+
+	err = reissueCerts(ctx, vc, mylrn, rootToken)
+	if err != nil {
+		return err
 	}
 
 	return nil
