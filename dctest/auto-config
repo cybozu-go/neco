@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -e
+
+fin() {
+    mkdir -p /root/host
+    mount -t 9p -o trans=virtio placemat /root/host/
+    cp /var/log/cloud-init* /root/host/
+}
+trap fin INT TERM HUP 0
+
+apt-get update
+apt-get install -y --no-install-recommends jq ca-certificates freeipmi-tools
+
+cd /mnt
+./neco setup --no-revoke 0 1 2
+
+# Setup etcd user/role for applications
+if [ $(hostname) = 'boot-0' ]; then
+    # TODO
+fi
+
+# sabactl ipam set -f ipam.json
+# sabactl dhcp set -f dhcp.json
+# sabactl machines create -f machines.json
+# sabactl kernel-params set "console=ttyS0"
+# echo "sabakan has been properly configured!"
+
+touch /tmp/auto-config-done

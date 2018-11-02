@@ -15,7 +15,7 @@ var setupParams struct {
 
 // setupCmd represents the setup command
 var setupCmd = &cobra.Command{
-	Use:   "setup  [--no-revoke] LRN [LRN ...]",
+	Use:   "setup LRN [LRN ...]",
 	Short: "Install and setup etcd cluster as well as Vault using given boot servers",
 	Long: `Install and setup etcd cluster as well as Vault using given boot
 servers. LRN is the logical rack number of the boot server. At least 3

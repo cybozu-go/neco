@@ -1,0 +1,78 @@
+# Makefile for neco-test
+
+# configuration variables
+BOOT0 = 10.72.48.0
+BOOT1 = 10.72.48.1
+BOOT2 = 10.72.48.2
+K8S_CTRLPLANE0 = 10.69.0.4
+K8S_CTRLPLANE1 = 10.69.0.196
+K8S_CTRLPLANE2 = 10.69.1.132
+
+PLACEMAT = $(GOPATH)/bin/placemat
+GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo -v
+PLACEMAT_DATADIR = /var/scratch/placemat
+VM_SHARED_DIR = /mnt/placemat
+
+export BOOT0 BOOT1 BOOT2 PLACEMAT GINKGO
+
+# non-configuration variables
+OUTPUT = ./output
+SABAKAN_DIR = $(OUTPUT)/sabakan
+DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
+SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config
+
+SSH_PRIVKEY = ./dctest_key
+
+export SSH_PRIVKEY
+
+all: test lint
+
+# CUSTOM_UBUNTU
+$(CUSTOM_UBUNTU):
+	curl -fSL -o $@ $$(curl -fsSL $(CUSTOM_UBUNTU_API_URL) | jq -r '.assets[] | select (.name=="$(CUSTOM_UBUNTU)") | .browser_download_url')
+
+$(OUTPUT)/$(CUSTOM_UBUNTU): $(CUSTOM_UBUNTU)
+	qemu-img resize $< $(CUSTOM_UBUNTU_DISK_SIZE)  # Do this here because CUSTOM_IMAGE is included in vmx-enabled image.
+	mkdir -p $(OUTPUT)
+	rm -f $@
+	ln $< $@
+	touch $@
+
+# SABAKAN_CONTENTS
+$(DHCP_JSON):
+	$(GOPATH)/bin/placemat-menu -f menu.yml -o $(OUTPUT)
+
+$(SABAKAN_DIR)/auto-config: auto-config $(DHCP_JSON)
+	cp $< $@
+
+# Targets
+test: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
+	sudo rm -rf $(PLACEMAT_DATADIR)
+	sudo rm -rf $(VM_SHARED_DIR)
+	./test.sh
+
+placemat: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
+	sudo rm -rf $(PLACEMAT_DATADIR)
+	sudo rm -rf $(VM_SHARED_DIR)
+	sudo -b $(PLACEMAT) -enable-virtfs output/cluster.yml
+	@echo 'Placemat is running.  To kill it, do "sudo pkill placemat".'
+
+test-light:
+	placemat_pid=$$(echo $$(pgrep placemat) | tr " " ",") ; \
+	operation_pid=$$(pgrep -P $$placemat_pid -f operation) ; \
+	sudo -E nsenter -t $$operation_pid -n sh -c "export PATH=$$PATH; $(GINKGO) -focus=\"${TARGET}\""
+
+clean:
+	rm -rf $(OUTPUT)
+
+fullclean: clean
+	rm -rf $(CUSTOM_UBUNTU)
+
+setup:
+	GO111MODULE=off go get -t -d ./... \
+		github.com/cybozu-go/placemat-menu
+	GO111MODULE=off go get github.com/onsi/ginkgo/ginkgo \
+		github.com/cybozu-go/placemat/...
+	cd $(GOPATH)/src/github.com/cybozu-go/placemat-menu; GO111MODULE=on make
+
+.PHONY:	all test placemat test-light clean fullclean setup

@@ -1,0 +1,19 @@
+#cloud-config
+hostname: {{.Name}}
+users:
+  - name: cybozu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    primary-group: cybozu
+    groups: users, admin, systemd-journal, rkt
+    lock_passwd: false
+    # below passwd is hashed string of "cybozu"
+    passwd: $6$rounds=4096$m3AVOWeB$EPystoHozf.eJNCm4tWyRHpJzgTDymYuGOONWxRN8uk4amLvxwB4Pc7.tEkZdeXewoVEBEX5ujUon9wSpEf1N.
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKfYVHbQBZ2K3DF39RO1J76mj2hFgHDW6gU7IcStxNVcfICK1Zq/VBpdX0YrjBSnjkmbHy2s3ci+NFTlhSoupcOGjpmmRONVGc1T1bh7vXlUqsoFwn/VWX7PHUaEptjid3L1HoLfItuBdn1oTi1q+udh2mBTtyvJGRd2Z0s59WPdWNigpIOaorqCkIc4ROWrjLW7w7ROA/A3Ax1SkoZrE4pEsDnrTBg0wCPXznugLq9FrzyFkBuwW2LnNPHNZJEoKKwyxp4scxTL4oaXSby4eUNtCcdC8jRemrSkhqowkaEcQ9XR6bCvCXkxMLWXG6SfFSJijDl5e9e12XZAjxQK8H
+
+runcmd:
+  - "echo 127.0.0.1 {{.Name}} >>/etc/hosts"
+  - "cd /extras/setup; ./setup-rkt"
+  - "cd /extras/setup; ./setup-neco-network --dns 8.8.8.8 {{.Rack.Index}}"
+  - "sh /mnt/auto-config"
