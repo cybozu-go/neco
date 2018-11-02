@@ -39,6 +39,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 	if err != nil {
 		return err
 	}
+	defer ec.Close()
 
 	var vc *api.Client
 
