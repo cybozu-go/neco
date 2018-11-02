@@ -37,12 +37,12 @@ Synopsis
 * `neco config set check-update-duration DURATION`
 
     Set polling duration for checking new neco release. DURATION format must be
-    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.
+    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.  Default is `10m`
 
 * `neco config set worker-timeout-duration DURATION`
 
     Set timeout from workers nodes on updating process. DURATION format must be
-    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.
+    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.  Default is `60m`
 
 * `neco setup [--no-revoke] LRN [LRN ...]`
 
