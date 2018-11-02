@@ -315,9 +315,12 @@ func testCheckUpdateIntervalConfig(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	_, err := st.GetCheckUpdateInterval(ctx)
-	if err != ErrNotFound {
-		t.Error("check-update-interval config should not be found")
+	d, err := st.GetCheckUpdateInterval(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d != neco.DefaultCheckUpdateInterval {
+		t.Error(`d != neco.DefaultCheckUpdateInterval`, d)
 	}
 
 	err = st.PutCheckUpdateInterval(ctx, 10*time.Minute)
@@ -325,7 +328,7 @@ func testCheckUpdateIntervalConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	d, err := st.GetCheckUpdateInterval(ctx)
+	d, err = st.GetCheckUpdateInterval(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -342,9 +345,12 @@ func testWorkerTimeout(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	_, err := st.GetWorkerTimeout(ctx)
-	if err != ErrNotFound {
-		t.Error("worker-timeout config should not be found")
+	d, err := st.GetWorkerTimeout(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d != neco.DefaultWorkerTimeout {
+		t.Error(`d != neco.DefaultWorkerTimeout`, d)
 	}
 
 	err = st.PutWorkerTimeout(ctx, 60*time.Minute)
@@ -352,7 +358,7 @@ func testWorkerTimeout(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	d, err := st.GetWorkerTimeout(ctx)
+	d, err = st.GetWorkerTimeout(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
