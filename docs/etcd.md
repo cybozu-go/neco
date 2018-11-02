@@ -76,19 +76,21 @@ Name       | Type   | Description
 `neco-updater` watches these keys to wait all workers to complete update process,
 or detect errors during updates.
 
-## `<prefix>/notification`
+## `<prefix>/config/notification/slack`
 
-This prefix is configuration of the notification service.
+The notification config to slack URL such as `https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXX`.
 
-```json
-{
-    "slack": "https://<slack webhook url>"
-}
-```
+## `<prefix>/config/proxy`
 
-Name    | Type   | Description
-----    | ----   | -----------
-`slack` | string | Slack web hook URL.
+HTTP proxy url to access Internet such as `https://squid.slack.com:3128`
+
+## `<prefix>/config/check-update-interval`
+
+Polling interval for checking new neco release in nanoseconds.
+
+## `<prefix>/config/worker-timeout-duration`
+
+Timeout from workers in nanoseconds.
 
 ## `<prefix>/vault-unseal-key`
 

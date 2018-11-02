@@ -34,15 +34,16 @@ Synopsis
 
     Set proxy URL to access Internet.
 
-* `neco config set check-update-duration DURATION`
+* `neco config set check-update-interval DURATION`
 
-    Set polling duration for checking new neco release. DURATION format must be
+    Set polling interval for checking new neco release. DURATION format must be
     parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.  Default is `10m`
 
-* `neco config set worker-timeout-duration DURATION`
+* `neco config set worker-timeout DURATION`
 
-    Set timeout from workers nodes on updating process. DURATION format must be
-    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.  Default is `60m`
+    Set timeout from workers on updating process. DURATION format must be
+    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.  Default
+    is `60m`
 
 * `neco setup [--no-revoke] LRN [LRN ...]`
 
