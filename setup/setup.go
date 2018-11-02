@@ -84,5 +84,15 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		return err
 	}
 
+	err = setupEtcdBackup(ctx, vc)
+	if err != nil {
+		return err
+	}
+
+	err = st.Finish(ctx, mylrn)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

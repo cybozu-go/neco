@@ -11,6 +11,7 @@ const (
 	KeyNotification      = "notification"
 	KeyVaultUnsealKey    = "vault-unseal-key"
 	KeyVaultRootToken    = "vault-root-token"
+	KeyFinishPrefix      = "finish/"
 )
 
 func keyBootServers(lrn int) string {
@@ -19,4 +20,8 @@ func keyBootServers(lrn int) string {
 
 func keyStatus(lrn int) string {
 	return KeyStatusPrefix + strconv.Itoa(lrn)
+}
+
+func keyFinish(lrn int) string {
+	return KeyFinishPrefix + strconv.Itoa(lrn)
 }

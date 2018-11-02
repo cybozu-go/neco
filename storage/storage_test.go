@@ -283,6 +283,40 @@ func testVault(t *testing.T) {
 	}
 }
 
+func testFinish(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	lrns, err := st.GetFinished(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(lrns) != 0 {
+		t.Error("lrns should be empty", lrns)
+	}
+
+	err = st.Finish(ctx, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = st.Finish(ctx, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	lrns, err = st.GetFinished(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(lrns, []int{0, 1}) {
+		t.Error("unexpected lrns", lrns)
+	}
+}
+
 func TestStorage(t *testing.T) {
 	t.Run("ArtifactSet", testArtifactSet)
 	t.Run("Request", testRequest)
@@ -290,4 +324,5 @@ func TestStorage(t *testing.T) {
 	t.Run("ClearStatus", testClearStatus)
 	t.Run("NotificationConfig", testNotificationConfig)
 	t.Run("Vault", testVault)
+	t.Run("Finish", testFinish)
 }
