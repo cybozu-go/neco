@@ -20,7 +20,7 @@ TLS server certificates for this boot server.
 
 ### `etcd.crt` and `etcd.key`
 
-TLS client certificates for etcd authentication.
+TLS client certificates for etcd authentication for Neco tools.
 
 ### `config.yml`
 

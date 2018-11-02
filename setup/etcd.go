@@ -10,7 +10,10 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/etcd"
+	version "github.com/hashicorp/go-version"
 )
+
+var leastClusterVersion = version.Must(version.NewVersion("3.1.0"))
 
 func etcdClient() (*clientv3.Client, error) {
 	cfg := etcdutil.NewConfig("")
@@ -86,10 +89,30 @@ func setupEtcd(ctx context.Context, mylrn int, lrns []int) error {
 		}
 
 		_, err = client.MemberList(ctx)
-		client.Close()
-		if err == nil {
-			break
+		if err != nil {
+			client.Close()
+			continue
 		}
+
+		// Vault requires cluster version >= 3.1.0, but etcd starts with
+		// cluster version 3.0.0, then gradually updates the version.
+		//
+		// To avoid vault failure, we need to wait.
+		resp, err := client.Status(ctx, "127.0.0.1:2379")
+		client.Close()
+		if err != nil {
+			continue
+		}
+
+		ver, err := version.NewVersion(resp.Version)
+		if err != nil {
+			continue
+		}
+
+		if ver.LessThan(leastClusterVersion) {
+			continue
+		}
+		break
 	}
 
 	log.Info("etcd: setup completed", nil)
