@@ -2,4 +2,9 @@ package updater
 
 import "errors"
 
-var ErrNoReleases = errors.New("no neco packages are released")
+// Retriable errors in neco-updator
+var (
+	ErrNoReleases   = errors.New("no neco packages are released")
+	ErrNoMembers    = errors.New("no boot servers are joined")
+	ErrUpdateFailed = errors.New("update wailed on worker(s)")
+)

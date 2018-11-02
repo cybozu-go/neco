@@ -4,11 +4,15 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"sort"
+	"strings"
 
 	"github.com/cybozu-go/log"
 	"github.com/google/go-github/github"
+	version "github.com/hashicorp/go-version"
 )
 
+// GetLatestReleaseTag returns latest tag in GitHub Releases of neco repository
 func GetLatestReleaseTag(ctx context.Context) (string, error) {
 	client := github.NewClient(nil)
 	release, resp, err := client.Repositories.GetLatestRelease(ctx, "cybozu-go", "neco")
@@ -34,6 +38,7 @@ func GetLatestReleaseTag(ctx context.Context) (string, error) {
 	return *release.TagName, nil
 }
 
+// GetLatestPreReleaseTag returns latest pre-released tag in GitHub Releases of neco repository
 func GetLatestPreReleaseTag(ctx context.Context) (string, error) {
 	client := github.NewClient(nil)
 
@@ -53,23 +58,27 @@ func GetLatestPreReleaseTag(ctx context.Context) (string, error) {
 		}
 		opt.Page = resp.NextPage
 	}
-	var release *github.RepositoryRelease
-	for _, r := range releases {
-		if r.Prerelease != nil && *r.Prerelease {
-			release = r
-			break
+	versions := make([]*version.Version, 0, len(releases))
+	for i, r := range releases {
+		if r.TagName == nil {
+			continue
 		}
+		s := *r.TagName
+		trimmed := strings.Split(s, "-")
+		if len(trimmed) >= 2 {
+			s = trimmed[1]
+		}
+		v, err := version.NewVersion(s)
+		if err != nil {
+			continue
+		}
+		versions[i] = v
 	}
-	if release == nil {
+	sort.Sort(sort.Reverse(version.Collection(versions)))
+
+	if len(versions) == 0 {
 		return "", ErrNoReleases
 	}
-	if release.TagName == nil {
-		log.Error("no tagged release", map[string]interface{}{
-			"owner":      "cybozu-go",
-			"repository": "neco",
-			"release":    release.String(),
-		})
-		return "", errors.New("no tagged release")
-	}
-	return *release.TagName, nil
+
+	return versions[0].Original(), nil
 }
