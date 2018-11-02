@@ -24,6 +24,10 @@ Synopsis
 
     Set Slack webhook URL for notification from `neco-updater`.
 
+* `neco config set proxy URL`
+
+    Set proxy URL to access Internet.
+
 * `neco setup [--no-revoke] LRN [LRN ...]`
 
     Install and setup etcd cluster as well as Vault using given boot servers.
@@ -65,6 +69,14 @@ Synopsis
 * `neco recover`
 
     Removes the current update status from etcd to resolve the update failure.
+
+* `neco vault get-unseal-key`
+
+    Get initial vault unseal key.
+
+* `neco vault remove-unseal-key`
+
+    Remove initial vault unseal key from etcd.
 
 Use case
 --------

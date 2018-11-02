@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"encoding/json"
+	"sort"
 	"strconv"
 
 	"github.com/coreos/etcd/clientv3"
@@ -20,42 +21,18 @@ func NewStorage(etcd *clientv3.Client) Storage {
 	return Storage{etcd}
 }
 
-// DumpArtifactSet stores ArtifactSet to storage
-func (s Storage) DumpArtifactSet(ctx context.Context, lrn int) error {
-	data, err := json.Marshal(neco.CurrentArtifacts)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.etcd.Put(ctx, keyBootServers(lrn), string(data))
+// RegisterBootserver registers a bootserver
+func (s Storage) RegisterBootserver(ctx context.Context, lrn int) error {
+	_, err := s.etcd.Put(ctx, keyBootServer(lrn), "")
 	return err
-}
-
-// GetArtifactSet returns ArtifactSet from storage.
-// If not found, this returns ErrNotFound.
-func (s Storage) GetArtifactSet(ctx context.Context, lrn int) (*neco.ArtifactSet, error) {
-	resp, err := s.etcd.Get(ctx, keyBootServers(lrn))
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.Count == 0 {
-		return nil, ErrNotFound
-	}
-
-	as := new(neco.ArtifactSet)
-	err = json.Unmarshal(resp.Kvs[0].Value, as)
-	if err != nil {
-		return nil, err
-	}
-
-	return as, nil
 }
 
 // GetBootservers returns LRNs of bootservers
 func (s Storage) GetBootservers(ctx context.Context) ([]int, error) {
 	resp, err := s.etcd.Get(ctx, KeyBootserversPrefix,
-		clientv3.WithPrefix(), clientv3.WithKeysOnly())
+		clientv3.WithPrefix(),
+		clientv3.WithKeysOnly(),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -71,8 +48,57 @@ func (s Storage) GetBootservers(ctx context.Context) ([]int, error) {
 		}
 		lrns[i] = lrn
 	}
+	sort.Ints(lrns)
 
 	return lrns, nil
+}
+
+// RecordContainerTag records installed container image tag
+func (s Storage) RecordContainerTag(ctx context.Context, lrn int, name string) error {
+	img, err := neco.CurrentArtifacts.FindContainerImage(name)
+	if err != nil {
+		return err
+	}
+	key := keyContainer(lrn, name)
+	_, err = s.etcd.Put(ctx, key, img.Tag)
+	return err
+}
+
+// GetContainerTag returns installed container image tag
+func (s Storage) GetContainerTag(ctx context.Context, lrn int, name string) (string, error) {
+	key := keyContainer(lrn, name)
+	resp, err := s.etcd.Get(ctx, key)
+	if err != nil {
+		return "", err
+	}
+	if resp.Count == 0 {
+		return "", ErrNotFound
+	}
+	return string(resp.Kvs[0].Value), nil
+}
+
+// RecordDebVersion records installed debian package version
+func (s Storage) RecordDebVersion(ctx context.Context, lrn int, name string) error {
+	deb, err := neco.CurrentArtifacts.FindDebianPackage(name)
+	if err != nil {
+		return err
+	}
+	key := keyDeb(lrn, name)
+	_, err = s.etcd.Put(ctx, key, deb.Release)
+	return err
+}
+
+// GetDebVersion returns installed debian package version
+func (s Storage) GetDebVersion(ctx context.Context, lrn int, name string) (string, error) {
+	key := keyDeb(lrn, name)
+	resp, err := s.etcd.Get(ctx, key)
+	if err != nil {
+		return "", err
+	}
+	if resp.Count == 0 {
+		return "", ErrNotFound
+	}
+	return string(resp.Kvs[0].Value), nil
 }
 
 // PutRequest stores UpdateRequest to storage
@@ -192,48 +218,4 @@ RETRY:
 	}
 
 	return nil
-}
-
-// PutNotificationConfig stores NotificationConfig to storage
-func (s Storage) PutNotificationConfig(ctx context.Context, n neco.NotificationConfig) error {
-	data, err := json.Marshal(n)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.etcd.Put(ctx, KeyNotification, string(data))
-	return err
-}
-
-// GetNotificationConfig returns NotificationConfig from storage
-// If not found, this returns ErrNotFound.
-func (s Storage) GetNotificationConfig(ctx context.Context) (*neco.NotificationConfig, error) {
-	resp, err := s.etcd.Get(ctx, KeyNotification)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.Count == 0 {
-		return nil, ErrNotFound
-	}
-
-	n := new(neco.NotificationConfig)
-	err = json.Unmarshal(resp.Kvs[0].Value, n)
-	if err != nil {
-		return nil, err
-	}
-
-	return n, nil
-}
-
-// PutVaultUnsealKey stores vault unseal key to storage
-func (s Storage) PutVaultUnsealKey(ctx context.Context, key string) error {
-	_, err := s.etcd.Put(ctx, KeyVaultUnsealKey, key)
-	return err
-}
-
-// PutVaultRootToken stores vault root token to storage
-func (s Storage) PutVaultRootToken(ctx context.Context, token string) error {
-	_, err := s.etcd.Put(ctx, KeyVaultRootToken, token)
-	return err
 }

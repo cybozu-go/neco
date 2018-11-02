@@ -9,7 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func testArtifactSet(t *testing.T) {
+func testBootservers(t *testing.T) {
 	t.Parallel()
 
 	etcd := newEtcdClient(t)
@@ -17,39 +17,89 @@ func testArtifactSet(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	bs, err := st.GetBootservers(ctx)
+	err := st.RegisterBootserver(ctx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(bs) != 0 {
-		t.Error(`len(bs) != 0`, bs)
+	err = st.RegisterBootserver(ctx, 2)
+	if err != nil {
+		t.Fatal(err)
 	}
-
-	err = st.DumpArtifactSet(ctx, 1)
+	err = st.RegisterBootserver(ctx, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = st.GetArtifactSet(ctx, 0)
+	lrns, err := st.GetBootservers(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(lrns, []int{0, 1, 2}) {
+		t.Error("unexpected lrns", lrns)
+	}
+}
+
+func testContainerTag(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	_, err := st.GetContainerTag(ctx, 0, "etcd")
 	if err != ErrNotFound {
-		t.Error("lrn 0 should not exist")
+		t.Error("unexpected error", err)
 	}
 
-	as, err := st.GetArtifactSet(ctx, 1)
+	err = st.RecordContainerTag(ctx, 0, "etcd")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !cmp.Equal(*as, neco.CurrentArtifacts) {
-		t.Error(`as != CurrentArtifacts, as=`, as)
-	}
-
-	bs, err = st.GetBootservers(ctx)
+	tag, err := st.GetContainerTag(ctx, 0, "etcd")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !cmp.Equal(bs, []int{1}) {
-		t.Error(`!cmp.Equal(bs, []int{1})`, bs)
+
+	img, err := neco.CurrentArtifacts.FindContainerImage("etcd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tag != img.Tag {
+		t.Error("unexpected tag", tag)
+	}
+}
+
+func testDebVersion(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	_, err := st.GetDebVersion(ctx, 1, "etcdpasswd")
+	if err != ErrNotFound {
+		t.Error("unexpected error", err)
+	}
+
+	err = st.RecordDebVersion(ctx, 1, "etcdpasswd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	release, err := st.GetDebVersion(ctx, 1, "etcdpasswd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	deb, err := neco.CurrentArtifacts.FindDebianPackage("etcdpasswd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if release != deb.Release {
+		t.Error("unexpected version", release)
 	}
 }
 
@@ -237,20 +287,27 @@ func testVault(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	err := st.PutVaultUnsealKey(ctx, "key")
+	_, err := st.GetVaultUnsealKey(ctx)
+	if err != ErrNotFound {
+		t.Error("unexpected error", err)
+	}
+
+	err = st.PutVaultUnsealKey(ctx, "key")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	resp, err := etcd.Get(ctx, KeyVaultUnsealKey)
+	resp, err := st.GetVaultUnsealKey(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.Count != 1 {
-		t.Fatal(`resp.Count != 1`, resp.Count)
-	}
-	if string(resp.Kvs[0].Value) != "key" {
+	if resp != "key" {
 		t.Error("wrong vault unseal key")
+	}
+
+	_, err = st.GetVaultRootToken(ctx)
+	if err != ErrNotFound {
+		t.Error("unexpected error", err)
 	}
 
 	err = st.PutVaultRootToken(ctx, "root")
@@ -258,23 +315,66 @@ func testVault(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resp, err = etcd.Get(ctx, KeyVaultRootToken)
+	resp, err = st.GetVaultRootToken(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.Count != 1 {
-		t.Fatal(`resp.Count != 1`, resp.Count)
-	}
-	if string(resp.Kvs[0].Value) != "root" {
+	if resp != "root" {
 		t.Error("wrong vault root token")
+	}
+
+	err = st.DeleteVaultRootToken(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = st.GetVaultRootToken(ctx)
+	if err != ErrNotFound {
+		t.Error("unexpected error", err)
+	}
+}
+
+func testFinish(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	lrns, err := st.GetFinished(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(lrns) != 0 {
+		t.Error("lrns should be empty", lrns)
+	}
+
+	err = st.Finish(ctx, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = st.Finish(ctx, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	lrns, err = st.GetFinished(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(lrns, []int{0, 1}) {
+		t.Error("unexpected lrns", lrns)
 	}
 }
 
 func TestStorage(t *testing.T) {
-	t.Run("ArtifactSet", testArtifactSet)
+	t.Run("Bootservers", testBootservers)
+	t.Run("ContainerTag", testContainerTag)
+	t.Run("DebVersion", testDebVersion)
 	t.Run("Request", testRequest)
 	t.Run("Status", testStatus)
 	t.Run("ClearStatus", testClearStatus)
 	t.Run("NotificationConfig", testNotificationConfig)
 	t.Run("Vault", testVault)
+	t.Run("Finish", testFinish)
 }

@@ -9,9 +9,21 @@ update process to `neco-worker`.
 ## `<prefix>/bootservers/<LRN>`
 
 This prefix is current available boot servers. Current available boot server is
-registered as a key `LRN`.
+registered as a key `LRN`.  The value is empty.
 
-The value is a serialized form of `artifacts.go`.
+## `<prefix>/install/<LRN>/containers/<CONTAINER>`
+
+Installed container image tag.
+
+For instance, installation information of `etcd` is stored in
+`<prefix>/containers/0/etcd` key.
+
+## `<prefix>/install/<LRN>/debs/<DEBIAN_PACKAGE>`
+
+Installed debian package version.
+
+For instance, installation information of `etcdpasswd` is stored in
+`<prefix>/debs/0/etcdpasswd` key.
 
 ## `<prefix>/current`
 
