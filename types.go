@@ -27,6 +27,16 @@ func (a ArtifactSet) FindContainerImage(name string) (ContainerImage, error) {
 	return ContainerImage{}, errors.New("no such container")
 }
 
+// FindDebianPackage finds a DebianPackage from name
+func (a ArtifactSet) FindDebianPackage(name string) (DebianPackage, error) {
+	for _, deb := range a.Debs {
+		if deb.Name == name {
+			return deb, nil
+		}
+	}
+	return DebianPackage{}, errors.New("no such package")
+}
+
 // ContainerImage represents a Docker container image.
 type ContainerImage struct {
 	// A unique name for this container image.

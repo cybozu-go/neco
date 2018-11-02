@@ -9,7 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func testArtifactSet(t *testing.T) {
+func testBootservers(t *testing.T) {
 	t.Parallel()
 
 	etcd := newEtcdClient(t)
@@ -17,39 +17,89 @@ func testArtifactSet(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	bs, err := st.GetBootservers(ctx)
+	err := st.RegisterBootserver(ctx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(bs) != 0 {
-		t.Error(`len(bs) != 0`, bs)
+	err = st.RegisterBootserver(ctx, 2)
+	if err != nil {
+		t.Fatal(err)
 	}
-
-	err = st.DumpArtifactSet(ctx, 1)
+	err = st.RegisterBootserver(ctx, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = st.GetArtifactSet(ctx, 0)
+	lrns, err := st.GetBootservers(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(lrns, []int{0, 1, 2}) {
+		t.Error("unexpected lrns", lrns)
+	}
+}
+
+func testContainerTag(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	_, err := st.GetContainerTag(ctx, 0, "etcd")
 	if err != ErrNotFound {
-		t.Error("lrn 0 should not exist")
+		t.Error("unexpected error", err)
 	}
 
-	as, err := st.GetArtifactSet(ctx, 1)
+	err = st.RecordContainerTag(ctx, 0, "etcd")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !cmp.Equal(*as, neco.CurrentArtifacts) {
-		t.Error(`as != CurrentArtifacts, as=`, as)
-	}
-
-	bs, err = st.GetBootservers(ctx)
+	tag, err := st.GetContainerTag(ctx, 0, "etcd")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !cmp.Equal(bs, []int{1}) {
-		t.Error(`!cmp.Equal(bs, []int{1})`, bs)
+
+	img, err := neco.CurrentArtifacts.FindContainerImage("etcd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tag != img.Tag {
+		t.Error("unexpected tag", tag)
+	}
+}
+
+func testDebVersion(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	_, err := st.GetDebVersion(ctx, 1, "etcdpasswd")
+	if err != ErrNotFound {
+		t.Error("unexpected error", err)
+	}
+
+	err = st.RecordDebVersion(ctx, 1, "etcdpasswd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	release, err := st.GetDebVersion(ctx, 1, "etcdpasswd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	deb, err := neco.CurrentArtifacts.FindDebianPackage("etcdpasswd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if release != deb.Release {
+		t.Error("unexpected version", release)
 	}
 }
 
@@ -318,7 +368,9 @@ func testFinish(t *testing.T) {
 }
 
 func TestStorage(t *testing.T) {
-	t.Run("ArtifactSet", testArtifactSet)
+	t.Run("Bootservers", testBootservers)
+	t.Run("ContainerTag", testContainerTag)
+	t.Run("DebVersion", testDebVersion)
 	t.Run("Request", testRequest)
 	t.Run("Status", testStatus)
 	t.Run("ClearStatus", testClearStatus)
