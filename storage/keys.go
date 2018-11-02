@@ -7,16 +7,19 @@ import (
 
 // etcd keys
 const (
-	KeyLeader            = "leader/"
-	KeyBootserversPrefix = "bootservers/"
-	KeyCurrent           = "current"
-	KeyStatusPrefix      = "status/"
-	KeyNotification      = "notification"
-	KeyVaultUnsealKey    = "vault-unseal-key"
-	KeyVaultRootToken    = "vault-root-token"
-	KeyFinishPrefix      = "finish/"
-	KeyContainersFormat  = "install/%d/containers/%s"
-	KeyDebsFormat        = "install/%d/debs/%s"
+	KeyLeader              = "leader/"
+	KeyBootserversPrefix   = "bootservers/"
+	KeyCurrent             = "current"
+	KeyStatusPrefix        = "status/"
+	KeyNotificationSlack   = "config/notification/slack"
+	KeyProxy               = "config/proxy"
+	KeyCheckUpdateInterval = "config/check-update-interval"
+	KeyWorkerTimeout       = "config/worker-timeout"
+	KeyVaultUnsealKey      = "vault-unseal-key"
+	KeyVaultRootToken      = "vault-root-token"
+	KeyFinishPrefix        = "finish/"
+	KeyContainersFormat    = "install/%d/containers/%s"
+	KeyDebsFormat          = "install/%d/debs/%s"
 )
 
 func keyBootServer(lrn int) string {

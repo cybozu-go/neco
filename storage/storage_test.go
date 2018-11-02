@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/neco"
@@ -251,7 +252,7 @@ func testClearStatus(t *testing.T) {
 	}
 }
 
-func testNotificationConfig(t *testing.T) {
+func testSlackNotification(t *testing.T) {
 	t.Parallel()
 
 	etcd := newEtcdClient(t)
@@ -259,23 +260,104 @@ func testNotificationConfig(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	_, err := st.GetNotificationConfig(ctx)
+	_, err := st.GetSlackNotification(ctx)
 	if err != ErrNotFound {
 		t.Error("notification config should not be found")
 	}
 
-	err = st.PutNotificationConfig(ctx, neco.NotificationConfig{Slack: "http://slack.com/aaa"})
+	err = st.PutSlackNotification(ctx, "http://slack.com/aaa")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	nc, err := st.GetNotificationConfig(ctx)
+	url, err := st.GetSlackNotification(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if nc.Slack != "http://slack.com/aaa" {
-		t.Error(`nc.Slack != "http://slack.com/aaa"`, nc.Slack)
+	if url != "http://slack.com/aaa" {
+		t.Error(`nc.Slack != "http://slack.com/aaa"`, url)
+	}
+}
+
+func testProxyConfig(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	_, err := st.GetProxyConfig(ctx)
+	if err != ErrNotFound {
+		t.Error("proxy config should not be found")
+	}
+
+	err = st.PutProxyConfig(ctx, "http://squid.example.com:3128")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	proxy, err := st.GetProxyConfig(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if proxy != "http://squid.example.com:3128" {
+		t.Error(`proxy != "http://squid.example.com:3128"`, proxy)
+	}
+}
+
+func testCheckUpdateIntervalConfig(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	_, err := st.GetCheckUpdateInterval(ctx)
+	if err != ErrNotFound {
+		t.Error("check-update-interval config should not be found")
+	}
+
+	err = st.PutCheckUpdateInterval(ctx, 10*time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	d, err := st.GetCheckUpdateInterval(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d != 10*time.Minute {
+		t.Error(`d != 10*time.Minute`, d)
+	}
+}
+
+func testWorkerTimeout(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	_, err := st.GetWorkerTimeout(ctx)
+	if err != ErrNotFound {
+		t.Error("worker-timeout config should not be found")
+	}
+
+	err = st.PutWorkerTimeout(ctx, 60*time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	d, err := st.GetWorkerTimeout(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d != 60*time.Minute {
+		t.Error(`d != 10*time.Minute`, d)
 	}
 }
 
@@ -320,6 +402,10 @@ func TestStorage(t *testing.T) {
 	t.Run("Request", testRequest)
 	t.Run("Status", testStatus)
 	t.Run("ClearStatus", testClearStatus)
-	t.Run("NotificationConfig", testNotificationConfig)
+	t.Run("SlackNotification", testSlackNotification)
+	t.Run("ProxyConfig", testProxyConfig)
+	t.Run("CheckUpdateIntervalConfig", testCheckUpdateIntervalConfig)
+	t.Run("WorkerTimeout", testWorkerTimeout)
+	t.Run("Vault", testVault)
 	t.Run("Finish", testFinish)
 }

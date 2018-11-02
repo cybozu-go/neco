@@ -2,39 +2,84 @@ package storage
 
 import (
 	"context"
-	"encoding/json"
-
-	"github.com/cybozu-go/neco"
+	"strconv"
+	"time"
 )
 
-// PutNotificationConfig stores NotificationConfig to storage
-func (s Storage) PutNotificationConfig(ctx context.Context, n neco.NotificationConfig) error {
-	data, err := json.Marshal(n)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.etcd.Put(ctx, KeyNotification, string(data))
+// PutSlackNotification stores SlackNotification to storage
+func (s Storage) PutSlackNotification(ctx context.Context, url string) error {
+	_, err := s.etcd.Put(ctx, KeyNotificationSlack, url)
 	return err
 }
 
-// GetNotificationConfig returns NotificationConfig from storage
+// GetSlackNotification returns SlackNotification from storage
 // If not found, this returns ErrNotFound.
-func (s Storage) GetNotificationConfig(ctx context.Context) (*neco.NotificationConfig, error) {
-	resp, err := s.etcd.Get(ctx, KeyNotification)
+func (s Storage) GetSlackNotification(ctx context.Context) (string, error) {
+	resp, err := s.etcd.Get(ctx, KeyNotificationSlack)
 	if err != nil {
-		return nil, err
+		return "", err
+	}
+	if resp.Count == 0 {
+		return "", ErrNotFound
+	}
+	return string(resp.Kvs[0].Value), nil
+}
+
+func (s Storage) PutProxyConfig(ctx context.Context, proxy string) error {
+	_, err := s.etcd.Put(ctx, KeyProxy, proxy)
+	return err
+}
+
+func (s Storage) GetProxyConfig(ctx context.Context) (string, error) {
+	resp, err := s.etcd.Get(ctx, KeyProxy)
+	if err != nil {
+		return "", err
 	}
 
 	if resp.Count == 0 {
-		return nil, ErrNotFound
+		return "", ErrNotFound
 	}
+	return string(resp.Kvs[0].Value), nil
+}
 
-	n := new(neco.NotificationConfig)
-	err = json.Unmarshal(resp.Kvs[0].Value, n)
+func (s Storage) PutCheckUpdateInterval(ctx context.Context, d time.Duration) error {
+	data := strconv.FormatInt(int64(d), 10)
+	_, err := s.etcd.Put(ctx, KeyCheckUpdateInterval, data)
+	return err
+}
+
+func (s Storage) GetCheckUpdateInterval(ctx context.Context) (time.Duration, error) {
+	resp, err := s.etcd.Get(ctx, KeyCheckUpdateInterval)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
+	if resp.Count == 0 {
+		return 0, ErrNotFound
+	}
+	i, err := strconv.ParseInt(string(resp.Kvs[0].Value), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return time.Duration(i), nil
+}
 
-	return n, nil
+func (s Storage) PutWorkerTimeout(ctx context.Context, d time.Duration) error {
+	data := strconv.FormatInt(int64(d), 10)
+	_, err := s.etcd.Put(ctx, KeyWorkerTimeout, data)
+	return err
+}
+
+func (s Storage) GetWorkerTimeout(ctx context.Context) (time.Duration, error) {
+	resp, err := s.etcd.Get(ctx, KeyWorkerTimeout)
+	if err != nil {
+		return 0, err
+	}
+	if resp.Count == 0 {
+		return 0, ErrNotFound
+	}
+	i, err := strconv.ParseInt(string(resp.Kvs[0].Value), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return time.Duration(i), nil
 }
