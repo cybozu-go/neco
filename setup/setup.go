@@ -79,7 +79,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 	}
 	vc.SetToken(rootToken)
 
-	err = reissueCerts(ctx, vc, mylrn, rootToken)
+	err = reissueCerts(ctx, vc, mylrn)
 	if err != nil {
 		return err
 	}

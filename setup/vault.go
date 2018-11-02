@@ -39,6 +39,9 @@ func dumpCertFiles(secret *api.Secret, caFile, certFile, keyFile string) error {
 	if err != nil {
 		return err
 	}
+	if caFile == "" {
+		return nil
+	}
 	return writeFile(caFile, secret.Data["issuing_ca"].(string))
 }
 
@@ -478,6 +481,55 @@ func waitVault(ctx context.Context, ec *clientv3.Client) (string, error) {
 	}
 }
 
-func reissueCerts(ctx context.Context, vc *api.Client, mylrn int, rootToken string) error {
-	return nil
+func reissueCerts(ctx context.Context, vc *api.Client, mylrn int) error {
+	myname, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+	myip := neco.BootNode0IP(mylrn)
+	log.Info("reissue: server cert", nil)
+
+	secret, err := vc.Logical().Write(neco.CAServer+"/issue/system", map[string]interface{}{
+		"common_name": myname,
+		"alt_names":   []string{"localhost"},
+		"ip_sans":     []string{"127.0.0.1", myip.String()},
+	})
+	if err != nil {
+		return err
+	}
+	err = dumpCertFiles(secret, "", neco.ServerCertFile, neco.ServerKeyFile)
+	if err != nil {
+		return err
+	}
+
+	log.Info("reissue: etcd peer cert", nil)
+
+	// peer certificate must have valid IP SANs for authentication.
+	// https://coreos.com/etcd/docs/3.3.1/op-guide/security.html#notes-for-tls-authentication
+	bip, err := bastionIP()
+	if err != nil {
+		return err
+	}
+	secret, err = vc.Logical().Write(neco.CAEtcdPeer+"/issue/system", map[string]interface{}{
+		"common_name":          myname,
+		"ip_sans":              []string{myip.String(), bip.String()},
+		"exclude_cn_from_sans": true,
+	})
+	if err != nil {
+		return err
+	}
+	err = dumpCertFiles(secret, "", neco.EtcdPeerCertFile, neco.EtcdPeerKeyFile)
+	if err != nil {
+		return err
+	}
+
+	log.Info("reissue: etcd client cert for Vault", nil)
+	secret, err = vc.Logical().Write(neco.CAEtcdClient+"/issue/system", map[string]interface{}{
+		"common_name":          "vault",
+		"exclude_cn_from_sans": true,
+	})
+	if err != nil {
+		return err
+	}
+	return dumpCertFiles(secret, "", neco.VaultCertFile, neco.VaultKeyFile)
 }
