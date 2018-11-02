@@ -101,6 +101,44 @@ func (s Storage) GetDebVersion(ctx context.Context, lrn int, name string) (strin
 	return string(resp.Kvs[0].Value), nil
 }
 
+// GetCurrentUpdate returns current update request and statues matching version with requests from storage.
+// It returns ErrNotFound if current is empty
+func (s Storage) GetCurrentUpdate(ctx context.Context) (*neco.UpdateRequest, map[int]neco.UpdateStatus, int64, error) {
+	resp, err := s.etcd.Get(ctx, KeyCurrent)
+	if err != nil {
+		return nil, nil, 0, err
+	}
+	if resp.Count == 0 {
+		return nil, nil, 0, ErrNotFound
+	}
+	req := new(neco.UpdateRequest)
+	err = json.Unmarshal(resp.Kvs[0].Value, req)
+	if err != nil {
+		return nil, nil, 0, err
+	}
+
+	rev := resp.Header.Revision
+
+	statuses := make(map[int]neco.UpdateStatus, resp.Count)
+	for _, lrn := range req.Servers {
+		resp, err := s.etcd.Get(ctx, keyStatus(lrn), clientv3.WithRev(rev))
+		if resp.Count == 0 {
+			continue
+		}
+
+		var s neco.UpdateStatus
+		err = json.Unmarshal(resp.Kvs[0].Value, &s)
+		if err != nil {
+			return nil, nil, 0, err
+		}
+		if s.Version != req.Version {
+			continue
+		}
+		statuses[lrn] = s
+	}
+	return req, statuses, rev, nil
+}
+
 // PutRequest stores UpdateRequest to storage
 // leaderKey is the current leader key.
 // If the caller has lost the leadership, this returns ErrNoLeader.
@@ -168,6 +206,27 @@ func (s Storage) PutStatus(ctx context.Context, lrn int, st neco.UpdateStatus) e
 // If not found, this returns ErrNotFound.
 func (s Storage) GetStatus(ctx context.Context, lrn int) (*neco.UpdateStatus, error) {
 	resp, err := s.etcd.Get(ctx, keyStatus(lrn))
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Count == 0 {
+		return nil, ErrNotFound
+	}
+
+	st := new(neco.UpdateStatus)
+	err = json.Unmarshal(resp.Kvs[0].Value, st)
+	if err != nil {
+		return nil, err
+	}
+
+	return st, nil
+}
+
+// GetStatusAt returns UpdateStatus of a bootserver from storage at revision
+// If not found, this returns ErrNotFound.
+func (s Storage) GetStatusAt(ctx context.Context, lrn int, rev int64) (*neco.UpdateStatus, error) {
+	resp, err := s.etcd.Get(ctx, keyStatus(lrn), clientv3.WithRev(rev))
 	if err != nil {
 		return nil, err
 	}
