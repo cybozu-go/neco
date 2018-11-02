@@ -2,13 +2,6 @@
 
 set -e
 
-fin() {
-    mkdir -p /root/host
-    mount -t 9p -o trans=virtio placemat /root/host/
-    cp /var/log/cloud-init* /root/host/
-}
-trap fin INT TERM HUP 0
-
 apt-get update
 apt-get install -y --no-install-recommends jq ca-certificates freeipmi-tools
 

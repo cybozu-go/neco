@@ -5,23 +5,6 @@ sleep 1
 PLACEMAT_PID=$(cat /tmp/placemat_pid$$)
 echo "placemat PID: $PLACEMAT_PID"
 
-fin() {
-    echo "-------------- boot-0: cloud-init.log"
-    cat /mnt/placemat/boot-0/cloud-init.log
-    echo "-------------- boot-0: cloud-init-output.log"
-    cat /mnt/placemat/boot-0/cloud-init-output.log
-    sudo kill $PLACEMAT_PID
-    echo "waiting for placemat to terminate..."
-    while true; do
-        if [ -d /proc/$PLACEMAT_PID ]; then
-            sleep 1
-            continue
-        fi
-        break
-    done
-}
-trap fin INT TERM HUP 0
-
 while true; do
     child_pid=$(pgrep -P $PLACEMAT_PID)
     operation_pid=$(pgrep -P ${child_pid} -f operation)

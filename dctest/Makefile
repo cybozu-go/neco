@@ -15,11 +15,15 @@ VM_SHARED_DIR = /mnt/placemat
 
 export BOOT0 BOOT1 BOOT2 PLACEMAT GINKGO
 
+CUSTOM_UBUNTU = cybozu-ubuntu-18.04-server-cloudimg-amd64.img
+CUSTOM_UBUNTU_API_URL = https://api.github.com/repos/cybozu/neco-ubuntu/releases/latest
+CUSTOM_UBUNTU_DISK_SIZE = 30G
+
 # non-configuration variables
 OUTPUT = ./output
 SABAKAN_DIR = $(OUTPUT)/sabakan
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
-SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config
+SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config $(SABAKAN_DIR)/neco
 
 SSH_PRIVKEY = ./dctest_key
 
@@ -44,6 +48,9 @@ $(DHCP_JSON):
 
 $(SABAKAN_DIR)/auto-config: auto-config $(DHCP_JSON)
 	cp $< $@
+
+$(SABAKAN_DIR)/neco:
+	cd ..; GOBIN=$(realpath $(SABAKAN_DIR)) go install -mod=vendor ./...
 
 # Targets
 test: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)

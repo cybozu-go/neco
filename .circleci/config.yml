@@ -12,9 +12,28 @@ jobs:
     - run: go build -mod=vendor ./...
     - run: go test -mod=vendor -race -v ./...
     - run: go vet -mod=vendor ./...
+  dctest:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - run:
+          name: Store Service Account
+          command: |
+            echo $GCLOUD_SERVICE_ACCOUNT > account.json
+            gcloud auth activate-service-account --key-file=account.json
+      - run:
+          name: Watch console on boot-0
+          command: |
+            ./bin/watch_boot0
+          background: true
+      - run:
+          command: |
+            ./bin/run-dctest.sh
 
 workflows:
   version: 2
   main:
     jobs:
       - build
+      - dctest
