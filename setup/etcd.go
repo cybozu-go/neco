@@ -41,6 +41,7 @@ func waitEtcd(ctx context.Context) (*clientv3.Client, error) {
 
 	// Vault requires cluster version >= 3.1.0, but etcd starts with
 	// cluster version 3.0.0, then gradually updates the version.
+	// See https://github.com/etcd-io/etcd/issues/10038
 	//
 	// To avoid vault failure, we need to wait.
 	resp, err := client.Status(ctx, "127.0.0.1:2379")
