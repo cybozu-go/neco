@@ -3,9 +3,12 @@ package setup
 import (
 	"context"
 	"sort"
+	"time"
 
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
+	"github.com/cybozu-go/well"
 	"github.com/hashicorp/vault/api"
 )
 
@@ -89,10 +92,78 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		return err
 	}
 
+	err = setupNecoFiles(ctx, vc, lrns)
+	if err != nil {
+		return err
+	}
+
 	err = st.Finish(ctx, mylrn)
 	if err != nil {
 		return err
 	}
+
+	for {
+		log.Info("waiting for all servers to finish", nil)
+		finished, err := st.GetFinished(ctx)
+		if err != nil {
+			return err
+		}
+		if len(finished) == len(lrns) {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(500 * time.Millisecond):
+		}
+	}
+
+	log.Info("restart etcd and Vault", nil)
+
+	// this sleep is a must to avoid failure in the above st.GetFinished
+	time.Sleep(1 * time.Second)
+
+	err = neco.RestartService(ctx, "etcd-container")
+	if err != nil {
+		return err
+	}
+
+	ec.Close()
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(1 * time.Second):
+		}
+
+		ec, err = waitEtcd(ctx)
+		if err == nil {
+			break
+		}
+	}
+
+	err = neco.RestartService(ctx, "vault")
+	if err != nil {
+		return err
+	}
+	time.Sleep(1 * time.Second)
+
+	if isLeader {
+		if revoke {
+			err = revokeRootToken(ctx, vc, ec)
+			if err != nil {
+				return err
+			}
+		}
+		err = enableEtcdAuth(ctx, ec)
+		if err != nil {
+			return err
+		}
+	}
+
+	well.CommandContext(ctx, "sync").Run()
+
+	log.Info("setup: completed", nil)
 
 	return nil
 }

@@ -232,8 +232,16 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 	}
 
 	tmpCtx, cancel := context.WithCancel(ctx)
+	cmd := exec.CommandContext(tmpCtx, vaultPath, "server", "-dev",
+		"-dev-listen-address=0.0.0.0:8200", "-dev-root-token-id=cybozu")
+	err = cmd.Start()
+	if err != nil {
+		cancel()
+		return nil, err
+	}
 	defer func() {
 		cancel()
+		cmd.Wait()
 
 		home := os.Getenv("HOME")
 		if home == "" {
@@ -241,13 +249,6 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 		}
 		os.Remove(filepath.Join(home, ".vault-token"))
 	}()
-
-	cmd := exec.CommandContext(tmpCtx, vaultPath, "server", "-dev",
-		"-dev-listen-address=0.0.0.0:8200", "-dev-root-token-id=cybozu")
-	err = cmd.Start()
-	if err != nil {
-		return nil, err
-	}
 
 	time.Sleep(1 * time.Second)
 
@@ -532,4 +533,12 @@ func reissueCerts(ctx context.Context, vc *api.Client, mylrn int) error {
 		return err
 	}
 	return dumpCertFiles(secret, "", neco.VaultCertFile, neco.VaultKeyFile)
+}
+
+func revokeRootToken(ctx context.Context, vc *api.Client, ec *clientv3.Client) error {
+	err := vc.Auth().Token().RevokeSelf("")
+	if err != nil {
+		return err
+	}
+	return storage.NewStorage(ec).DeleteVaultRootToken(ctx)
 }

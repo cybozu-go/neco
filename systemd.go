@@ -25,6 +25,11 @@ func StartService(ctx context.Context, name string) error {
 	return startUnit(ctx, name, "service")
 }
 
+// RestartService restarts the service simply.
+func RestartService(ctx context.Context, name string) error {
+	return well.CommandContext(ctx, "systemctl", "restart", name+".service").Run()
+}
+
 // StartTimer does following:
 // 1. systemctl daemon-reload
 // 2. systemctl enable NAME.timer

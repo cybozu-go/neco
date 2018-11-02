@@ -12,7 +12,6 @@ import (
 )
 
 func testCreateCA(t *testing.T) {
-
 	ctx := context.Background()
 	cfg := api.DefaultConfig()
 	cfg.Address = "http://127.0.0.1:8200"
@@ -23,14 +22,18 @@ func testCreateCA(t *testing.T) {
 	vault.SetToken("cybozu")
 
 	tmpCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
 
 	cmd := exec.CommandContext(tmpCtx, vaultPath, "server", "-dev",
 		"-dev-listen-address=0.0.0.0:8200", "-dev-root-token-id=cybozu")
 	err = cmd.Start()
 	if err != nil {
+		cancel()
 		t.Fatal(err)
 	}
+	defer func() {
+		cancel()
+		cmd.Wait()
+	}()
 
 	time.Sleep(1 * time.Second)
 

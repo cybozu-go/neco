@@ -13,6 +13,9 @@ const VaultDir = "/etc/vault"
 
 const systemdDir = "/etc/systemd/system"
 
+// NecoPrefix is the default prefix for etcd keys used by Neco.
+const NecoPrefix = "/neco/"
+
 // Etcd params
 const (
 	EtcdUID       = 10000
@@ -32,6 +35,7 @@ const (
 	TTL100Year   = "876000h"
 	TTL10Year    = "87600h"
 	VaultService = "vault"
+	VaultPrefix  = "/vault/"
 )
 
 // File locations
@@ -56,4 +60,8 @@ var (
 	VaultKeyFile  = filepath.Join(VaultDir, "etcd.key")
 	VaultConfFile = filepath.Join(VaultDir, "config.hcl")
 	VaultUnseal   = "/usr/local/bin/vault-unseal"
+
+	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
+	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
+	NecoConfFile = filepath.Join(NecoDir, "config.yml")
 )
