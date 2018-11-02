@@ -22,6 +22,7 @@ CUSTOM_UBUNTU_DISK_SIZE = 30G
 # non-configuration variables
 OUTPUT = ./output
 SABAKAN_DIR = $(OUTPUT)/sabakan
+OPERATION_SSH_DIR = $(OUTPUT)/operation-ssh
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
 SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config $(SABAKAN_DIR)/neco
 
