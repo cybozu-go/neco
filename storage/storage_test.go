@@ -252,6 +252,33 @@ func testClearStatus(t *testing.T) {
 	}
 }
 
+func testEnvConfig(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	_, err := st.GetEnvConfig(ctx)
+	if err != ErrNotFound {
+		t.Error("env config should not be found")
+	}
+
+	err = st.PutEnvConfig(ctx, "http://squid.example.com:3128")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	proxy, err := st.GetEnvConfig(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if proxy != "http://squid.example.com:3128" {
+		t.Error(`proxy != "http://squid.example.com:3128"`, proxy)
+	}
+}
+
 func testSlackNotification(t *testing.T) {
 	t.Parallel()
 
@@ -408,6 +435,7 @@ func TestStorage(t *testing.T) {
 	t.Run("Request", testRequest)
 	t.Run("Status", testStatus)
 	t.Run("ClearStatus", testClearStatus)
+	t.Run("EnvConfig", testEnvConfig)
 	t.Run("SlackNotification", testSlackNotification)
 	t.Run("ProxyConfig", testProxyConfig)
 	t.Run("CheckUpdateIntervalConfig", testCheckUpdateIntervalConfig)

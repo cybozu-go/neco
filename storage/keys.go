@@ -13,6 +13,7 @@ const (
 	KeyStatusPrefix        = "status/"
 	KeyNotificationSlack   = "config/notification/slack"
 	KeyProxy               = "config/proxy"
+	KeyEnv                 = "config/env"
 	KeyCheckUpdateInterval = "config/check-update-interval"
 	KeyWorkerTimeout       = "config/worker-timeout"
 	KeyVaultUnsealKey      = "vault-unseal-key"

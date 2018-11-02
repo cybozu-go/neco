@@ -8,6 +8,25 @@ import (
 	"github.com/cybozu-go/neco"
 )
 
+// PutEnvConfig stores proxy config to storage.
+func (s Storage) PutEnvConfig(ctx context.Context, env string) error {
+	_, err := s.etcd.Put(ctx, KeyEnv, env)
+	return err
+}
+
+// GetEnvConfig returns proxy config from storage.
+func (s Storage) GetEnvConfig(ctx context.Context) (string, error) {
+	resp, err := s.etcd.Get(ctx, KeyEnv)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.Count == 0 {
+		return "", ErrNotFound
+	}
+	return string(resp.Kvs[0].Value), nil
+}
+
 // PutSlackNotification stores SlackNotification to storage
 func (s Storage) PutSlackNotification(ctx context.Context, url string) error {
 	_, err := s.etcd.Put(ctx, KeyNotificationSlack, url)
