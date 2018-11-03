@@ -52,7 +52,7 @@ ExecStart=/usr/bin/rkt run \
     --readonly-rootfs=true \
   -- \
     server -config={{ .ConfFile }}
-ExecStartPost={{ .UnsealScript }}
+ExecStartPost={{ .NecoBin }} vault unseal
 
 [Install]
 WantedBy=multi-user.target

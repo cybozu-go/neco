@@ -2,7 +2,6 @@ package setup
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -295,11 +294,6 @@ func setupVault(ctx context.Context, mylrn int, lrns []int) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(neco.VaultUnseal, []byte(vault.UnsealScript()), 0755)
-	if err != nil {
-		return err
-	}
-
 	g, err := os.OpenFile(neco.ServiceFile(neco.VaultService), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -324,17 +318,6 @@ func setupVault(ctx context.Context, mylrn int, lrns []int) error {
 	return nil
 }
 
-func unsealVault(vault *api.Client, unsealKey string) error {
-	st, err := vault.Sys().Unseal(unsealKey)
-	if err != nil {
-		return err
-	}
-	if st.Sealed {
-		return errors.New("failed to unseal vault")
-	}
-	return nil
-}
-
 func bootVault(ctx context.Context, pems []*api.Secret, ec *clientv3.Client) (*api.Client, error) {
 	cfg := api.DefaultConfig()
 	client, err := api.NewClient(cfg)
@@ -354,7 +337,7 @@ func bootVault(ctx context.Context, pems []*api.Secret, ec *clientv3.Client) (*a
 	rootToken := resp.RootToken
 	client.SetToken(rootToken)
 
-	err = unsealVault(client, unsealKey)
+	err = vault.Unseal(client, unsealKey)
 	if err != nil {
 		return nil, err
 	}

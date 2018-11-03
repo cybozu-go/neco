@@ -70,13 +70,21 @@ Synopsis
 
     Removes the current update status from etcd to resolve the update failure.
 
-* `neco vault get-unseal-key`
+* `neco vault unseal`
 
-    Get initial vault unseal key.
+    Unseal the local vault server using the initial unseal key stored in etcd.
+
+* `neco vault show-unseal-key`
+
+    Show the initial vault unseal key if not removed.
 
 * `neco vault remove-unseal-key`
 
-    Remove initial vault unseal key from etcd.
+    Remove the initial vault unseal key from etcd.
+
+* `neco vault show-root-token`
+
+    Show the initial root token, if not revoked during `neco setup`.
 
 Use case
 --------

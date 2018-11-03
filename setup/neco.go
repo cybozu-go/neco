@@ -56,11 +56,6 @@ func setupNecoFiles(ctx context.Context, vc *api.Client, lrns []int) error {
 		return err
 	}
 
-	err = installNecoBin()
-	if err != nil {
-		return err
-	}
-
 	log.Info("neco: generated files", nil)
 
 	return nil

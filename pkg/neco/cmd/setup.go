@@ -6,10 +6,8 @@ import (
 	"strconv"
 
 	"github.com/cybozu-go/log"
-
 	"github.com/cybozu-go/neco/setup"
 	"github.com/cybozu-go/well"
-
 	"github.com/spf13/cobra"
 )
 

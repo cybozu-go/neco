@@ -59,7 +59,6 @@ var (
 	VaultCertFile = filepath.Join(VaultDir, "etcd.crt")
 	VaultKeyFile  = filepath.Join(VaultDir, "etcd.key")
 	VaultConfFile = filepath.Join(VaultDir, "config.hcl")
-	VaultUnseal   = "/usr/local/bin/vault-unseal"
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")

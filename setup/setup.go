@@ -7,6 +7,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/vault"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
 	"github.com/hashicorp/vault/api"
@@ -32,6 +33,11 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 	}
 
 	isLeader := mylrn == lrns[0]
+
+	err = installNecoBin()
+	if err != nil {
+		return err
+	}
 
 	pems, err := prepareCA(ctx, isLeader, mylrn, lrns)
 	if err != nil {
@@ -69,7 +75,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		if err != nil {
 			return err
 		}
-		err = unsealVault(vc, unsealKey)
+		err = vault.Unseal(vc, unsealKey)
 		if err != nil {
 			return err
 		}
