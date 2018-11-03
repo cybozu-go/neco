@@ -1,0 +1,15 @@
+Host *
+User cybozu
+IdentityFile dctest_key
+StrictHostKeyChecking no
+UserKnownHostsFile /dev/null
+LogLevel ERROR
+
+Host boot-0
+HostName 10.72.48.0
+
+Host boot-1
+HostName 10.72.48.1
+
+Host boot-2
+HostName 10.72.48.2
