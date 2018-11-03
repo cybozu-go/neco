@@ -64,9 +64,7 @@ func waitEtcd(ctx context.Context) (*clientv3.Client, error) {
 }
 
 func setupEtcd(ctx context.Context, mylrn int, lrns []int) (*clientv3.Client, error) {
-	err := neco.RunContainer(ctx, "etcd",
-		[]neco.Bind{{Name: "host", Source: "/usr/local/bin", Dest: "/host"}},
-		[]string{"--user=0", "--group=0", "--exec=/usr/local/etcd/install-tools"})
+	err := etcd.InstallTools(ctx)
 	if err != nil {
 		return nil, err
 	}

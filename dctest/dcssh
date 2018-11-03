@@ -16,6 +16,8 @@ def operation_pod_uuid() ->str:
                        stdout=subprocess.PIPE)
     j = json.loads(p.stdout.decode('utf-8'))
     for pod in j:
+        if pod["state"] != "running":
+            continue
         app = pod["apps"][0]
         if app["name"] != "ubuntu":
             continue

@@ -30,6 +30,11 @@ func RestartService(ctx context.Context, name string) error {
 	return well.CommandContext(ctx, "systemctl", "restart", name+".service").Run()
 }
 
+// StopService stops the service.
+func StopService(ctx context.Context, name string) error {
+	return well.CommandContext(ctx, "systemctl", "stop", name+".service").Run()
+}
+
 // StartTimer does following:
 // 1. systemctl daemon-reload
 // 2. systemctl enable NAME.timer
@@ -48,4 +53,9 @@ func startUnit(ctx context.Context, name, unit string) error {
 		return err
 	}
 	return well.CommandContext(ctx, "systemctl", "start", name+"."+unit).Run()
+}
+
+// StopTimer stops the timer.
+func StopTimer(ctx context.Context, name string) error {
+	return well.CommandContext(ctx, "systemctl", "stop", name+".timer").Run()
 }

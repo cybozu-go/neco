@@ -64,4 +64,5 @@ var (
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
 	NecoConfFile = filepath.Join(NecoDir, "config.yml")
+	NecoBin      = "/usr/bin/neco"
 )

@@ -47,8 +47,8 @@ func dumpCertFiles(secret *api.Secret, caFile, certFile, keyFile string) error {
 
 func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
 	for {
-		_, err := vault.Logical().Read("secret/bootstrap")
-		if err == nil {
+		secret, err := vault.Logical().Read("secret/bootstrap")
+		if err == nil && secret != nil && len(secret.Data) > 0 {
 			break
 		}
 		select {
@@ -58,7 +58,7 @@ func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
 		}
 	}
 
-	log.Info("prepare: begin", nil)
+	log.Info("prepare: setup local certs", nil)
 
 	myname, err := os.Hostname()
 	if err != nil {
@@ -66,10 +66,15 @@ func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
 	}
 	myip := neco.BootNode0IP(lrn)
 
+	bip, err := bastionIP()
+	if err != nil {
+		return err
+	}
+
 	secret, err := vault.Logical().Write(neco.CAServer+"/issue/system", map[string]interface{}{
 		"common_name": myname,
 		"alt_names":   "localhost",
-		"ip_sans":     []string{"127.0.0.1", myip.String()},
+		"ip_sans":     []string{"127.0.0.1", myip.String(), bip.String()},
 	})
 	if err != nil {
 		return err
@@ -80,11 +85,6 @@ func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
 	}
 
 	err = well.CommandContext(ctx, "update-ca-certificates").Run()
-	if err != nil {
-		return err
-	}
-
-	bip, err := bastionIP()
 	if err != nil {
 		return err
 	}
@@ -212,23 +212,21 @@ func createCA(ctx context.Context, vault *api.Client, mylrn int) ([]*api.Secret,
 }
 
 func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*api.Secret, error) {
-	err := neco.RunContainer(ctx, "vault",
-		[]neco.Bind{{Name: "host", Source: "/usr/local/bin", Dest: "/host"}},
-		[]string{"--user=0", "--group=0", "--exec=/usr/local/vault/install-tools"})
+	err := vault.InstallTools(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	cfg := api.DefaultConfig()
 	cfg.Address = fmt.Sprintf("http://%s:8200", neco.BootNode0IP(lrns[0]).String())
-	vault, err := api.NewClient(cfg)
+	vc, err := api.NewClient(cfg)
 	if err != nil {
 		return nil, err
 	}
-	vault.SetToken("cybozu")
+	vc.SetToken("cybozu")
 
 	if !isLeader {
-		return nil, setupLocalCerts(ctx, vault, mylrn)
+		return nil, setupLocalCerts(ctx, vc, mylrn)
 	}
 
 	tmpCtx, cancel := context.WithCancel(ctx)
@@ -252,12 +250,13 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 
 	time.Sleep(1 * time.Second)
 
-	pems, err := createCA(ctx, vault, mylrn)
+	log.Info("prepare: create CA", nil)
+	pems, err := createCA(ctx, vc, mylrn)
 	if err != nil {
 		return nil, err
 	}
 
-	err = setupLocalCerts(ctx, vault, mylrn)
+	err = setupLocalCerts(ctx, vc, mylrn)
 	if err != nil {
 		return nil, err
 	}
@@ -265,8 +264,8 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 	log.Info("prepare: sync", nil)
 	for _, lrn := range lrns {
 		for {
-			secret, _ := vault.Logical().Read(fmt.Sprintf("secret/bootstrap_done/%d", lrn))
-			if secret != nil {
+			secret, err := vc.Logical().Read(fmt.Sprintf("secret/bootstrap_done/%d", lrn))
+			if err == nil && secret != nil && len(secret.Data) > 0 {
 				break
 			}
 			select {
@@ -492,7 +491,7 @@ func reissueCerts(ctx context.Context, vc *api.Client, mylrn int) error {
 
 	secret, err := vc.Logical().Write(neco.CAServer+"/issue/system", map[string]interface{}{
 		"common_name": myname,
-		"alt_names":   []string{"localhost"},
+		"alt_names":   "localhost",
 		"ip_sans":     []string{"127.0.0.1", myip.String()},
 	})
 	if err != nil {

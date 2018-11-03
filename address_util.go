@@ -19,7 +19,7 @@ func BootNode0IP(lrn int) net.IP {
 func EtcdEndpoints(lrns []int) []string {
 	l := make([]string, len(lrns))
 	for i, lrn := range lrns {
-		l[i] = fmt.Sprintf("%s:2379", BootNode0IP(lrn).String())
+		l[i] = fmt.Sprintf("https://%s:2379", BootNode0IP(lrn).String())
 	}
 	return l
 }

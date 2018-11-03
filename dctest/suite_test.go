@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cybozu-go/log"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -30,6 +31,8 @@ var _ = BeforeSuite(func() {
 	for h := range sshClients {
 		execSafeAt(h, "sync")
 	}
+
+	log.DefaultLogger().SetOutput(GinkgoWriter)
 
 	// waiting for auto-config
 	fmt.Println("waiting for auto-config has completed")
