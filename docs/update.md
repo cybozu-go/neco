@@ -47,7 +47,9 @@ Implementation of update process
 
 `neco-updater` services is responsible to check if a new neco version exists,
 control workers, and notify the results of the update.  `neco-updater` does
-leader election and only one process works.
+leader election and only one process works.  The newer version is identified
+by comparing tag name formatted in `[prefix-]X.Y.Z`, where `prefix-` is optional
+and it is ignored on comparison.
 
 `neco-worker` service responsible to do installing and updating application on
 each nodes.  The detailed update process follows below steps:
