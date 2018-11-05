@@ -10,9 +10,11 @@ import (
 	"github.com/cybozu-go/well"
 )
 
+var packageName = "neco"
+
 // InstalledNecoVersion get installed neco version
 func InstalledNecoVersion(ctx context.Context) (string, error) {
-	cmd := well.CommandContext(ctx, "dpkg", "--status", "neco")
+	cmd := well.CommandContext(ctx, "dpkg", "--status", packageName)
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
