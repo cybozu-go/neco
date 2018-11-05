@@ -10,10 +10,6 @@ Usage
 $ neco-worker [OPTIONS]
 ```
 
-Option     | Default value          | Description
-------     | -------------          | -----------
-`--config` | `/etc/neco/config.yml` | Configuration file path.
-
 Bootstrapping
 -------------
 
