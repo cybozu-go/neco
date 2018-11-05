@@ -14,5 +14,5 @@ func TestInstalledNecoVersion(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log("Version =", ver)
+	t.Logf("Version = `%s'", ver)
 }

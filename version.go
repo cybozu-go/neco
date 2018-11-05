@@ -23,7 +23,7 @@ func InstalledNecoVersion(ctx context.Context) (string, error) {
 	for s.Scan() {
 		line := s.Text()
 		if strings.HasPrefix(line, "Version:") {
-			return strings.TrimPrefix(line, "Version:"), nil
+			return strings.TrimSpace(strings.TrimPrefix(line, "Version:")), nil
 
 		}
 	}
