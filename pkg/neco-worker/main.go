@@ -5,7 +5,6 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/neco/worker"
 	"github.com/cybozu-go/well"
 )
@@ -20,8 +19,10 @@ func main() {
 	}
 	defer ec.Close()
 
-	st := storage.NewStorage(ec)
-	server := worker.NewServer(ec, st)
+	server, err := worker.NewServer(ec)
+	if err != nil {
+		log.ErrorExit(err)
+	}
 
 	well.Go(server.Run)
 	well.Stop()

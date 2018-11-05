@@ -9,8 +9,9 @@ import (
 const (
 	KeyLeader              = "leader/"
 	KeyBootserversPrefix   = "bootservers/"
-	KeyCurrent             = "current"
 	KeyStatusPrefix        = "status/"
+	KeyCurrent             = "status/current"
+	KeyWorkerStatusPrefix  = "status/bootservers/"
 	KeyNotificationSlack   = "config/notification/slack"
 	KeyProxy               = "config/proxy"
 	KeyEnv                 = "config/env"

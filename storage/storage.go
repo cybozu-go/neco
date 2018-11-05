@@ -185,26 +185,37 @@ func (s Storage) GetStatus(ctx context.Context, lrn int) (*neco.UpdateStatus, er
 	return st, nil
 }
 
-// GetStatusesWithRev returns UpdateStatus of all bootservers from storage with Revision
-// If not found, this returns empty slice.
-func (s Storage) GetStatusesWithRev(ctx context.Context) ([]*neco.UpdateStatus, int64, error) {
-	resp, err := s.etcd.Get(ctx, KeyStatusPrefix, clientv3.WithPrefix())
+// GetStatuses returns UpdateStatus of given bootservers.
+func (s Storage) GetStatuses(ctx context.Context, lrns []int) (map[int]*neco.UpdateStatus, error) {
+	resp, err := s.etcd.Get(ctx, KeyWorkerStatusPrefix, clientv3.WithPrefix())
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	sts := make([]*neco.UpdateStatus, resp.Count)
-	for i, kv := range resp.Kvs {
-		err = json.Unmarshal(kv.Value, sts[i])
+	if resp.Count == 0 {
+		return nil, nil
+	}
+
+	stMap := make(map[int]*neco.UpdateStatus)
+	for _, kv := range resp.Kvs {
+		lrn, err := strconv.Atoi(string(kv.Key[len(KeyWorkerStatusPrefix):]))
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
+
+		u := new(neco.UpdateStatus)
+		err = json.Unmarshal(kv.Value, u)
+		if err != nil {
+			return nil, err
+		}
+
+		stMap[lrn] = u
 	}
 
-	return sts, resp.Header.Revision, nil
+	return stMap, nil
 }
 
-// ClearStatus removes KeyCurrent and KeyStatusPrefix/* from storage.
+// ClearStatus removes KeyStatusPrefix/* from storage.
 //
 // It first checks that "stop" field in KeyCurrent is true.  If not,
 // ErrNotStopped will be returned.
@@ -224,7 +235,6 @@ RETRY:
 	resp, err := s.etcd.Txn(ctx).
 		If(clientv3.Compare(clientv3.ModRevision(KeyCurrent), "=", rev)).
 		Then(
-			clientv3.OpDelete(KeyCurrent),
 			clientv3.OpDelete(KeyStatusPrefix, clientv3.WithPrefix()),
 		).
 		Commit()
