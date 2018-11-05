@@ -49,7 +49,12 @@ func main() {
 		log.ErrorExit(err)
 	}
 
-	etcd, err := etcdutil.NewClient(cfg)
+	timeout, err := time.ParseDuration(cfg.Timeout)
+	if err != nil {
+		log.ErrorExit(err)
+	}
+
+	etcd, err := neco.EtcdClient()
 	if err != nil {
 		log.ErrorExit(err)
 	}
@@ -61,7 +66,7 @@ func main() {
 	}
 
 	st := storage.NewStorage(etcd)
-	server := updater.NewServer(session, st)
+	server := updater.NewServer(session, st, timeout)
 
 	well.Go(server.Run)
 	well.Stop()

@@ -24,14 +24,16 @@ type Server struct {
 	session *concurrency.Session
 	github  releaseInterface
 	storage storage.Storage
+	timeout time.Duration
 }
 
 // NewServer returns a Server
-func NewServer(session *concurrency.Session, storage storage.Storage) Server {
+func NewServer(session *concurrency.Session, storage storage.Storage, timeout time.Duration) Server {
 	return Server{
 		session: session,
 		github:  releaseClient{"cybozu-go", "neco"},
 		storage: storage,
+		timeout: timeout,
 	}
 }
 
@@ -45,6 +47,7 @@ func (s Server) Run(ctx context.Context) error {
 
 	e := concurrency.NewElection(s.session, storage.KeyLeader)
 
+RETRY:
 	select {
 	case <-s.session.Done():
 		return errors.New("session has been orphaned")
@@ -55,14 +58,28 @@ func (s Server) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer e.Resign(ctx)
-
 	leaderKey := e.Key()
 
 	log.Info("I am the leader", map[string]interface{}{
 		"session": s.session.Lease(),
 	})
 
+	s.runLoop(ctx, leaderKey)
+
+	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), s.timeout)
+	defer cancel()
+	err2 := e.Resign(ctxWithTimeout)
+	if err2 != nil {
+		return err2
+	}
+	if err == storage.ErrNoLeader {
+		log.Warn("lost the leadership", nil)
+		goto RETRY
+	}
+	return err
+}
+
+func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 	var target string
 	req, err := s.storage.GetRequest(ctx)
 	if err != nil && err != storage.ErrNotFound {
@@ -120,7 +137,6 @@ func (s Server) Run(ctx context.Context) error {
 			target = ""
 		}
 	}
-
 }
 
 // checkUpdateNewVersion checks if newer version exits compare with installed version
