@@ -101,44 +101,6 @@ func (s Storage) GetDebVersion(ctx context.Context, lrn int, name string) (strin
 	return string(resp.Kvs[0].Value), nil
 }
 
-// GetCurrentUpdate returns current update request and statues matching version with requests from storage.
-// It returns ErrNotFound if current is empty
-func (s Storage) GetCurrentUpdate(ctx context.Context) (*neco.UpdateRequest, map[int]neco.UpdateStatus, int64, error) {
-	resp, err := s.etcd.Get(ctx, KeyCurrent)
-	if err != nil {
-		return nil, nil, 0, err
-	}
-	if resp.Count == 0 {
-		return nil, nil, 0, ErrNotFound
-	}
-	req := new(neco.UpdateRequest)
-	err = json.Unmarshal(resp.Kvs[0].Value, req)
-	if err != nil {
-		return nil, nil, 0, err
-	}
-
-	rev := resp.Header.Revision
-
-	statuses := make(map[int]neco.UpdateStatus, resp.Count)
-	for _, lrn := range req.Servers {
-		resp, err := s.etcd.Get(ctx, keyStatus(lrn), clientv3.WithRev(rev))
-		if resp.Count == 0 {
-			continue
-		}
-
-		var s neco.UpdateStatus
-		err = json.Unmarshal(resp.Kvs[0].Value, &s)
-		if err != nil {
-			return nil, nil, 0, err
-		}
-		if s.Version != req.Version {
-			continue
-		}
-		statuses[lrn] = s
-	}
-	return req, statuses, rev, nil
-}
-
 // PutRequest stores UpdateRequest to storage
 // leaderKey is the current leader key.
 // If the caller has lost the leadership, this returns ErrNoLeader.
