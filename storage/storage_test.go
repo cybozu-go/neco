@@ -440,6 +440,5 @@ func TestStorage(t *testing.T) {
 	t.Run("ProxyConfig", testProxyConfig)
 	t.Run("CheckUpdateIntervalConfig", testCheckUpdateIntervalConfig)
 	t.Run("WorkerTimeout", testWorkerTimeout)
-	t.Run("Vault", testVault)
 	t.Run("Finish", testFinish)
 }
