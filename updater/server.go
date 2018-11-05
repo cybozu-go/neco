@@ -25,6 +25,11 @@ type Server struct {
 	storage storage.Storage
 }
 
+// NewServer returns a Server
+func NewServer(session *concurrency.Session, storage storage.Storage) Server {
+	return Server{session: session, storage: storage}
+}
+
 // Run runs neco-updater
 func (s Server) Run(ctx context.Context) error {
 
