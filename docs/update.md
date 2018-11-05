@@ -72,20 +72,34 @@ each nodes.  The detailed update process follows below steps:
 
 1. Check latest version from GitHub releases.
 2. The leader `neco-updater` takes a copy of the list of boot servers.
-3. The leader puts the new version of `neco` package in etcd.  `<prefix>/current`
+3. The leader puts the new version of `neco` package in etcd.  `<prefix>/status/current`
 
     ```json
     {
         "version": "1.2.3-1",
-        "servers": [1, 2, 3]
+        "servers": [1, 2, 3],
+        "stop": false,
     }
     ```
 
 4. On each boot server, `neco-worker` watches etcd; when it finds 2, install the new version.
 5. If `neco-worker` is the same version, it starts update process.
+6. Before each update step, `neco-worker` synchronizes with other workers.
 
-When `neco-worker` needs to synchronize with others, it uses an etcd key as a counter.
-Once the counter becomes the same number of boot servers, `neco-worker` proceeds.
+    ```json
+    {
+        "version": "1.2.3-1",
+        "step": 2,
+        "finished": false,
+        "error": false,
+        "message": ""
+    }
+    ```
+
+To synchronize with other workers, `neco-worker` records the current step in
+`step` field of `<prefix>/status/bootserver/<LRN>` status record.  Once all
+workers record the new step, they proceed to the step.
+
 If it takes too long, `neco-worker` should time-outs.
 
 Failure and recovery
@@ -94,19 +108,18 @@ Failure and recovery
 When something goes wrong, the update process need to be aborted.
 
 `neco-worker` inform `neco-updater` of an error during update process
-through etcd key `<prefix>/status/<LRN>`.
+through etcd key `<prefix>/status/bootserver/<LRN>`.
 
 `neco-updater` share any errors with `neco-worker` by updating `stop`
-field of etcd key `<prefix>/current` `stop` to `true`.
+field of etcd key `<prefix>/status/current` `stop` to `true`.
 
 To recover from failures, `neco recover` removes these keys from etcd.
-Then `neco-updater` re-creates `<prefix>/current` etcd key to restart jobs.
+Then `neco-updater` re-creates `<prefix>/status/current` etcd key to restart jobs.
 
 `neco-worker`
 -------------
 
-`neco-worker` service installs/updates applications with themselves strategies.
-Strategies are described for each applications as follows.
+`neco-worker` installs/updates applications as follows:
 
 ### CKE
 
