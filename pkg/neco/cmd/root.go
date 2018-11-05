@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/well"
+
 	"github.com/spf13/cobra"
 )
 
@@ -12,6 +15,12 @@ var rootCmd = &cobra.Command{
 	Use:   "neco",
 	Short: "an interactive tool for neco administrators",
 	Long:  `Installs/updates miscellaneous programs as well as maintaining etcd database.`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		err := well.LogConfig{}.Apply()
+		if err != nil {
+			log.ErrorExit(err)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

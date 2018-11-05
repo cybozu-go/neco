@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"errors"
-	"fmt"
 	"strconv"
 
+	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/neco/setup"
+	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +18,7 @@ var setupParams struct {
 
 // setupCmd represents the setup command
 var setupCmd = &cobra.Command{
-	Use:   "setup  [--no-revoke] LRN [LRN ...]",
+	Use:   "setup LRN [LRN ...]",
 	Short: "Install and setup etcd cluster as well as Vault using given boot servers",
 	Long: `Install and setup etcd cluster as well as Vault using given boot
 servers. LRN is the logical rack number of the boot server. At least 3
@@ -42,7 +45,14 @@ When --no-revoke option is specified, it does not remove the etcd key
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("setup boot servers with lrn: ", setupParams.lrns)
+		well.Go(func(ctx context.Context) error {
+			return setup.Setup(ctx, setupParams.lrns, !setupParams.noRevoke)
+		})
+		well.Stop()
+		err := well.Wait()
+		if err != nil {
+			log.ErrorExit(err)
+		}
 	},
 }
 

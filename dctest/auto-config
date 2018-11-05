@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+apt-get update
+apt-get install -y --no-install-recommends jq ca-certificates freeipmi-tools
+
+touch /tmp/auto-config-done

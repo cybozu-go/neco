@@ -1,0 +1,22 @@
+#!/bin/sh -e
+
+PROJECT=neco-test
+ZONE=asia-northeast1-c
+SERVICE_ACCOUNT=neco-test@neco-test.iam.gserviceaccount.com
+INSTANCE_NAME=${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}
+GCLOUD="gcloud --quiet --account ${SERVICE_ACCOUNT} --project ${PROJECT}"
+
+# Run multi-host test
+for i in $(seq 300); do
+  if $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- test -S /tmp/boot-0.socket >/dev/null; then
+    break
+  fi
+  sleep 1
+done
+if [ i = 100 ]; then
+  echo &>2 "Timed-out for launching boot-0..."
+  exit 1
+fi
+
+$GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
+  sudo /root/go/bin/placemat-connect boot-0

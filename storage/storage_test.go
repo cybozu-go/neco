@@ -279,60 +279,6 @@ func testNotificationConfig(t *testing.T) {
 	}
 }
 
-func testVault(t *testing.T) {
-	t.Parallel()
-
-	etcd := newEtcdClient(t)
-	defer etcd.Close()
-	ctx := context.Background()
-	st := NewStorage(etcd)
-
-	_, err := st.GetVaultUnsealKey(ctx)
-	if err != ErrNotFound {
-		t.Error("unexpected error", err)
-	}
-
-	err = st.PutVaultUnsealKey(ctx, "key")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	resp, err := st.GetVaultUnsealKey(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if resp != "key" {
-		t.Error("wrong vault unseal key")
-	}
-
-	_, err = st.GetVaultRootToken(ctx)
-	if err != ErrNotFound {
-		t.Error("unexpected error", err)
-	}
-
-	err = st.PutVaultRootToken(ctx, "root")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	resp, err = st.GetVaultRootToken(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if resp != "root" {
-		t.Error("wrong vault root token")
-	}
-
-	err = st.DeleteVaultRootToken(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = st.GetVaultRootToken(ctx)
-	if err != ErrNotFound {
-		t.Error("unexpected error", err)
-	}
-}
-
 func testFinish(t *testing.T) {
 	t.Parallel()
 
@@ -375,6 +321,5 @@ func TestStorage(t *testing.T) {
 	t.Run("Status", testStatus)
 	t.Run("ClearStatus", testClearStatus)
 	t.Run("NotificationConfig", testNotificationConfig)
-	t.Run("Vault", testVault)
 	t.Run("Finish", testFinish)
 }

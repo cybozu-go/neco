@@ -2,22 +2,19 @@ package neco
 
 import "path/filepath"
 
-// NecoDir is the base directory to store neco related files.
-const NecoDir = "/etc/neco"
-
-// EtcdDir is the base directory to store etcd related files.
-const EtcdDir = "/etc/etcd"
-
-// VaultDir is the base directory to store vault related files.
-const VaultDir = "/etc/vault"
-
 const systemdDir = "/etc/systemd/system"
 
-// NecoPrefix is the default prefix for etcd keys used by Neco.
-const NecoPrefix = "/neco/"
+// Neco params
+const (
+	NecoDir = "/etc/neco"
+
+	// NecoPrefix is the etcd key prefix for Neco tools.
+	NecoPrefix = "/neco/"
+)
 
 // Etcd params
 const (
+	EtcdDir       = "/etc/etcd"
 	EtcdUID       = 10000
 	EtcdGID       = 10000
 	EtcdDataDir   = "/var/lib/etcd-container"
@@ -27,6 +24,7 @@ const (
 
 // Vault params
 const (
+	VaultDir     = "/etc/vault"
 	VaultUID     = 10000
 	VaultGID     = 10000
 	CAServer     = "ca/server"
@@ -35,7 +33,9 @@ const (
 	TTL100Year   = "876000h"
 	TTL10Year    = "87600h"
 	VaultService = "vault"
-	VaultPrefix  = "/vault/"
+
+	// VaultPrefix is the etcd key prefix for vault.
+	VaultPrefix = "/vault/"
 )
 
 // File locations
@@ -59,9 +59,9 @@ var (
 	VaultCertFile = filepath.Join(VaultDir, "etcd.crt")
 	VaultKeyFile  = filepath.Join(VaultDir, "etcd.key")
 	VaultConfFile = filepath.Join(VaultDir, "config.hcl")
-	VaultUnseal   = "/usr/local/bin/vault-unseal"
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
 	NecoConfFile = filepath.Join(NecoDir, "config.yml")
+	NecoBin      = "/usr/bin/neco"
 )

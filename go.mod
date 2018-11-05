@@ -4,7 +4,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/DataDog/datadog-go v0.0.0-20180822151419-281ae9f2d895 // indirect
 	github.com/Jeffail/gabs v1.1.1 // indirect
-	github.com/Microsoft/go-winio v0.4.8-0.20180501170546-ab35fc04b636 // indirect
+	github.com/Microsoft/go-winio v0.4.11 // indirect
 	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/SAP/go-hdb v0.13.1 // indirect
@@ -17,7 +17,7 @@ require (
 	github.com/cenkalti/backoff v2.0.0+incompatible // indirect
 	github.com/circonus-labs/circonus-gometrics v2.2.4+incompatible // indirect
 	github.com/circonus-labs/circonusllhist v0.1.0 // indirect
-	github.com/containerd/continuity v0.0.0-20180216233310-d8fb8589b0e8 // indirect
+	github.com/containerd/continuity v0.0.0-20180913211902-c2ac4ecc9593 // indirect
 	github.com/containers/image v0.0.0-20181023201252-4b6d9cf918c1
 	github.com/containers/storage v0.0.0-20181019121456-bd5818eda840 // indirect
 	github.com/coreos/bbolt v1.3.1-coreos.6 // indirect
@@ -28,10 +28,10 @@ require (
 	github.com/cybozu-go/well v1.8.1
 	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
 	github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65 // indirect
-	github.com/docker/docker v0.7.3-0.20180522102801-da99009bbb11 // indirect
+	github.com/docker/docker v1.13.1 // indirect
 	github.com/docker/docker-credential-helpers v0.6.0 // indirect
-	github.com/docker/go-connections v0.3.1-0.20180212134524-7beb39f0b969 // indirect
-	github.com/docker/go-units v0.3.2 // indirect
+	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/docker/go-units v0.3.3 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/duosecurity/duo_api_golang v0.0.0-20181024123116-92fea9203dbc // indirect
 	github.com/elazarl/go-bindata-assetfs v1.0.0 // indirect
@@ -63,6 +63,7 @@ require (
 	github.com/hashicorp/serf v0.8.1 // indirect
 	github.com/hashicorp/vault v0.11.4
 	github.com/hashicorp/vault-plugin-secrets-kv v0.0.0-20180825215324-5a464a61f7de // indirect
+	github.com/hashicorp/yamux v0.0.0-20180826203732-cc6d2ea263b2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jefferai/jsonx v0.0.0-20160721235117-9cc31c3135ee // indirect
 	github.com/keybase/go-crypto v0.0.0-20181031135447-f919bfda4fc1 // indirect
@@ -71,10 +72,11 @@ require (
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
+	github.com/onsi/ginkgo v1.6.1-0.20180913204007-46bbc26e8a91
+	github.com/onsi/gomega v1.4.2
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/opencontainers/runc v1.0.0-rc2.0.20170216015123-6b1d0e76f239 // indirect
-	github.com/opencontainers/selinux v1.0.0-rc1.0.20181018180444-077c8b6d1c18 // indirect
 	github.com/ory/dockertest v3.3.2+incompatible // indirect
 	github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
@@ -84,6 +86,7 @@ require (
 	github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529 // indirect
 	github.com/spf13/cobra v0.0.3
 	github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926 // indirect
+	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
 	gopkg.in/asn1-ber.v1 v1.0.0-20170511165959-379148ca0225 // indirect
 	gopkg.in/ldap.v2 v2.5.1 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce // indirect

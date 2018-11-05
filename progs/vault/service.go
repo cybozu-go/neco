@@ -13,16 +13,16 @@ func GenerateService(w io.Writer) error {
 		return err
 	}
 	return serviceTmpl.Execute(w, struct {
-		Image        string
-		UID          int
-		GID          int
-		ConfFile     string
-		UnsealScript string
+		Image    string
+		UID      int
+		GID      int
+		ConfFile string
+		NecoBin  string
 	}{
-		Image:        img.FullName(),
-		UID:          neco.VaultUID,
-		GID:          neco.VaultGID,
-		ConfFile:     neco.VaultConfFile,
-		UnsealScript: neco.VaultUnseal,
+		Image:    img.FullName(),
+		UID:      neco.VaultUID,
+		GID:      neco.VaultGID,
+		ConfFile: neco.VaultConfFile,
+		NecoBin:  neco.NecoBin,
 	})
 }

@@ -2,14 +2,44 @@ package setup
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
+	"os"
 
-	"github.com/cybozu-go/etcdutil"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/etcd"
 	"github.com/hashicorp/vault/api"
-	yaml "gopkg.in/yaml.v2"
 )
+
+func installNecoBin() error {
+	_, err := os.Stat(neco.NecoBin)
+	if err == nil {
+		return nil
+	}
+
+	if !os.IsNotExist(err) {
+		return err
+	}
+
+	f, err := os.Open("/proc/self/exe")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	g, err := os.OpenFile(neco.NecoBin, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
+	if err != nil {
+		return err
+	}
+	defer g.Close()
+
+	_, err = io.Copy(g, f)
+	if err != nil {
+		return err
+	}
+
+	return g.Sync()
+}
 
 func setupNecoFiles(ctx context.Context, vc *api.Client, lrns []int) error {
 	secret, err := vc.Logical().Write(neco.CAEtcdClient+"/issue/system", map[string]interface{}{
@@ -21,16 +51,7 @@ func setupNecoFiles(ctx context.Context, vc *api.Client, lrns []int) error {
 		return err
 	}
 
-	cfg := etcdutil.NewConfig(neco.NecoPrefix)
-	cfg.Endpoints = neco.EtcdEndpoints(lrns)
-	cfg.TLSCertFile = neco.NecoCertFile
-	cfg.TLSKeyFile = neco.NecoKeyFile
-
-	data, err := yaml.Marshal(cfg)
-	if err != nil {
-		return err
-	}
-	err = ioutil.WriteFile(neco.NecoConfFile, data, 0644)
+	err = etcd.UpdateNecoConfig(lrns)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,9 @@
 etcd schema
 ===========
 
+Legend:
+* `<prefix>` = `/neco/`
+
 ## `<prefix>/leader/`
 
 This prefix is used to elect a leader `neco-updater` who is responsible to invoke
