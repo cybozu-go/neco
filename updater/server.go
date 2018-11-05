@@ -22,12 +22,17 @@ import (
 // Server represents neco-updater server
 type Server struct {
 	session *concurrency.Session
+	github  releaseInterface
 	storage storage.Storage
 }
 
 // NewServer returns a Server
 func NewServer(session *concurrency.Session, storage storage.Storage) Server {
-	return Server{session: session, storage: storage}
+	return Server{
+		session: session,
+		github:  releaseClient{"cybozu-go", "neco"},
+		storage: storage,
+	}
 }
 
 // Run runs neco-updater
@@ -131,9 +136,9 @@ func (s Server) checkUpdateNewVersion(ctx context.Context) (string, error) {
 
 	var latest string
 	if env == neco.StagingEnv {
-		latest, err = GetLatestReleaseTag(ctx)
+		latest, err = s.github.GetLatestReleaseTag(ctx)
 	} else if env == neco.ProdEnv {
-		latest, err = GetLatestPreReleaseTag(ctx)
+		latest, err = s.github.GetLatestPreReleaseTag(ctx)
 	} else {
 		return "", errors.New("unknown env: " + env)
 	}

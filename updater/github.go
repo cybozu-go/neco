@@ -12,25 +12,35 @@ import (
 	version "github.com/hashicorp/go-version"
 )
 
+type releaseInterface interface {
+	GetLatestReleaseTag(ctx context.Context) (string, error)
+	GetLatestPreReleaseTag(ctx context.Context) (string, error)
+}
+
+type releaseClient struct {
+	owner string
+	repo  string
+}
+
 // GetLatestReleaseTag returns latest tag in GitHub Releases of neco repository
-func GetLatestReleaseTag(ctx context.Context) (string, error) {
+func (c releaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
 	client := github.NewClient(nil)
-	release, resp, err := client.Repositories.GetLatestRelease(ctx, "cybozu-go", "neco")
+	release, resp, err := client.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
 	if err != nil {
 		if resp.StatusCode == http.StatusNotFound {
 			return "", ErrNoReleases
 		}
 		log.Error("failed to get the latest GitHub release", map[string]interface{}{
-			"owner":      "cybozu-go",
-			"repository": "neco",
+			"owner":      c.owner,
+			"repository": c.repo,
 			log.FnError:  err,
 		})
 		return "", err
 	}
 	if release.TagName == nil {
 		log.Error("no tagged release", map[string]interface{}{
-			"owner":      "cybozu-go",
-			"repository": "neco",
+			"owner":      c.owner,
+			"repository": c.repo,
 			"release":    release.String(),
 		})
 		return "", errors.New("no tagged release")
@@ -39,7 +49,7 @@ func GetLatestReleaseTag(ctx context.Context) (string, error) {
 }
 
 // GetLatestPreReleaseTag returns latest pre-released tag in GitHub Releases of neco repository
-func GetLatestPreReleaseTag(ctx context.Context) (string, error) {
+func (c releaseClient) GetLatestPreReleaseTag(ctx context.Context) (string, error) {
 	client := github.NewClient(nil)
 
 	opt := &github.ListOptions{
@@ -48,7 +58,7 @@ func GetLatestPreReleaseTag(ctx context.Context) (string, error) {
 
 	var releases []*github.RepositoryRelease
 	for {
-		rs, resp, err := client.Repositories.ListReleases(ctx, "cybozu-go", "neco", opt)
+		rs, resp, err := client.Repositories.ListReleases(ctx, c.owner, c.repo, opt)
 		if err != nil {
 			return "", err
 		}
@@ -59,8 +69,8 @@ func GetLatestPreReleaseTag(ctx context.Context) (string, error) {
 		opt.Page = resp.NextPage
 	}
 	versions := make([]*version.Version, 0, len(releases))
-	for i, r := range releases {
-		if r.TagName == nil {
+	for _, r := range releases {
+		if r.TagName == nil || !r.GetPrerelease() {
 			continue
 		}
 		s := *r.TagName
@@ -73,7 +83,7 @@ func GetLatestPreReleaseTag(ctx context.Context) (string, error) {
 		if err != nil {
 			continue
 		}
-		versions[i] = v
+		versions = append(versions, v)
 	}
 	sort.Sort(sort.Reverse(version.Collection(versions)))
 
