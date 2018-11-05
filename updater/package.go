@@ -10,6 +10,7 @@ import (
 	"github.com/cybozu-go/well"
 )
 
+// PackageManager is an interface to manage packages
 type PackageManager interface {
 	GetVersion(ctx context.Context, name string) (string, error)
 }

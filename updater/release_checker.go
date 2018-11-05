@@ -23,6 +23,7 @@ type ReleaseChecker struct {
 	notfound bool
 }
 
+// NewReleaseChecker returns a new ReleaseChecker
 func NewReleaseChecker(st storage.Storage, github ReleaseInterface, pkg PackageManager) ReleaseChecker {
 	c := ReleaseChecker{
 		storage: st,
@@ -54,11 +55,10 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 
 		select {
 		case <-ctx.Done():
-			break
+			return nil
 		case <-time.After(interval):
 		}
 	}
-	return nil
 }
 
 // GetLatest returns latest version in GitHub Releases, or returns empty if no

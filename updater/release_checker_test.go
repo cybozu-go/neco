@@ -17,8 +17,8 @@ func testUpdate(t *testing.T) {
 	st := storage.NewStorage(etcd)
 
 	checker := NewReleaseChecker(st,
-		mock.GitHub{"1.0.0", "0.1.0"},
-		mock.PackageManager{map[string]string{"neco": "0.0.0"}})
+		mock.GitHub{Release: "1.0.0", PreRelease: "0.1.0"},
+		mock.PackageManager{Versions: map[string]string{"neco": "0.0.0"}})
 
 	err := checker.update(ctx)
 	if err != nil {

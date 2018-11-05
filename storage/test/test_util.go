@@ -16,6 +16,12 @@ const (
 	etcdPeerURL   = "http://localhost:12380"
 )
 
+// RunTestMain starts test etcd server.  Describe the following to run on test:
+//
+//    func TestMain(m *testing.M) {
+//        os.Exit(test.RunTestMain(m))
+//    }
+//
 func RunTestMain(m *testing.M) int {
 	circleci := os.Getenv("CIRCLECI") == "true"
 	if circleci {
@@ -50,6 +56,9 @@ func RunTestMain(m *testing.M) int {
 	return m.Run()
 }
 
+// NewEtcdClient creates new etcd client for test server:
+//     etcd := test.NewEtcdClient(t)
+//
 func NewEtcdClient(t *testing.T) *clientv3.Client {
 	var clientURL string
 	circleci := os.Getenv("CIRCLECI") == "true"

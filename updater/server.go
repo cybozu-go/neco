@@ -16,24 +16,29 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
-	version "github.com/hashicorp/go-version"
 )
 
 // Server represents neco-updater server
 type Server struct {
 	session *concurrency.Session
-	github  releaseInterface
 	storage storage.Storage
 	timeout time.Duration
+
+	checker ReleaseChecker
 }
 
 // NewServer returns a Server
 func NewServer(session *concurrency.Session, storage storage.Storage, timeout time.Duration) Server {
 	return Server{
 		session: session,
-		github:  releaseClient{"cybozu-go", "neco"},
 		storage: storage,
 		timeout: timeout,
+
+		checker: NewReleaseChecker(
+			storage,
+			ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName},
+			DebPackageManager{},
+		),
 	}
 }
 
@@ -64,7 +69,15 @@ RETRY:
 		"session": s.session.Lease(),
 	})
 
-	s.runLoop(ctx, leaderKey)
+	env := well.NewEnvironment(ctx)
+	env.Go(func(ctx context.Context) error {
+		return s.runLoop(ctx, leaderKey)
+	})
+	env.Go(func(ctx context.Context) error {
+		return s.checker.Run(ctx)
+	})
+	env.Stop()
+	err = env.Wait()
 
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), s.timeout)
 	defer cancel()
@@ -99,10 +112,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 
 	for {
 		if len(target) == 0 {
-			target, err = s.checkUpdateNewVersion(ctx)
-			if err != nil {
-				return err
-			}
+			target = s.checker.GetLatest()
 		}
 		if len(target) != 0 {
 			// Found new update
@@ -129,61 +139,13 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			}
 		}
 
-		timeout, err := s.waitForNext(ctx)
-		if err != nil {
+		err := s.waitForMemberUpdated(ctx)
+		if err == context.DeadlineExceeded {
+			target = ""
+		} else if err != nil {
 			return err
 		}
-		if timeout {
-			target = ""
-		}
 	}
-}
-
-// checkUpdateNewVersion checks if newer version exits compare with installed version
-// If no newer version exists, return empty tag with nil error
-func (s Server) checkUpdateNewVersion(ctx context.Context) (string, error) {
-	env, err := s.storage.GetEnvConfig(ctx)
-	if err == storage.ErrNotFound {
-		return "", nil
-	}
-	if err != nil {
-		return "", err
-	}
-
-	var latest string
-	if env == neco.StagingEnv {
-		latest, err = s.github.GetLatestPreReleaseTag(ctx)
-	} else if env == neco.ProdEnv {
-		latest, err = s.github.GetLatestReleaseTag(ctx)
-	} else {
-		return "", errors.New("unknown env: " + env)
-	}
-	if err == ErrNoReleases {
-		return "", nil
-	}
-	if err != nil {
-		return "", err
-	}
-
-	current, err := neco.InstalledNecoVersion(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	latestVer, err := version.NewVersion(latest)
-	if err != nil {
-		return "", err
-	}
-
-	currentVer, err := version.NewVersion(current)
-	if err != nil {
-		return "", err
-	}
-
-	if !latestVer.GreaterThan(currentVer) {
-		return "", nil
-	}
-	return latest, nil
 }
 
 // startUpdate starts update with tag.  It returns ErrNoMembers if no
@@ -314,56 +276,53 @@ func (s Server) waitRetry(ctx context.Context) error {
 	return nil
 }
 
-// waitForNext sleeps for check-update-interval or boot servers changed
-// It returns true if timed-out for check-update-interval, and returns false if member changed
-func (s Server) waitForNext(ctx context.Context) (timeout bool, err error) {
+// waitForMemberUpdated waits for new member added or member removed until with
+// check-update-interval.  It returns nil error if member updated, or returns
+// context.DeadlineExceeded if timed-out
+func (s Server) waitForMemberUpdated(ctx context.Context) error {
 	interval, err := s.storage.GetCheckUpdateInterval(ctx)
 	if err != nil {
-		return false, err
+		return err
 	}
 	req, rev, err := s.storage.GetRequestWithRev(ctx)
 	if err != nil {
-		return false, err
+		return err
 	}
 	lrns := req.Servers
 	sort.Ints(lrns)
 
-	updateCh := make(chan struct{})
+	withTimeoutCtx, cancel := context.WithTimeout(ctx, interval)
+	defer cancel()
 
-	env := well.NewEnvironment(ctx)
-	env.Go(func(ctx context.Context) error {
-		ch := s.session.Client().Watch(ctx, storage.KeyBootserversPrefix, clientv3.WithRev(rev+1))
-		for resp := range ch {
-			for _, ev := range resp.Events {
-				lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyBootserversPrefix):]))
-				if err != nil {
-					return err
-				}
-				if ev.Type == clientv3.EventTypePut {
-					if i := sort.SearchInts(lrns, lrn); i < len(lrns) && lrns[i] == lrn {
-						continue
-					}
-				}
-				updateCh <- struct{}{}
-				return nil
+	ch := s.session.Client().Watch(
+		withTimeoutCtx, storage.KeyBootserversPrefix, clientv3.WithRev(rev+1),
+	)
+
+	var updated bool
+	var lastErr error
+	for resp := range ch {
+		for _, ev := range resp.Events {
+			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyBootserversPrefix):]))
+			if err != nil {
+				lastErr = err
+				cancel()
 			}
+			if ev.Type == clientv3.EventTypePut {
+				if i := sort.SearchInts(lrns, lrn); i < len(lrns) && lrns[i] == lrn {
+					continue
+				}
+			}
+			updated = true
+			cancel()
 		}
-		return nil
-	})
-	env.Stop()
-	defer func() {
-		env.Cancel(nil)
-		env.Wait()
-	}()
-
-	select {
-	case <-ctx.Done():
-		return false, ctx.Err()
-	case <-time.After(interval):
-		return true, nil
-	case <-updateCh:
 	}
-	return false, nil
+	if lastErr != nil {
+		return lastErr
+	}
+	if !updated {
+		return context.DeadlineExceeded
+	}
+	return nil
 }
 
 func (s Server) notifySucceeded(ctx context.Context, req neco.UpdateRequest) error {
