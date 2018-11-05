@@ -13,6 +13,7 @@ type UpdateRequest struct {
 // UpdateStatus represents status report from neco-worker
 type UpdateStatus struct {
 	Version  string `json:"version"`
+	Step     int    `json:"step"`
 	Finished bool   `json:"finished"`
 	Error    bool   `json:"error"`
 	Message  string `json:"message"`

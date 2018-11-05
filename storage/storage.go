@@ -185,6 +185,25 @@ func (s Storage) GetStatus(ctx context.Context, lrn int) (*neco.UpdateStatus, er
 	return st, nil
 }
 
+// GetStatusesWithRev returns UpdateStatus of all bootservers from storage with Revision
+// If not found, this returns empty slice.
+func (s Storage) GetStatusesWithRev(ctx context.Context) ([]*neco.UpdateStatus, int64, error) {
+	resp, err := s.etcd.Get(ctx, KeyStatusPrefix, clientv3.WithPrefix())
+	if err != nil {
+		return nil, 0, err
+	}
+
+	sts := make([]*neco.UpdateStatus, resp.Count)
+	for i, kv := range resp.Kvs {
+		err = json.Unmarshal(kv.Value, sts[i])
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+
+	return sts, resp.Header.Revision, nil
+}
+
 // ClearStatus removes KeyCurrent and KeyStatusPrefix/* from storage.
 //
 // It first checks that "stop" field in KeyCurrent is true.  If not,
