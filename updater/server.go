@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"sort"
 	"strconv"
@@ -371,11 +372,38 @@ func (s Server) waitForNext(ctx context.Context) (timeout bool, err error) {
 }
 
 func (s Server) notifySucceeded(ctx context.Context, req neco.UpdateRequest) error {
-	// TODO get notification config and send notification
-	return nil
+	url, err := s.storage.GetSlackNotification(ctx)
+	if err == storage.ErrNotFound {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	text := fmt.Sprintf("Updates to version `%s' are completed successfully on boot servers at lrn=%v.", req.Version, req.Servers)
+	payload := Payload{
+		Username:  "[SUCCESS] Boot server updater",
+		IconEmoji: ":imp:",
+		Text:      text,
+	}
+	return NotifySlack(context.Background(), url, payload)
 }
 
 func (s Server) notifyFailure(ctx context.Context, req neco.UpdateRequest, st *neco.UpdateStatus) error {
-	// TODO get notification config and send notification
-	return nil
+	url, err := s.storage.GetSlackNotification(ctx)
+	if err == storage.ErrNotFound {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	text := "Failed to finish update boot server to version `%s' due to timed-out"
+	if st != nil {
+		text = fmt.Sprintf("Failed to finish update boot server to version `%s': %s", st.Version, st.Message)
+	}
+	payload := Payload{
+		Username:  "[FAILURE] Boot server updater",
+		IconEmoji: ":imp:",
+		Text:      text,
+	}
+	return NotifySlack(context.Background(), url, payload)
 }
