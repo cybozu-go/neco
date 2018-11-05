@@ -120,9 +120,40 @@ func testCheckUpdateIntervalConfig(t *testing.T) {
 	}
 }
 
+func testWorkerTimeout(t *testing.T) {
+	t.Parallel()
+
+	etcd := newEtcdClient(t)
+	defer etcd.Close()
+	ctx := context.Background()
+	st := NewStorage(etcd)
+
+	d, err := st.GetWorkerTimeout(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d != neco.DefaultWorkerTimeout {
+		t.Error(`d != neco.DefaultWorkerTimeout`, d)
+	}
+
+	err = st.PutWorkerTimeout(ctx, 60*time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	d, err = st.GetWorkerTimeout(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d != 60*time.Minute {
+		t.Error(`d != 10*time.Minute`, d)
+	}
+}
+
 func TestConfig(t *testing.T) {
 	t.Run("EnvConfig", testEnvConfig)
 	t.Run("SlackNotification", testSlackNotification)
 	t.Run("ProxyConfig", testProxyConfig)
 	t.Run("CheckUpdateIntervalConfig", testCheckUpdateIntervalConfig)
+	t.Run("WorkerTimeout", testWorkerTimeout)
 }

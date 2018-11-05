@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/neco"
@@ -252,36 +251,6 @@ func testClearStatus(t *testing.T) {
 	}
 }
 
-func testWorkerTimeout(t *testing.T) {
-	t.Parallel()
-
-	etcd := newEtcdClient(t)
-	defer etcd.Close()
-	ctx := context.Background()
-	st := NewStorage(etcd)
-
-	d, err := st.GetWorkerTimeout(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if d != neco.DefaultWorkerTimeout {
-		t.Error(`d != neco.DefaultWorkerTimeout`, d)
-	}
-
-	err = st.PutWorkerTimeout(ctx, 60*time.Minute)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	d, err = st.GetWorkerTimeout(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if d != 60*time.Minute {
-		t.Error(`d != 10*time.Minute`, d)
-	}
-}
-
 func testFinish(t *testing.T) {
 	t.Parallel()
 
@@ -323,6 +292,5 @@ func TestStorage(t *testing.T) {
 	t.Run("Request", testRequest)
 	t.Run("Status", testStatus)
 	t.Run("ClearStatus", testClearStatus)
-	t.Run("WorkerTimeout", testWorkerTimeout)
 	t.Run("Finish", testFinish)
 }
