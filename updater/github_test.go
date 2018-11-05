@@ -8,7 +8,7 @@ import (
 func testGetLatestReleaseTag(t *testing.T) {
 	t.Skip()
 
-	c := releaseClient{owner: "kubernetes", repo: "kubernetes"}
+	c := ReleaseClient{owner: "kubernetes", repo: "kubernetes"}
 	ver, err := c.GetLatestReleaseTag(context.Background())
 	if err != nil {
 		t.Fatal(err)
@@ -19,7 +19,7 @@ func testGetLatestReleaseTag(t *testing.T) {
 func testGetLatestPreReleaseTag(t *testing.T) {
 	t.Skip()
 
-	c := releaseClient{owner: "kubernetes", repo: "kubernetes"}
+	c := ReleaseClient{owner: "kubernetes", repo: "kubernetes"}
 	ver, err := c.GetLatestPreReleaseTag(context.Background())
 	if err != nil {
 		t.Fatal(err)

@@ -12,18 +12,18 @@ import (
 	version "github.com/hashicorp/go-version"
 )
 
-type releaseInterface interface {
+type ReleaseInterface interface {
 	GetLatestReleaseTag(ctx context.Context) (string, error)
 	GetLatestPreReleaseTag(ctx context.Context) (string, error)
 }
 
-type releaseClient struct {
+type ReleaseClient struct {
 	owner string
 	repo  string
 }
 
 // GetLatestReleaseTag returns latest tag in GitHub Releases of neco repository
-func (c releaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
+func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
 	client := github.NewClient(nil)
 	release, resp, err := client.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
 	if err != nil {
@@ -49,7 +49,7 @@ func (c releaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) 
 }
 
 // GetLatestPreReleaseTag returns latest pre-released tag in GitHub Releases of neco repository
-func (c releaseClient) GetLatestPreReleaseTag(ctx context.Context) (string, error) {
+func (c ReleaseClient) GetLatestPreReleaseTag(ctx context.Context) (string, error) {
 	client := github.NewClient(nil)
 
 	opt := &github.ListOptions{
