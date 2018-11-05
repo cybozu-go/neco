@@ -82,7 +82,7 @@ RETRY:
 func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 	var target string
 	req, err := s.storage.GetRequest(ctx)
-	if err != nil && err != storage.ErrNotFound {
+	if err == nil {
 		target = req.Version
 		if req.Stop {
 			log.Info("Last updating is failed, wait for retrying", map[string]interface{}{
@@ -93,7 +93,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				return err
 			}
 		}
-	} else if err != nil {
+	} else if err != nil && err != storage.ErrNotFound {
 		return err
 	}
 
@@ -152,9 +152,9 @@ func (s Server) checkUpdateNewVersion(ctx context.Context) (string, error) {
 
 	var latest string
 	if env == neco.StagingEnv {
-		latest, err = s.github.GetLatestReleaseTag(ctx)
-	} else if env == neco.ProdEnv {
 		latest, err = s.github.GetLatestPreReleaseTag(ctx)
+	} else if env == neco.ProdEnv {
+		latest, err = s.github.GetLatestReleaseTag(ctx)
 	} else {
 		return "", errors.New("unknown env: " + env)
 	}
@@ -231,55 +231,14 @@ func (s Server) waitWorkers(ctx context.Context) error {
 		return err
 	}
 	statuses := make(map[int]neco.UpdateStatus)
-	for _, lrn := range req.Servers {
-		st, err := s.storage.GetStatusAt(ctx, lrn, rev)
-		if err == storage.ErrNotFound {
-			continue
-		}
-		if err != nil {
-			return err
-		}
-		statuses[lrn] = *st
-	}
 
 	deadline := req.StartedAt.Add(timeout)
 	deadlineCtx, cancel := context.WithDeadline(ctx, deadline)
 	defer cancel()
 
-	for _, lrn := range req.Servers {
-		st, ok := statuses[lrn]
-		if !ok || !st.Finished || !statuses[lrn].Error || st.Version != req.Version {
-			continue
-		}
-		log.Info("worker failed updating", map[string]interface{}{
-			"version": req.Version,
-			"lrn":     lrn,
-			"message": st.Message,
-		})
-		s.notifyFailure(ctx, *req, &st)
-		return ErrUpdateFailed
-	}
-
-	allSucceeded := func() bool {
-		for _, lrn := range req.Servers {
-			if st, ok := statuses[lrn]; !ok || !st.Finished || !statuses[lrn].Error || st.Version != req.Version {
-				return false
-			}
-		}
-		return true
-	}
-	if allSucceeded() {
-		log.Info("all worker finished updating", map[string]interface{}{
-			"version": req.Version,
-			"servers": req.Servers,
-		})
-		s.notifySucceeded(ctx, *req)
-		return nil
-	}
-
 	ch := s.session.Client().Watch(
 		deadlineCtx, storage.KeyStatusPrefix,
-		clientv3.WithRev(rev+1), clientv3.WithFilterPut(), clientv3.WithPrefix(),
+		clientv3.WithRev(rev+1), clientv3.WithFilterDelete(), clientv3.WithPrefix(),
 	)
 	for resp := range ch {
 		for _, ev := range resp.Events {
@@ -310,7 +269,14 @@ func (s Server) waitWorkers(ctx context.Context) error {
 				})
 			}
 		}
-		if allSucceeded() {
+		success := true
+		for _, lrn := range req.Servers {
+			if st, ok := statuses[lrn]; !ok || !st.Finished || !statuses[lrn].Error || st.Version != req.Version {
+				success = false
+				break
+			}
+		}
+		if success {
 			log.Info("all worker finished updating", map[string]interface{}{
 				"version": req.Version,
 				"servers": req.Servers,
@@ -340,8 +306,11 @@ func (s Server) waitRetry(ctx context.Context) error {
 		return err
 	}
 
-	ch := s.session.Client().Watch(ctx, storage.KeyCurrent, clientv3.WithRev(rev+1), clientv3.WithFilterDelete())
-	<-ch
+	ch := s.session.Client().Watch(ctx, storage.KeyCurrent, clientv3.WithRev(rev+1), clientv3.WithFilterPut())
+	resp := <-ch
+	if err := resp.Err(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -411,7 +380,7 @@ func (s Server) notifySucceeded(ctx context.Context, req neco.UpdateRequest) err
 		IconEmoji: ":imp:",
 		Text:      text,
 	}
-	return NotifySlack(context.Background(), url, payload)
+	return NotifySlack(ctx, url, payload)
 }
 
 func (s Server) notifyFailure(ctx context.Context, req neco.UpdateRequest, st *neco.UpdateStatus) error {
