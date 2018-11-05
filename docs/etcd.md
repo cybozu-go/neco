@@ -39,7 +39,7 @@ Name         | Type   | Description
 `version`    | string | Target `neco` version to be updated for all `servers`.
 `servers`    | []int  | LRNs of current available boot servers under update. This is created using `<prefix>/bootservers`.
 `stop`       | bool   | If `true`, `neco-worker` stops the update process.
-`started_at` | bool   | Updating start time.
+`started_at` | string | Updating start time.
 
 ```json
 {
