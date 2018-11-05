@@ -6,11 +6,12 @@ import (
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
+	"github.com/cybozu-go/neco/storage/test"
 	"github.com/cybozu-go/neco/updater/mock"
 )
 
 func testUpdate(t *testing.T) {
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := storage.NewStorage(etcd)

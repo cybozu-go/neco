@@ -6,12 +6,13 @@ import (
 	"time"
 
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/storage/test"
 )
 
 func testEnvConfig(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -38,7 +39,7 @@ func testEnvConfig(t *testing.T) {
 func testSlackNotification(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -66,7 +67,7 @@ func testSlackNotification(t *testing.T) {
 func testProxyConfig(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -93,7 +94,7 @@ func testProxyConfig(t *testing.T) {
 func testCheckUpdateIntervalConfig(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -123,7 +124,7 @@ func testCheckUpdateIntervalConfig(t *testing.T) {
 func testWorkerTimeout(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
