@@ -167,22 +167,7 @@ func (s Storage) PutStatus(ctx context.Context, lrn int, st neco.UpdateStatus) e
 // GetStatus returns UpdateStatus of a bootserver from storage
 // If not found, this returns ErrNotFound.
 func (s Storage) GetStatus(ctx context.Context, lrn int) (*neco.UpdateStatus, error) {
-	resp, err := s.etcd.Get(ctx, keyStatus(lrn))
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.Count == 0 {
-		return nil, ErrNotFound
-	}
-
-	st := new(neco.UpdateStatus)
-	err = json.Unmarshal(resp.Kvs[0].Value, st)
-	if err != nil {
-		return nil, err
-	}
-
-	return st, nil
+	return s.GetStatusAt(ctx, lrn, 0)
 }
 
 // GetStatusAt returns UpdateStatus of a bootserver from storage at revision
