@@ -1,26 +1,24 @@
 package worker
 
 import (
-	"bufio"
-	"bytes"
 	"context"
-	"net/textproto"
+	"os/exec"
 
 	"github.com/cybozu-go/well"
 )
 
 // GetDebianVersion returns debian package version.
+// If "neco" package is not installed, this returns ("", nil).
 func GetDebianVersion(pkg string) (string, error) {
-	data, err := well.CommandContext(context.Background(), "dpkg", "-s", pkg).Output()
+	if exec.Command("dpkg", "-s", pkg).Run() != nil {
+		return "", nil
+	}
+
+	data, err := well.CommandContext(context.Background(),
+		"dpkg-query", "--showformat=${Version}", "-W", pkg).Output()
 	if err != nil {
 		return "", err
 	}
 
-	data = append(data, '\n')
-	r := textproto.NewReader(bufio.NewReader(bytes.NewReader(data)))
-	hdrs, err := r.ReadMIMEHeader()
-	if err != nil {
-		return "", err
-	}
-	return hdrs.Get("Version"), nil
+	return string(data), nil
 }
