@@ -30,6 +30,9 @@ func testUpdate(t *testing.T) {
 	if version := checker.GetLatest(); version != "" {
 		t.Error(`version != "":`, version)
 	}
+	if checker.HasUpdate() {
+		t.Error(`unexpected HasUpdate:`, checker.HasUpdate())
+	}
 
 	err = st.PutEnvConfig(ctx, neco.StagingEnv)
 	if err != nil {
@@ -42,6 +45,9 @@ func testUpdate(t *testing.T) {
 	if version := checker.GetLatest(); version != "0.1.0" {
 		t.Error(`version != "0.1.0":`, version)
 	}
+	if !checker.HasUpdate() {
+		t.Error(`unexpected HasUpdate:`, checker.HasUpdate())
+	}
 
 	err = st.PutEnvConfig(ctx, neco.ProdEnv)
 	if err != nil {
@@ -53,6 +59,18 @@ func testUpdate(t *testing.T) {
 	}
 	if version := checker.GetLatest(); version != "1.0.0" {
 		t.Error(`version != "1.0.0":`, version)
+	}
+	if !checker.HasUpdate() {
+		t.Error(`unexpected HasUpdate:`, checker.HasUpdate())
+	}
+
+	checker.pkg = mock.PackageManager{Versions: map[string]string{"neco": "1.0.0"}}
+	err = checker.update(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if checker.HasUpdate() {
+		t.Error(`unexpected HasUpdate:`, checker.HasUpdate())
 	}
 }
 

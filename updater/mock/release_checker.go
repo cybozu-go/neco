@@ -17,3 +17,8 @@ func (c ReleaseChecker) Run(ctx context.Context) error {
 func (c ReleaseChecker) GetLatest() string {
 	return c.Version
 }
+
+// HasUpdate returns always true
+func (c ReleaseChecker) HasUpdate() bool {
+	return true
+}

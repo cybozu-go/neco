@@ -119,7 +119,9 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 
 	for {
 		if len(target) == 0 {
-			target = s.checker.GetLatest()
+			if s.checker.HasUpdate() {
+				target = s.checker.GetLatest()
+			}
 		}
 		if len(target) != 0 {
 			// Found new update
@@ -158,7 +160,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 		// err == context.DeadlineExceeded: timed-out by check-update-interval
 		// find newer version and install it to servers
 		if err == context.DeadlineExceeded {
-			// Use latest version to update
+			// Clear target to check latest update
 			target = ""
 		} else if err != nil {
 			return err

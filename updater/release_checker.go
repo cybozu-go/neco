@@ -17,6 +17,7 @@ import (
 type ReleaseChecker interface {
 	Run(ctx context.Context) error
 	GetLatest() string
+	HasUpdate() bool
 }
 
 // GitHubReleaseChecker checks newer GitHub releases by polling
@@ -24,8 +25,9 @@ type GitHubReleaseChecker struct {
 	storage storage.Storage
 	github  ReleaseInterface
 
-	pkg    PackageManager
-	latest atomic.Value
+	pkg       PackageManager
+	latest    atomic.Value
+	hasUpdate bool
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
@@ -63,6 +65,11 @@ func (c *GitHubReleaseChecker) Run(ctx context.Context) error {
 // release are available
 func (c *GitHubReleaseChecker) GetLatest() string {
 	return c.latest.Load().(string)
+}
+
+// HasUpdate returns true if remove version is grater than local version
+func (c *GitHubReleaseChecker) HasUpdate() bool {
+	return c.hasUpdate
 }
 
 func (c *GitHubReleaseChecker) update(ctx context.Context) error {
@@ -123,6 +130,7 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 	}
 
 	if !latestVer.GreaterThan(currentVer) {
+		c.hasUpdate = false
 		return nil
 	}
 
@@ -131,5 +139,6 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 		"version": latest,
 	})
 	c.latest.Store(latest)
+	c.hasUpdate = true
 	return nil
 }
