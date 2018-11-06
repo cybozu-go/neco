@@ -161,7 +161,7 @@ func testRunUpdateTimeout(t *testing.T) {
 	}
 }
 
-func testContinueUpdate(t *testing.T) {
+func testRunContinueUpdate(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -206,12 +206,60 @@ func testContinueUpdate(t *testing.T) {
 	}
 }
 
+func testRunStopAndRetry(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	e := NewTestEnv(t)
+
+	for _, lrn := range []int{0, 1, 2} {
+		err := e.RegisterBootserver(ctx, lrn)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	err := PutRequest(t, neco.UpdateRequest{
+		Version:   "1.0.0",
+		Servers:   []int{0, 1, 2},
+		Stop:      true,
+		StartedAt: time.Now(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w, err := NewWatcher(t, storage.KeyCurrent)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	e.Start()
+	defer e.Shutdown()
+
+	err = w.Wait()
+	if err != context.DeadlineExceeded {
+		t.Fatal("err != context.DeadlineExceeded:", err)
+	}
+
+	err = e.Storage.ClearStatus(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = w.Wait()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func testRun(t *testing.T) {
 	t.Run("NoMembers", testRunNoMembers)
 	t.Run("InitialUpdate", testRunInitialUpdate)
 	t.Run("UpdateFailure", testRunUpdateFailure)
 	t.Run("UpdateTimeout", testRunUpdateTimeout)
-	t.Run("ContinueUpdate", testContinueUpdate)
+	t.Run("ContinueUpdate", testRunContinueUpdate)
+	t.Run("StopAndRetry", testRunStopAndRetry)
 }
 func TestServer(t *testing.T) {
 	t.Run("Run", testRun)

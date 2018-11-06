@@ -134,7 +134,7 @@ func (w *EtcdWatcher) Wait() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	ch := etcd.Watch(ctx, w.key, clientv3.WithRev(w.rev+1))
+	ch := etcd.Watch(ctx, w.key, clientv3.WithRev(w.rev+1), clientv3.WithFilterDelete())
 	resp := <-ch
 	if resp.Err() != nil {
 		return resp.Err()
