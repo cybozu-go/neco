@@ -25,7 +25,7 @@ func testRunNoMembers(t *testing.T) {
 	e.Start()
 	defer e.Close()
 
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	_, err := e.GetRequest(ctx)
 	if err != storage.ErrNotFound {
@@ -49,7 +49,7 @@ func testRunInitialUpdate(t *testing.T) {
 
 	e.Start()
 	defer e.Close()
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	req, err := e.GetRequest(ctx)
 	if err != nil {
@@ -101,6 +101,9 @@ func testRunUpdateFailure(t *testing.T) {
 		}
 	}
 
+	// e.PutRequest(ctx, ReleaseChecker
+	// req2 := &neco.UpdateRequest{Version: "1.0.0", Servers: []int{0, 1, 2}, StartedAt: req.StartedAt}
+
 	e.Start()
 	defer e.Close()
 	time.Sleep(10 * time.Millisecond)
@@ -120,9 +123,6 @@ func testRunUpdateFailure(t *testing.T) {
 
 	if len(msgs) != 1 {
 		t.Fatal("len(msgs) != 1:", len(msgs))
-	}
-	if len(msgs[0].Attachments) != 1 {
-		t.Fatal("len(msgs[0].Attachment) != 1:", len(msgs[0].Attachments))
 	}
 	if color := msgs[0].Attachments[0].Color; color != ColorDanger {
 		t.Error("color != ColorDanger:", color)
@@ -157,11 +157,56 @@ func testRunUpdateTimeout(t *testing.T) {
 	if len(msgs) != 1 {
 		t.Fatal("len(msgs) != 1:", len(msgs))
 	}
-	if len(msgs[0].Attachments) != 1 {
-		t.Fatal("len(msgs[0].Attachment) != 1:", len(msgs[0].Attachments))
-	}
 	if color := msgs[0].Attachments[0].Color; color != ColorDanger {
 		t.Error("color != ColorDanger:", color)
+	}
+}
+
+func testContinueUpdate(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	e := NewTestEnv(t)
+
+	for _, lrn := range []int{0, 1, 2} {
+		err := e.RegisterBootserver(ctx, lrn)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	err := putRequest(t, neco.UpdateRequest{
+		Version:   "1.0.0",
+		Servers:   []int{0, 1, 2},
+		StartedAt: time.Now(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, lrn := range []int{0, 1} {
+		err := e.PutStatus(ctx, lrn, neco.UpdateStatus{Version: "1.0.0", Finished: true})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	e.Start()
+	defer e.Close()
+
+	err = e.PutStatus(ctx, 2, neco.UpdateStatus{Version: "1.0.0", Finished: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	time.Sleep(100 * time.Millisecond)
+
+	msgs := e.SlackMessages()
+
+	if len(msgs) != 1 {
+		t.Fatal("len(msgs) != 1:", len(msgs))
+	}
+	if color := msgs[0].Attachments[0].Color; color != ColorGood {
+		t.Error("color != ColorGreen:", color)
 	}
 }
 
@@ -170,6 +215,7 @@ func testRun(t *testing.T) {
 	t.Run("InitialUpdate", testRunInitialUpdate)
 	t.Run("UpdateFailure", testRunUpdateFailure)
 	t.Run("UpdateTimeout", testRunUpdateTimeout)
+	t.Run("ContinueUpdate", testContinueUpdate)
 }
 func TestServer(t *testing.T) {
 	t.Run("Run", testRun)
@@ -231,4 +277,32 @@ func (e *Env) Start() {
 func (e *Env) Close() {
 	e.env.Cancel(nil)
 	e.env.Wait()
+}
+
+func putRequest(t *testing.T, req neco.UpdateRequest) error {
+	ctx := context.Background()
+
+	etcd := test.NewEtcdClient(t)
+	defer etcd.Close()
+	st := storage.NewStorage(etcd)
+
+	sess, err := concurrency.NewSession(etcd)
+	if err != nil {
+		return err
+	}
+	defer sess.Close()
+
+	e := concurrency.NewElection(sess, storage.KeyLeader)
+	err = e.Campaign(ctx, "test")
+	if err != nil {
+		return err
+	}
+	leaderKey := e.Key()
+
+	err = st.PutRequest(ctx, req, leaderKey)
+	if err != nil {
+		return err
+	}
+
+	return e.Resign(ctx)
 }

@@ -93,6 +93,10 @@ RETRY:
 
 func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 	var target string
+
+	// Updater continues last update without create update reuqest with "skipRequest = true"
+	var skipRequest bool
+
 	req, err := s.storage.GetRequest(ctx)
 	if err == nil {
 		target = req.Version
@@ -104,6 +108,11 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			if err != nil {
 				return err
 			}
+		} else {
+			log.Info("Last updating is still on progressing, wait for workers", map[string]interface{}{
+				"version": req.Version,
+			})
+			skipRequest = true
 		}
 	} else if err != nil && err != storage.ErrNotFound {
 		return err
@@ -116,10 +125,16 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 		if len(target) != 0 {
 			// Found new update
 			for {
-				err = s.startUpdate(ctx, target, leaderKey)
-				if err == ErrNoMembers {
-					break
+				if !skipRequest {
+					skipRequest = false
+					err = s.startUpdate(ctx, target, leaderKey)
+					if err == ErrNoMembers {
+						break
+					} else if err != nil {
+						return err
+					}
 				}
+
 				err = s.waitWorkers(ctx)
 				if err == nil {
 					break
@@ -211,6 +226,9 @@ func (s Server) waitWorkers(ctx context.Context) error {
 			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyStatusPrefix):]))
 			if err != nil {
 				return err
+			}
+			if st.Version != req.Version {
+				continue
 			}
 			statuses[lrn] = st
 
