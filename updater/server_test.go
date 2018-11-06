@@ -2,6 +2,7 @@ package updater
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"testing"
 	"time"
@@ -72,17 +73,11 @@ func testRunInitialUpdate(t *testing.T) {
 		}
 	}
 
-	time.Sleep(100 * time.Millisecond)
-
-	msgs := e.SlackMessages()
-
-	if len(msgs) != 1 {
-		t.Fatal("len(msgs) != 1:", len(msgs))
+	msg, err := e.WaitMessage()
+	if err != nil {
+		t.Fatal(err)
 	}
-	if len(msgs[0].Attachments) != 1 {
-		t.Fatal("len(msgs[0].Attachment) != 1:", len(msgs[0].Attachments))
-	}
-	if color := msgs[0].Attachments[0].Color; color != ColorGood {
+	if color := msg.Attachments[0].Color; color != ColorGood {
 		t.Error("color != ColorGood:", color)
 	}
 }
@@ -101,9 +96,6 @@ func testRunUpdateFailure(t *testing.T) {
 		}
 	}
 
-	// e.PutRequest(ctx, ReleaseChecker
-	// req2 := &neco.UpdateRequest{Version: "1.0.0", Servers: []int{0, 1, 2}, StartedAt: req.StartedAt}
-
 	e.Start()
 	defer e.Close()
 	time.Sleep(10 * time.Millisecond)
@@ -117,14 +109,11 @@ func testRunUpdateFailure(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(100 * time.Millisecond)
-
-	msgs := e.SlackMessages()
-
-	if len(msgs) != 1 {
-		t.Fatal("len(msgs) != 1:", len(msgs))
+	msg, err := e.WaitMessage()
+	if err != nil {
+		t.Fatal(err)
 	}
-	if color := msgs[0].Attachments[0].Color; color != ColorDanger {
+	if color := msg.Attachments[0].Color; color != ColorDanger {
 		t.Error("color != ColorDanger:", color)
 	}
 }
@@ -150,14 +139,12 @@ func testRunUpdateTimeout(t *testing.T) {
 
 	e.Start()
 	defer e.Close()
-	time.Sleep(100 * time.Millisecond)
 
-	msgs := e.SlackMessages()
-
-	if len(msgs) != 1 {
-		t.Fatal("len(msgs) != 1:", len(msgs))
+	msg, err := e.WaitMessage()
+	if err != nil {
+		t.Fatal(err)
 	}
-	if color := msgs[0].Attachments[0].Color; color != ColorDanger {
+	if color := msg.Attachments[0].Color; color != ColorDanger {
 		t.Error("color != ColorDanger:", color)
 	}
 }
@@ -198,14 +185,11 @@ func testContinueUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(100 * time.Millisecond)
-
-	msgs := e.SlackMessages()
-
-	if len(msgs) != 1 {
-		t.Fatal("len(msgs) != 1:", len(msgs))
+	msg, err := e.WaitMessage()
+	if err != nil {
+		t.Fatal(err)
 	}
-	if color := msgs[0].Attachments[0].Color; color != ColorGood {
+	if color := msg.Attachments[0].Color; color != ColorGood {
 		t.Error("color != ColorGreen:", color)
 	}
 }
@@ -252,10 +236,6 @@ func NewTestEnv(t *testing.T) *Env {
 	return e
 }
 
-func (e *Env) SlackMessages() []Payload {
-	return e.slack.Messages()
-}
-
 func (e *Env) Start() {
 	e.env = well.NewEnvironment(context.Background())
 	e.env.Go(func(ctx context.Context) error {
@@ -272,6 +252,15 @@ func (e *Env) Start() {
 		return nil
 	})
 	e.env.Stop()
+}
+
+func (e *Env) WaitMessage() (Payload, error) {
+	select {
+	case msg := <-e.slack.WatchMessage():
+		return msg, nil
+	case <-time.After(time.Second):
+		return Payload{}, errors.New("time out")
+	}
 }
 
 func (e *Env) Close() {
