@@ -108,7 +108,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				return err
 			}
 		} else {
-			log.Info("Last updating is still on progressing, wait for workers", map[string]interface{}{
+			log.Info("Last updating is still in progress, wait for workers", map[string]interface{}{
 				"version": req.Version,
 			})
 			skipRequest = true
@@ -125,7 +125,6 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			// Found new update
 			for {
 				if !skipRequest {
-					skipRequest = false
 					err = s.startUpdate(ctx, target, leaderKey)
 					if err == ErrNoMembers {
 						break
@@ -133,6 +132,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 						return err
 					}
 				}
+				skipRequest = false
 
 				err = s.waitWorkers(ctx)
 				if err == nil {
@@ -153,7 +153,12 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 		}
 
 		err := s.waitForMemberUpdated(ctx)
+		// err == nil: member list is updated, install new member and
+		// update configureions with current version (in variable `latest')
+		// err == context.DeadlineExceeded: timed-out by check-update-interval
+		// find newer version and install it to servers
 		if err == context.DeadlineExceeded {
+			// Use latest version to update
 			target = ""
 		} else if err != nil {
 			return err

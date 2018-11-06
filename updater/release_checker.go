@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"net/url"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -25,10 +24,8 @@ type GitHubReleaseChecker struct {
 	storage storage.Storage
 	github  ReleaseInterface
 
-	pkg      PackageManager
-	latest   *atomic.Value
-	updated  *sync.WaitGroup
-	notfound bool
+	pkg    PackageManager
+	latest atomic.Value
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
@@ -36,9 +33,6 @@ func NewReleaseChecker(st storage.Storage) ReleaseChecker {
 	c := &GitHubReleaseChecker{
 		storage: st,
 		pkg:     DebPackageManager{},
-
-		latest:  new(atomic.Value),
-		updated: new(sync.WaitGroup),
 	}
 	c.latest.Store("")
 	return c
@@ -46,14 +40,11 @@ func NewReleaseChecker(st storage.Storage) ReleaseChecker {
 
 // Run runs newer release at bDaduring periodic intervals
 func (c *GitHubReleaseChecker) Run(ctx context.Context) error {
-	c.updated = new(sync.WaitGroup)
-
 	for {
 		interval, err := c.storage.GetCheckUpdateInterval(ctx)
 		if err != nil {
 			return err
 		}
-		c.updated.Done()
 
 		err = c.update(ctx)
 		if err != nil {
@@ -71,10 +62,6 @@ func (c *GitHubReleaseChecker) Run(ctx context.Context) error {
 // GetLatest returns latest version in GitHub Releases, or returns empty if no
 // release are available
 func (c *GitHubReleaseChecker) GetLatest() string {
-	if c.notfound {
-		return ""
-	}
-	c.updated.Wait()
 	return c.latest.Load().(string)
 }
 
@@ -114,7 +101,6 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 		return nil
 	}
 	if err == ErrNoReleases {
-		c.notfound = true
 		return nil
 	}
 	if err != nil {

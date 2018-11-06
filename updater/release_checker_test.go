@@ -2,8 +2,6 @@ package updater
 
 import (
 	"context"
-	"sync"
-	"sync/atomic"
 	"testing"
 
 	"github.com/cybozu-go/neco"
@@ -22,9 +20,6 @@ func testUpdate(t *testing.T) {
 		storage: st,
 		github:  mock.GitHub{Release: "1.0.0", PreRelease: "0.1.0"},
 		pkg:     mock.PackageManager{Versions: map[string]string{"neco": "0.0.0"}},
-
-		latest:  new(atomic.Value),
-		updated: new(sync.WaitGroup),
 	}
 	checker.latest.Store("")
 
