@@ -22,11 +22,12 @@ type ReleaseInterface interface {
 type ReleaseClient struct {
 	owner string
 	repo  string
+	http  *http.Client
 }
 
 // GetLatestReleaseTag returns latest tag in GitHub Releases of neco repository
 func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
-	client := github.NewClient(nil)
+	client := github.NewClient(c.http)
 	release, resp, err := client.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
 	if err != nil {
 		if resp.StatusCode == http.StatusNotFound {
@@ -52,7 +53,7 @@ func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) 
 
 // GetLatestPreReleaseTag returns latest pre-released tag in GitHub Releases of neco repository
 func (c ReleaseClient) GetLatestPreReleaseTag(ctx context.Context) (string, error) {
-	client := github.NewClient(nil)
+	client := github.NewClient(c.http)
 
 	opt := &github.ListOptions{
 		PerPage: 100,

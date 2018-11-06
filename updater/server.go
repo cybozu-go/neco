@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -424,33 +423,18 @@ func (s Server) newSlackClient(ctx context.Context) (*SlackClient, error) {
 		return nil, err
 	}
 
-	proxy := http.ProxyFromEnvironment
+	var http *http.Client
+
 	proxyURL, err := s.storage.GetProxyConfig(ctx)
 	if err == storage.ErrNotFound {
 	} else if err != nil {
 		return nil, err
-
 	} else {
 		u, err := url.Parse(proxyURL)
 		if err != nil {
 			return nil, err
 		}
-		proxy = http.ProxyURL(u)
-	}
-	transport := &http.Transport{
-		Proxy: proxy,
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-			DualStack: true,
-		}).DialContext,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-	}
-	http := &http.Client{
-		Transport: transport,
+		http = neco.NewHTTP(u)
 	}
 
 	return &SlackClient{URL: webhookURL, HTTP: http}, nil
