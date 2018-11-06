@@ -10,33 +10,47 @@ type UpdateRequest struct {
 	StartedAt time.Time `json:"started_at"`
 }
 
+// UpdateCondition is the condition of the update process.
+type UpdateCondition int
+
+// Possible update conditions.
+const (
+	CondRunning = iota
+	CondAbort
+	CondComplete
+)
+
 // UpdateStatus represents status report from neco-worker
 type UpdateStatus struct {
-	Version  string `json:"version"`
-	Step     int    `json:"step"`
-	Finished bool   `json:"finished"`
-	Error    bool   `json:"error"`
-	Message  string `json:"message"`
+	Version string          `json:"version"`
+	Step    int             `json:"step"`
+	Cond    UpdateCondition `json:"cond"`
+	Message string          `json:"message"`
 }
 
 // UpdateAborted returns true if the current update process was aborted.
 //
 // The condition is checked as follows:
 // 1. If the status is not for the current version, it is ignored.
-// 2. If the status has Finished==true, it is ignored.
-// 3. If the status has Step > 1, the update process was aborted at that Step.
-// 4. If the status has Error==true, the update process was aborted at step 1.
-func UpdateAborted(version string, statuses map[int]*UpdateStatus) bool {
-	for _, u := range statuses {
+// 2. If the status has Cond==CondComplete, it is ignored.
+// 3. If the status has Cond==CondAbort, this returns true.
+// 4. If the status has Step==1 for other workers, it is ignored.
+// 5. Otherwise, the process was aborted.
+func UpdateAborted(version string, mylrn int, statuses map[int]*UpdateStatus) bool {
+	for lrn, u := range statuses {
 		if u.Version != version {
 			continue
 		}
-		if u.Finished {
+		switch u.Cond {
+		case CondComplete:
 			continue
-		}
-		if u.Step > 1 || u.Error {
+		case CondAbort:
 			return true
 		}
+		if u.Step == 1 && lrn != mylrn {
+			continue
+		}
+		return true
 	}
 
 	return false
@@ -55,7 +69,7 @@ func UpdateCompleted(version string, lrns []int, statuses map[int]*UpdateStatus)
 			return false
 		}
 
-		if !st.Finished {
+		if st.Cond != CondComplete {
 			return false
 		}
 	}

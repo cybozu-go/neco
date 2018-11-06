@@ -168,10 +168,9 @@ func testStatus(t *testing.T) {
 	}
 
 	status := neco.UpdateStatus{
-		Version:  "1.0.0",
-		Finished: true,
-		Error:    true,
-		Message:  "aaa",
+		Version: "1.0.0",
+		Cond:    neco.CondComplete,
+		Message: "aaa",
 	}
 	err = st.PutStatus(ctx, 1, status)
 	if err != nil {
@@ -231,10 +230,9 @@ func testClearStatus(t *testing.T) {
 	}
 
 	status := neco.UpdateStatus{
-		Version:  "1.0.0",
-		Finished: true,
-		Error:    true,
-		Message:  "aaa",
+		Version: "1.0.0",
+		Cond:    neco.CondComplete,
+		Message: "aaa",
 	}
 	err = st.PutStatus(ctx, 1, status)
 	if err != nil {

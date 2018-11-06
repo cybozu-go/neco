@@ -59,20 +59,18 @@ If `stop` becomes true, `neco-worker` should stop the ongoing update process imm
 
 The value is a JSON object with these fields:
 
-Name       | Type   | Description
-----       | ----   | -----------
-`version`  | string | Target `neco` version to be updated.
-`step`     | int    | Current update step.
-`finished` | bool   | Update to `version` successfully completed.
-`error`    | bool   | If `true`, the update process was aborted due to an error.
-`message`  | string | Description of an error.
+Name      | Type   | Description
+----      | ----   | -----------
+`version` | string | Target `neco` version to be updated.
+`step`    | int    | Current update step.
+`cond`    | int    | [`UpdateCondition`](https://godoc.org/github.com/cybozu-go/neco#UpdateCondition)
+`message` | string | Description of an error.
 
 ```json
 {
     "version": "1.2.3-1",
     "step": 2,
-    "finished": false,
-    "error": true,
+    "cond": 0,
     "message": "cke update failed"
 }
 ```

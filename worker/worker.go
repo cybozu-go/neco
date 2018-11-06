@@ -65,7 +65,6 @@ type Worker struct {
 
 	// internal states
 	req     *neco.UpdateRequest
-	status  *neco.UpdateStatus
 	barrier Barrier
 }
 
@@ -146,7 +145,7 @@ func (w *Worker) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if neco.UpdateAborted(req.Version, stMap) {
+	if neco.UpdateAborted(req.Version, w.mylrn, stMap) {
 		goto WAIT
 	}
 	if neco.UpdateCompleted(req.Version, req.Servers, stMap) {
@@ -154,7 +153,6 @@ func (w *Worker) Run(ctx context.Context) error {
 	}
 
 	w.req = req
-	w.status = stMap[w.mylrn]
 	w.barrier = NewBarrier(req.Servers)
 	err = w.update(ctx, rev)
 	if err != nil {
@@ -180,9 +178,12 @@ func (w *Worker) update(ctx context.Context, rev int64) error {
 		}
 
 		for _, ev := range wr.Events {
-			err = w.dispatch(ctx, ev)
+			completed, err := w.dispatch(ctx, ev)
 			if err != nil {
 				return err
+			}
+			if completed {
+				return nil
 			}
 		}
 	}
@@ -190,20 +191,17 @@ func (w *Worker) update(ctx context.Context, rev int64) error {
 	return nil
 }
 
-func (w *Worker) dispatch(ctx context.Context, ev *clientv3.Event) error {
+func (w *Worker) dispatch(ctx context.Context, ev *clientv3.Event) (bool, error) {
 	key := string(ev.Kv.Key[len(storage.KeyStatusPrefix):])
 	if key == "current" {
-		return w.handleCurrent(ctx, ev)
+		return false, w.handleCurrent(ctx, ev)
 	}
 
 	lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyWorkerStatusPrefix):]))
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	if lrn == w.mylrn {
-		return nil
-	}
 	return w.handleWorkerStatus(ctx, lrn, ev)
 }
 
@@ -221,8 +219,8 @@ func (w *Worker) handleCurrent(ctx context.Context, ev *clientv3.Event) error {
 	return nil
 }
 
-func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.Event) error {
-	return nil
+func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.Event) (bool, error) {
+	return false, nil
 }
 
 func (w *Worker) waitRequest(ctx context.Context) error {

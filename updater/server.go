@@ -208,7 +208,11 @@ func (s Server) waitWorkers(ctx context.Context, req *neco.UpdateRequest, rev in
 		return err
 	}
 
-	statuses := make(map[int]neco.UpdateStatus)
+	req, rev, err := s.storage.GetRequestWithRev(ctx)
+	if err != nil {
+		return err
+	}
+	statuses := make(map[int]*neco.UpdateStatus)
 
 	deadline := req.StartedAt.Add(timeout)
 	deadlineCtx, cancel := context.WithDeadline(ctx, deadline)
@@ -220,8 +224,8 @@ func (s Server) waitWorkers(ctx context.Context, req *neco.UpdateRequest, rev in
 	)
 	for resp := range ch {
 		for _, ev := range resp.Events {
-			var st neco.UpdateStatus
-			err = json.Unmarshal(ev.Kv.Value, &st)
+			st := new(neco.UpdateStatus)
+			err = json.Unmarshal(ev.Kv.Value, st)
 			if err != nil {
 				return err
 			}
@@ -234,7 +238,8 @@ func (s Server) waitWorkers(ctx context.Context, req *neco.UpdateRequest, rev in
 			}
 			statuses[lrn] = st
 
-			if st.Error {
+			switch st.Cond {
+			case neco.CondAbort:
 				log.Warn("worker failed updating", map[string]interface{}{
 					"version": req.Version,
 					"lrn":     lrn,
@@ -242,8 +247,7 @@ func (s Server) waitWorkers(ctx context.Context, req *neco.UpdateRequest, rev in
 				})
 				s.notifySlackServerFailure(ctx, *req, st)
 				return ErrUpdateFailed
-			}
-			if st.Finished {
+			case neco.CondComplete:
 				log.Info("worker finished updating", map[string]interface{}{
 					"version": req.Version,
 					"lrn":     lrn,
@@ -251,13 +255,7 @@ func (s Server) waitWorkers(ctx context.Context, req *neco.UpdateRequest, rev in
 			}
 		}
 
-		success := true
-		for _, lrn := range req.Servers {
-			if st, ok := statuses[lrn]; !ok || !st.Finished || st.Version != req.Version {
-				success = false
-				break
-			}
-		}
+		success := neco.UpdateCompleted(req.Version, req.Servers, statuses)
 		if success {
 			log.Info("all worker finished updating", map[string]interface{}{
 				"version": req.Version,
@@ -348,7 +346,7 @@ func (s Server) notifySlackSucceeded(ctx context.Context, req neco.UpdateRequest
 	return slack.PostWebHook(ctx, payload)
 }
 
-func (s Server) notifySlackServerFailure(ctx context.Context, req neco.UpdateRequest, st neco.UpdateStatus) error {
+func (s Server) notifySlackServerFailure(ctx context.Context, req neco.UpdateRequest, st *neco.UpdateStatus) error {
 	slack, err := s.newSlackClient(ctx)
 	if err == storage.ErrNotFound {
 		return nil
