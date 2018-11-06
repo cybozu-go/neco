@@ -13,7 +13,7 @@ func NewBarrier(lrns []int) Barrier {
 }
 
 // Check inform the barrier of the arrival of a boot server to a check point.
-// It returns true when all boot servers reache the check point.
+// It returns true when all boot servers reach the check point.
 func (b Barrier) Check(lrn int) bool {
 	delete(b, lrn)
 	return len(b) == 0

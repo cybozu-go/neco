@@ -43,7 +43,7 @@ require (
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/go-cmp v0.2.0
 	github.com/google/go-github v17.0.0+incompatible
-	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/google/go-github/v18 v18.2.0
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.3.1-0.20170217192616-94e7d24fd285 // indirect
 	github.com/gotestyourself/gotestyourself v2.1.0+incompatible // indirect
