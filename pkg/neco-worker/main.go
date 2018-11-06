@@ -19,12 +19,12 @@ func main() {
 	}
 	defer ec.Close()
 
-	server, err := worker.NewServer(ec)
+	w, err := worker.NewWorker(ec)
 	if err != nil {
 		log.ErrorExit(err)
 	}
 
-	well.Go(server.Run)
+	well.Go(w.Run)
 	well.Stop()
 	err = well.Wait()
 	if err != nil && !well.IsSignaled(err) {

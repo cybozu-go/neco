@@ -26,6 +26,9 @@ type UpdateStatus struct {
 // 2. If the status has Finished==true, it is ignored.
 // 3. If the status has Step > 1, the update process was aborted at that Step.
 // 4. If the status has Error==true, the update process was aborted at step 1.
+//
+// There is a small chance this function outlooks preveious failures when
+// update failed while executing step 1.  We currently ignore this.
 func UpdateAborted(version string, statuses map[int]*UpdateStatus) bool {
 	for _, u := range statuses {
 		if u.Version != version {

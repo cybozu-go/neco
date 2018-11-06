@@ -10,27 +10,51 @@ import (
 	"github.com/cybozu-go/neco/storage"
 )
 
-// Server represents neco-worker server
-type Server struct {
+// Worker implements Neco auto update worker process.
+
+type Worker struct {
 	mylrn   int
 	ec      *clientv3.Client
 	storage storage.Storage
 	req     *neco.UpdateRequest
 	status  *neco.UpdateStatus
+	arrival map[int]bool
 }
 
-// NewServer returns a Server
-func NewServer(ec *clientv3.Client) (Server, error) {
+// NewWorker returns a *Worker
+func NewWorker(ec *clientv3.Client) (*Worker, error) {
 	mylrn, err := neco.MyLRN()
 	if err != nil {
-		return Server{}, err
+		return nil, err
 	}
-	return Server{mylrn: mylrn, ec: ec, storage: storage.NewStorage(ec)}, nil
+
+	return &Worker{
+		mylrn:   mylrn,
+		ec:      ec,
+		storage: storage.NewStorage(ec),
+	}, nil
+}
+
+func (w *Worker) initArrival(lrns []int) {
+	m := make(map[int]bool)
+	for _, lrn := range lrns {
+		m[lrn] = false
+	}
+	w.arrival = m
+}
+
+func (w *Worker) allArrived() bool {
+	for _, v := range w.arrival {
+		if !v {
+			return false
+		}
+	}
+	return true
 }
 
 // Run executes neco-worker task indefinitely until ctx is cancelled.
-func (s Server) Run(ctx context.Context) error {
-	req, rev, err := s.storage.GetRequestWithRev(ctx)
+func (w *Worker) Run(ctx context.Context) error {
+	req, rev, err := w.storage.GetRequestWithRev(ctx)
 
 	switch err {
 	case storage.ErrNotFound:
@@ -41,7 +65,7 @@ func (s Server) Run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		stMap, err := s.storage.GetStatuses(ctx, req.Servers)
+		stMap, err := w.storage.GetStatuses(ctx, req.Servers)
 		if err != nil {
 			return err
 		}
@@ -49,15 +73,16 @@ func (s Server) Run(ctx context.Context) error {
 			return errors.New("update was aborted")
 		}
 
-		myStatus := stMap[s.mylrn]
+		myStatus := stMap[w.mylrn]
 		if myStatus == nil || req.Version != myStatus.Version {
-			myStatus, err = s.RegisterStatus(ctx, req.Version)
+			myStatus, err = w.RegisterStatus(ctx, req.Version)
 			if err != nil {
 				return err
 			}
 		}
-		s.req = req
-		s.status = myStatus
+		w.req = req
+		w.status = myStatus
+		w.initArrival(req.Servers)
 	default:
 		return err
 	}
@@ -65,7 +90,7 @@ func (s Server) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	ch := s.ec.Watch(ctx, storage.KeyStatusPrefix,
+	ch := w.ec.Watch(ctx, storage.KeyStatusPrefix,
 		clientv3.WithPrefix(),
 		clientv3.WithRev(rev+1),
 		clientv3.WithFilterDelete())
@@ -76,7 +101,7 @@ func (s Server) Run(ctx context.Context) error {
 		}
 
 		for _, ev := range wr.Events {
-			err = s.dispatch(ctx, ev)
+			err = w.dispatch(ctx, ev)
 			if err != nil {
 				return err
 			}
@@ -86,10 +111,10 @@ func (s Server) Run(ctx context.Context) error {
 	return nil
 }
 
-func (s Server) dispatch(ctx context.Context, ev *clientv3.Event) error {
+func (w *Worker) dispatch(ctx context.Context, ev *clientv3.Event) error {
 	key := string(ev.Kv.Key[len(storage.KeyStatusPrefix):])
 	if key == "current" {
-		return s.handleCurrent(ctx, ev)
+		return w.handleCurrent(ctx, ev)
 	}
 
 	lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyWorkerStatusPrefix):]))
@@ -97,24 +122,24 @@ func (s Server) dispatch(ctx context.Context, ev *clientv3.Event) error {
 		return err
 	}
 
-	if lrn == s.mylrn {
+	if lrn == w.mylrn {
 		return nil
 	}
-	return s.handleWorkerStatus(ctx, lrn, ev)
+	return w.handleWorkerStatus(ctx, lrn, ev)
 }
 
 func updateNeco(ctx context.Context, version string) error {
 	return nil
 }
 
-func (s Server) RegisterStatus(ctx context.Context, version string) (*neco.UpdateStatus, error) {
+func (w *Worker) RegisterStatus(ctx context.Context, version string) (*neco.UpdateStatus, error) {
 	return nil, nil
 }
 
-func (s Server) handleCurrent(ctx context.Context, ev *clientv3.Event) error {
+func (w *Worker) handleCurrent(ctx context.Context, ev *clientv3.Event) error {
 	return nil
 }
 
-func (s Server) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.Event) error {
+func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.Event) error {
 	return nil
 }
