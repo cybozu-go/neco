@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 
 	"github.com/cybozu-go/log"
@@ -19,12 +20,13 @@ func main() {
 	}
 	defer ec.Close()
 
-	w, err := worker.NewWorker(ec)
-	if err != nil {
-		log.ErrorExit(err)
-	}
-
-	well.Go(w.Run)
+	well.Go(func(ctx context.Context) error {
+		w, err := worker.NewWorker(ctx, ec)
+		if err != nil {
+			return err
+		}
+		return w.Run(ctx)
+	})
 	well.Stop()
 	err = well.Wait()
 	if err != nil && !well.IsSignaled(err) {

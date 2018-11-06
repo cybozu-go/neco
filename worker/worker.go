@@ -2,20 +2,66 @@ package worker
 
 import (
 	"context"
+	"net"
+	"net/http"
+	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 )
 
+func proxyHTTPClient(proxyURL *url.URL) *http.Client {
+	transport := &http.Transport{
+		Proxy: http.ProxyURL(proxyURL),
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+
+	return &http.Client{
+		Transport: transport,
+		Timeout:   1 * time.Hour,
+	}
+}
+
+func localHTTPClient() *http.Client {
+	transport := &http.Transport{
+		Proxy: nil,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+
+	return &http.Client{
+		Transport: transport,
+		Timeout:   10 * time.Minute,
+	}
+}
+
 // Worker implements Neco auto update worker process.
 // This is a state machine.
 type Worker struct {
-	mylrn   int
-	version string
-	ec      *clientv3.Client
-	storage storage.Storage
+	mylrn       int
+	version     string
+	ec          *clientv3.Client
+	storage     storage.Storage
+	proxyClient *http.Client
+	localClient *http.Client
 
 	// internal states
 	req     *neco.UpdateRequest
@@ -24,7 +70,7 @@ type Worker struct {
 }
 
 // NewWorker returns a *Worker.
-func NewWorker(ec *clientv3.Client) (*Worker, error) {
+func NewWorker(ctx context.Context, ec *clientv3.Client) (*Worker, error) {
 	mylrn, err := neco.MyLRN()
 	if err != nil {
 		return nil, err
@@ -35,11 +81,32 @@ func NewWorker(ec *clientv3.Client) (*Worker, error) {
 		return nil, err
 	}
 
+	localClient := localHTTPClient()
+	proxyClient := localClient
+
+	st := storage.NewStorage(ec)
+	proxy, err := st.GetProxyConfig(ctx)
+	if err != nil {
+		if err != storage.ErrNotFound {
+			return nil, err
+		}
+	} else {
+		if len(proxy) > 0 {
+			proxyURL, err := url.Parse(proxy)
+			if err != nil {
+				return nil, err
+			}
+			proxyClient = proxyHTTPClient(proxyURL)
+		}
+	}
+
 	return &Worker{
-		mylrn:   mylrn,
-		version: version,
-		ec:      ec,
-		storage: storage.NewStorage(ec),
+		mylrn:       mylrn,
+		version:     version,
+		ec:          ec,
+		storage:     st,
+		proxyClient: proxyClient,
+		localClient: localClient,
 	}, nil
 }
 
@@ -72,7 +139,7 @@ func (w *Worker) Run(ctx context.Context) error {
 	}
 
 	if w.version != req.Version {
-		return updateNeco(ctx, req.Version)
+		return w.updateNeco(ctx, req.Version)
 	}
 
 	stMap, err := w.storage.GetStatuses(ctx)
@@ -140,8 +207,14 @@ func (w *Worker) dispatch(ctx context.Context, ev *clientv3.Event) error {
 	return w.handleWorkerStatus(ctx, lrn, ev)
 }
 
-func updateNeco(ctx context.Context, version string) error {
-	return nil
+func (w *Worker) updateNeco(ctx context.Context, version string) error {
+	deb, err := neco.CurrentArtifacts.FindDebianPackage("neco")
+	if err != nil {
+		return err
+	}
+	deb.Release = version
+
+	return InstallDebianPackage(ctx, w.proxyClient, &deb)
 }
 
 func (w *Worker) handleCurrent(ctx context.Context, ev *clientv3.Event) error {
