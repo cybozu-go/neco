@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// NewHTTP creates new HTTP client with proxyURL if non nil
 func NewHTTP(proxyURL *url.URL) *http.Client {
 	proxy := http.ProxyFromEnvironment
 	if proxyURL != nil {
