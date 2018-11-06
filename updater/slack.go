@@ -5,33 +5,65 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-
-	"github.com/cybozu-go/well"
+	"time"
 )
 
-var httpClient = &well.HTTPClient{
-	Client: &http.Client{},
-}
+// Reserved colors in Slack API
+const (
+	ColorGood    = "good"
+	ColorWarning = "warning"
+	ColorDanger  = "danger"
+)
 
-// Payload represents slack payload
 type Payload struct {
-	Channel   string `json:"channel,omitempty"`
-	Username  string `json:"username,omitempty"`
-	IconEmoji string `json:"icon_emoji,omitempty"`
-	Text      string `json:"text,omitempty"`
+	Attachments []Attachment `json:"attachments"`
 }
 
-// NotifySlack notifies to slack
-func NotifySlack(ctx context.Context, url string, payload Payload) error {
-	data, err := json.Marshal(payload)
+type AttachmentField struct {
+	Title string `json:"title,omitempty"`
+	Value string `json:"value,omitempty"`
+	Short bool   `json:"short,omitempty"`
+}
+
+type Attachment struct {
+	Fallback   string            `json:"fallback,omitempty"`
+	Color      string            `json:"color,omitempty"`
+	Pretext    string            `json:"pretext,omitempty"`
+	AuthorName string            `json:"author_name,omitempty"`
+	AuthorLink string            `json:"author_link,omitempty"`
+	AuthorIcon string            `json:"author_icon,omitempty"`
+	Title      string            `json:"title,omitempty"`
+	TitleLink  string            `json:"title_link,omitempty"`
+	Text       string            `json:"text,omitempty"`
+	Fields     []AttachmentField `json:"fields,omitempty"`
+	ImageURL   string            `json:"image_url,omitempty"`
+	ThumbURL   string            `json:"thumb_url,omitempty"`
+	Footer     string            `json:"footer,omitempty"`
+	FooterIcon string            `json:"footer_icon,omitempty"`
+	Timestamp  time.Time         `json:"ts,omitempty"`
+}
+
+type SlackClient struct {
+	URL  string
+	HTTP *http.Client
+}
+
+func (c SlackClient) PostWebHook(ctx context.Context, payload Payload) error {
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST", url, bytes.NewReader(data))
+	req, err := http.NewRequest("POST", c.URL, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
 	req = req.WithContext(ctx)
-	_, err = httpClient.Do(req)
+	req.Header.Set("Content-Type", "application/json")
+
+	httpc := c.HTTP
+	if httpc == nil {
+		httpc = http.DefaultClient
+	}
+	_, err = httpc.Do(req)
 	return err
 }
