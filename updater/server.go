@@ -382,7 +382,7 @@ func (s Server) notifySlackServerFailure(ctx context.Context, req neco.UpdateReq
 		Title:      "Failed to update boot servers",
 		Text:       "Failed to update boot servers due to some worker return(s) error :crying_cat_face:.  Please fix it manually.",
 		Fields: []AttachmentField{
-			{Title: "Version", Value: "1.0.0", Short: true},
+			{Title: "Version", Value: req.Version, Short: true},
 			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
 			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
 			{Title: "Reason", Value: st.Message, Short: true},
@@ -406,7 +406,7 @@ func (s Server) notifySlackTimeout(ctx context.Context, req neco.UpdateRequest) 
 		Title:      "Update failed on the boot servers",
 		Text:       "Failed to update boot servers due to timed-out from worker updates :crying_cat_face:.  Please fix it manually.",
 		Fields: []AttachmentField{
-			{Title: "Version", Value: "1.0.0", Short: true},
+			{Title: "Version", Value: req.Version, Short: true},
 			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
 			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
 		},
