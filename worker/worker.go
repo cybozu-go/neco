@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"errors"
 	"strconv"
 
 	"github.com/coreos/etcd/clientv3"
@@ -11,82 +10,95 @@ import (
 )
 
 // Worker implements Neco auto update worker process.
-
+// This is a state machine.
 type Worker struct {
 	mylrn   int
+	version string
 	ec      *clientv3.Client
 	storage storage.Storage
+
+	// internal states
 	req     *neco.UpdateRequest
 	status  *neco.UpdateStatus
-	arrival map[int]bool
+	barrier Barrier
 }
 
-// NewWorker returns a *Worker
+// NewWorker returns a *Worker.
 func NewWorker(ec *clientv3.Client) (*Worker, error) {
 	mylrn, err := neco.MyLRN()
 	if err != nil {
 		return nil, err
 	}
 
+	version, err := GetDebianVersion("neco")
+	if err != nil {
+		return nil, err
+	}
+
 	return &Worker{
 		mylrn:   mylrn,
+		version: version,
 		ec:      ec,
 		storage: storage.NewStorage(ec),
 	}, nil
 }
 
-func (w *Worker) initArrival(lrns []int) {
-	m := make(map[int]bool)
-	for _, lrn := range lrns {
-		m[lrn] = false
-	}
-	w.arrival = m
-}
-
-func (w *Worker) allArrived() bool {
-	for _, v := range w.arrival {
-		if !v {
-			return false
-		}
-	}
-	return true
-}
-
-// Run executes neco-worker task indefinitely until ctx is cancelled.
+// Run waits for update request from neco-updater, then executes
+// update process with other workers.  To communicate with neco-updater
+// and other workers, etcd objects are used.
+//
+// Run works as follows:
+//
+// 1. Check the current request.  If the request is not found, go to 5.
+//
+// 2. If locally installed neco package is older than the requested version,
+//    neco-worker updates the package, then exits to be restarted by systemd.
+//
+// 3. Check the status of request and workers; if the update process was aborted,
+//    or if the update process has completed successfully, also go to 5.
+//
+// 4. Update programs for the requested version.
+//
+// 5. Wait for the new request.    If there is a new one, neco-worker updates
+//    the package and exists to be restarted by systemd.
 func (w *Worker) Run(ctx context.Context) error {
 	req, rev, err := w.storage.GetRequestWithRev(ctx)
 
-	switch err {
-	case storage.ErrNotFound:
-		// nothing to do
-
-	case nil:
-		err = updateNeco(ctx, req.Version)
-		if err != nil {
-			return err
-		}
-		stMap, err := w.storage.GetStatuses(ctx, req.Servers)
-		if err != nil {
-			return err
-		}
-		if neco.UpdateAborted(req.Version, stMap) {
-			return errors.New("update was aborted")
-		}
-
-		myStatus := stMap[w.mylrn]
-		if myStatus == nil || req.Version != myStatus.Version {
-			myStatus, err = w.RegisterStatus(ctx, req.Version)
-			if err != nil {
-				return err
-			}
-		}
-		w.req = req
-		w.status = myStatus
-		w.initArrival(req.Servers)
-	default:
+	if err == storage.ErrNotFound {
+		return w.waitRequest(ctx)
+	}
+	if err != nil {
 		return err
 	}
 
+	if w.version != req.Version {
+		return updateNeco(ctx, req.Version)
+	}
+
+	stMap, err := w.storage.GetStatuses(ctx)
+	if err != nil {
+		return err
+	}
+	if neco.UpdateAborted(req.Version, stMap) {
+		goto WAIT
+	}
+	if neco.UpdateCompleted(req.Version, req.Servers, stMap) {
+		goto WAIT
+	}
+
+	w.req = req
+	w.status = stMap[w.mylrn]
+	w.barrier = NewBarrier(req.Servers)
+	err = w.update(ctx, rev)
+	if err != nil {
+		return err
+	}
+
+WAIT:
+	return w.waitRequest(ctx)
+}
+
+func (w *Worker) update(ctx context.Context, rev int64) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -132,14 +144,14 @@ func updateNeco(ctx context.Context, version string) error {
 	return nil
 }
 
-func (w *Worker) RegisterStatus(ctx context.Context, version string) (*neco.UpdateStatus, error) {
-	return nil, nil
-}
-
 func (w *Worker) handleCurrent(ctx context.Context, ev *clientv3.Event) error {
 	return nil
 }
 
 func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.Event) error {
+	return nil
+}
+
+func (w *Worker) waitRequest(ctx context.Context) error {
 	return nil
 }
