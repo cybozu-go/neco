@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"sort"
 	"strconv"
@@ -34,11 +37,7 @@ func NewServer(session *concurrency.Session, storage storage.Storage, timeout ti
 		storage: storage,
 		timeout: timeout,
 
-		checker: NewReleaseChecker(
-			storage,
-			ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName},
-			DebPackageManager{},
-		),
+		checker: NewReleaseChecker(storage),
 	}
 }
 
@@ -159,7 +158,7 @@ func (s Server) startUpdate(ctx context.Context, tag, leaderKey string) error {
 		log.Info("No bootservers exists in etcd", map[string]interface{}{})
 		return ErrNoMembers
 	}
-	log.Info("New neco release is found, starting updating", map[string]interface{}{
+	log.Info("Starting updating", map[string]interface{}{
 		"version": tag,
 		"servers": servers,
 	})
@@ -216,12 +215,12 @@ func (s Server) waitWorkers(ctx context.Context) error {
 			statuses[lrn] = st
 
 			if st.Error {
-				log.Info("worker failed updating", map[string]interface{}{
+				log.Warn("worker failed updating", map[string]interface{}{
 					"version": req.Version,
 					"lrn":     lrn,
 					"message": st.Message,
 				})
-				s.notifyFailure(ctx, *req, &st)
+				s.notifySlackServerFailure(ctx, *req, st)
 				return ErrUpdateFailed
 			}
 			if st.Finished {
@@ -231,9 +230,10 @@ func (s Server) waitWorkers(ctx context.Context) error {
 				})
 			}
 		}
+
 		success := true
 		for _, lrn := range req.Servers {
-			if st, ok := statuses[lrn]; !ok || !st.Finished || !statuses[lrn].Error || st.Version != req.Version {
+			if st, ok := statuses[lrn]; !ok || !st.Finished || st.Version != req.Version {
 				success = false
 				break
 			}
@@ -243,7 +243,7 @@ func (s Server) waitWorkers(ctx context.Context) error {
 				"version": req.Version,
 				"servers": req.Servers,
 			})
-			s.notifySucceeded(ctx, *req)
+			s.notifySlackSucceeded(ctx, *req)
 			return nil
 		}
 	}
@@ -253,7 +253,7 @@ func (s Server) waitWorkers(ctx context.Context) error {
 		"started_at": req.StartedAt,
 		"timeout":    timeout,
 	})
-	s.notifyFailure(ctx, *req, nil)
+	s.notifySlackTimeout(ctx, *req)
 	return ErrUpdateFailed
 }
 
@@ -284,12 +284,15 @@ func (s Server) waitForMemberUpdated(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	var lrns []int
 	req, rev, err := s.storage.GetRequestWithRev(ctx)
-	if err != nil {
+	if err == nil {
+		lrns = req.Servers
+		sort.Ints(lrns)
+	}
+	if err != nil && err != storage.ErrNotFound {
 		return err
 	}
-	lrns := req.Servers
-	sort.Ints(lrns)
 
 	withTimeoutCtx, cancel := context.WithTimeout(ctx, interval)
 	defer cancel()
@@ -325,39 +328,112 @@ func (s Server) waitForMemberUpdated(ctx context.Context) error {
 	return nil
 }
 
-func (s Server) notifySucceeded(ctx context.Context, req neco.UpdateRequest) error {
-	url, err := s.storage.GetSlackNotification(ctx)
+func (s Server) notifySlackSucceeded(ctx context.Context, req neco.UpdateRequest) error {
+	slack, err := s.newSlackClient(ctx)
 	if err == storage.ErrNotFound {
 		return nil
 	} else if err != nil {
 		return err
 	}
 
-	text := fmt.Sprintf("Updates to version `%s' are completed successfully on boot servers at lrn=%v.", req.Version, req.Servers)
-	payload := Payload{
-		Username:  "[SUCCESS] Boot server updater",
-		IconEmoji: ":imp:",
-		Text:      text,
+	att := Attachment{
+		Color:      ColorGood,
+		AuthorName: "Boot server updater",
+		Title:      "Update completed successfully",
+		Text:       "Updating on boot servers are completed successfully :tada: :tada: :tada:",
+		Fields: []AttachmentField{
+			{Title: "Version", Value: req.Version, Short: true},
+			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
+			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
+		},
 	}
-	return NotifySlack(ctx, url, payload)
+	payload := Payload{Attachments: []Attachment{att}}
+	return slack.PostWebHook(ctx, payload)
 }
 
-func (s Server) notifyFailure(ctx context.Context, req neco.UpdateRequest, st *neco.UpdateStatus) error {
-	url, err := s.storage.GetSlackNotification(ctx)
+func (s Server) notifySlackServerFailure(ctx context.Context, req neco.UpdateRequest, st neco.UpdateStatus) error {
+	slack, err := s.newSlackClient(ctx)
 	if err == storage.ErrNotFound {
 		return nil
 	} else if err != nil {
 		return err
 	}
 
-	text := "Failed to finish update boot server to version `%s' due to timed-out"
-	if st != nil {
-		text = fmt.Sprintf("Failed to finish update boot server to version `%s': %s", st.Version, st.Message)
+	att := Attachment{
+		Color:      ColorDanger,
+		AuthorName: "Boot server updater",
+		Title:      "Failed to update boot servers",
+		Text:       "Failed to update boot servers due to some worker return(s) error :crying_cat_face:.  Please fix it manually.",
+		Fields: []AttachmentField{
+			{Title: "Version", Value: "1.0.0", Short: true},
+			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
+			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
+			{Title: "Reason", Value: st.Message, Short: true},
+		},
 	}
-	payload := Payload{
-		Username:  "[FAILURE] Boot server updater",
-		IconEmoji: ":imp:",
-		Text:      text,
+	payload := Payload{Attachments: []Attachment{att}}
+	return slack.PostWebHook(ctx, payload)
+}
+
+func (s Server) notifySlackTimeout(ctx context.Context, req neco.UpdateRequest) error {
+	slack, err := s.newSlackClient(ctx)
+	if err == storage.ErrNotFound {
+		return nil
+	} else if err != nil {
+		return err
 	}
-	return NotifySlack(context.Background(), url, payload)
+
+	att := Attachment{
+		Color:      ColorDanger,
+		AuthorName: "Boot server updater",
+		Title:      "Update failed on the boot servers",
+		Text:       "Failed to update boot servers due to timed-out from worker updates :crying_cat_face:.  Please fix it manually.",
+		Fields: []AttachmentField{
+			{Title: "Version", Value: "1.0.0", Short: true},
+			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
+			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
+		},
+	}
+	payload := Payload{Attachments: []Attachment{att}}
+	return slack.PostWebHook(ctx, payload)
+}
+
+func (s Server) newSlackClient(ctx context.Context) (*SlackClient, error) {
+	webhookURL, err := s.storage.GetSlackNotification(ctx)
+	if err == storage.ErrNotFound {
+		return nil, storage.ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	proxy := http.ProxyFromEnvironment
+	proxyURL, err := s.storage.GetProxyConfig(ctx)
+	if err == storage.ErrNotFound {
+	} else if err != nil {
+		return nil, err
+
+	} else {
+		u, err := url.Parse(proxyURL)
+		if err != nil {
+			return nil, err
+		}
+		proxy = http.ProxyURL(u)
+	}
+	transport := &http.Transport{
+		Proxy: proxy,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+	http := &http.Client{
+		Transport: transport,
+	}
+
+	return &SlackClient{URL: webhookURL, HTTP: http}, nil
 }

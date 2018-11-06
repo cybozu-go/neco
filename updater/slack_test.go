@@ -15,10 +15,10 @@ func testPostWebHook(t *testing.T) {
 
 	attachments := []Attachment{
 		{
-			Color:      ColorDanger,
+			Color:      ColorGood,
 			AuthorName: "Boot server updater",
-			Title:      "Update failed",
-			Text:       "Updating on boot servers failed :crying_cat_face: .  Please repair updating on the boot servers manually",
+			Title:      "Update completed successfully",
+			Text:       "Updating on boot servers are completed successfully :tada: :tada: :tada:",
 			Fields: []AttachmentField{
 				{Title: "Version", Value: "1.0.0", Short: true},
 				{Title: "Servers", Value: "[1, 2, 3]", Short: true},
@@ -27,10 +27,10 @@ func testPostWebHook(t *testing.T) {
 			},
 		},
 		{
-			Color:      ColorGood,
+			Color:      ColorDanger,
 			AuthorName: "Boot server updater",
-			Title:      "Update completed successfully",
-			Text:       "Updating on boot servers are completed successfully :tada: :tada: :tada:",
+			Title:      "Update failed",
+			Text:       "Updating on boot servers failed :crying_cat_face: .  Please repair updating on the boot servers manually",
 			Fields: []AttachmentField{
 				{Title: "Version", Value: "1.0.0", Short: true},
 				{Title: "Servers", Value: "[1, 2, 3]", Short: true},

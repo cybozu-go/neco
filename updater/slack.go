@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+
+	"github.com/cybozu-go/log"
 )
 
 // Reserved colors in Slack API
@@ -15,16 +17,19 @@ const (
 	ColorDanger  = "danger"
 )
 
+// Payload represents a slack payload
 type Payload struct {
 	Attachments []Attachment `json:"attachments"`
 }
 
+// AttachmentField represents fields in a Attachment
 type AttachmentField struct {
 	Title string `json:"title,omitempty"`
 	Value string `json:"value,omitempty"`
 	Short bool   `json:"short,omitempty"`
 }
 
+// Attachment represents an attachment in the slack payload
 type Attachment struct {
 	Fallback   string            `json:"fallback,omitempty"`
 	Color      string            `json:"color,omitempty"`
@@ -43,11 +48,13 @@ type Attachment struct {
 	Timestamp  time.Time         `json:"ts,omitempty"`
 }
 
+// SlackClient is a slack client
 type SlackClient struct {
 	URL  string
 	HTTP *http.Client
 }
 
+// PostWebHook posts a payload to slack
 func (c SlackClient) PostWebHook(ctx context.Context, payload Payload) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -64,6 +71,13 @@ func (c SlackClient) PostWebHook(ctx context.Context, payload Payload) error {
 	if httpc == nil {
 		httpc = http.DefaultClient
 	}
+
 	_, err = httpc.Do(req)
+	if err != nil {
+		log.Warn("Failed to send slack notification", map[string]interface{}{
+			"content-length": len(body),
+			"error":          err,
+		})
+	}
 	return err
 }

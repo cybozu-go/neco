@@ -12,8 +12,14 @@ import (
 	version "github.com/hashicorp/go-version"
 )
 
-// ReleaseChecker checks newer GitHub releases by polling
-type ReleaseChecker struct {
+// ReleaseChecker is an interface to check new releases
+type ReleaseChecker interface {
+	Run(ctx context.Context) error
+	GetLatest() string
+}
+
+// GitHubReleaseChecker checks newer GitHub releases by polling
+type GitHubReleaseChecker struct {
 	storage storage.Storage
 	github  ReleaseInterface
 
@@ -24,11 +30,11 @@ type ReleaseChecker struct {
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
-func NewReleaseChecker(st storage.Storage, github ReleaseInterface, pkg PackageManager) ReleaseChecker {
-	c := ReleaseChecker{
+func NewReleaseChecker(st storage.Storage) ReleaseChecker {
+	c := &GitHubReleaseChecker{
 		storage: st,
-		github:  github,
-		pkg:     pkg,
+		github:  ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName},
+		pkg:     DebPackageManager{},
 
 		latest:  new(atomic.Value),
 		updated: new(sync.WaitGroup),
@@ -38,7 +44,7 @@ func NewReleaseChecker(st storage.Storage, github ReleaseInterface, pkg PackageM
 }
 
 // Run runs newer release at bDaduring periodic intervals
-func (c *ReleaseChecker) Run(ctx context.Context) error {
+func (c *GitHubReleaseChecker) Run(ctx context.Context) error {
 	c.updated = new(sync.WaitGroup)
 
 	for {
@@ -63,7 +69,7 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 
 // GetLatest returns latest version in GitHub Releases, or returns empty if no
 // release are available
-func (c *ReleaseChecker) GetLatest() string {
+func (c *GitHubReleaseChecker) GetLatest() string {
 	if c.notfound {
 		return ""
 	}
@@ -71,7 +77,7 @@ func (c *ReleaseChecker) GetLatest() string {
 	return c.latest.Load().(string)
 }
 
-func (c *ReleaseChecker) update(ctx context.Context) error {
+func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 	env, err := c.storage.GetEnvConfig(ctx)
 	if err == storage.ErrNotFound {
 		return nil
@@ -116,7 +122,7 @@ func (c *ReleaseChecker) update(ctx context.Context) error {
 		return nil
 	}
 
-	log.Warn("New neco release is found ", map[string]interface{}{
+	log.Info("New neco release is found ", map[string]interface{}{
 		"env":     env,
 		"version": latest,
 	})
