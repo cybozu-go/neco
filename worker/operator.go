@@ -15,7 +15,7 @@ import (
 type Operator interface {
 	UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) error
 	UpdateVault(ctx context.Context, req *neco.UpdateRequest) error
-	UpdateNeco(ctx context.Context, version string) error
+	UpdateNeco(ctx context.Context, req *neco.UpdateRequest) error
 }
 
 type operator struct {
@@ -56,16 +56,16 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 	}, nil
 }
 
-func (o *operator) UpdateNeco(ctx context.Context, version string) error {
+func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) error {
 	deb := &neco.DebianPackage{
 		Name:       "neco",
 		Repository: neco.GitHubRepoName,
 		Owner:      neco.GitHubRepoOwner,
-		Release:    version,
+		Release:    req.Version,
 	}
 
 	log.Info("update neco", map[string]interface{}{
-		"version": version,
+		"version": req.Version,
 	})
 	return InstallDebianPackage(ctx, o.proxyClient, deb)
 }

@@ -125,7 +125,7 @@ func (w *Worker) Run(ctx context.Context) error {
 
 		if w.version != req.Version {
 			// After update of "neco" package, old neco-worker should stop.
-			return w.operator.UpdateNeco(ctx, req.Version)
+			return w.operator.UpdateNeco(ctx, req)
 		}
 
 		stMap, err := w.storage.GetStatuses(ctx)
@@ -151,6 +151,10 @@ func (w *Worker) Run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+
+		log.Info("update finished", map[string]interface{}{
+			"version": req.Version,
+		})
 		req, rev, err = w.waitRequest(ctx, rev)
 	}
 }
