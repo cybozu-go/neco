@@ -145,7 +145,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				if err != ErrUpdateFailed {
 					return err
 				}
-				err := s.stopUpdate(ctx, current, leaderKey)
+				err = s.stopUpdate(ctx, current, leaderKey)
 				if err != nil {
 					return err
 				}
@@ -156,12 +156,8 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			}
 		}
 
-		err := s.waitForMemberUpdated(ctx, current, currentRev)
-		// err == nil: member list is updated, install new member and
-		// update configurations with current version (in variable `latest')
-		// err == context.DeadlineExceeded: timed-out by check-update-interval
-		// find newer version and install it to servers
-		if err == context.DeadlineExceeded {
+		timeout, err := s.waitForMemberUpdated(ctx, current, currentRev)
+		if timeout {
 			// Clear target to check latest update
 			target = ""
 		} else if err != nil {
@@ -294,12 +290,12 @@ func (s Server) waitRetry(ctx context.Context, req *neco.UpdateRequest, rev int6
 }
 
 // waitForMemberUpdated waits for new member added or member removed until with
-// check-update-interval.  It returns nil error if member updated, or returns
-// context.DeadlineExceeded if timed-out
-func (s Server) waitForMemberUpdated(ctx context.Context, req *neco.UpdateRequest, rev int64) error {
+// check-update-interval. It returns (true, nil) when timed-out.  It returns
+// (false, nil) if member list is updated.
+func (s Server) waitForMemberUpdated(ctx context.Context, req *neco.UpdateRequest, rev int64) (timeout bool, err error) {
 	interval, err := s.storage.GetCheckUpdateInterval(ctx)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	withTimeoutCtx, cancel := context.WithTimeout(ctx, interval)
@@ -313,17 +309,20 @@ func (s Server) waitForMemberUpdated(ctx context.Context, req *neco.UpdateReques
 		for _, ev := range resp.Events {
 			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyBootserversPrefix):]))
 			if err != nil {
-				return err
+				return false, err
 			}
 			if ev.Type == clientv3.EventTypePut {
 				if i := sort.SearchInts(req.Servers, lrn); i < len(req.Servers) && req.Servers[i] == lrn {
 					continue
 				}
 			}
-			return nil
+			return false, nil
 		}
 	}
-	return nil
+	if withTimeoutCtx.Err() == context.DeadlineExceeded {
+		return true, nil
+	}
+	return false, withTimeoutCtx.Err()
 }
 
 func (s Server) notifySlackSucceeded(ctx context.Context, req neco.UpdateRequest) error {
