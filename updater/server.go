@@ -408,7 +408,7 @@ func (s Server) newSlackClient(ctx context.Context) (*SlackClient, error) {
 		if err != nil {
 			return nil, err
 		}
-		http = neco.NewHTTP(u)
+		http = newHTTPClient(u)
 	}
 
 	return &SlackClient{URL: webhookURL, HTTP: http}, nil
