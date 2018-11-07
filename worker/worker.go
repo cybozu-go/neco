@@ -268,6 +268,59 @@ func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.E
 	return false, nil
 }
 
+func (w *Worker) runStep(ctx context.Context) (bool, error) {
+	err := w.operator.RunStep(ctx, w.req, w.step)
+
+	if err != nil {
+		log.Error("update failed", map[string]interface{}{
+			"version":   w.req.Version,
+			"step":      w.step,
+			log.FnError: err,
+		})
+		st := neco.UpdateStatus{
+			Version: w.req.Version,
+			Step:    w.step,
+			Cond:    neco.CondAbort,
+			Message: err.Error(),
+		}
+
+		err2 := w.storage.PutStatus(ctx, w.mylrn, st)
+		if err2 != nil {
+			log.Warn("failed to put status", map[string]interface{}{
+				log.FnError: err2.Error(),
+			})
+		}
+
+		return false, err
+	}
+
+	if w.step != w.operator.FinalStep() {
+		w.step++
+		w.barrier = NewBarrier(w.req.Servers)
+		st := neco.UpdateStatus{
+			Version: w.req.Version,
+			Step:    w.step,
+			Cond:    neco.CondRunning,
+		}
+		err = w.storage.PutStatus(ctx, w.mylrn, st)
+		if err != nil {
+			return false, err
+		}
+		return false, nil
+	}
+
+	st := neco.UpdateStatus{
+		Version: w.req.Version,
+		Step:    w.step,
+		Cond:    neco.CondComplete,
+	}
+	err = w.storage.PutStatus(ctx, w.mylrn, st)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (w *Worker) waitRequest(ctx context.Context, rev int64) (*neco.UpdateRequest, int64, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()

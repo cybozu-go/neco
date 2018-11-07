@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -13,9 +14,14 @@ import (
 
 // Operator installs or updates programs
 type Operator interface {
-	UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) error
-	UpdateVault(ctx context.Context, req *neco.UpdateRequest) error
+	// UpdateNeco updates neco package.
 	UpdateNeco(ctx context.Context, req *neco.UpdateRequest) error
+
+	// FinalStep is the step number of the final operation.
+	FinalStep() int
+
+	// RunStep executes operations for given step.
+	RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error
 }
 
 type operator struct {
@@ -68,4 +74,19 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 		"version": req.Version,
 	})
 	return InstallDebianPackage(ctx, o.proxyClient, deb)
+}
+
+func (o *operator) FinalStep() int {
+	return 2
+}
+
+func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error {
+	switch step {
+	case 1:
+		return o.UpdateEtcd(ctx, req)
+	case 2:
+		return o.UpdateVault(ctx, req)
+	}
+
+	return fmt.Errorf("invalid step: %d", step)
 }

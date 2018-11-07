@@ -16,30 +16,28 @@ import (
 var errTest = errors.New("test error")
 
 type mockOp struct {
-	FailNecoUpdate  bool
-	FailEtcdUpdate  bool
-	FailVaultUpdate bool
+	FailNecoUpdate bool
+	FailAt         int
 
-	NecoUpdated  bool
-	EtcdUpdated  bool
-	VaultUpdated bool
-	Req          *neco.UpdateRequest
+	NecoUpdated bool
+	Step        int
+	Req         *neco.UpdateRequest
 }
 
-func newMock(failNeco, failEtcd, failVault bool) *mockOp {
+// If failNeco is true, UpdateNeco() returns an error.
+// If failAt is > 0, RunStep() returns an error at step == failAt.
+func newMock(failNeco bool, failAt int) *mockOp {
 	return &mockOp{
-		FailNecoUpdate:  failNeco,
-		FailEtcdUpdate:  failEtcd,
-		FailVaultUpdate: failVault,
+		FailNecoUpdate: failNeco,
+		FailAt:         failAt,
 	}
 }
 
-func expect(necoUpdated, etcdUpdated, vaultUpdated bool, req *neco.UpdateRequest) *mockOp {
+func expect(necoUpdated bool, step int, req *neco.UpdateRequest) *mockOp {
 	return &mockOp{
-		NecoUpdated:  necoUpdated,
-		EtcdUpdated:  etcdUpdated,
-		VaultUpdated: vaultUpdated,
-		Req:          req,
+		NecoUpdated: necoUpdated,
+		Step:        step,
+		Req:         req,
 	}
 }
 
@@ -47,31 +45,10 @@ func (op *mockOp) Equal(expected *mockOp) bool {
 	if op.NecoUpdated != expected.NecoUpdated {
 		return false
 	}
-	if op.EtcdUpdated != expected.EtcdUpdated {
-		return false
-	}
-	if op.VaultUpdated != expected.VaultUpdated {
+	if op.Step != expected.Step {
 		return false
 	}
 	return cmp.Equal(op.Req, expected.Req)
-}
-
-func (op *mockOp) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) error {
-	op.Req = req
-	if op.FailEtcdUpdate {
-		return errTest
-	}
-	op.EtcdUpdated = true
-	return nil
-}
-
-func (op *mockOp) UpdateVault(ctx context.Context, req *neco.UpdateRequest) error {
-	op.Req = req
-	if op.FailVaultUpdate {
-		return errTest
-	}
-	op.VaultUpdated = true
-	return nil
 }
 
 func (op *mockOp) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) error {
@@ -83,10 +60,37 @@ func (op *mockOp) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) error
 	return nil
 }
 
-type testInput struct {
-	req    *neco.UpdateRequest
-	lrn    int
-	status *neco.UpdateStatus
+func (op *mockOp) FinalStep() int {
+	return 2
+}
+
+func (op *mockOp) RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error {
+	op.Step = step
+	op.Req = req
+	if op.FailAt == step {
+		return errTest
+	}
+	return nil
+}
+
+type testInput func(t *testing.T, st storage.Storage)
+
+func inputRequest(req *neco.UpdateRequest) testInput {
+	return func(t *testing.T, st storage.Storage) {
+		err := st.PutRequest(context.Background(), *req, "hoge")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func inputStatus(lrn int, status *neco.UpdateStatus) testInput {
+	return func(t *testing.T, st storage.Storage) {
+		err := st.PutStatus(context.Background(), lrn, *status)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 var (
@@ -106,14 +110,10 @@ func TestWorker(t *testing.T) {
 		Error  bool
 	}{
 		{
-			Name: "update-neco",
-			Input: []testInput{
-				{
-					req: testReq1,
-				},
-			},
-			Op:     newMock(false, false, false),
-			Expect: expect(true, false, false, testReq1),
+			Name:   "update-neco",
+			Input:  []testInput{inputRequest(testReq1)},
+			Op:     newMock(false, 0),
+			Expect: expect(true, 0, testReq1),
 		},
 	}
 
@@ -122,39 +122,40 @@ func TestWorker(t *testing.T) {
 			t.Parallel()
 
 			ec := test.NewEtcdClient(t)
+			defer ec.Close()
 			_, err := ec.Put(context.Background(), "hoge", "")
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			worker := NewWorker(ec, c.Op, "1.0.0", 0)
+			st := storage.NewStorage(ec)
 
 			var workerErr error
+			done := make(chan struct{})
 			env := well.NewEnvironment(context.Background())
 			env.Go(func(ctx context.Context) error {
 				workerErr = worker.Run(ctx)
+				close(done)
 				return workerErr
 			})
 			env.Go(func(ctx context.Context) error {
-				st := storage.NewStorage(ec)
 				for _, input := range c.Input {
-					if input.req != nil {
-						err := st.PutRequest(ctx, *input.req, "hoge")
-						if err != nil {
-							return err
-						}
-						continue
-					}
-					err := st.PutStatus(ctx, input.lrn, *input.status)
-					if err != nil {
-						return err
-					}
+					input(t, st)
 				}
-				time.Sleep(500 * time.Millisecond)
-				return errTest
+				select {
+				case <-done:
+					return nil
+				case <-time.After(500 * time.Millisecond):
+					return errTest
+				}
 			})
 			env.Stop()
 			env.Wait()
+
+			if !cmp.Equal(c.Op, c.Expect) {
+				t.Errorf("unexpected result: expect=%+v, actual=%+v", c.Expect, c.Op)
+			}
 
 			if c.Error {
 				if workerErr == nil {
@@ -165,9 +166,6 @@ func TestWorker(t *testing.T) {
 
 			if workerErr != nil {
 				t.Error(workerErr)
-			}
-			if !cmp.Equal(c.Op, c.Expect) {
-				t.Errorf("unexpected result: expect=%+v, actual=%+v", c.Expect, c.Op)
 			}
 		})
 	}
