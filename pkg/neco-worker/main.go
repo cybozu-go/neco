@@ -20,11 +20,28 @@ func main() {
 	}
 	defer ec.Close()
 
+	version, err := worker.GetDebianVersion("neco")
+	if err != nil {
+		log.ErrorExit(err)
+	}
+	if len(version) > 0 {
+		log.Info("neco package version", map[string]interface{}{
+			"version": version,
+		})
+	} else {
+		log.Warn("no neco package", nil)
+	}
+	mylrn, err := neco.MyLRN()
+	if err != nil {
+		log.ErrorExit(err)
+	}
+
 	well.Go(func(ctx context.Context) error {
-		w, err := worker.NewWorker(ctx, ec)
+		op, err := worker.NewOperator(ctx, ec, mylrn)
 		if err != nil {
 			return err
 		}
+		w := worker.NewWorker(ec, op, version, mylrn)
 		return w.Run(ctx)
 	})
 	well.Stop()

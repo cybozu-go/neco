@@ -1,7 +1,11 @@
 package worker
 
-import "context"
+import (
+	"context"
 
-func (w *Worker) updateVault(ctx context.Context) error {
+	"github.com/cybozu-go/neco"
+)
+
+func (o *operator) UpdateVault(ctx context.Context, req *neco.UpdateRequest) error {
 	return nil
 }

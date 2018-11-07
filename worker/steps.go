@@ -15,9 +15,9 @@ func (w *Worker) runStep(ctx context.Context) (bool, error) {
 	var err error
 	switch w.step {
 	case 1:
-		err = w.updateEtcd(ctx)
+		err = w.operator.UpdateEtcd(ctx, w.req)
 	case 2:
-		err = w.updateVault(ctx)
+		err = w.operator.UpdateVault(ctx, w.req)
 	default:
 		return false, fmt.Errorf("unexpected step: %d", w.step)
 	}

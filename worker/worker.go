@@ -60,12 +60,11 @@ func localHTTPClient() *http.Client {
 // Worker implements Neco auto update worker process.
 // This is a state machine.
 type Worker struct {
-	mylrn       int
-	version     string
-	ec          *clientv3.Client
-	storage     storage.Storage
-	proxyClient *http.Client
-	localClient *http.Client
+	mylrn    int
+	version  string
+	ec       *clientv3.Client
+	storage  storage.Storage
+	operator Operator
 
 	// internal states
 	req     *neco.UpdateRequest
@@ -74,51 +73,14 @@ type Worker struct {
 }
 
 // NewWorker returns a *Worker.
-func NewWorker(ctx context.Context, ec *clientv3.Client) (*Worker, error) {
-	mylrn, err := neco.MyLRN()
-	if err != nil {
-		return nil, err
-	}
-
-	version, err := GetDebianVersion("neco")
-	if err != nil {
-		return nil, err
-	}
-	if len(version) > 0 {
-		log.Info("neco package version", map[string]interface{}{
-			"version": version,
-		})
-	} else {
-		log.Warn("no neco package", nil)
-	}
-
-	localClient := localHTTPClient()
-	proxyClient := localClient
-
-	st := storage.NewStorage(ec)
-	proxy, err := st.GetProxyConfig(ctx)
-	if err != nil {
-		if err != storage.ErrNotFound {
-			return nil, err
-		}
-	} else {
-		if len(proxy) > 0 {
-			proxyURL, err := url.Parse(proxy)
-			if err != nil {
-				return nil, err
-			}
-			proxyClient = proxyHTTPClient(proxyURL)
-		}
-	}
-
+func NewWorker(ec *clientv3.Client, op Operator, version string, mylrn int) *Worker {
 	return &Worker{
-		mylrn:       mylrn,
-		version:     version,
-		ec:          ec,
-		storage:     st,
-		proxyClient: proxyClient,
-		localClient: localClient,
-	}, nil
+		mylrn:    mylrn,
+		version:  version,
+		ec:       ec,
+		storage:  storage.NewStorage(ec),
+		operator: op,
+	}
 }
 
 // Run waits for update request from neco-updater, then executes
@@ -163,7 +125,7 @@ func (w *Worker) Run(ctx context.Context) error {
 
 		if w.version != req.Version {
 			// After update of "neco" package, old neco-worker should stop.
-			return w.updateNeco(ctx, req.Version)
+			return w.operator.UpdateNeco(ctx, req.Version)
 		}
 
 		stMap, err := w.storage.GetStatuses(ctx)
@@ -245,20 +207,6 @@ func (w *Worker) dispatch(ctx context.Context, ev *clientv3.Event) (bool, error)
 	}
 
 	return w.handleWorkerStatus(ctx, lrn, ev)
-}
-
-func (w *Worker) updateNeco(ctx context.Context, version string) error {
-	deb := &neco.DebianPackage{
-		Name:       "neco",
-		Repository: neco.GitHubRepoName,
-		Owner:      neco.GitHubRepoOwner,
-		Release:    version,
-	}
-
-	log.Info("update neco", map[string]interface{}{
-		"version": version,
-	})
-	return InstallDebianPackage(ctx, w.proxyClient, deb)
 }
 
 func (w *Worker) handleCurrent(ctx context.Context, ev *clientv3.Event) (bool, error) {
