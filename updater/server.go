@@ -92,24 +92,26 @@ RETRY:
 
 func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 	var target string
+	var current *neco.UpdateRequest
+	var currentRev int64
 
 	// Updater continues last update without create update reuqest with "skipRequest = true"
 	var skipRequest bool
 
-	req, err := s.storage.GetRequest(ctx)
+	current, currentRev, err := s.storage.GetRequestWithRev(ctx)
 	if err == nil {
-		target = req.Version
-		if req.Stop {
+		target = current.Version
+		if current.Stop {
 			log.Info("Last updating is failed, wait for retrying", map[string]interface{}{
-				"version": req.Version,
+				"version": current.Version,
 			})
-			err := s.waitRetry(ctx)
+			err := s.waitRetry(ctx, current, currentRev)
 			if err != nil {
 				return err
 			}
 		} else {
 			log.Info("Last updating is still in progress, wait for workers", map[string]interface{}{
-				"version": req.Version,
+				"version": current.Version,
 			})
 			skipRequest = true
 		}
@@ -127,7 +129,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			// Found new update
 			for {
 				if !skipRequest {
-					err = s.startUpdate(ctx, target, leaderKey)
+					current, currentRev, err = s.startUpdate(ctx, target, leaderKey)
 					if err == ErrNoMembers {
 						break
 					} else if err != nil {
@@ -136,25 +138,25 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				}
 				skipRequest = false
 
-				err = s.waitWorkers(ctx)
+				err = s.waitWorkers(ctx, current, currentRev)
 				if err == nil {
 					break
 				}
 				if err != ErrUpdateFailed {
 					return err
 				}
-				err := s.stopUpdate(ctx, leaderKey)
+				err := s.stopUpdate(ctx, current, leaderKey)
 				if err != nil {
 					return err
 				}
-				err = s.waitRetry(ctx)
+				err = s.waitRetry(ctx, current, currentRev)
 				if err != nil {
 					return err
 				}
 			}
 		}
 
-		err := s.waitForMemberUpdated(ctx)
+		err := s.waitForMemberUpdated(ctx, current, currentRev)
 		// err == nil: member list is updated, install new member and
 		// update configureions with current version (in variable `latest')
 		// err == context.DeadlineExceeded: timed-out by check-update-interval
@@ -168,16 +170,17 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 	}
 }
 
-// startUpdate starts update with tag.  It returns ErrNoMembers if no
-// bootservers are registered in etcd.
-func (s Server) startUpdate(ctx context.Context, tag, leaderKey string) error {
+// startUpdate starts update with tag.  It returns created request and its
+// modified revision.  It returns ErrNoMembers if no bootservers are registered
+// in etcd.
+func (s Server) startUpdate(ctx context.Context, tag, leaderKey string) (*neco.UpdateRequest, int64, error) {
 	servers, err := s.storage.GetBootservers(ctx)
 	if err != nil {
-		return err
+		return nil, 0, err
 	}
 	if len(servers) == 0 {
 		log.Info("No bootservers exists in etcd", map[string]interface{}{})
-		return ErrNoMembers
+		return nil, 0, ErrNoMembers
 	}
 	log.Info("Starting updating", map[string]interface{}{
 		"version": tag,
@@ -189,29 +192,26 @@ func (s Server) startUpdate(ctx context.Context, tag, leaderKey string) error {
 		Stop:      false,
 		StartedAt: time.Now(),
 	}
-	return s.storage.PutRequest(ctx, r, leaderKey)
+	err = s.storage.PutRequest(ctx, r, leaderKey)
+	if err != nil {
+		return nil, 0, err
+	}
+	return s.storage.GetRequestWithRev(ctx)
 }
 
-func (s Server) stopUpdate(ctx context.Context, leaderKey string) error {
-	req, err := s.storage.GetRequest(ctx)
-	if err != nil {
-		return err
-	}
+// stopUpdate of the current request
+func (s Server) stopUpdate(ctx context.Context, req *neco.UpdateRequest, leaderKey string) error {
 	req.Stop = true
 	return s.storage.PutRequest(ctx, *req, leaderKey)
 }
 
 // waitWorkers waits for worker finishes updates until timed-out
-func (s Server) waitWorkers(ctx context.Context) error {
+func (s Server) waitWorkers(ctx context.Context, req *neco.UpdateRequest, rev int64) error {
 	timeout, err := s.storage.GetWorkerTimeout(ctx)
 	if err != nil {
 		return err
 	}
 
-	req, rev, err := s.storage.GetRequestWithRev(ctx)
-	if err != nil {
-		return err
-	}
 	statuses := make(map[int]neco.UpdateStatus)
 
 	deadline := req.StartedAt.Add(timeout)
@@ -281,16 +281,9 @@ func (s Server) waitWorkers(ctx context.Context) error {
 	return ErrUpdateFailed
 }
 
-func (s Server) waitRetry(ctx context.Context) error {
+func (s Server) waitRetry(ctx context.Context, req *neco.UpdateRequest, rev int64) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
-	_, rev, err := s.storage.GetRequestWithRev(ctx)
-	if err == storage.ErrNotFound {
-		return nil
-	} else if err != nil {
-		return err
-	}
 
 	ch := s.session.Client().Watch(ctx, storage.KeyCurrent, clientv3.WithRev(rev+1), clientv3.WithFilterPut())
 	resp := <-ch
@@ -303,18 +296,9 @@ func (s Server) waitRetry(ctx context.Context) error {
 // waitForMemberUpdated waits for new member added or member removed until with
 // check-update-interval.  It returns nil error if member updated, or returns
 // context.DeadlineExceeded if timed-out
-func (s Server) waitForMemberUpdated(ctx context.Context) error {
+func (s Server) waitForMemberUpdated(ctx context.Context, req *neco.UpdateRequest, rev int64) error {
 	interval, err := s.storage.GetCheckUpdateInterval(ctx)
 	if err != nil {
-		return err
-	}
-	var lrns []int
-	req, rev, err := s.storage.GetRequestWithRev(ctx)
-	if err == nil {
-		lrns = req.Servers
-		sort.Ints(lrns)
-	}
-	if err != nil && err != storage.ErrNotFound {
 		return err
 	}
 
@@ -322,32 +306,22 @@ func (s Server) waitForMemberUpdated(ctx context.Context) error {
 	defer cancel()
 
 	ch := s.session.Client().Watch(
-		withTimeoutCtx, storage.KeyBootserversPrefix, clientv3.WithRev(rev+1),
+		withTimeoutCtx, storage.KeyBootserversPrefix, clientv3.WithRev(rev+1), clientv3.WithPrefix(),
 	)
 
-	var updated bool
-	var lastErr error
 	for resp := range ch {
 		for _, ev := range resp.Events {
 			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyBootserversPrefix):]))
 			if err != nil {
-				lastErr = err
-				cancel()
+				return err
 			}
 			if ev.Type == clientv3.EventTypePut {
-				if i := sort.SearchInts(lrns, lrn); i < len(lrns) && lrns[i] == lrn {
+				if i := sort.SearchInts(req.Servers, lrn); i < len(req.Servers) && req.Servers[i] == lrn {
 					continue
 				}
 			}
-			updated = true
-			cancel()
+			return nil
 		}
-	}
-	if lastErr != nil {
-		return lastErr
-	}
-	if !updated {
-		return context.DeadlineExceeded
 	}
 	return nil
 }
