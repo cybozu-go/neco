@@ -77,7 +77,7 @@ func (c ReleaseClient) GetLatestPreReleaseTag(ctx context.Context) (string, erro
 			continue
 		}
 		s := *r.TagName
-		trimmed := strings.Split(s, "-", 2)
+		trimmed := strings.SplitN(s, "-", 2)
 		// Ignore prefix in tag name.  'prefix-X.Y.Z' is formatted to 'X.Y.Z'
 		if len(trimmed) >= 2 {
 			s = trimmed[1]
