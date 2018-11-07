@@ -10,6 +10,17 @@ type UpdateRequest struct {
 	StartedAt time.Time `json:"started_at"`
 }
 
+// IsMember returns true if a boot server is the member of this update request.
+func (r UpdateRequest) IsMember(lrn int) bool {
+	for _, n := range r.Servers {
+		if n == lrn {
+			return true
+		}
+	}
+
+	return false
+}
+
 // UpdateCondition is the condition of the update process.
 type UpdateCondition int
 

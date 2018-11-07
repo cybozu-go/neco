@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -68,6 +69,7 @@ type Worker struct {
 
 	// internal states
 	req     *neco.UpdateRequest
+	step    int
 	barrier Barrier
 }
 
@@ -154,14 +156,7 @@ func (w *Worker) Run(ctx context.Context) error {
 			continue
 		}
 
-		included := false
-		for _, lrn := range req.Servers {
-			if lrn == w.mylrn {
-				included = true
-				break
-			}
-		}
-		if !included {
+		if !req.IsMember(w.mylrn) {
 			req, rev, err = w.waitRequest(ctx, rev)
 			continue
 		}
@@ -201,6 +196,18 @@ func (w *Worker) Run(ctx context.Context) error {
 func (w *Worker) update(ctx context.Context, rev int64) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	st := neco.UpdateStatus{
+		Version: w.req.Version,
+		Step:    1,
+		Cond:    neco.CondRunning,
+	}
+	err := w.storage.PutStatus(ctx, w.mylrn, st)
+	if err != nil {
+		return err
+	}
+	w.step = 1
+	w.barrier = NewBarrier(w.req.Servers)
 
 	ch := w.ec.Watch(ctx, storage.KeyStatusPrefix,
 		clientv3.WithPrefix(),
@@ -278,11 +285,34 @@ func (w *Worker) handleCurrent(ctx context.Context, ev *clientv3.Event) (bool, e
 }
 
 func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.Event) (bool, error) {
-	status := new(neco.UpdateStatus)
-	err := json.Unmarshal(ev.Kv.Value, status)
+	if !w.req.IsMember(lrn) {
+		log.Warn("ignoring unexpected boot server", map[string]interface{}{
+			"lrn":     lrn,
+			"version": w.req.Version,
+			"servers": w.req.Servers,
+		})
+		return false, nil
+	}
+
+	st := new(neco.UpdateStatus)
+	err := json.Unmarshal(ev.Kv.Value, st)
 	if err != nil {
 		return false, err
 	}
+	if st.Version != w.req.Version {
+		return false, errors.New("unexpected version in worker status: " + st.Version)
+	}
+	if st.Step != w.step {
+		return false, fmt.Errorf("unexpected step in worker status: %d", st.Step)
+	}
+	if st.Cond == neco.CondAbort {
+		return false, fmt.Errorf("other boot server failed to update: %d", lrn)
+	}
+
+	if w.barrier.Check(lrn) {
+		return w.runStep(ctx)
+	}
+
 	return false, nil
 }
 

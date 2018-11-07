@@ -281,7 +281,10 @@ func testRunNewMembers(t *testing.T) {
 	}
 
 	for _, lrn := range []int{0, 1, 2} {
-		err := e.PutStatus(ctx, lrn, neco.UpdateStatus{Version: "1.0.0", Finished: true})
+		err := e.PutStatus(ctx, lrn, neco.UpdateStatus{
+			Version: "1.0.0",
+			Cond:    neco.CondComplete,
+		})
 		if err != nil {
 			t.Fatal(err)
 		}
