@@ -46,9 +46,13 @@ Tag name and release flow
 -------------------------
 
 `neco-updater` watches newer version in GitHub releases by comparing its tags.
-The tag MUST contains version number with prefix such as `release-1.2.3`.
+The tag MUST contains version number with prefix.
 The prefix is used to filter build target on CI/CD rules, so `neco-updater`
 does not consider prefix and compares version number after first hyphen.
+
+For example, a tag name `release-2018.11.07-1` consist of prefix `release-` and
+version number `2018.11.07-1`.  `neco-updater` ignores prefix `release-` and
+use the version number `2018.11.07-1` on a comparison of the tags.
 
 `neco-update` switches downloading version by data-center environment.  User
 must select the environment by `neco config set env ENV` sub-command.
