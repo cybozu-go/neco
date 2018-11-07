@@ -98,6 +98,15 @@ var (
 		Version: "1.1.0",
 		Servers: []int{0, 1, 2},
 	}
+	testReq1Stop = &neco.UpdateRequest{
+		Version: "1.1.0",
+		Servers: []int{0, 1, 2},
+		Stop:    true,
+	}
+	testReq2 = &neco.UpdateRequest{
+		Version: "1.1.0",
+		Servers: []int{1, 2},
+	}
 )
 
 func TestWorker(t *testing.T) {
@@ -115,9 +124,23 @@ func TestWorker(t *testing.T) {
 			Op:     newMock(false, 0),
 			Expect: expect(true, 0, testReq1),
 		},
+		{
+			Name:   "update-neco-fail",
+			Input:  []testInput{inputRequest(testReq1)},
+			Op:     newMock(true, 0),
+			Expect: expect(false, 0, testReq1),
+			Error:  true,
+		},
+		{
+			Name:   "no-member",
+			Input:  []testInput{inputRequest(testReq2)},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 0, nil),
+		},
 	}
 
 	for _, c := range testCases {
+		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			t.Parallel()
 
@@ -132,23 +155,21 @@ func TestWorker(t *testing.T) {
 			st := storage.NewStorage(ec)
 
 			var workerErr error
-			done := make(chan struct{})
 			env := well.NewEnvironment(context.Background())
 			env.Go(func(ctx context.Context) error {
-				workerErr = worker.Run(ctx)
-				close(done)
-				return workerErr
+				ctx, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
+				defer cancel()
+				err := worker.Run(ctx)
+				if ctx.Err() != context.DeadlineExceeded {
+					workerErr = err
+				}
+				return err
 			})
 			env.Go(func(ctx context.Context) error {
 				for _, input := range c.Input {
 					input(t, st)
 				}
-				select {
-				case <-done:
-					return nil
-				case <-time.After(500 * time.Millisecond):
-					return errTest
-				}
+				return nil
 			})
 			env.Stop()
 			env.Wait()
