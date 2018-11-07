@@ -13,7 +13,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-var testError = errors.New("test error")
+var errTest = errors.New("test error")
 
 type mockOp struct {
 	FailNecoUpdate  bool
@@ -59,7 +59,7 @@ func (op *mockOp) Equal(expected *mockOp) bool {
 func (op *mockOp) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) error {
 	op.Req = req
 	if op.FailEtcdUpdate {
-		return testError
+		return errTest
 	}
 	op.EtcdUpdated = true
 	return nil
@@ -68,7 +68,7 @@ func (op *mockOp) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) error
 func (op *mockOp) UpdateVault(ctx context.Context, req *neco.UpdateRequest) error {
 	op.Req = req
 	if op.FailVaultUpdate {
-		return testError
+		return errTest
 	}
 	op.VaultUpdated = true
 	return nil
@@ -77,7 +77,7 @@ func (op *mockOp) UpdateVault(ctx context.Context, req *neco.UpdateRequest) erro
 func (op *mockOp) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) error {
 	op.Req = req
 	if op.FailNecoUpdate {
-		return testError
+		return errTest
 	}
 	op.NecoUpdated = true
 	return nil
@@ -151,7 +151,7 @@ func TestWorker(t *testing.T) {
 					}
 				}
 				time.Sleep(500 * time.Millisecond)
-				return testError
+				return errTest
 			})
 			env.Stop()
 			env.Wait()
