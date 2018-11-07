@@ -25,9 +25,10 @@ type GitHubReleaseChecker struct {
 	storage storage.Storage
 	github  ReleaseInterface
 
-	pkg       PackageManager
-	latest    atomic.Value
-	hasUpdate bool
+	pkg    PackageManager
+	latest atomic.Value
+	// 0 indicate no updates, otherwise update exits
+	hasUpdate int32
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
@@ -69,7 +70,8 @@ func (c *GitHubReleaseChecker) GetLatest() string {
 
 // HasUpdate returns true if remove version is grater than local version
 func (c *GitHubReleaseChecker) HasUpdate() bool {
-	return c.hasUpdate
+	val := atomic.LoadInt32(&c.hasUpdate)
+	return val != 0
 }
 
 func (c *GitHubReleaseChecker) update(ctx context.Context) error {
@@ -130,7 +132,7 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 	}
 
 	if !latestVer.GreaterThan(currentVer) {
-		c.hasUpdate = false
+		atomic.StoreInt32(&c.hasUpdate, 0)
 		return nil
 	}
 
@@ -139,6 +141,6 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 		"version": latest,
 	})
 	c.latest.Store(latest)
-	c.hasUpdate = true
+	atomic.StoreInt32(&c.hasUpdate, 1)
 	return nil
 }
