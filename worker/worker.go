@@ -2,6 +2,8 @@ package worker
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"net"
 	"net/http"
 	"net/url"
@@ -9,6 +11,7 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 )
@@ -35,7 +38,7 @@ func proxyHTTPClient(proxyURL *url.URL) *http.Client {
 
 func localHTTPClient() *http.Client {
 	transport := &http.Transport{
-		Proxy: nil,
+		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
@@ -78,6 +81,13 @@ func NewWorker(ctx context.Context, ec *clientv3.Client) (*Worker, error) {
 	version, err := GetDebianVersion("neco")
 	if err != nil {
 		return nil, err
+	}
+	if len(version) > 0 {
+		log.Info("neco package version", map[string]interface{}{
+			"version": version,
+		})
+	} else {
+		log.Warn("no neco package", nil)
 	}
 
 	localClient := localHTTPClient()
@@ -130,37 +140,47 @@ func NewWorker(ctx context.Context, ec *clientv3.Client) (*Worker, error) {
 func (w *Worker) Run(ctx context.Context) error {
 	req, rev, err := w.storage.GetRequestWithRev(ctx)
 
-	if err == storage.ErrNotFound {
-		return w.waitRequest(ctx)
-	}
-	if err != nil {
-		return err
-	}
+	for {
+		if err == storage.ErrNotFound {
+			req, rev, err = w.waitRequest(ctx, rev)
+			continue
+		}
+		if err != nil {
+			return err
+		}
 
-	if w.version != req.Version {
-		return w.updateNeco(ctx, req.Version)
-	}
+		if req.Stop {
+			req, rev, err = w.waitRequest(ctx, rev)
+			continue
+		}
 
-	stMap, err := w.storage.GetStatuses(ctx)
-	if err != nil {
-		return err
-	}
-	if neco.UpdateAborted(req.Version, w.mylrn, stMap) {
-		goto WAIT
-	}
-	if neco.UpdateCompleted(req.Version, req.Servers, stMap) {
-		goto WAIT
-	}
+		if w.version != req.Version {
+			// After update of "neco" package, old neco-worker should stop.
+			return w.updateNeco(ctx, req.Version)
+		}
 
-	w.req = req
-	w.barrier = NewBarrier(req.Servers)
-	err = w.update(ctx, rev)
-	if err != nil {
-		return err
-	}
+		stMap, err := w.storage.GetStatuses(ctx)
+		if err != nil {
+			return err
+		}
+		if neco.UpdateAborted(req.Version, w.mylrn, stMap) {
+			log.Info("previous update was aborted", nil)
+			req, rev, err = w.waitRequest(ctx, rev)
+			continue
+		}
+		if neco.UpdateCompleted(req.Version, req.Servers, stMap) {
+			log.Info("previous update was completed successfully", nil)
+			req, rev, err = w.waitRequest(ctx, rev)
+			continue
+		}
 
-WAIT:
-	return w.waitRequest(ctx)
+		w.req = req
+		err = w.update(ctx, rev)
+		if err != nil {
+			return err
+		}
+		req, rev, err = w.waitRequest(ctx, rev)
+	}
 }
 
 func (w *Worker) update(ctx context.Context, rev int64) error {
@@ -223,6 +243,32 @@ func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.E
 	return false, nil
 }
 
-func (w *Worker) waitRequest(ctx context.Context) error {
-	return nil
+func (w *Worker) waitRequest(ctx context.Context, rev int64) (*neco.UpdateRequest, int64, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	ch := w.ec.Watch(ctx, storage.KeyCurrent,
+		clientv3.WithRev(rev+1),
+		clientv3.WithFilterDelete())
+	for wr := range ch {
+		err := wr.Err()
+		if err != nil {
+			return nil, 0, err
+		}
+
+		if len(wr.Events) == 0 {
+			continue
+		}
+
+		ev := wr.Events[0]
+		req := new(neco.UpdateRequest)
+		err = json.Unmarshal(ev.Kv.Value, req)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		return req, ev.Kv.ModRevision, nil
+	}
+
+	return nil, 0, errors.New("waitRequest was interrupted")
 }
