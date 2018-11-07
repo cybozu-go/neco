@@ -208,10 +208,6 @@ func (s Server) waitWorkers(ctx context.Context, req *neco.UpdateRequest, rev in
 		return err
 	}
 
-	req, rev, err := s.storage.GetRequestWithRev(ctx)
-	if err != nil {
-		return err
-	}
 	statuses := make(map[int]*neco.UpdateStatus)
 
 	deadline := req.StartedAt.Add(timeout)
