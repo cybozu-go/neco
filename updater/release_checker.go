@@ -40,7 +40,7 @@ func NewReleaseChecker(st storage.Storage) ReleaseChecker {
 	return c
 }
 
-// Run runs newer release at bDaduring periodic intervals
+// Run runs newer release during periodic intervals
 func (c *GitHubReleaseChecker) Run(ctx context.Context) error {
 	for {
 		interval, err := c.storage.GetCheckUpdateInterval(ctx)
@@ -75,7 +75,7 @@ func (c *GitHubReleaseChecker) HasUpdate() bool {
 func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 	github := c.github
 	if c.github == nil {
-		var http *http.Client
+		var httpc *http.Client
 		proxyURL, err := c.storage.GetProxyConfig(ctx)
 		if err == storage.ErrNotFound {
 		} else if err != nil {
@@ -85,9 +85,9 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-			http = neco.NewHTTP(u)
+			httpc = neco.NewHTTP(u)
 		}
-		github = ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, http}
+		github = ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, httpc}
 	}
 
 	env, err := c.storage.GetEnvConfig(ctx)

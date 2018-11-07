@@ -158,7 +158,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 
 		err := s.waitForMemberUpdated(ctx, current, currentRev)
 		// err == nil: member list is updated, install new member and
-		// update configureions with current version (in variable `latest')
+		// update configurations with current version (in variable `latest')
 		// err == context.DeadlineExceeded: timed-out by check-update-interval
 		// find newer version and install it to servers
 		if err == context.DeadlineExceeded {
