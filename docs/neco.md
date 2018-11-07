@@ -20,6 +20,12 @@ Options are defined by [cybozu-go/etcdutil](https://github.com/cybozu-go/etcduti
 Synopsis
 --------
 
+* `neco config set env staging|prod`
+
+    Set cluster environment to use pre-released or released neco packages from
+    GitHub releases.  Latest pre-released is used if `staging` is set.
+    Otherwise, latest released is used if `prod` is set.
+
 * `neco config set slack URL`
 
     Set Slack webhook URL for notification from `neco-updater`.
@@ -27,6 +33,17 @@ Synopsis
 * `neco config set proxy URL`
 
     Set proxy URL to access Internet.
+
+* `neco config set check-update-interval DURATION`
+
+    Set polling interval for checking new neco release. DURATION format must be
+    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.  Default is `10m`
+
+* `neco config set worker-timeout DURATION`
+
+    Set timeout from workers on updating process. DURATION format must be
+    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.  Default
+    is `60m`
 
 * `neco setup [--no-revoke] LRN [LRN ...]`
 
@@ -150,3 +167,5 @@ to update the list of etcd endpoints.
 
 
 `neco-updater` and `neco-worker` would no longer to update on the dead boot server.
+
+[ParseDuration]: https://golang.org/pkg/time/#ParseDuration

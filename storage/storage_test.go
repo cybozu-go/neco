@@ -6,13 +6,14 @@ import (
 
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/storage/test"
 	"github.com/google/go-cmp/cmp"
 )
 
 func testBootservers(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -42,7 +43,7 @@ func testBootservers(t *testing.T) {
 func testContainerTag(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -74,7 +75,7 @@ func testContainerTag(t *testing.T) {
 func testDebVersion(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -106,7 +107,7 @@ func testDebVersion(t *testing.T) {
 func testRequest(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -156,7 +157,7 @@ func testRequest(t *testing.T) {
 func testStatus(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -190,7 +191,7 @@ func testStatus(t *testing.T) {
 func testClearStatus(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -251,38 +252,10 @@ func testClearStatus(t *testing.T) {
 	}
 }
 
-func testNotificationConfig(t *testing.T) {
-	t.Parallel()
-
-	etcd := newEtcdClient(t)
-	defer etcd.Close()
-	ctx := context.Background()
-	st := NewStorage(etcd)
-
-	_, err := st.GetNotificationConfig(ctx)
-	if err != ErrNotFound {
-		t.Error("notification config should not be found")
-	}
-
-	err = st.PutNotificationConfig(ctx, neco.NotificationConfig{Slack: "http://slack.com/aaa"})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	nc, err := st.GetNotificationConfig(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if nc.Slack != "http://slack.com/aaa" {
-		t.Error(`nc.Slack != "http://slack.com/aaa"`, nc.Slack)
-	}
-}
-
 func testFinish(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -320,6 +293,5 @@ func TestStorage(t *testing.T) {
 	t.Run("Request", testRequest)
 	t.Run("Status", testStatus)
 	t.Run("ClearStatus", testClearStatus)
-	t.Run("NotificationConfig", testNotificationConfig)
 	t.Run("Finish", testFinish)
 }

@@ -3,12 +3,14 @@ package storage
 import (
 	"context"
 	"testing"
+
+	"github.com/cybozu-go/neco/storage/test"
 )
 
 func testVaultUnsealKey(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)
@@ -45,7 +47,7 @@ func testVaultUnsealKey(t *testing.T) {
 func testVaultRootToken(t *testing.T) {
 	t.Parallel()
 
-	etcd := newEtcdClient(t)
+	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	ctx := context.Background()
 	st := NewStorage(etcd)

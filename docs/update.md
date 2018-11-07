@@ -42,11 +42,37 @@ restart `neco-updater`.
 
 `neco-updater` retries the update process with the new list of boot servers.
 
+Tag name and release flow
+-------------------------
+
+`neco-updater` watches newer version in GitHub releases by comparing its tags.
+The tag MUST contains version number with prefix.
+The prefix is used to filter build target on CI/CD rules, so `neco-updater`
+does not consider prefix and compares version number after first hyphen.
+
+For example, a tag name `release-2018.11.07-1` consist of prefix `release-` and
+version number `2018.11.07-1`.  `neco-updater` ignores prefix `release-` and
+use the version number `2018.11.07-1` on a comparison of the tags.
+
+`neco-update` switches downloading version by data-center environment.  User
+must select the environment by `neco config set env ENV` sub-command.
+If `production` is set, `neco-updater` downloads latest release excluding
+pre-release version.  Otherwise if `staging` is set, `neco-updater` downloads
+latest pre-release version.
+
 Implementation of update process
 --------------------------------
 
-1. The leader `neco-updater` takes a copy of the list of boot servers.
-2. The leader puts the new version of `neco` package in etcd.  `<prefix>/current`
+`neco-updater` services is responsible to check if a new neco version exists,
+control workers, and notify the results of the update.  `neco-updater` does
+leader election and only one process works.
+
+`neco-worker` service responsible to do installing and updating application on
+each nodes.  The detailed update process follows below steps:
+
+1. Check latest version from GitHub releases.
+2. The leader `neco-updater` takes a copy of the list of boot servers.
+3. The leader puts the new version of `neco` package in etcd.  `<prefix>/current`
 
     ```json
     {
@@ -55,8 +81,8 @@ Implementation of update process
     }
     ```
 
-3. On each boot server, `neco-worker` watches etcd; when it finds 2, install the new version.
-4. If `neco-worker` is the same version, it starts update process.
+4. On each boot server, `neco-worker` watches etcd; when it finds 2, install the new version.
+5. If `neco-worker` is the same version, it starts update process.
 
 When `neco-worker` needs to synchronize with others, it uses an etcd key as a counter.
 Once the counter becomes the same number of boot servers, `neco-worker` proceeds.

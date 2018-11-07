@@ -12,6 +12,12 @@ const (
 	NecoPrefix = "/neco/"
 )
 
+// Neco repository
+const (
+	GitHubRepoOwner = "cybozu-go"
+	GitHubRepoName  = "neco"
+)
+
 // Etcd params
 const (
 	EtcdDir       = "/etc/etcd"

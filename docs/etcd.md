@@ -34,17 +34,19 @@ A leader of `neco-updater` creates and updates this key.
 
 The value is a JSON object with these fields:
 
-Name      | Type   | Description
-----      | ----   | -----------
-`version` | string | Target `neco` version to be updated for all `servers`.
-`servers` | []int  | LRNs of current available boot servers under update. This is created using `<prefix>/bootservers`.
-`stop`    | bool   | If `true`, `neco-worker` stops the update process.
+Name         | Type   | Description
+----         | ----   | -----------
+`version`    | string | Target `neco` version to be updated for all `servers`.
+`servers`    | []int  | LRNs of current available boot servers under update. This is created using `<prefix>/bootservers`.
+`stop`       | bool   | If `true`, `neco-worker` stops the update process.
+`started_at` | string | Updating start time.
 
 ```json
 {
     "version": "1.2.3-1",
     "servers": [1, 2, 3],
-    "stop": false
+    "stop": false,
+    "started_at": "2018-11-02T08:23:49.907839312Z"
 }
 ```
 
@@ -76,19 +78,21 @@ Name       | Type   | Description
 `neco-updater` watches these keys to wait all workers to complete update process,
 or detect errors during updates.
 
-## `<prefix>/notification`
+## `<prefix>/config/notification/slack`
 
-This prefix is configuration of the notification service.
+The notification config to slack URL such as `https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXX`.
 
-```json
-{
-    "slack": "https://<slack webhook url>"
-}
-```
+## `<prefix>/config/proxy`
 
-Name    | Type   | Description
-----    | ----   | -----------
-`slack` | string | Slack web hook URL.
+HTTP proxy url to access Internet such as `https://squid.slack.com:3128`
+
+## `<prefix>/config/check-update-interval`
+
+Polling interval for checking new neco release in nanoseconds.
+
+## `<prefix>/config/worker-timeout-duration`
+
+Timeout from workers in nanoseconds.
 
 ## `<prefix>/vault-unseal-key`
 
