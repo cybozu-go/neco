@@ -154,6 +154,18 @@ func (w *Worker) Run(ctx context.Context) error {
 			continue
 		}
 
+		included := false
+		for _, lrn := range req.Servers {
+			if lrn == w.mylrn {
+				included = true
+				break
+			}
+		}
+		if !included {
+			req, rev, err = w.waitRequest(ctx, rev)
+			continue
+		}
+
 		if w.version != req.Version {
 			// After update of "neco" package, old neco-worker should stop.
 			return w.updateNeco(ctx, req.Version)
@@ -175,6 +187,9 @@ func (w *Worker) Run(ctx context.Context) error {
 		}
 
 		w.req = req
+		log.Info("update starts", map[string]interface{}{
+			"version": req.Version,
+		})
 		err = w.update(ctx, rev)
 		if err != nil {
 			return err
@@ -214,7 +229,7 @@ func (w *Worker) update(ctx context.Context, rev int64) error {
 func (w *Worker) dispatch(ctx context.Context, ev *clientv3.Event) (bool, error) {
 	key := string(ev.Kv.Key[len(storage.KeyStatusPrefix):])
 	if key == "current" {
-		return false, w.handleCurrent(ctx, ev)
+		return w.handleCurrent(ctx, ev)
 	}
 
 	lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyWorkerStatusPrefix):]))
@@ -226,20 +241,48 @@ func (w *Worker) dispatch(ctx context.Context, ev *clientv3.Event) (bool, error)
 }
 
 func (w *Worker) updateNeco(ctx context.Context, version string) error {
-	deb, err := neco.CurrentArtifacts.FindDebianPackage("neco")
-	if err != nil {
-		return err
+	deb := &neco.DebianPackage{
+		Name:       "neco",
+		Repository: neco.GitHubRepoName,
+		Owner:      neco.GitHubRepoOwner,
+		Release:    version,
 	}
-	deb.Release = version
 
-	return InstallDebianPackage(ctx, w.proxyClient, &deb)
+	log.Info("update neco", map[string]interface{}{
+		"version": version,
+	})
+	return InstallDebianPackage(ctx, w.proxyClient, deb)
 }
 
-func (w *Worker) handleCurrent(ctx context.Context, ev *clientv3.Event) error {
-	return nil
+func (w *Worker) handleCurrent(ctx context.Context, ev *clientv3.Event) (bool, error) {
+	req := new(neco.UpdateRequest)
+	err := json.Unmarshal(ev.Kv.Value, req)
+	if err != nil {
+		return false, err
+	}
+
+	if req.Stop {
+		log.Warn("request was canceled", map[string]interface{}{
+			"version": req.Version,
+		})
+		return true, nil
+	}
+
+	log.Error("unexpected request", map[string]interface{}{
+		"version":    req.Version,
+		"servers":    req.Servers,
+		"stop":       req.Stop,
+		"started_at": req.StartedAt,
+	})
+	return false, errors.New("unexpected request")
 }
 
 func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.Event) (bool, error) {
+	status := new(neco.UpdateStatus)
+	err := json.Unmarshal(ev.Kv.Value, status)
+	if err != nil {
+		return false, err
+	}
 	return false, nil
 }
 
