@@ -12,3 +12,7 @@
 .*.swp
 .#*
 \#*#
+
+# Debian package
+/work
+/neco_*_amd64.deb
