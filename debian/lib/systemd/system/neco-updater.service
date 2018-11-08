@@ -1,0 +1,14 @@
+[Unit]
+Description=neco updater
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/neco/config.yml
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+ExecStart=/usr/sbin/neco-updater
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+SERVICES="neco-updater neco-worker"
+
+prerm() {
+    for s in $SERVICES; do
+        systemctl stop ${s}.service
+        systemctl disable ${s}.service
+    done
+}
+
+prerm
+
+exit 0

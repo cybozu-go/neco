@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+SERVICES="neco-updater neco-worker"
+
+configure() {
+    systemctl daemon-reload
+    for s in $SERVICES; do
+        systemctl enable ${s}.service
+        systemctl start ${s}.service
+    done
+}
+
+if test "$1" = "configure"; then
+    configure
+fi
+
+exit 0

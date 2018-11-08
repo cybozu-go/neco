@@ -1,0 +1,14 @@
+[Unit]
+Description=neco worker
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/neco/config.yml
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+ExecStart=/usr/sbin/neco-worker
+
+[Install]
+WantedBy=multi-user.target
