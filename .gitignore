@@ -12,6 +12,3 @@
 .*.swp
 .#*
 \#*#
-
-# Ignore go.sum to avoid k8s.io varying package checksums
-/go.sum
