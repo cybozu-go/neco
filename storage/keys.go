@@ -29,7 +29,7 @@ func keyBootServer(lrn int) string {
 }
 
 func keyStatus(lrn int) string {
-	return KeyStatusPrefix + strconv.Itoa(lrn)
+	return KeyWorkerStatusPrefix + strconv.Itoa(lrn)
 }
 
 func keyFinish(lrn int) string {

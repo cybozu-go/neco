@@ -134,7 +134,7 @@ func (s Storage) GetRequestWithRev(ctx context.Context) (*neco.UpdateRequest, in
 	}
 
 	if resp.Count == 0 {
-		return nil, 0, ErrNotFound
+		return nil, resp.Header.Revision, ErrNotFound
 	}
 
 	req := new(neco.UpdateRequest)

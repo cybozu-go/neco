@@ -128,9 +128,9 @@ func (w *Worker) Run(ctx context.Context) error {
 			return w.operator.UpdateNeco(ctx, req)
 		}
 
-		stMap, err := w.storage.GetStatuses(ctx)
-		if err != nil {
-			return err
+		stMap, err2 := w.storage.GetStatuses(ctx)
+		if err2 != nil {
+			return err2
 		}
 		if neco.UpdateAborted(req.Version, w.mylrn, stMap) {
 			log.Info("previous update was aborted", nil)

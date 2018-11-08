@@ -73,23 +73,31 @@ func (op *mockOp) RunStep(ctx context.Context, req *neco.UpdateRequest, step int
 	return nil
 }
 
-type testInput func(t *testing.T, st storage.Storage)
+type testInput func(ctx context.Context, st storage.Storage) error
 
 func inputRequest(req *neco.UpdateRequest) testInput {
-	return func(t *testing.T, st storage.Storage) {
-		err := st.PutRequest(context.Background(), *req, "hoge")
-		if err != nil {
-			t.Fatal(err)
-		}
+	return func(ctx context.Context, st storage.Storage) error {
+		return st.PutRequest(ctx, *req, "hoge")
 	}
 }
 
 func inputStatus(lrn int, status *neco.UpdateStatus) testInput {
-	return func(t *testing.T, st storage.Storage) {
-		err := st.PutStatus(context.Background(), lrn, *status)
-		if err != nil {
-			t.Fatal(err)
-		}
+	return func(ctx context.Context, st storage.Storage) error {
+		return st.PutStatus(ctx, lrn, *status)
+	}
+}
+
+func inputClear() testInput {
+	return func(ctx context.Context, st storage.Storage) error {
+		return st.ClearStatus(ctx)
+	}
+}
+
+func testStatus(step int, cond neco.UpdateCondition) *neco.UpdateStatus {
+	return &neco.UpdateStatus{
+		Version: "1.0.0",
+		Step:    step,
+		Cond:    cond,
 	}
 }
 
@@ -98,14 +106,19 @@ var (
 		Version: "1.1.0",
 		Servers: []int{0, 1, 2},
 	}
-	testReq1Stop = &neco.UpdateRequest{
-		Version: "1.1.0",
-		Servers: []int{0, 1, 2},
-		Stop:    true,
-	}
 	testReq2 = &neco.UpdateRequest{
 		Version: "1.1.0",
 		Servers: []int{1, 2},
+	}
+	testReq = &neco.UpdateRequest{
+		Version: "1.0.0",
+		Servers: []int{0, 1},
+		Stop:    false,
+	}
+	testReqStop = &neco.UpdateRequest{
+		Version: "1.0.0",
+		Servers: []int{0, 1},
+		Stop:    true,
 	}
 )
 
@@ -137,6 +150,29 @@ func TestWorker(t *testing.T) {
 			Op:     newMock(false, 0),
 			Expect: expect(false, 0, nil),
 		},
+		{
+			Name: "previous-abort",
+			Input: []testInput{
+				inputStatus(0, testStatus(1, neco.CondAbort)),
+				inputStatus(1, testStatus(1, neco.CondRunning)),
+				inputRequest(testReq),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 0, nil),
+		},
+		{
+			Name: "previous-abort-clear",
+			Input: []testInput{
+				inputStatus(0, testStatus(1, neco.CondAbort)),
+				inputStatus(1, testStatus(1, neco.CondRunning)),
+				inputRequest(testReqStop),
+				inputClear(),
+				inputRequest(testReq),
+				inputStatus(1, testStatus(1, neco.CondRunning)),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 1, testReq),
+		},
 	}
 
 	for _, c := range testCases {
@@ -167,12 +203,19 @@ func TestWorker(t *testing.T) {
 			})
 			env.Go(func(ctx context.Context) error {
 				for _, input := range c.Input {
-					input(t, st)
+					err := input(ctx, st)
+					if err != nil {
+						t.Log("input error!!", err)
+						return err
+					}
 				}
 				return nil
 			})
 			env.Stop()
-			env.Wait()
+			err = env.Wait()
+			if err != nil {
+				t.Log(err)
+			}
 
 			if !cmp.Equal(c.Op, c.Expect) {
 				t.Errorf("unexpected result: expect=%+v, actual=%+v", c.Expect, c.Op)
