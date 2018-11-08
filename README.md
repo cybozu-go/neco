@@ -101,7 +101,7 @@ $ make start-etcd
 Then, run `go test` on another terminal.
 
 ```console
-$ go test   -v --count=1 -mod=vendor ./...
+$ go test -v -count=1 -race -mod=vendor ./...
 ```
 
 Documentation

@@ -15,6 +15,7 @@ start-etcd: clean
 		--advertise-client-urls $(HOST):$(CLIENT_PORT)
 
 test:
-	go test -mod vendor -race -v ./...
+	go test -v -count=1 -race -mod=vendor ./...
+
 
 .PHONY:	start-etcd clean
