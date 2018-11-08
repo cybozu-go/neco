@@ -26,7 +26,8 @@ type UpdateCondition int
 
 // Possible update conditions.
 const (
-	CondRunning = iota
+	CondNotRunning = iota
+	CondRunning
 	CondAbort
 	CondComplete
 )

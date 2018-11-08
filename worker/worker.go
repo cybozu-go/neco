@@ -165,12 +165,12 @@ func (w *Worker) update(ctx context.Context, rev int64) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	st := neco.UpdateStatus{
+	status := neco.UpdateStatus{
 		Version: w.req.Version,
 		Step:    1,
 		Cond:    neco.CondRunning,
 	}
-	err := w.storage.PutStatus(ctx, w.mylrn, st)
+	err := w.storage.PutStatus(ctx, w.mylrn, status)
 	if err != nil {
 		return err
 	}
@@ -190,6 +190,19 @@ func (w *Worker) update(ctx context.Context, rev int64) error {
 		for _, ev := range wr.Events {
 			completed, err := w.dispatch(ctx, ev)
 			if err != nil {
+				status = neco.UpdateStatus{
+					Version: w.req.Version,
+					Step:    w.step,
+					Cond:    neco.CondAbort,
+				}
+				err2 := w.storage.PutStatus(ctx, w.mylrn, status)
+				if err2 != nil {
+					log.Warn("failed to update status", map[string]interface{}{
+						log.FnError:      err2,
+						"step":           w.step,
+						"original_error": err,
+					})
+				}
 				return err
 			}
 			if completed {

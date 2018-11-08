@@ -142,6 +142,7 @@ func TestWorker(t *testing.T) {
 		Input  []testInput
 		Op     *mockOp
 		Expect *mockOp
+		Cond   neco.UpdateCondition
 		Error  bool
 	}{
 		{
@@ -207,6 +208,7 @@ func TestWorker(t *testing.T) {
 			},
 			Op:     newMock(false, 0),
 			Expect: expect(false, 2, testReq),
+			Cond:   neco.CondComplete,
 		},
 		{
 			Name: "update-successful-then-new-request",
@@ -230,6 +232,7 @@ func TestWorker(t *testing.T) {
 			},
 			Op:     newMock(false, 0),
 			Expect: expect(false, 1, testReq),
+			Cond:   neco.CondRunning,
 		},
 		{
 			Name: "unexpected-request",
@@ -241,6 +244,7 @@ func TestWorker(t *testing.T) {
 			Op:     newMock(false, 0),
 			Expect: expect(false, 1, testReq),
 			Error:  true,
+			Cond:   neco.CondAbort,
 		},
 		{
 			Name: "unexpected-version",
@@ -252,6 +256,7 @@ func TestWorker(t *testing.T) {
 			Op:     newMock(false, 0),
 			Expect: expect(false, 1, testReq),
 			Error:  true,
+			Cond:   neco.CondAbort,
 		},
 		{
 			Name: "unexpected-step",
@@ -263,6 +268,7 @@ func TestWorker(t *testing.T) {
 			Op:     newMock(false, 0),
 			Expect: expect(false, 1, testReq),
 			Error:  true,
+			Cond:   neco.CondAbort,
 		},
 		{
 			Name: "aborted",
@@ -274,6 +280,7 @@ func TestWorker(t *testing.T) {
 			Op:     newMock(false, 0),
 			Expect: expect(false, 1, testReq),
 			Error:  true,
+			Cond:   neco.CondAbort,
 		},
 		{
 			Name: "unexpected-completion",
@@ -285,6 +292,7 @@ func TestWorker(t *testing.T) {
 			Op:     newMock(false, 0),
 			Expect: expect(false, 1, testReq),
 			Error:  true,
+			Cond:   neco.CondAbort,
 		},
 		{
 			Name: "fail-at-step2",
@@ -297,6 +305,7 @@ func TestWorker(t *testing.T) {
 			Op:     newMock(false, 2),
 			Expect: expect(false, 2, testReq),
 			Error:  true,
+			Cond:   neco.CondAbort,
 		},
 	}
 
@@ -344,6 +353,15 @@ func TestWorker(t *testing.T) {
 
 			if !cmp.Equal(c.Op, c.Expect) {
 				t.Errorf("unexpected result: expect=%+v, actual=%+v", c.Expect, c.Op)
+			}
+
+			if c.Cond != neco.CondNotRunning {
+				status, err := st.GetStatus(context.Background(), 0)
+				if err != nil {
+					t.Error(err)
+				} else if c.Cond != status.Cond {
+					t.Errorf("unexpected condition. expect=%d, actual=%d", c.Cond, status.Cond)
+				}
 			}
 
 			if c.Error {
