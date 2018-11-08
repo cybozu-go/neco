@@ -215,7 +215,7 @@ func (s Server) waitWorkers(ctx context.Context, req *neco.UpdateRequest, rev in
 	defer cancel()
 
 	ch := s.session.Client().Watch(
-		deadlineCtx, storage.KeyStatusPrefix,
+		deadlineCtx, storage.KeyWorkerStatusPrefix,
 		clientv3.WithRev(rev+1), clientv3.WithFilterDelete(), clientv3.WithPrefix(),
 	)
 	for resp := range ch {
@@ -225,7 +225,7 @@ func (s Server) waitWorkers(ctx context.Context, req *neco.UpdateRequest, rev in
 			if err != nil {
 				return err
 			}
-			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyStatusPrefix):]))
+			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyWorkerStatusPrefix):]))
 			if err != nil {
 				return err
 			}
