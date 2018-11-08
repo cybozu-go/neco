@@ -75,8 +75,11 @@ func (op *mockOp) RunStep(ctx context.Context, req *neco.UpdateRequest, step int
 
 type testInput func(ctx context.Context, st storage.Storage, bch <-chan struct{}) error
 
-func inputRequest(req *neco.UpdateRequest) testInput {
+func inputRequest(req *neco.UpdateRequest, wait bool) testInput {
 	return func(ctx context.Context, st storage.Storage, bch <-chan struct{}) error {
+		if wait {
+			<-bch
+		}
 		return st.PutRequest(ctx, *req, "hoge")
 	}
 }
@@ -101,6 +104,14 @@ func testStatus(step int, cond neco.UpdateCondition) *neco.UpdateStatus {
 		Version: "1.0.0",
 		Step:    step,
 		Cond:    cond,
+	}
+}
+
+func testStatus1(step int) *neco.UpdateStatus {
+	return &neco.UpdateStatus{
+		Version: "1.1.0",
+		Step:    step,
+		Cond:    neco.CondRunning,
 	}
 }
 
@@ -135,20 +146,20 @@ func TestWorker(t *testing.T) {
 	}{
 		{
 			Name:   "update-neco",
-			Input:  []testInput{inputRequest(testReq1)},
+			Input:  []testInput{inputRequest(testReq1, false)},
 			Op:     newMock(false, 0),
 			Expect: expect(true, 0, testReq1),
 		},
 		{
 			Name:   "update-neco-fail",
-			Input:  []testInput{inputRequest(testReq1)},
+			Input:  []testInput{inputRequest(testReq1, false)},
 			Op:     newMock(true, 0),
 			Expect: expect(false, 0, testReq1),
 			Error:  true,
 		},
 		{
 			Name:   "no-member",
-			Input:  []testInput{inputRequest(testReq2)},
+			Input:  []testInput{inputRequest(testReq2, false)},
 			Op:     newMock(false, 0),
 			Expect: expect(false, 0, nil),
 		},
@@ -157,7 +168,7 @@ func TestWorker(t *testing.T) {
 			Input: []testInput{
 				inputStatus(0, testStatus(1, neco.CondAbort), false),
 				inputStatus(1, testStatus(1, neco.CondRunning), false),
-				inputRequest(testReq),
+				inputRequest(testReq, false),
 			},
 			Op:     newMock(false, 0),
 			Expect: expect(false, 0, nil),
@@ -167,9 +178,9 @@ func TestWorker(t *testing.T) {
 			Input: []testInput{
 				inputStatus(0, testStatus(1, neco.CondAbort), false),
 				inputStatus(1, testStatus(1, neco.CondRunning), false),
-				inputRequest(testReqStop),
+				inputRequest(testReqStop, false),
 				inputClear(),
-				inputRequest(testReq),
+				inputRequest(testReq, false),
 				inputStatus(1, testStatus(1, neco.CondRunning), false),
 			},
 			Op:     newMock(false, 0),
@@ -180,7 +191,7 @@ func TestWorker(t *testing.T) {
 			Input: []testInput{
 				inputStatus(0, testStatus(2, neco.CondComplete), false),
 				inputStatus(1, testStatus(2, neco.CondComplete), false),
-				inputRequest(testReq),
+				inputRequest(testReq, false),
 			},
 			Op:     newMock(false, 0),
 			Expect: expect(false, 0, nil),
@@ -188,7 +199,7 @@ func TestWorker(t *testing.T) {
 		{
 			Name: "update-successful",
 			Input: []testInput{
-				inputRequest(testReq),
+				inputRequest(testReq, false),
 				inputStatus(1, testStatus(1, neco.CondRunning), false),
 				inputStatus(3, testStatus(1, neco.CondRunning), false), // ignored
 				inputStatus(1, testStatus(2, neco.CondRunning), true),
@@ -200,15 +211,92 @@ func TestWorker(t *testing.T) {
 		{
 			Name: "update-successful-then-new-request",
 			Input: []testInput{
-				inputRequest(testReq),
+				inputRequest(testReq, false),
 				inputStatus(1, testStatus(1, neco.CondRunning), false),
 				inputStatus(3, testStatus(1, neco.CondRunning), false), // ignored
 				inputStatus(1, testStatus(2, neco.CondRunning), true),
 				inputStatus(1, testStatus(2, neco.CondComplete), true),
-				inputRequest(testReq1),
+				inputRequest(testReq1, false),
 			},
 			Op:     newMock(false, 0),
 			Expect: expect(true, 2, testReq1),
+		},
+		{
+			Name: "cancel-request",
+			Input: []testInput{
+				inputRequest(testReq, false),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
+				inputRequest(testReqStop, true),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 1, testReq),
+		},
+		{
+			Name: "unexpected-request",
+			Input: []testInput{
+				inputRequest(testReq, false),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
+				inputRequest(testReq1, true),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 1, testReq),
+			Error:  true,
+		},
+		{
+			Name: "unexpected-version",
+			Input: []testInput{
+				inputRequest(testReq, false),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
+				inputStatus(1, testStatus1(2), true),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 1, testReq),
+			Error:  true,
+		},
+		{
+			Name: "unexpected-step",
+			Input: []testInput{
+				inputRequest(testReq, false),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
+				inputStatus(1, testStatus(3, neco.CondRunning), true),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 1, testReq),
+			Error:  true,
+		},
+		{
+			Name: "aborted",
+			Input: []testInput{
+				inputRequest(testReq, false),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
+				inputStatus(1, testStatus(1, neco.CondAbort), true),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 1, testReq),
+			Error:  true,
+		},
+		{
+			Name: "unexpected-completion",
+			Input: []testInput{
+				inputRequest(testReq, false),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
+				inputStatus(1, testStatus(1, neco.CondComplete), true),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 1, testReq),
+			Error:  true,
+		},
+		{
+			Name: "fail-at-step2",
+			Input: []testInput{
+				inputRequest(testReq, false),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
+				inputStatus(1, testStatus(2, neco.CondRunning), true),
+				inputStatus(1, testStatus(2, neco.CondComplete), false),
+			},
+			Op:     newMock(false, 2),
+			Expect: expect(false, 2, testReq),
+			Error:  true,
 		},
 	}
 
