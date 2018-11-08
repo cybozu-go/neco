@@ -90,6 +90,20 @@ Then `neco-updater` service is updated automatically.
 
 See [docs/cicd.md](docs/cicd.md)
 
+### Run unit tests at local machine
+
+First, start up etcd server manually.
+
+```console
+$ make start-etcd
+```
+
+Then, run `go test` on another terminal.
+
+```console
+$ go test -v -count=1 -race -mod=vendor ./...
+```
+
 Documentation
 -------------
 
