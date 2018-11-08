@@ -7,11 +7,8 @@ jobs:
     working_directory: /work
     steps:
     - checkout
-    - run: test -z "$(gofmt -s -l . | grep -v '^vendor' | tee /dev/stderr)"
-    - run: golint -set_exit_status $(go list -mod=vendor ./... | grep -v /vendor/)
-    - run: go build -mod=vendor ./...
-    - run: go test -mod=vendor -race -v ./...
-    - run: go vet -mod=vendor ./...
+    - run: make test
+    - run: make deb
   dctest:
     docker:
       - image: google/cloud-sdk
