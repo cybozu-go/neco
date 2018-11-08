@@ -28,7 +28,7 @@ Installed debian package version.
 For instance, installation information of `etcdpasswd` is stored in
 `<prefix>/debs/0/etcdpasswd` key.
 
-## `<prefix>/current`
+## `<prefix>/status/current`
 
 A leader of `neco-updater` creates and updates this key.
 
@@ -53,24 +53,24 @@ Name         | Type   | Description
 `neco-worker` watches this key to start a new update process.
 If `stop` becomes true, `neco-worker` should stop the ongoing update process immediately.
 
-## `<prefix>/status/<LRN>`
+## `<prefix>/status/bootservers/<LRN>`
 
 `neco-worker` creates and updates this key.
 
 The value is a JSON object with these fields:
 
-Name       | Type   | Description
-----       | ----   | -----------
-`version`  | string | Target `neco` version to be updated.
-`finished` | bool   | Update to `version` successfully completed.
-`error`    | bool   | If `true`, the update process was aborted due to an error.
-`message`  | string | Description of an error.
+Name      | Type   | Description
+----      | ----   | -----------
+`version` | string | Target `neco` version to be updated.
+`step`    | int    | Current update step.
+`cond`    | int    | [`UpdateCondition`](https://godoc.org/github.com/cybozu-go/neco#UpdateCondition)
+`message` | string | Description of an error.
 
 ```json
 {
     "version": "1.2.3-1",
-    "finished": false,
-    "error": true,
+    "step": 2,
+    "cond": 0,
     "message": "cke update failed"
 }
 ```

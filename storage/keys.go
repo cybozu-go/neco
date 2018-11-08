@@ -9,8 +9,9 @@ import (
 const (
 	KeyLeader              = "leader/"
 	KeyBootserversPrefix   = "bootservers/"
-	KeyCurrent             = "current"
 	KeyStatusPrefix        = "status/"
+	KeyCurrent             = "status/current"
+	KeyWorkerStatusPrefix  = "status/bootservers/"
 	KeyNotificationSlack   = "config/notification/slack"
 	KeyProxy               = "config/proxy"
 	KeyEnv                 = "config/env"
@@ -28,7 +29,7 @@ func keyBootServer(lrn int) string {
 }
 
 func keyStatus(lrn int) string {
-	return KeyStatusPrefix + strconv.Itoa(lrn)
+	return KeyWorkerStatusPrefix + strconv.Itoa(lrn)
 }
 
 func keyFinish(lrn int) string {

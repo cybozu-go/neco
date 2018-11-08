@@ -3,6 +3,7 @@ package updater
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -55,18 +56,17 @@ func (e *Env) Start() {
 			timeout: time.Second,
 			checker: mock.ReleaseChecker{Version: "1.0.0"},
 		}
-		server.Run(ctx)
-
-		e.etcd.Close()
-		e.slack.Close()
-		return nil
+		return server.Run(ctx)
 	})
 	e.env.Stop()
 }
 
 func (e *Env) WaitMessage() (Payload, error) {
 	select {
-	case msg := <-e.slack.WatchMessage():
+	case msg, ok := <-e.slack.WatchMessage():
+		if !ok {
+			return msg, errors.New("slack server was closed")
+		}
 		return msg, nil
 	case <-time.After(time.Second):
 		return Payload{}, errors.New("time out")
@@ -75,7 +75,12 @@ func (e *Env) WaitMessage() (Payload, error) {
 
 func (e *Env) Shutdown() {
 	e.env.Cancel(nil)
-	e.env.Wait()
+	err := e.env.Wait()
+	if err != nil {
+		fmt.Println(err)
+	}
+	e.etcd.Close()
+	e.slack.Close()
 }
 
 func PutRequest(t *testing.T, req neco.UpdateRequest) error {

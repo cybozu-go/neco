@@ -87,7 +87,7 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-			httpc = neco.NewHTTP(u)
+			httpc = newHTTPClient(u)
 		}
 		github = ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, httpc}
 	}
