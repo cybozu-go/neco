@@ -260,6 +260,9 @@ func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.E
 	if st.Cond == neco.CondAbort {
 		return false, fmt.Errorf("other boot server failed to update: %d", lrn)
 	}
+	if st.Cond == neco.CondComplete {
+		return false, fmt.Errorf("other boot server reports completion: %d", lrn)
+	}
 
 	if w.barrier.Check(lrn) {
 		return w.runStep(ctx)

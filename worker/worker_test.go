@@ -123,7 +123,6 @@ var (
 )
 
 func TestWorker(t *testing.T) {
-
 	testCases := []struct {
 		Name   string
 		Input  []testInput
@@ -172,6 +171,28 @@ func TestWorker(t *testing.T) {
 			},
 			Op:     newMock(false, 0),
 			Expect: expect(false, 1, testReq),
+		},
+		{
+			Name: "previous-completed",
+			Input: []testInput{
+				inputStatus(0, testStatus(2, neco.CondComplete)),
+				inputStatus(1, testStatus(2, neco.CondComplete)),
+				inputRequest(testReq),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 0, nil),
+		},
+		{
+			Name: "update-successful",
+			Input: []testInput{
+				inputRequest(testReq),
+				inputStatus(1, testStatus(1, neco.CondRunning)),
+				inputStatus(3, testStatus(1, neco.CondRunning)), // ignored
+				inputStatus(1, testStatus(2, neco.CondRunning)),
+				inputStatus(1, testStatus(2, neco.CondComplete)),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(false, 2, testReq),
 		},
 	}
 
