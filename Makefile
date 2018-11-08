@@ -1,6 +1,6 @@
 HOST = http://localhost
-PEER_PORT = 12380
-CLIENT_PORT = 12379
+PEER_PORT = 2380
+CLIENT_PORT = 2379
 ETCD_DIR = /tmp/neco-etcd/
 
 clean:

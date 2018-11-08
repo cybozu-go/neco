@@ -19,15 +19,10 @@ var (
 //
 func NewEtcdClient(t *testing.T) *clientv3.Client {
 	var clientURL string
-	circleci := os.Getenv("CIRCLECI") == "true"
-	if circleci {
+	if len(clientPort) == 0 {
 		clientURL = "http://localhost:2379"
 	} else {
-		if len(clientPort) == 0 {
-			clientURL = "http://localhost:12379"
-		} else {
-			clientURL = "http://localhost:" + clientPort
-		}
+		clientURL = "http://localhost:" + clientPort
 	}
 
 	cfg := etcdutil.NewConfig(now + "/" + t.Name() + "/")
