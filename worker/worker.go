@@ -70,6 +70,7 @@ type Worker struct {
 	req     *neco.UpdateRequest
 	step    int
 	barrier Barrier
+	bch     chan struct{}
 }
 
 // NewWorker returns a *Worker.
@@ -80,6 +81,7 @@ func NewWorker(ec *clientv3.Client, op Operator, version string, mylrn int) *Wor
 		ec:       ec,
 		storage:  storage.NewStorage(ec),
 		operator: op,
+		bch:      make(chan struct{}, 1),
 	}
 }
 
@@ -265,6 +267,10 @@ func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, ev *clientv3.E
 	}
 
 	if w.barrier.Check(lrn) {
+		select {
+		case w.bch <- struct{}{}:
+		default:
+		}
 		return w.runStep(ctx)
 	}
 

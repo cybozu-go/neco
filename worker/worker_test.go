@@ -73,22 +73,25 @@ func (op *mockOp) RunStep(ctx context.Context, req *neco.UpdateRequest, step int
 	return nil
 }
 
-type testInput func(ctx context.Context, st storage.Storage) error
+type testInput func(ctx context.Context, st storage.Storage, bch <-chan struct{}) error
 
 func inputRequest(req *neco.UpdateRequest) testInput {
-	return func(ctx context.Context, st storage.Storage) error {
+	return func(ctx context.Context, st storage.Storage, bch <-chan struct{}) error {
 		return st.PutRequest(ctx, *req, "hoge")
 	}
 }
 
-func inputStatus(lrn int, status *neco.UpdateStatus) testInput {
-	return func(ctx context.Context, st storage.Storage) error {
+func inputStatus(lrn int, status *neco.UpdateStatus, wait bool) testInput {
+	return func(ctx context.Context, st storage.Storage, bch <-chan struct{}) error {
+		if wait {
+			<-bch
+		}
 		return st.PutStatus(ctx, lrn, *status)
 	}
 }
 
 func inputClear() testInput {
-	return func(ctx context.Context, st storage.Storage) error {
+	return func(ctx context.Context, st storage.Storage, bch <-chan struct{}) error {
 		return st.ClearStatus(ctx)
 	}
 }
@@ -152,8 +155,8 @@ func TestWorker(t *testing.T) {
 		{
 			Name: "previous-abort",
 			Input: []testInput{
-				inputStatus(0, testStatus(1, neco.CondAbort)),
-				inputStatus(1, testStatus(1, neco.CondRunning)),
+				inputStatus(0, testStatus(1, neco.CondAbort), false),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
 				inputRequest(testReq),
 			},
 			Op:     newMock(false, 0),
@@ -162,12 +165,12 @@ func TestWorker(t *testing.T) {
 		{
 			Name: "previous-abort-clear",
 			Input: []testInput{
-				inputStatus(0, testStatus(1, neco.CondAbort)),
-				inputStatus(1, testStatus(1, neco.CondRunning)),
+				inputStatus(0, testStatus(1, neco.CondAbort), false),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
 				inputRequest(testReqStop),
 				inputClear(),
 				inputRequest(testReq),
-				inputStatus(1, testStatus(1, neco.CondRunning)),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
 			},
 			Op:     newMock(false, 0),
 			Expect: expect(false, 1, testReq),
@@ -175,8 +178,8 @@ func TestWorker(t *testing.T) {
 		{
 			Name: "previous-completed",
 			Input: []testInput{
-				inputStatus(0, testStatus(2, neco.CondComplete)),
-				inputStatus(1, testStatus(2, neco.CondComplete)),
+				inputStatus(0, testStatus(2, neco.CondComplete), false),
+				inputStatus(1, testStatus(2, neco.CondComplete), false),
 				inputRequest(testReq),
 			},
 			Op:     newMock(false, 0),
@@ -186,13 +189,26 @@ func TestWorker(t *testing.T) {
 			Name: "update-successful",
 			Input: []testInput{
 				inputRequest(testReq),
-				inputStatus(1, testStatus(1, neco.CondRunning)),
-				inputStatus(3, testStatus(1, neco.CondRunning)), // ignored
-				inputStatus(1, testStatus(2, neco.CondRunning)),
-				inputStatus(1, testStatus(2, neco.CondComplete)),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
+				inputStatus(3, testStatus(1, neco.CondRunning), false), // ignored
+				inputStatus(1, testStatus(2, neco.CondRunning), true),
+				inputStatus(1, testStatus(2, neco.CondComplete), false),
 			},
 			Op:     newMock(false, 0),
 			Expect: expect(false, 2, testReq),
+		},
+		{
+			Name: "update-successful-then-new-request",
+			Input: []testInput{
+				inputRequest(testReq),
+				inputStatus(1, testStatus(1, neco.CondRunning), false),
+				inputStatus(3, testStatus(1, neco.CondRunning), false), // ignored
+				inputStatus(1, testStatus(2, neco.CondRunning), true),
+				inputStatus(1, testStatus(2, neco.CondComplete), true),
+				inputRequest(testReq1),
+			},
+			Op:     newMock(false, 0),
+			Expect: expect(true, 2, testReq1),
 		},
 	}
 
@@ -224,7 +240,7 @@ func TestWorker(t *testing.T) {
 			})
 			env.Go(func(ctx context.Context) error {
 				for _, input := range c.Input {
-					err := input(ctx, st)
+					err := input(ctx, st, worker.bch)
 					if err != nil {
 						t.Log("input error!!", err)
 						return err
