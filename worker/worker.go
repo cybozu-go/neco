@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -107,7 +106,7 @@ func (w *Worker) Run(ctx context.Context) error {
 
 	for {
 		if err == storage.ErrNotFound {
-			req, rev, err = w.waitRequest(ctx, rev)
+			req, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
 		}
 		if err != nil {
@@ -115,12 +114,12 @@ func (w *Worker) Run(ctx context.Context) error {
 		}
 
 		if req.Stop {
-			req, rev, err = w.waitRequest(ctx, rev)
+			req, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
 		}
 
 		if !req.IsMember(w.mylrn) {
-			req, rev, err = w.waitRequest(ctx, rev)
+			req, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
 		}
 
@@ -135,12 +134,12 @@ func (w *Worker) Run(ctx context.Context) error {
 		}
 		if neco.UpdateAborted(req.Version, w.mylrn, stMap) {
 			log.Info("previous update was aborted", nil)
-			req, rev, err = w.waitRequest(ctx, rev)
+			req, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
 		}
 		if neco.UpdateCompleted(req.Version, req.Servers, stMap) {
 			log.Info("previous update was completed successfully", nil)
-			req, rev, err = w.waitRequest(ctx, rev)
+			req, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
 		}
 
@@ -156,7 +155,7 @@ func (w *Worker) Run(ctx context.Context) error {
 		log.Info("update finished", map[string]interface{}{
 			"version": req.Version,
 		})
-		req, rev, err = w.waitRequest(ctx, rev)
+		req, rev, err = w.storage.WaitRequest(ctx, rev)
 	}
 }
 
@@ -296,34 +295,4 @@ func (w *Worker) runStep(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	return true, nil
-}
-
-func (w *Worker) waitRequest(ctx context.Context, rev int64) (*neco.UpdateRequest, int64, error) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	ch := w.ec.Watch(ctx, storage.KeyCurrent,
-		clientv3.WithRev(rev+1),
-		clientv3.WithFilterDelete())
-	for wr := range ch {
-		err := wr.Err()
-		if err != nil {
-			return nil, 0, err
-		}
-
-		if len(wr.Events) == 0 {
-			continue
-		}
-
-		ev := wr.Events[0]
-		req := new(neco.UpdateRequest)
-		err = json.Unmarshal(ev.Kv.Value, req)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		return req, ev.Kv.ModRevision, nil
-	}
-
-	return nil, 0, errors.New("waitRequest was interrupted")
 }
