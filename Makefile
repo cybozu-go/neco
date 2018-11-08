@@ -1,6 +1,7 @@
 # Makefile for neco
 
 SUDO = sudo
+FAKEROOT = fakeroot
 ETCD_DIR = /tmp/neco-etcd
 
 ### for debian package
@@ -57,7 +58,7 @@ $(DEB): $(CONTROL)
 	mkdir -p $(DOCDIR)
 	cp README.md LICENSE $(DOCDIR)
 	chmod -R g-w $(WORKDIR)
-	fakeroot dpkg-deb --build $(WORKDIR) .
+	$(FAKEROOT) dpkg-deb --build $(WORKDIR) .
 
 setup:
 	GO111MODULE=off go get -u golang.org/x/lint/golint
