@@ -32,7 +32,7 @@ func GetDebianVersion(pkg string) (string, error) {
 
 // InstallDebianPackage installs a debian package
 func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.DebianPackage) error {
-	gh := github.NewClient(client)
+	gh := neco.NewGitHubClient(client)
 
 	releases, err := listGithubReleases(ctx, gh, pkg)
 	if err != nil {

@@ -14,7 +14,6 @@ import (
 	"github.com/containers/image/types"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/google/go-github/github"
 	version "github.com/hashicorp/go-version"
 )
 
@@ -29,7 +28,7 @@ var quayRepos = []string{
 
 var debRepos = []string{
 	"etcdpasswd",
-	"neco",
+	neco.GitHubRepoName,
 }
 
 var templ = template.Must(template.New("").Parse(artifactSetTemplate))
@@ -138,7 +137,7 @@ func getLatestImage(ctx context.Context, name string, cfg Config) (*neco.Contain
 }
 
 func getLatestDeb(ctx context.Context, name string) (*neco.DebianPackage, error) {
-	client := github.NewClient(nil)
+	client := neco.NewGitHubClient(nil)
 	release, resp, err := client.Repositories.GetLatestRelease(ctx, "cybozu-go", name)
 	if err != nil {
 		if resp.StatusCode == http.StatusNotFound {
