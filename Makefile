@@ -67,4 +67,4 @@ setup:
 clean:
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB)
 
-.PHONY:	all test mod deb setup clean
+.PHONY:	all start-etcd stop-etcd test mod deb setup clean

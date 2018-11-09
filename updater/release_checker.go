@@ -93,9 +93,7 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 	}
 
 	env, err := c.storage.GetEnvConfig(ctx)
-	if err == storage.ErrNotFound {
-		return nil
-	} else if err != nil {
+	if err != nil {
 		return err
 	}
 
