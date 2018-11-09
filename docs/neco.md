@@ -20,17 +20,6 @@ Synopsis
 
     Show the current configuration for `KEY`.
 
-* `neco setup [--no-revoke] LRN [LRN ...]`
-
-    Install and setup etcd cluster as well as Vault using given boot servers.
-    `LRN` is the logical rack number of the boot server.  At least 3 LRNs
-    should be specified.
-
-    This command need to be invoked at once on all boot servers specified by LRN.
-
-    When `--no-revoke` option is specified, it does not revoke the initial
-    root token.  This is only for testing purpose.
-
 * `neco init NAME`
 
     Initialize data for a new application.
@@ -61,6 +50,21 @@ Synopsis
 * `neco recover`
 
     Removes the current update status from etcd to resolve the update failure.
+
+* `neco setup [--no-revoke] LRN [LRN ...]`
+
+    Install and setup etcd cluster as well as Vault using given boot servers.
+    `LRN` is the logical rack number of the boot server.  At least 3 LRNs
+    should be specified.
+
+    This command need to be invoked at once on all boot servers specified by LRN.
+
+    When `--no-revoke` option is specified, it does not revoke the initial
+    root token.  This is only for testing purpose.
+
+* `neco status`
+
+    Show the status of the current update process.
 
 * `neco vault unseal`
 
