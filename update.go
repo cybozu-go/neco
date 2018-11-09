@@ -38,6 +38,22 @@ const (
 	CondComplete
 )
 
+// String implements io.Stringer
+func (c UpdateCondition) String() string {
+	switch c {
+	case CondNotRunning:
+		return "not running"
+	case CondRunning:
+		return "running"
+	case CondAbort:
+		return "aborted"
+	case CondComplete:
+		return "completed"
+	default:
+		return "unknown"
+	}
+}
+
 // UpdateStatus represents status report from neco-worker
 type UpdateStatus struct {
 	Version string          `json:"version"`
