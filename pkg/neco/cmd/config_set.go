@@ -51,13 +51,19 @@ Possible keys are:
 				}
 				return st.PutEnvConfig(ctx, value)
 			case "slack":
-				_, err := url.Parse(value)
+				u, err := url.Parse(value)
+				if !u.IsAbs() {
+					return errors.New("invalid URL")
+				}
 				if err != nil {
 					return err
 				}
 				return st.PutSlackNotification(ctx, value)
 			case "proxy":
-				_, err := url.Parse(value)
+				u, err := url.Parse(value)
+				if !u.IsAbs() {
+					return errors.New("invalid URL")
+				}
 				if err != nil {
 					return err
 				}
