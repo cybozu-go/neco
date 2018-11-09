@@ -26,7 +26,7 @@ func newWorkerWatcher(req *neco.UpdateRequest, notifier Notifier) workerWatcher 
 	return watcher
 }
 
-func (w workerWatcher) handleWorkerStatus(ctx context.Context, lrn int, st *neco.UpdateStatus) (bool, error) {
+func (w *workerWatcher) handleWorkerStatus(ctx context.Context, lrn int, st *neco.UpdateStatus) (bool, error) {
 	if st.Version != w.current.Version {
 		return false, nil
 	}
@@ -40,6 +40,7 @@ func (w workerWatcher) handleWorkerStatus(ctx context.Context, lrn int, st *neco
 			"message": st.Message,
 		})
 		w.notifier.NotifyServerFailure(ctx, *w.current, st.Message)
+		w.aborted = true
 		return false, errors.New(st.Message)
 	case neco.CondComplete:
 		log.Info("worker finished updating", map[string]interface{}{
