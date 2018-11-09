@@ -10,6 +10,9 @@ const (
 
 	// NecoPrefix is the etcd key prefix for Neco tools.
 	NecoPrefix = "/neco/"
+
+	NecoPackageName = "neco"
+	NecoUserAgent   = "github.com/cybozu-go/neco"
 )
 
 // Neco repository

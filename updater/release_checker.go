@@ -116,7 +116,7 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 		return err
 	}
 
-	current, err := c.pkg.GetVersion(ctx, "neco")
+	current, err := c.pkg.GetVersion(ctx, neco.NecoPackageName)
 	if err != nil {
 		return err
 	}

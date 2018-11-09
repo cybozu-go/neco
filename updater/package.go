@@ -1,11 +1,8 @@
 package updater
 
 import (
-	"bufio"
-	"bytes"
 	"context"
-	"errors"
-	"strings"
+	"os/exec"
 
 	"github.com/cybozu-go/well"
 )
@@ -20,18 +17,15 @@ type DebPackageManager struct{}
 
 // GetVersion get a version of the package
 func (m DebPackageManager) GetVersion(ctx context.Context, name string) (string, error) {
-	cmd := well.CommandContext(ctx, "dpkg", "--status", name)
-	output, err := cmd.Output()
+	if exec.Command("dpkg", "-s", name).Run() != nil {
+		return "", nil
+	}
+
+	data, err := well.CommandContext(ctx,
+		"dpkg-query", "--showformat=${Version}", "-W", name).Output()
 	if err != nil {
 		return "", err
 	}
-	s := bufio.NewScanner(bytes.NewReader(output))
-	for s.Scan() {
-		line := s.Text()
-		if strings.HasPrefix(line, "Version:") {
-			return strings.TrimSpace(strings.TrimPrefix(line, "Version:")), nil
 
-		}
-	}
-	return "", errors.New("No 'Version:' field by dpkg --status")
+	return string(data), nil
 }

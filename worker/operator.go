@@ -64,7 +64,7 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 
 func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) error {
 	deb := &neco.DebianPackage{
-		Name:       "neco",
+		Name:       neco.NecoPackageName,
 		Repository: neco.GitHubRepoName,
 		Owner:      neco.GitHubRepoOwner,
 		Release:    req.Version,
