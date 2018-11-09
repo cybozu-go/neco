@@ -248,3 +248,19 @@ RETRY:
 
 	return nil
 }
+
+func (s Storage) DeleteBootServer(ctx context.Context, lrn int) error {
+	resp, err := s.etcd.Txn(ctx).
+		Then(
+			clientv3.OpDelete(keyBootServer(lrn)),
+			clientv3.OpDelete(keyInstall(lrn), clientv3.WithPrefix()),
+		).
+		Commit()
+	if err != nil {
+		return err
+	}
+	if resp.Responses[0].GetResponseDeleteRange().Deleted == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
