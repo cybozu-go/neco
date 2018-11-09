@@ -5,12 +5,10 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/cybozu-go/well"
-
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
-
+	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
 
