@@ -3,47 +3,22 @@ neco
 
 `neco` is an interactive tool for administrators.
 
-It installs/updates miscellaneous programs as well as maintaining etcd database.
-
-Usage
------
-
-```console
-# neco [OPTIONS]
-```
-
-Options
--------
-
-Options are defined by [cybozu-go/etcdutil](https://github.com/cybozu-go/etcdutil), and not shown below will use default values of the etcdutil.
+Features include:
+* Bootstrap etcd and vault clusters.
+* Edit etcd database to configure `neco-updater` and `neco-worker`.
+* Initialize application data before installation.
 
 Synopsis
 --------
 
-* `neco config set env staging|prod`
+* `neco config set KEY VALUE`
 
-    Set cluster environment to use pre-released or released neco packages from
-    GitHub releases.  Latest pre-released is used if `staging` is set.
-    Otherwise, latest released is used if `prod` is set.
+    Change the setting for `KEY` to `Value`.
+    Key and values are described in [the next section](#config).
 
-* `neco config set slack URL`
+* `neco config get KEY`
 
-    Set Slack webhook URL for notification from `neco-updater`.
-
-* `neco config set proxy URL`
-
-    Set proxy URL to access Internet.
-
-* `neco config set check-update-interval DURATION`
-
-    Set polling interval for checking new neco release. DURATION format must be
-    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.  Default is `10m`
-
-* `neco config set worker-timeout DURATION`
-
-    Set timeout from workers on updating process. DURATION format must be
-    parsable by [`time.ParseDuration`][ParseDuration] such as `10m`.  Default
-    is `60m`
+    Show the current configuration for `KEY`.
 
 * `neco setup [--no-revoke] LRN [LRN ...]`
 
@@ -51,31 +26,31 @@ Synopsis
     `LRN` is the logical rack number of the boot server.  At least 3 LRNs
     should be specified.
 
-    This command should be invoked at once on all boot servers specified by LRN.
+    This command need to be invoked at once on all boot servers specified by LRN.
 
-    When `--no-revoke` option is specified, it does not remove the etcd key
-    `<prefix>/vault-root-token`. This option is used by automatic setup of
-    [dctest](../dctest).
+    When `--no-revoke` option is specified, it does not revoke the initial
+    root token.  This is only for testing purpose.
 
 * `neco init NAME`
 
-    Initialize data for new application of the cluster.  
-    Setup etcd user/role for a new application `NAME`. This command should not
-    be executed more than once.
+    Initialize data for a new application.
+    For example, this creates etcd user/role or Vault CA for the new application.
+
+    This command should be **executed only once in the cluster**.
 
 * `neco init-local [--start] NAME`
 
-    Initialize data for new application of a boot server executes. This command
-    should not be executed more than once.  
-    It asks vault user and password to generate a vault token, then issue client
-    certificates for new a application `NAME`.
+    Prepare files to start `NAME`.  For example, this issues a client certificate
+    for etcd authentication.    This will ask users to input Vault username and
+    password to issue certificates.
 
-    If `--start` is given, the program is started after installation.
+    This command should be **executed on all boot servers**.
 
-* `neco join LRN [LRN ...]`
+    If `--start` is given, the program is started after initialization.
+
+* `neco join`
 
     Join this server as a new boot server and an etcd member.
-    `LRN` is the logical rack number of current available boot servers.
     It asks vault user and password to generate a vault token, then issue client
     certificates for etcd and vault for a new boot server.
 
@@ -102,6 +77,43 @@ Synopsis
 * `neco vault show-root-token`
 
     Show the initial root token, if not revoked during `neco setup`.
+
+<a name="config"></a>
+Configurations
+--------------
+
+These configurations are stored in etcd database.
+
+### `env`
+
+Specify the cluster environment.  The default is `staging`.
+Possible values are: `staging` and `prod`.
+
+`staging` environment will be updated with pre-releases of `neco` package.
+
+### `slack`
+
+Specify [Slack WebHook](https://api.slack.com/incoming-webhooks) URL.
+`neco-updater` will post notifications to this.
+
+### `proxy`
+
+Specify HTTP proxy server to access Internet.
+It will be used by `neco-updater` and `neco-worker`.
+
+### `check-update-interval`
+
+Specify polling interval for checking new neco package release.
+The value will be parsed by [`time.ParseDuration`][ParseDuration].
+
+The default value is `10m`.
+
+### `worker-timeout`
+
+Specify timeout value to wait for workers during update process.
+The value will be parsed by [`time.ParseDuration`][ParseDuration].
+
+The default value is `60m`.
 
 Use case
 --------
@@ -164,8 +176,5 @@ When a new program is added to `artifacts.go`, it should be setup as follows:
 
 Existing boot servers need to maintain application configuration files
 to update the list of etcd endpoints.
-
-
-`neco-updater` and `neco-worker` would no longer to update on the dead boot server.
 
 [ParseDuration]: https://golang.org/pkg/time/#ParseDuration
