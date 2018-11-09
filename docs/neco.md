@@ -13,7 +13,7 @@ Synopsis
 
 * `neco config set KEY VALUE`
 
-    Change the setting for `KEY` to `Value`.
+    Change the setting for `KEY` to `VALUE`.
     Key and values are described in [the next section](#config).
 
 * `neco config get KEY`
