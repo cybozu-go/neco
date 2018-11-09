@@ -23,10 +23,15 @@ const (
 	KeyFinishPrefix        = "finish/"
 	KeyContainersFormat    = "install/%d/containers/%s"
 	KeyDebsFormat          = "install/%d/debs/%s"
+	KeyInstallPrefix       = "install/"
 )
 
 func keyBootServer(lrn int) string {
 	return KeyBootserversPrefix + strconv.Itoa(lrn)
+}
+
+func keyInstall(lrn int) string {
+	return KeyInstallPrefix + strconv.Itoa(lrn)
 }
 
 func keyStatus(lrn int) string {

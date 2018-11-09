@@ -38,6 +38,23 @@ func testBootservers(t *testing.T) {
 	if !cmp.Equal(lrns, []int{0, 1, 2}) {
 		t.Error("unexpected lrns", lrns)
 	}
+
+	err = st.DeleteBootServer(ctx, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lrns, err = st.GetBootservers(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(lrns, []int{1, 2}) {
+		t.Error("unexpected lrns", lrns)
+	}
+
+	err = st.DeleteBootServer(ctx, 0)
+	if err != ErrNotFound {
+		t.Error("error should be ErrNotFound", err)
+	}
 }
 
 func testContainerTag(t *testing.T) {

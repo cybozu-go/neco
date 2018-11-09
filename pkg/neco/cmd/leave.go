@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"context"
 	"errors"
-	"fmt"
 	"strconv"
 
+	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/storage"
+	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +34,22 @@ var leaveCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("leave %d from cluster\n", leaveParams.lrn)
+		etcd, err := neco.EtcdClient()
+		if err != nil {
+			log.ErrorExit(err)
+		}
+		defer etcd.Close()
+		st := storage.NewStorage(etcd)
+
+		well.Go(func(ctx context.Context) error {
+			return st.DeleteBootServer(ctx, leaveParams.lrn)
+		})
+
+		well.Stop()
+		err = well.Wait()
+		if err != nil {
+			log.ErrorExit(err)
+		}
 	},
 }
 
