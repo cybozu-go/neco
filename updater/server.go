@@ -144,17 +144,12 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 					return err
 				}
 				deadline := current.StartedAt.Add(timeout)
-				err = s.storage.WatchWorkers(ctx, deadline, currentRev, watcher.handleWorkerStatus)
+				err = storage.NewWorkerWatcher(watcher.handleStatus, watcher.handleError).
+					Watch(ctx, deadline, currentRev, s.storage)
 				if err == nil {
 					break
-				} else if err == storage.ErrTimedOut {
-					log.Warn("workers timed-out", map[string]interface{}{
-						"version":    current.Version,
-						"started_at": current.StartedAt,
-						"timeout":    timeout,
-					})
-					notifier.NotifyTimeout(ctx, *current)
-				} else if !watcher.aborted {
+				}
+				if !watcher.aborted {
 					return err
 				}
 
