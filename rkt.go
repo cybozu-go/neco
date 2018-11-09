@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os/exec"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/well"
@@ -42,8 +43,8 @@ func FetchContainer(ctx context.Context, name string) error {
 	}
 
 	for i := 0; i < retryCount; i++ {
-		cmd = well.CommandContext(ctx, "rkt", "--insecure-options=image", "fetch", "--full", "docker://"+fullname)
-		err = cmd.Run()
+		fetchCmd := exec.CommandContext(ctx, "rkt", "--insecure-options=image", "fetch", "--full", "docker://"+fullname)
+		err = fetchCmd.Run()
 		if err == nil {
 			return nil
 		}
