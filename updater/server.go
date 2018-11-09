@@ -149,7 +149,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				if err == nil {
 					break
 				}
-				if !watcher.aborted {
+				if !watcher.aborted && err != storage.ErrTimedOut {
 					return err
 				}
 
