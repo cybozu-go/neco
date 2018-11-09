@@ -121,6 +121,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			}
 		}
 		if len(target) != 0 {
+		OUTER:
 			// Found new update
 			for {
 				if !skipRequest {
@@ -144,21 +145,32 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 					return err
 				}
 				deadline := current.StartedAt.Add(timeout)
-				err = storage.NewWorkerWatcher(watcher.handleStatus, watcher.handleError).
-					Watch(ctx, deadline, currentRev, s.storage)
-				if err == nil {
-					break
-				}
-				if !watcher.aborted && err != storage.ErrTimedOut {
-					return err
-				}
+				ctxWithDeadline, cancel := context.WithDeadline(ctx, deadline)
+				err = storage.NewWorkerWatcher(watcher.handleStatus).
+					Watch(ctxWithDeadline, currentRev, s.storage)
+				cancel()
 
-				err = s.stopUpdate(ctx, current, leaderKey)
-				if err != nil {
-					return err
-				}
-				err = s.storage.WaitRequestDeletion(ctx, currentRev)
-				if err != nil {
+				switch {
+				case err == nil:
+					break OUTER
+				case err == storage.ErrTimedOut:
+					log.Warn("workers timed-out", map[string]interface{}{
+						"version":    current.Version,
+						"started_at": current.StartedAt,
+					})
+					notifier.NotifyTimeout(ctx, *current)
+					fallthrough
+				case watcher.aborted:
+					err = s.stopUpdate(ctx, current, leaderKey)
+					if err != nil {
+						return err
+					}
+					err = s.storage.WaitRequestDeletion(ctx, currentRev)
+					if err != nil {
+						return err
+					}
+					continue OUTER
+				default:
 					return err
 				}
 			}

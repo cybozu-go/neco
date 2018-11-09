@@ -6,7 +6,6 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/neco/storage"
 )
 
 type workerWatcher struct {
@@ -61,15 +60,4 @@ func (w *workerWatcher) handleStatus(ctx context.Context, lrn int, st *neco.Upda
 	}
 
 	return false, nil
-}
-
-func (w *workerWatcher) handleError(ctx context.Context, err error) error {
-	if err == storage.ErrTimedOut {
-		log.Warn("workers timed-out", map[string]interface{}{
-			"version":    w.current.Version,
-			"started_at": w.current.StartedAt,
-		})
-		w.notifier.NotifyTimeout(ctx, *w.current)
-	}
-	return nil
 }
