@@ -8,6 +8,12 @@ import (
 	"github.com/cybozu-go/neco"
 )
 
+// Default values
+const (
+	DefaultCheckUpdateInterval = 10 * time.Minute
+	DefaultWorkerTimeout       = 60 * time.Minute
+)
+
 // PutEnvConfig stores proxy config to storage.
 func (s Storage) PutEnvConfig(ctx context.Context, env string) error {
 	return s.put(ctx, KeyEnv, env)
@@ -15,7 +21,11 @@ func (s Storage) PutEnvConfig(ctx context.Context, env string) error {
 
 // GetEnvConfig returns proxy config from storage.
 func (s Storage) GetEnvConfig(ctx context.Context) (string, error) {
-	return s.get(ctx, KeyEnv)
+	env, err := s.get(ctx, KeyEnv)
+	if err == ErrNotFound {
+		return neco.StagingEnv, nil
+	}
+	return env, err
 }
 
 // PutSlackNotification stores SlackNotification to storage
@@ -50,7 +60,7 @@ func (s Storage) PutCheckUpdateInterval(ctx context.Context, d time.Duration) er
 func (s Storage) GetCheckUpdateInterval(ctx context.Context) (time.Duration, error) {
 	data, err := s.get(ctx, KeyCheckUpdateInterval)
 	if err == ErrNotFound {
-		return neco.DefaultCheckUpdateInterval, nil
+		return DefaultCheckUpdateInterval, nil
 	}
 	if err != nil {
 		return 0, err
@@ -73,7 +83,7 @@ func (s Storage) PutWorkerTimeout(ctx context.Context, d time.Duration) error {
 func (s Storage) GetWorkerTimeout(ctx context.Context) (time.Duration, error) {
 	data, err := s.get(ctx, KeyWorkerTimeout)
 	if err == ErrNotFound {
-		return neco.DefaultWorkerTimeout, nil
+		return DefaultWorkerTimeout, nil
 	}
 	if err != nil {
 		return 0, err

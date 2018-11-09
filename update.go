@@ -2,6 +2,12 @@ package neco
 
 import "time"
 
+// Environments to use release or pre-release neco
+const (
+	StagingEnv = "staging"
+	ProdEnv    = "prod"
+)
+
 // UpdateRequest represents request from neco-updater
 type UpdateRequest struct {
 	Version   string    `json:"version"`
