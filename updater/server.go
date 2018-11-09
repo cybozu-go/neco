@@ -100,7 +100,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			log.Info("Last updating is failed, wait for retrying", map[string]interface{}{
 				"version": current.Version,
 			})
-			err := s.storage.WaitRequestDeletion(ctx, current, currentRev)
+			err := s.storage.WaitRequestDeletion(ctx, currentRev)
 			if err != nil {
 				return err
 			}
@@ -162,7 +162,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				if err != nil {
 					return err
 				}
-				err = s.storage.WaitRequestDeletion(ctx, current, currentRev)
+				err = s.storage.WaitRequestDeletion(ctx, currentRev)
 				if err != nil {
 					return err
 				}

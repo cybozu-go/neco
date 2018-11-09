@@ -79,7 +79,7 @@ func (s Storage) WaitForMemberUpdated(ctx context.Context, req *neco.UpdateReque
 }
 
 // WaitRequestDeletion waits for a UpdateRequest to be deleted.
-func (s Storage) WaitRequestDeletion(ctx context.Context, req *neco.UpdateRequest, rev int64) error {
+func (s Storage) WaitRequestDeletion(ctx context.Context, rev int64) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
