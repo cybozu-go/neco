@@ -40,6 +40,7 @@ func main() {
 	server := updater.NewServer(session, st, 2*time.Second)
 
 	well.Go(server.Run)
+	well.Go(st.WaitConfigChange)
 	well.Stop()
 	err = well.Wait()
 	if err != nil && !well.IsSignaled(err) {

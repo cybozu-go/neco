@@ -12,6 +12,7 @@ const (
 	KeyStatusPrefix        = "status/"
 	KeyCurrent             = "status/current"
 	KeyWorkerStatusPrefix  = "status/bootservers/"
+	KeyConfigPrefix        = "config/"
 	KeyNotificationSlack   = "config/notification/slack"
 	KeyProxy               = "config/proxy"
 	KeyEnv                 = "config/env"

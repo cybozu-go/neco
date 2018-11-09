@@ -90,3 +90,17 @@ func (s Storage) WaitRequestDeletion(ctx context.Context, rev int64) error {
 	}
 	return nil
 }
+
+// WaitConfigChange waits config key change and return a non-nil error.
+func (s Storage) WaitConfigChange(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	ch := s.etcd.Watch(ctx, KeyConfigPrefix, clientv3.WithPrefix())
+	select {
+	case <-ctx.Done():
+		return nil
+	case <-ch:
+		return errors.New("detected config change")
+	}
+}
