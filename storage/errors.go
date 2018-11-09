@@ -11,4 +11,7 @@ var (
 
 	// ErrNoLeader is returned when the caller lost leadership.
 	ErrNoLeader = errors.New("lost leadership")
+
+	// ErrTimedOut is returned when the request is timed out.
+	ErrTimedOut = errors.New("timed out")
 )

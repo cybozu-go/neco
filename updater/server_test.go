@@ -3,6 +3,7 @@ package updater
 import (
 	"context"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -126,6 +127,9 @@ func testRunUpdateFailure(t *testing.T) {
 	if color := msg.Attachments[0].Color; color != ColorDanger {
 		t.Error("color != ColorDanger:", color)
 	}
+	if !strings.Contains(msg.Attachments[0].Text, "some worker return(s) error") {
+		t.Error("msg should contain 'some worker return(s) error': ", msg.Attachments[0].Text)
+	}
 }
 
 func testRunUpdateTimeout(t *testing.T) {
@@ -156,6 +160,9 @@ func testRunUpdateTimeout(t *testing.T) {
 	}
 	if color := msg.Attachments[0].Color; color != ColorDanger {
 		t.Error("color != ColorDanger:", color)
+	}
+	if !strings.Contains(msg.Attachments[0].Text, "timed-out from worker updates") {
+		t.Error("msg should contain 'timed-out from worker updates': ", msg.Attachments[0].Text)
 	}
 }
 

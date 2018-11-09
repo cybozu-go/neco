@@ -2,17 +2,12 @@ package updater
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
-	"sort"
-	"strconv"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -105,7 +100,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			log.Info("Last updating is failed, wait for retrying", map[string]interface{}{
 				"version": current.Version,
 			})
-			err := s.waitRetry(ctx, current, currentRev)
+			err := s.storage.WaitRequestDeletion(ctx, currentRev)
 			if err != nil {
 				return err
 			}
@@ -126,6 +121,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			}
 		}
 		if len(target) != 0 {
+		OUTER:
 			// Found new update
 			for {
 				if !skipRequest {
@@ -138,25 +134,49 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				}
 				skipRequest = false
 
-				err = s.waitWorkers(ctx, current, currentRev)
-				if err == nil {
-					break
-				}
-				if err != ErrUpdateFailed {
-					return err
-				}
-				err = s.stopUpdate(ctx, current, leaderKey)
+				notifier, err := s.notifier(ctx)
 				if err != nil {
 					return err
 				}
-				err = s.waitRetry(ctx, current, currentRev)
+				watcher := newWorkerWatcher(current, notifier)
+
+				timeout, err := s.storage.GetWorkerTimeout(ctx)
 				if err != nil {
+					return err
+				}
+				deadline := current.StartedAt.Add(timeout)
+				ctxWithDeadline, cancel := context.WithDeadline(ctx, deadline)
+				err = storage.NewWorkerWatcher(watcher.handleStatus).
+					Watch(ctxWithDeadline, currentRev, s.storage)
+				cancel()
+
+				switch {
+				case err == nil:
+					break OUTER
+				case err == storage.ErrTimedOut:
+					log.Warn("workers timed-out", map[string]interface{}{
+						"version":    current.Version,
+						"started_at": current.StartedAt,
+					})
+					notifier.NotifyTimeout(ctx, *current)
+					fallthrough
+				case watcher.aborted:
+					err = s.stopUpdate(ctx, current, leaderKey)
+					if err != nil {
+						return err
+					}
+					err = s.storage.WaitRequestDeletion(ctx, currentRev)
+					if err != nil {
+						return err
+					}
+					continue OUTER
+				default:
 					return err
 				}
 			}
 		}
 
-		timeout, err := s.waitForMemberUpdated(ctx, current, currentRev)
+		timeout, err := s.storage.WaitForMemberUpdated(ctx, current, currentRev)
 		if timeout {
 			// Clear target to check latest update
 			target = ""
@@ -201,192 +221,15 @@ func (s Server) stopUpdate(ctx context.Context, req *neco.UpdateRequest, leaderK
 	return s.storage.PutRequest(ctx, *req, leaderKey)
 }
 
-// waitWorkers waits for worker finishes updates until timed-out
-func (s Server) waitWorkers(ctx context.Context, req *neco.UpdateRequest, rev int64) error {
-	timeout, err := s.storage.GetWorkerTimeout(ctx)
-	if err != nil {
-		return err
-	}
-
-	statuses := make(map[int]*neco.UpdateStatus)
-
-	deadline := req.StartedAt.Add(timeout)
-	deadlineCtx, cancel := context.WithDeadline(ctx, deadline)
-	defer cancel()
-
-	ch := s.session.Client().Watch(
-		deadlineCtx, storage.KeyWorkerStatusPrefix,
-		clientv3.WithRev(rev+1), clientv3.WithFilterDelete(), clientv3.WithPrefix(),
-	)
-	for resp := range ch {
-		for _, ev := range resp.Events {
-			st := new(neco.UpdateStatus)
-			err = json.Unmarshal(ev.Kv.Value, st)
-			if err != nil {
-				return err
-			}
-			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyWorkerStatusPrefix):]))
-			if err != nil {
-				return err
-			}
-			if st.Version != req.Version {
-				continue
-			}
-			statuses[lrn] = st
-
-			switch st.Cond {
-			case neco.CondAbort:
-				log.Warn("worker failed updating", map[string]interface{}{
-					"version": req.Version,
-					"lrn":     lrn,
-					"message": st.Message,
-				})
-				s.notifySlackServerFailure(ctx, *req, st)
-				return ErrUpdateFailed
-			case neco.CondComplete:
-				log.Info("worker finished updating", map[string]interface{}{
-					"version": req.Version,
-					"lrn":     lrn,
-				})
-			}
-		}
-
-		success := neco.UpdateCompleted(req.Version, req.Servers, statuses)
-		if success {
-			log.Info("all worker finished updating", map[string]interface{}{
-				"version": req.Version,
-				"servers": req.Servers,
-			})
-			s.notifySlackSucceeded(ctx, *req)
-			return nil
-		}
-	}
-
-	log.Warn("workers timed-out", map[string]interface{}{
-		"version":    req.Version,
-		"started_at": req.StartedAt,
-		"timeout":    timeout,
-	})
-	s.notifySlackTimeout(ctx, *req)
-	return ErrUpdateFailed
-}
-
-func (s Server) waitRetry(ctx context.Context, req *neco.UpdateRequest, rev int64) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	ch := s.session.Client().Watch(ctx, storage.KeyCurrent, clientv3.WithRev(rev+1), clientv3.WithFilterPut())
-	resp := <-ch
-	if err := resp.Err(); err != nil {
-		return err
-	}
-	return nil
-}
-
-// waitForMemberUpdated waits for new member added or member removed until with
-// check-update-interval. It returns (true, nil) when timed-out.  It returns
-// (false, nil) if member list is updated.
-func (s Server) waitForMemberUpdated(ctx context.Context, req *neco.UpdateRequest, rev int64) (timeout bool, err error) {
-	interval, err := s.storage.GetCheckUpdateInterval(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	withTimeoutCtx, cancel := context.WithTimeout(ctx, interval)
-	defer cancel()
-
-	ch := s.session.Client().Watch(
-		withTimeoutCtx, storage.KeyBootserversPrefix, clientv3.WithRev(rev+1), clientv3.WithPrefix(),
-	)
-
-	for resp := range ch {
-		for _, ev := range resp.Events {
-			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(storage.KeyBootserversPrefix):]))
-			if err != nil {
-				return false, err
-			}
-			if ev.Type == clientv3.EventTypePut {
-				if i := sort.SearchInts(req.Servers, lrn); i < len(req.Servers) && req.Servers[i] == lrn {
-					continue
-				}
-			}
-			return false, nil
-		}
-	}
-	if withTimeoutCtx.Err() == context.DeadlineExceeded {
-		return true, nil
-	}
-	return false, withTimeoutCtx.Err()
-}
-
-func (s Server) notifySlackSucceeded(ctx context.Context, req neco.UpdateRequest) error {
-	slack, err := s.newSlackClient(ctx)
+func (s Server) notifier(ctx context.Context) (Notifier, error) {
+	var notifier Notifier
+	notifier, err := s.newSlackClient(ctx)
 	if err == storage.ErrNotFound {
-		return nil
+		notifier = nopNotifier{}
 	} else if err != nil {
-		return err
+		return nil, err
 	}
-
-	att := Attachment{
-		Color:      ColorGood,
-		AuthorName: "Boot server updater",
-		Title:      "Update completed successfully",
-		Text:       "Updating on boot servers are completed successfully :tada: :tada: :tada:",
-		Fields: []AttachmentField{
-			{Title: "Version", Value: req.Version, Short: true},
-			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
-			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
-		},
-	}
-	payload := Payload{Attachments: []Attachment{att}}
-	return slack.PostWebHook(ctx, payload)
-}
-
-func (s Server) notifySlackServerFailure(ctx context.Context, req neco.UpdateRequest, st *neco.UpdateStatus) error {
-	slack, err := s.newSlackClient(ctx)
-	if err == storage.ErrNotFound {
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	att := Attachment{
-		Color:      ColorDanger,
-		AuthorName: "Boot server updater",
-		Title:      "Failed to update boot servers",
-		Text:       "Failed to update boot servers due to some worker return(s) error :crying_cat_face:.  Please fix it manually.",
-		Fields: []AttachmentField{
-			{Title: "Version", Value: req.Version, Short: true},
-			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
-			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
-			{Title: "Reason", Value: st.Message, Short: true},
-		},
-	}
-	payload := Payload{Attachments: []Attachment{att}}
-	return slack.PostWebHook(ctx, payload)
-}
-
-func (s Server) notifySlackTimeout(ctx context.Context, req neco.UpdateRequest) error {
-	slack, err := s.newSlackClient(ctx)
-	if err == storage.ErrNotFound {
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	att := Attachment{
-		Color:      ColorDanger,
-		AuthorName: "Boot server updater",
-		Title:      "Update failed on the boot servers",
-		Text:       "Failed to update boot servers due to timed-out from worker updates :crying_cat_face:.  Please fix it manually.",
-		Fields: []AttachmentField{
-			{Title: "Version", Value: req.Version, Short: true},
-			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
-			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
-		},
-	}
-	payload := Payload{Attachments: []Attachment{att}}
-	return slack.PostWebHook(ctx, payload)
+	return notifier, nil
 }
 
 func (s Server) newSlackClient(ctx context.Context) (*SlackClient, error) {
