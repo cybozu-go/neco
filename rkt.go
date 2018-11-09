@@ -4,9 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os/exec"
 
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/well"
 )
+
+const retryCount = 3
 
 // RktImage represents rkt image information
 type RktImage struct {
@@ -38,8 +42,18 @@ func FetchContainer(ctx context.Context, name string) error {
 		}
 	}
 
-	cmd = well.CommandContext(ctx, "rkt", "--insecure-options=image", "fetch", "--full", "docker://"+fullname)
-	return cmd.Run()
+	for i := 0; i < retryCount; i++ {
+		fetchCmd := exec.CommandContext(ctx, "rkt", "--insecure-options=image", "fetch", "--full", "docker://"+fullname)
+		err = fetchCmd.Run()
+		if err == nil {
+			return nil
+		}
+		log.Warn("failed to fetch container image", map[string]interface{}{
+			log.FnError: err,
+			"image":     fullname,
+		})
+	}
+	return err
 }
 
 // Bind represents a host bind mount rule.
