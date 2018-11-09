@@ -27,12 +27,6 @@ func testUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if version := checker.GetLatest(); version != "" {
-		t.Error(`version != "":`, version)
-	}
-	if checker.HasUpdate() {
-		t.Error(`unexpected HasUpdate:`, checker.HasUpdate())
-	}
 
 	err = st.PutEnvConfig(ctx, neco.StagingEnv)
 	if err != nil {

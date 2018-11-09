@@ -6,6 +6,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/neco/worker"
 	"github.com/cybozu-go/well"
 )
@@ -44,6 +45,7 @@ func main() {
 		w := worker.NewWorker(ec, op, version, mylrn)
 		return w.Run(ctx)
 	})
+	well.Go(storage.NewStorage(ec).WaitConfigChange)
 	well.Stop()
 	err = well.Wait()
 	if err != nil && !well.IsSignaled(err) {

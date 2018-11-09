@@ -17,9 +17,12 @@ func testEnvConfig(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	_, err := st.GetEnvConfig(ctx)
-	if err != ErrNotFound {
-		t.Error("env config should not be found")
+	env, err := st.GetEnvConfig(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if env != neco.StagingEnv {
+		t.Error(`env != neco.StagingEnv`, env)
 	}
 
 	err = st.PutEnvConfig(ctx, "http://squid.example.com:3128")
@@ -103,8 +106,8 @@ func testCheckUpdateIntervalConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if d != neco.DefaultCheckUpdateInterval {
-		t.Error(`d != neco.DefaultCheckUpdateInterval`, d)
+	if d != DefaultCheckUpdateInterval {
+		t.Error(`d != DefaultCheckUpdateInterval`, d)
 	}
 
 	err = st.PutCheckUpdateInterval(ctx, 10*time.Minute)
@@ -133,8 +136,8 @@ func testWorkerTimeout(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if d != neco.DefaultWorkerTimeout {
-		t.Error(`d != neco.DefaultWorkerTimeout`, d)
+	if d != DefaultWorkerTimeout {
+		t.Error(`d != DefaultWorkerTimeout`, d)
 	}
 
 	err = st.PutWorkerTimeout(ctx, 60*time.Minute)
