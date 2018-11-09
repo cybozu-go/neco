@@ -8,12 +8,8 @@ import (
 	"strconv"
 
 	"github.com/coreos/etcd/clientv3"
-	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 )
-
-// ErrTimedOut is returned when the request is timed out.
-var ErrTimedOut = errors.New("timed out")
 
 // WaitRequest waits for a UpdateRequest to be written to etcd and returns it.
 func (s Storage) WaitRequest(ctx context.Context, rev int64) (*neco.UpdateRequest, int64, error) {
@@ -93,75 +89,4 @@ func (s Storage) WaitRequestDeletion(ctx context.Context, req *neco.UpdateReques
 		return err
 	}
 	return nil
-}
-
-// WaitWorkers waits for worker finishes updates until timed-out
-//
-// It returns (false, nil) if all workers have been updated successfully.
-// It returns (true, error) if a worker is aborted.
-// Otherwise it returns (false, error).
-func (s Storage) WaitWorkers(ctx context.Context, req *neco.UpdateRequest, rev int64) (bool, error) {
-	timeout, err := s.GetWorkerTimeout(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	statuses := make(map[int]*neco.UpdateStatus)
-
-	deadline := req.StartedAt.Add(timeout)
-	deadlineCtx, cancel := context.WithDeadline(ctx, deadline)
-	defer cancel()
-
-	ch := s.etcd.Watch(
-		deadlineCtx, KeyWorkerStatusPrefix,
-		clientv3.WithRev(rev+1), clientv3.WithFilterDelete(), clientv3.WithPrefix(),
-	)
-	for resp := range ch {
-		for _, ev := range resp.Events {
-			st := new(neco.UpdateStatus)
-			err = json.Unmarshal(ev.Kv.Value, st)
-			if err != nil {
-				return false, err
-			}
-			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(KeyWorkerStatusPrefix):]))
-			if err != nil {
-				return false, err
-			}
-			if st.Version != req.Version {
-				continue
-			}
-			statuses[lrn] = st
-
-			switch st.Cond {
-			case neco.CondAbort:
-				log.Warn("worker failed updating", map[string]interface{}{
-					"version": req.Version,
-					"lrn":     lrn,
-					"message": st.Message,
-				})
-				return true, errors.New(st.Message)
-			case neco.CondComplete:
-				log.Info("worker finished updating", map[string]interface{}{
-					"version": req.Version,
-					"lrn":     lrn,
-				})
-			}
-		}
-
-		success := neco.UpdateCompleted(req.Version, req.Servers, statuses)
-		if success {
-			log.Info("all worker finished updating", map[string]interface{}{
-				"version": req.Version,
-				"servers": req.Servers,
-			})
-			return false, nil
-		}
-	}
-
-	log.Warn("workers timed-out", map[string]interface{}{
-		"version":    req.Version,
-		"started_at": req.StartedAt,
-		"timeout":    timeout,
-	})
-	return false, ErrTimedOut
 }

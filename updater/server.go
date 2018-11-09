@@ -3,7 +3,6 @@ package updater
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -134,18 +133,31 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				}
 				skipRequest = false
 
-				aborted, err := s.storage.WaitWorkers(ctx, current, currentRev)
-				if err == nil {
-					s.notifySlackSucceeded(ctx, *current)
-					break
-				}
-				if err == storage.ErrTimedOut {
-					s.notifySlackTimeout(ctx, *current)
-				}
-				if !aborted {
+				notifier, err := s.notifier(ctx)
+				if err != nil {
 					return err
 				}
-				s.notifySlackServerFailure(ctx, *current, err.Error())
+				watcher := newWorkerWatcher(current, notifier)
+
+				timeout, err := s.storage.GetWorkerTimeout(ctx)
+				if err != nil {
+					return err
+				}
+				deadline := current.StartedAt.Add(timeout)
+				err = s.storage.WatchWorkers(ctx, deadline, currentRev, watcher.handleWorkerStatus)
+				if err == nil {
+					break
+				} else if err == storage.ErrTimedOut {
+					log.Warn("workers timed-out", map[string]interface{}{
+						"version":    current.Version,
+						"started_at": current.StartedAt,
+						"timeout":    timeout,
+					})
+					notifier.NotifyTimeout(ctx, *current)
+				} else if !watcher.aborted {
+					return err
+				}
+
 				err = s.stopUpdate(ctx, current, leaderKey)
 				if err != nil {
 					return err
@@ -202,74 +214,15 @@ func (s Server) stopUpdate(ctx context.Context, req *neco.UpdateRequest, leaderK
 	return s.storage.PutRequest(ctx, *req, leaderKey)
 }
 
-func (s Server) notifySlackSucceeded(ctx context.Context, req neco.UpdateRequest) error {
-	slack, err := s.newSlackClient(ctx)
+func (s Server) notifier(ctx context.Context) (Notifier, error) {
+	var notifier Notifier
+	notifier, err := s.newSlackClient(ctx)
 	if err == storage.ErrNotFound {
-		return nil
+		notifier = nopNotifier{}
 	} else if err != nil {
-		return err
+		return nil, err
 	}
-
-	att := Attachment{
-		Color:      ColorGood,
-		AuthorName: "Boot server updater",
-		Title:      "Update completed successfully",
-		Text:       "Updating on boot servers are completed successfully :tada: :tada: :tada:",
-		Fields: []AttachmentField{
-			{Title: "Version", Value: req.Version, Short: true},
-			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
-			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
-		},
-	}
-	payload := Payload{Attachments: []Attachment{att}}
-	return slack.PostWebHook(ctx, payload)
-}
-
-func (s Server) notifySlackServerFailure(ctx context.Context, req neco.UpdateRequest, message string) error {
-	slack, err := s.newSlackClient(ctx)
-	if err == storage.ErrNotFound {
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	att := Attachment{
-		Color:      ColorDanger,
-		AuthorName: "Boot server updater",
-		Title:      "Failed to update boot servers",
-		Text:       "Failed to update boot servers due to some worker return(s) error :crying_cat_face:.  Please fix it manually.",
-		Fields: []AttachmentField{
-			{Title: "Version", Value: req.Version, Short: true},
-			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
-			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
-			{Title: "Reason", Value: message, Short: true},
-		},
-	}
-	payload := Payload{Attachments: []Attachment{att}}
-	return slack.PostWebHook(ctx, payload)
-}
-
-func (s Server) notifySlackTimeout(ctx context.Context, req neco.UpdateRequest) error {
-	slack, err := s.newSlackClient(ctx)
-	if err == storage.ErrNotFound {
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	att := Attachment{
-		Color:      ColorDanger,
-		AuthorName: "Boot server updater",
-		Title:      "Update failed on the boot servers",
-		Text:       "Failed to update boot servers due to timed-out from worker updates :crying_cat_face:.  Please fix it manually.",
-		Fields: []AttachmentField{
-			{Title: "Version", Value: req.Version, Short: true},
-			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
-			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
-		},
-	}
-	payload := Payload{Attachments: []Attachment{att}}
-	return slack.PostWebHook(ctx, payload)
+	return notifier, nil
 }
 
 func (s Server) newSlackClient(ctx context.Context) (*SlackClient, error) {

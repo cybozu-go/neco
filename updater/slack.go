@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/neco"
 )
 
 // Reserved colors in Slack API
@@ -80,4 +82,56 @@ func (c SlackClient) PostWebHook(ctx context.Context, payload Payload) error {
 		})
 	}
 	return err
+}
+
+// NotifySucceeded notifies to slack that update was successful.
+func (c SlackClient) NotifySucceeded(ctx context.Context, req neco.UpdateRequest) error {
+	att := Attachment{
+		Color:      ColorGood,
+		AuthorName: "Boot server updater",
+		Title:      "Update completed successfully",
+		Text:       "Updating on boot servers are completed successfully :tada: :tada: :tada:",
+		Fields: []AttachmentField{
+			{Title: "Version", Value: req.Version, Short: true},
+			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
+			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
+		},
+	}
+	payload := Payload{Attachments: []Attachment{att}}
+	return c.PostWebHook(ctx, payload)
+}
+
+// NotifyServerFailure notifies to slack that update was failure.
+func (c SlackClient) NotifyServerFailure(ctx context.Context, req neco.UpdateRequest, message string) error {
+	att := Attachment{
+		Color:      ColorDanger,
+		AuthorName: "Boot server updater",
+		Title:      "Failed to update boot servers",
+		Text:       "Failed to update boot servers due to some worker return(s) error :crying_cat_face:.  Please fix it manually.",
+		Fields: []AttachmentField{
+			{Title: "Version", Value: req.Version, Short: true},
+			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
+			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
+			{Title: "Reason", Value: message, Short: true},
+		},
+	}
+	payload := Payload{Attachments: []Attachment{att}}
+	return c.PostWebHook(ctx, payload)
+}
+
+// NotifyTimeout notifies to slack that update has timed out.
+func (c SlackClient) NotifyTimeout(ctx context.Context, req neco.UpdateRequest) error {
+	att := Attachment{
+		Color:      ColorDanger,
+		AuthorName: "Boot server updater",
+		Title:      "Update failed on the boot servers",
+		Text:       "Failed to update boot servers due to timed-out from worker updates :crying_cat_face:.  Please fix it manually.",
+		Fields: []AttachmentField{
+			{Title: "Version", Value: req.Version, Short: true},
+			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
+			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
+		},
+	}
+	payload := Payload{Attachments: []Attachment{att}}
+	return c.PostWebHook(ctx, payload)
 }

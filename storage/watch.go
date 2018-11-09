@@ -3,52 +3,44 @@ package storage
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strconv"
+	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/neco"
 )
 
-// StatusWatcher has callback handlers to handle status changes
-type StatusWatcher struct {
-	handleRequest func(context.Context, *neco.UpdateRequest) (bool, error)
-	handleStatus  func(context.Context, int, *neco.UpdateStatus) (bool, error)
-	handleError   func(context.Context, error) error
-}
+// ErrTimedOut is returned when the request is timed out.
+var ErrTimedOut = errors.New("timed out")
 
-// NewStatusWatcher creates a new StatusWatcher
-func NewStatusWatcher(
-	handleRequest func(context.Context, *neco.UpdateRequest) (bool, error),
-	handleStatus func(context.Context, int, *neco.UpdateStatus) (bool, error),
-	handleError func(context.Context, error) error,
-) StatusWatcher {
-	return StatusWatcher{
-		handleRequest: handleRequest,
-		handleStatus:  handleStatus,
-		handleError:   handleError,
-	}
-}
-
-// Watch watches UpdateRequest or UpdateStatus is written to etcd
-func (w StatusWatcher) Watch(ctx context.Context, storage Storage, rev int64) error {
-	ctx, cancel := context.WithCancel(ctx)
+// WatchWorkers watches worker changes until deadline is reached.
+//
+// `handler` will be called when worker status is changed.
+// When watching is completed, `handler` should return (true, nil).
+func (s Storage) WatchWorkers(ctx context.Context, deadline time.Time, rev int64,
+	handler func(context.Context, int, *neco.UpdateStatus) (bool, error),
+) error {
+	deadlineCtx, cancel := context.WithDeadline(ctx, deadline)
 	defer cancel()
 
-	ch := storage.etcd.Watch(ctx, KeyStatusPrefix,
-		clientv3.WithPrefix(),
-		clientv3.WithRev(rev+1),
-		clientv3.WithFilterDelete())
-	for wr := range ch {
-		err := wr.Err()
-		if err != nil {
-			w.handleError(ctx, err)
-			return err
-		}
-
-		for _, ev := range wr.Events {
-			completed, err := w.dispatch(ctx, ev)
+	ch := s.etcd.Watch(
+		deadlineCtx, KeyWorkerStatusPrefix,
+		clientv3.WithRev(rev+1), clientv3.WithFilterDelete(), clientv3.WithPrefix(),
+	)
+	for resp := range ch {
+		for _, ev := range resp.Events {
+			st := new(neco.UpdateStatus)
+			err := json.Unmarshal(ev.Kv.Value, st)
 			if err != nil {
-				w.handleError(ctx, err)
+				return err
+			}
+			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(KeyWorkerStatusPrefix):]))
+			if err != nil {
+				return err
+			}
+			completed, err := handler(ctx, lrn, st)
+			if err != nil {
 				return err
 			}
 			if completed {
@@ -56,29 +48,5 @@ func (w StatusWatcher) Watch(ctx context.Context, storage Storage, rev int64) er
 			}
 		}
 	}
-
-	return nil
-}
-
-func (w StatusWatcher) dispatch(ctx context.Context, ev *clientv3.Event) (bool, error) {
-	if string(ev.Kv.Key) == KeyCurrent {
-		req := new(neco.UpdateRequest)
-		err := json.Unmarshal(ev.Kv.Value, req)
-		if err != nil {
-			return false, err
-		}
-		return w.handleRequest(ctx, req)
-	}
-
-	lrn, err := strconv.Atoi(string(ev.Kv.Key[len(KeyWorkerStatusPrefix):]))
-	if err != nil {
-		return false, err
-	}
-
-	st := new(neco.UpdateStatus)
-	err = json.Unmarshal(ev.Kv.Value, st)
-	if err != nil {
-		return false, err
-	}
-	return w.handleStatus(ctx, lrn, st)
+	return ErrTimedOut
 }
