@@ -20,8 +20,6 @@ type Server struct {
 	session *concurrency.Session
 	storage storage.Storage
 	timeout time.Duration
-
-	checker ReleaseChecker
 }
 
 // NewServer returns a Server
@@ -109,6 +107,10 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 		}
 	} else if err != nil && err != storage.ErrNotFound {
 		return err
+	}
+
+	for {
+
 	}
 
 	for {

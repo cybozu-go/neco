@@ -153,8 +153,8 @@ func (s Storage) GetStatus(ctx context.Context, lrn int) (*neco.UpdateStatus, er
 }
 
 // GetStatuses returns UpdateStatus of existing boot servers.
-func (s Storage) GetStatuses(ctx context.Context) (map[int]*neco.UpdateStatus, error) {
-	resp, err := s.etcd.Get(ctx, KeyWorkerStatusPrefix, clientv3.WithPrefix())
+func (s Storage) GetStatuses(ctx context.Context, rev int64) (map[int]*neco.UpdateStatus, error) {
+	resp, err := s.etcd.Get(ctx, KeyWorkerStatusPrefix, clientv3.WithPrefix(), clientv3.WithRev(rev))
 	if err != nil {
 		return nil, err
 	}

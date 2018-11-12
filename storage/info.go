@@ -48,13 +48,11 @@ func (s Storage) UpdateNecoRelease(ctx context.Context, version, leaderKey strin
 }
 
 // GetInfo returns the GitHub package version and the current list of boot servers.
-func (s Storage) GetInfo(ctx context.Context) (string, []int, int64, error) {
-	resp, err := s.etcd.Get(ctx, KeyNecoRelease)
+func (s Storage) GetInfo(ctx context.Context, rev int64) (string, []int, error) {
+	resp, err := s.etcd.Get(ctx, KeyNecoRelease, clientv3.WithRev(rev))
 	if err != nil {
-		return "", nil, 0, err
+		return "", nil, err
 	}
-
-	rev := resp.Header.Revision
 	version := ""
 	if resp.Count != 0 {
 		version = string(resp.Kvs[0].Value)
@@ -66,7 +64,7 @@ func (s Storage) GetInfo(ctx context.Context) (string, []int, int64, error) {
 		clientv3.WithRev(rev),
 	)
 	if err != nil {
-		return "", nil, 0, err
+		return "", nil, err
 	}
 
 	var lrns []int
@@ -75,12 +73,24 @@ func (s Storage) GetInfo(ctx context.Context) (string, []int, int64, error) {
 		for i, kv := range resp.Kvs {
 			lrn, err := strconv.Atoi(string(kv.Key[len(KeyBootserversPrefix):]))
 			if err != nil {
-				return "", nil, 0, err
+				return "", nil, err
 			}
 			lrns[i] = lrn
 		}
 		sort.Ints(lrns)
 	}
 
-	return version, lrns, rev, err
+	return version, lrns, err
+}
+
+// WaitInfo waits for update of keys under `info/`
+func (s Storage) WaitInfo(ctx context.Context, rev int64) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	ch := s.etcd.Watch(ctx, KeyInfoPrefix,
+		clientv3.WithPrefix(), clientv3.WithKeysOnly(), clientv3.WithRev(rev+1))
+
+	resp := <-ch
+	return resp.Err()
 }
