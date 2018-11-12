@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/storage"
 	version "github.com/hashicorp/go-version"
 )
 
@@ -15,18 +16,11 @@ const (
 	ActionNewVersion
 	ActionWaitClear
 	ActionReconfigure
+	ActionNotifyCompleted
 )
 
-func (s Server) NextAction(ctx context.Context, req *neco.UpdateRequest, rev int64, pkg PackageManager) (Action, error) {
-	statuses, err := s.storage.GetStatuses(ctx, rev)
-	if err != nil {
-		return ActionNone, err
-	}
-	latest, lrns, err := s.storage.GetInfo(ctx, rev)
-	if err != nil {
-		return ActionNone, err
-	}
-	latestVer, err := version.NewVersion(latest)
+func (s Server) NextAction(ctx context.Context, ss *storage.Snapshot, pkg PackageManager) (Action, error) {
+	latestVer, err := version.NewVersion(ss.Latest)
 	if err != nil {
 		return ActionNone, err
 	}
@@ -35,33 +29,41 @@ func (s Server) NextAction(ctx context.Context, req *neco.UpdateRequest, rev int
 	if err != nil {
 		return ActionNone, err
 	}
+	if current == "" {
+		return ActionNewVersion, nil
+	}
 	currentVer, err := version.NewVersion(current)
 	if err != nil {
 		return ActionNone, err
 	}
-
-	if req == nil {
+	if ss.Request == nil {
 		if latestVer.GreaterThan(currentVer) {
 			return ActionNewVersion, nil
 		}
 		return ActionNone, nil
 	}
 
-	if req.Stop {
+	if ss.Request.Stop {
 		return ActionWaitClear, nil
 	}
 
-	if !reflect.DeepEqual(req.Servers, lrns) {
+	if !reflect.DeepEqual(ss.Request.Servers, ss.Servers) {
 		return ActionReconfigure, nil
 	}
 
-	if req.Version != latest {
+	requestVer, err := version.NewVersion(ss.Request.Version)
+	if err != nil {
+		return ActionNone, err
+	}
+	if !latestVer.Equal(requestVer) {
 		return ActionNewVersion, nil
 	}
 
-	if neco.UpdateCompleted(req.Version, req.Servers, statuses) {
-
+	if neco.UpdateCompleted(ss.Request.Version, ss.Request.Servers, ss.Statuses) {
+		return ActionNotifyCompleted, nil
 	}
+
+	return ActionNone, nil
 }
 
 func NeedUpdate() bool {

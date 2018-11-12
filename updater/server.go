@@ -81,118 +81,51 @@ RETRY:
 }
 
 func (s Server) runLoop(ctx context.Context, leaderKey string) error {
-	var target string
-	var current *neco.UpdateRequest
-	var currentRev int64
+	var currentVer string
+	//var current *neco.UpdateRequest
+	//var currentRev int64
 
 	// Updater continues last update without create update reuqest with "skipRequest = true"
 	var skipRequest bool
 
-	current, currentRev, err := s.storage.GetRequestWithRev(ctx)
-	if err == nil {
-		target = current.Version
-		if current.Stop {
-			log.Info("Last updating is failed, wait for retrying", map[string]interface{}{
-				"version": current.Version,
-			})
-			err := s.storage.WaitRequestDeletion(ctx, currentRev)
-			if err != nil {
-				return err
-			}
-		} else {
-			log.Info("Last updating is still in progress, wait for workers", map[string]interface{}{
-				"version": current.Version,
-			})
-			skipRequest = true
-		}
-	} else if err != nil && err != storage.ErrNotFound {
-		return err
-	}
-
+	pkg := DebPackageManager{}
 	for {
-
-	}
-
-	for {
-		if len(target) == 0 {
-			if s.checker.HasUpdate() {
-				target = s.checker.GetLatest()
-			}
-		}
-		if len(target) != 0 {
-		OUTER:
-			// Found new update
-			for {
-				if !skipRequest {
-					current, currentRev, err = s.startUpdate(ctx, target, leaderKey)
-					if err == ErrNoMembers {
-						break
-					} else if err != nil {
-						return err
-					}
-				}
-				skipRequest = false
-
-				notifier, err := s.notifier(ctx)
-				if err != nil {
-					return err
-				}
-				watcher := newWorkerWatcher(current, notifier)
-
-				timeout, err := s.storage.GetWorkerTimeout(ctx)
-				if err != nil {
-					return err
-				}
-				deadline := current.StartedAt.Add(timeout)
-				ctxWithDeadline, cancel := context.WithDeadline(ctx, deadline)
-				err = storage.NewWorkerWatcher(watcher.handleStatus).
-					Watch(ctxWithDeadline, currentRev, s.storage)
-				cancel()
-
-				switch {
-				case err == nil:
-					break OUTER
-				case err == storage.ErrTimedOut:
-					log.Warn("workers timed-out", map[string]interface{}{
-						"version":    current.Version,
-						"started_at": current.StartedAt,
-					})
-					notifier.NotifyTimeout(ctx, *current)
-					fallthrough
-				case watcher.aborted:
-					err = s.stopUpdate(ctx, current, leaderKey)
-					if err != nil {
-						return err
-					}
-					err = s.storage.WaitRequestDeletion(ctx, currentRev)
-					if err != nil {
-						return err
-					}
-					continue OUTER
-				default:
-					return err
-				}
-			}
-		}
-
-		timeout, err := s.storage.WaitForMemberUpdated(ctx, current, currentRev)
-		if timeout {
-			// Clear target to check latest update
-			target = ""
-		} else if err != nil {
+		ss, err := s.storage.NewSnapshot(ctx)
+		if err != nil {
 			return err
 		}
+		action, err := s.NextAction(ctx, ss, pkg)
+		if err != nil {
+			return err
+		}
+		switch action {
+		case ActionNone:
+			continue
+		case ActionNewVersion:
+			_, _, err = s.startUpdate(ctx, leaderKey, ss)
+			if err == ErrNoMembers {
+				continue
+			} else if err != nil {
+				return err
+			}
+		case ActionWaitClear:
+		case ActionReconfigure:
+		}
+		err = s.storage.WaitInfoAndStatus(ctx, ss.Revision)
+		if err != nil {
+			return err
+		}
+		// TODO
+		return nil
 	}
 }
 
 // startUpdate starts update with tag.  It returns created request and its
 // modified revision.  It returns ErrNoMembers if no bootservers are registered
 // in etcd.
-func (s Server) startUpdate(ctx context.Context, tag, leaderKey string) (*neco.UpdateRequest, int64, error) {
-	servers, err := s.storage.GetBootservers(ctx)
-	if err != nil {
-		return nil, 0, err
-	}
+func (s Server) startUpdate(ctx context.Context, leaderKey string, snapshot *storage.Snapshot) (*neco.UpdateRequest, int64, error) {
+	servers := snapshot.Servers
+	tag := snapshot.Latest
 	if len(servers) == 0 {
 		log.Info("No bootservers exists in etcd", map[string]interface{}{})
 		return nil, 0, ErrNoMembers
@@ -207,7 +140,7 @@ func (s Server) startUpdate(ctx context.Context, tag, leaderKey string) (*neco.U
 		Stop:      false,
 		StartedAt: time.Now(),
 	}
-	err = s.storage.PutRequest(ctx, r, leaderKey)
+	err := s.storage.PutRequest(ctx, r, leaderKey)
 	if err != nil {
 		return nil, 0, err
 	}
