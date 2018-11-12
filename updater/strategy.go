@@ -4,6 +4,8 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/pkg/errors"
+
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	version "github.com/hashicorp/go-version"
@@ -16,10 +18,12 @@ const (
 	ActionNewVersion
 	ActionWaitClear
 	ActionReconfigure
-	ActionNotifyCompleted
 )
 
 func (s Server) NextAction(ctx context.Context, ss *storage.Snapshot, pkg PackageManager) (Action, error) {
+	if ss.Latest == "" {
+		return ActionNone, nil
+	}
 	latestVer, err := version.NewVersion(ss.Latest)
 	if err != nil {
 		return ActionNone, err
@@ -30,7 +34,7 @@ func (s Server) NextAction(ctx context.Context, ss *storage.Snapshot, pkg Packag
 		return ActionNone, err
 	}
 	if current == "" {
-		return ActionNewVersion, nil
+		return ActionNone, errors.New("neco package is not installed")
 	}
 	currentVer, err := version.NewVersion(current)
 	if err != nil {
@@ -59,17 +63,5 @@ func (s Server) NextAction(ctx context.Context, ss *storage.Snapshot, pkg Packag
 		return ActionNewVersion, nil
 	}
 
-	if neco.UpdateCompleted(ss.Request.Version, ss.Request.Servers, ss.Statuses) {
-		return ActionNotifyCompleted, nil
-	}
-
 	return ActionNone, nil
-}
-
-func NeedUpdate() bool {
-
-}
-
-func NeedReconfigure() bool {
-
 }

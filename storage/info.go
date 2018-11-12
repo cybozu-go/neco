@@ -56,21 +56,3 @@ func (s Storage) WaitInfo(ctx context.Context, rev int64) error {
 	resp := <-ch
 	return resp.Err()
 }
-
-// WaitInfoAndStatus waits for update of keys under `info/ and status of bootservers status/
-func (s Storage) WaitInfoAndStatus(ctx context.Context, rev int64) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	infoCh := s.etcd.Watch(ctx, KeyInfoPrefix,
-		clientv3.WithPrefix(), clientv3.WithKeysOnly(), clientv3.WithRev(rev+1))
-	statusCh := s.etcd.Watch(ctx, KeyStatusPrefix,
-		clientv3.WithPrefix(), clientv3.WithKeysOnly(), clientv3.WithRev(rev+1))
-
-	var resp clientv3.WatchResponse
-	select {
-	case resp = <-infoCh:
-	case resp = <-statusCh:
-	}
-	return resp.Err()
-}

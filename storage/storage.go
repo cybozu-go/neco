@@ -194,14 +194,14 @@ func (s Storage) GetStatuses(ctx context.Context) (map[int]*neco.UpdateStatus, e
 // ErrNotStopped will be returned.
 //
 // Then it removes status keys in a single transaction.
-func (s Storage) ClearStatus(ctx context.Context) error {
+func (s Storage) ClearStatus(ctx context.Context, force bool) error {
 RETRY:
 	req, rev, err := s.GetRequestWithRev(ctx)
 	if err != nil {
 		return err
 	}
 
-	if !req.Stop {
+	if !req.Stop && !force {
 		return ErrNotStopped
 	}
 

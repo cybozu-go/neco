@@ -81,13 +81,6 @@ RETRY:
 }
 
 func (s Server) runLoop(ctx context.Context, leaderKey string) error {
-	var currentVer string
-	//var current *neco.UpdateRequest
-	//var currentRev int64
-
-	// Updater continues last update without create update reuqest with "skipRequest = true"
-	var skipRequest bool
-
 	pkg := DebPackageManager{}
 	for {
 		ss, err := s.storage.NewSnapshot(ctx)
@@ -100,35 +93,47 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 		}
 		switch action {
 		case ActionNone:
-			continue
+		case ActionReconfigure:
+			err = s.storage.ClearStatus(ctx, true)
+			if err != nil {
+				return err
+			}
+			fallthrough
 		case ActionNewVersion:
-			_, _, err = s.startUpdate(ctx, leaderKey, ss)
-			if err == ErrNoMembers {
-				continue
-			} else if err != nil {
+			rev, err := s.update(ctx, leaderKey, ss)
+			if err == errStopped {
+				err = s.storage.WaitRequestDeletion(ctx, rev)
+				if err == nil {
+					continue
+				}
+			}
+			if err != nil {
 				return err
 			}
 		case ActionWaitClear:
-		case ActionReconfigure:
+			err = s.storage.WaitRequestDeletion(ctx, ss.Revision)
+			if err != nil {
+				return err
+			}
+			continue
 		}
-		err = s.storage.WaitInfoAndStatus(ctx, ss.Revision)
+
+		err = s.storage.WaitInfo(ctx, ss.Revision)
 		if err != nil {
 			return err
 		}
-		// TODO
-		return nil
 	}
 }
 
 // startUpdate starts update with tag.  It returns created request and its
 // modified revision.  It returns ErrNoMembers if no bootservers are registered
 // in etcd.
-func (s Server) startUpdate(ctx context.Context, leaderKey string, snapshot *storage.Snapshot) (*neco.UpdateRequest, int64, error) {
+func (s Server) update(ctx context.Context, leaderKey string, snapshot *storage.Snapshot) (int64, error) {
 	servers := snapshot.Servers
 	tag := snapshot.Latest
 	if len(servers) == 0 {
 		log.Info("No bootservers exists in etcd", map[string]interface{}{})
-		return nil, 0, ErrNoMembers
+		return 0, ErrNoMembers
 	}
 	log.Info("Starting updating", map[string]interface{}{
 		"version": tag,
@@ -142,9 +147,31 @@ func (s Server) startUpdate(ctx context.Context, leaderKey string, snapshot *sto
 	}
 	err := s.storage.PutRequest(ctx, r, leaderKey)
 	if err != nil {
-		return nil, 0, err
+		return 0, err
 	}
-	return s.storage.GetRequestWithRev(ctx)
+
+	_, rev, err := s.storage.GetRequestWithRev(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	notifier, err := s.notifier(ctx)
+	if err != nil {
+		return 0, err
+	}
+	watcher := newWorkerWatcher(&r, notifier)
+
+	timeout, err := s.storage.GetWorkerTimeout(ctx)
+	if err != nil {
+		return 0, err
+	}
+	deadline := r.StartedAt.Add(timeout)
+	ctxWithDeadline, cancel := context.WithDeadline(ctx, deadline)
+	err = storage.NewWorkerWatcher(watcher.handleStatus).
+		Watch(ctxWithDeadline, rev, s.storage)
+	cancel()
+
+	return rev, nil
 }
 
 // stopUpdate of the current request
