@@ -3,6 +3,7 @@ package updater
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -67,7 +68,11 @@ RETRY:
 	env.Stop()
 	err = env.Wait()
 
-	err2 := e.Resign(context.Background())
+	// workaround for etcd clientv3 bug that hangs up when the first
+	// endpoint is stopping.
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
+	err2 := e.Resign(ctxWithTimeout)
+	cancel()
 	if err2 != nil {
 		return err2
 	}
@@ -84,26 +89,38 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 		if err != nil {
 			return err
 		}
+
 		action, err := NextAction(ctx, ss, s.pkg)
 		if err != nil {
 			return err
 		}
+		log.Info("next action", map[string]interface{}{
+			"action": action.String(),
+		})
+
 		switch action {
-		case ActionNone:
+		case ActionWaitInfo:
+			err = s.storage.WaitInfo(ctx, ss.Revision)
+			if err != nil {
+				return err
+			}
 		case ActionReconfigure:
 			err = s.storage.ClearStatus(ctx, true)
 			if err != nil {
 				return err
 			}
-			fallthrough
 		case ActionNewVersion:
-			rev, err := s.update(ctx, leaderKey, ss)
-			if err == errStopped {
-				err = s.storage.WaitRequestDeletion(ctx, rev)
-				if err == nil {
-					continue
-				}
+			err = s.putRequest(ctx, leaderKey, ss)
+			if err != nil {
+				return err
 			}
+		case ActionWaitWorkers:
+			err = s.waitComplete(ctx, leaderKey, ss)
+			if err != nil {
+				return err
+			}
+		case ActionStop:
+			err = s.stopRequest(ctx, leaderKey, ss.Request)
 			if err != nil {
 				return err
 			}
@@ -112,12 +129,8 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			if err != nil {
 				return err
 			}
-			continue
-		}
-
-		err = s.storage.WaitInfo(ctx, ss.Revision)
-		if err != nil {
-			return err
+		default:
+			return fmt.Errorf("invalid action %s: %d", action.String(), int(action))
 		}
 	}
 }
