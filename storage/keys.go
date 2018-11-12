@@ -7,7 +7,8 @@ import (
 
 // etcd keys
 const (
-	KeyLeader              = "leader/"
+	KeyUpdaterLeader       = "leader/updater/"
+	KeyWorkerLeader        = "leader/worker/"
 	KeyBootserversPrefix   = "bootservers/"
 	KeyStatusPrefix        = "status/"
 	KeyCurrent             = "status/current"

@@ -139,7 +139,7 @@ func testRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer sess.Close()
-	e := concurrency.NewElection(sess, KeyLeader)
+	e := concurrency.NewElection(sess, KeyUpdaterLeader)
 	err = e.Campaign(ctx, "test")
 	if err != nil {
 		t.Fatal(err)
@@ -222,7 +222,7 @@ func testClearStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer sess.Close()
-	e := concurrency.NewElection(sess, KeyLeader)
+	e := concurrency.NewElection(sess, KeyUpdaterLeader)
 	err = e.Campaign(ctx, "test")
 	if err != nil {
 		t.Fatal(err)

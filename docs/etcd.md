@@ -4,15 +4,23 @@ etcd schema
 Legend:
 * `<prefix>` = `/neco/`
 
-## `<prefix>/leader/`
+## `<prefix>/leader/updater/`
 
 This prefix is used to elect a leader `neco-updater` who is responsible to invoke
 update process to `neco-worker`.
 
-## `<prefix>/bootservers/<LRN>`
+## `<prefix>/leader/worker/`
+
+This prefix is used to elect a leader `neco-worker`.
+
+## `<prefix>/info/bootservers/<LRN>`
 
 This prefix is current available boot servers. Current available boot server is
 registered as a key `LRN`.  The value is empty.
+
+## `<prefix>/info/package`
+
+This key stores the Debian package version of `neco` released at GitHub.
 
 ## `<prefix>/install/<LRN>/containers/<CONTAINER>`
 

@@ -43,7 +43,7 @@ func (s Server) Run(ctx context.Context) error {
 		return err
 	}
 
-	e := concurrency.NewElection(s.session, storage.KeyLeader)
+	e := concurrency.NewElection(s.session, storage.KeyUpdaterLeader)
 
 RETRY:
 	select {

@@ -96,7 +96,7 @@ func PutRequest(t *testing.T, req neco.UpdateRequest) error {
 	}
 	defer sess.Close()
 
-	e := concurrency.NewElection(sess, storage.KeyLeader)
+	e := concurrency.NewElection(sess, storage.KeyUpdaterLeader)
 	err = e.Campaign(ctx, "test")
 	if err != nil {
 		return err

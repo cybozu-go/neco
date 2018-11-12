@@ -53,6 +53,11 @@ func (s Storage) GetBootservers(ctx context.Context) ([]int, error) {
 	return lrns, nil
 }
 
+// GetInfo returns the GitHub package version and the current list of boot servers.
+func (s Storage) GetInfo(ctx context.Context) (string, []int, int64, error) {
+	return "", nil, 0, nil
+}
+
 // RecordContainerTag records installed container image tag
 func (s Storage) RecordContainerTag(ctx context.Context, lrn int, name string) error {
 	img, err := neco.CurrentArtifacts.FindContainerImage(name)
