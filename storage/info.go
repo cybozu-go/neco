@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3/clientv3util"
 )
 
 // RegisterBootserver registers a bootserver with etcd database.
@@ -32,9 +33,18 @@ func (s Storage) DeleteBootServer(ctx context.Context, lrn int) error {
 }
 
 // UpdateNecoRelease updates the neco package version with the latest GitHub release.
-func (s Storage) UpdateNecoRelease(ctx context.Context, version string) error {
-	_, err := s.etcd.Put(ctx, KeyNecoRelease, version)
-	return err
+func (s Storage) UpdateNecoRelease(ctx context.Context, version, leaderKey string) error {
+	resp, err := s.etcd.Txn(ctx).
+		If(clientv3util.KeyExists(leaderKey)).
+		Then(clientv3.OpPut(KeyNecoRelease, version)).
+		Commit()
+	if err != nil {
+		return err
+	}
+	if !resp.Succeeded {
+		return ErrNoLeader
+	}
+	return nil
 }
 
 // GetInfo returns the GitHub package version and the current list of boot servers.

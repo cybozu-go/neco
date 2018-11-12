@@ -30,8 +30,6 @@ func NewServer(session *concurrency.Session, storage storage.Storage, timeout ti
 		session: session,
 		storage: storage,
 		timeout: timeout,
-
-		checker: NewReleaseChecker(storage),
 	}
 }
 
@@ -66,9 +64,8 @@ RETRY:
 	env.Go(func(ctx context.Context) error {
 		return s.runLoop(ctx, leaderKey)
 	})
-	env.Go(func(ctx context.Context) error {
-		return s.checker.Run(ctx)
-	})
+	checker := NewReleaseChecker(s.storage, leaderKey)
+	env.Go(checker.Run)
 	env.Stop()
 	err = env.Wait()
 

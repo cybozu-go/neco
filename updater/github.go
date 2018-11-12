@@ -13,13 +13,7 @@ import (
 	version "github.com/hashicorp/go-version"
 )
 
-// ReleaseInterface is an interface to fetch latest release and pre-release
-type ReleaseInterface interface {
-	GetLatestReleaseTag(ctx context.Context) (string, error)
-	GetLatestPreReleaseTag(ctx context.Context) (string, error)
-}
-
-// ReleaseClient is an implementation of ReleaseInterface to get GitHub Releases
+// ReleaseClient gets GitHub Releases
 type ReleaseClient struct {
 	owner string
 	repo  string

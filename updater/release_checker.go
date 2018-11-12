@@ -4,45 +4,34 @@ import (
 	"context"
 	"net/http"
 	"net/url"
-	"sync/atomic"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
-	version "github.com/hashicorp/go-version"
+	"github.com/hashicorp/go-version"
 )
 
-// ReleaseChecker is an interface to check new releases
-type ReleaseChecker interface {
-	Run(ctx context.Context) error
-	GetLatest() string
-	HasUpdate() bool
-}
+// ReleaseChecker checks newer GitHub releases by polling
+type ReleaseChecker struct {
+	storage   storage.Storage
+	github    *ReleaseClient
+	leaderKey string
 
-// GitHubReleaseChecker checks newer GitHub releases by polling
-type GitHubReleaseChecker struct {
-	storage storage.Storage
-	github  ReleaseInterface
-
-	pkg    PackageManager
-	latest atomic.Value
-	// 0 indicate no updates, otherwise update exits
-	hasUpdate int32
+	pkg PackageManager
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
-func NewReleaseChecker(st storage.Storage) ReleaseChecker {
-	c := &GitHubReleaseChecker{
-		storage: st,
-		pkg:     DebPackageManager{},
+func NewReleaseChecker(st storage.Storage, leaderKey string) ReleaseChecker {
+	return ReleaseChecker{
+		storage:   st,
+		pkg:       DebPackageManager{},
+		leaderKey: leaderKey,
 	}
-	c.latest.Store("")
-	return c
 }
 
 // Run runs newer release during periodic intervals
-func (c *GitHubReleaseChecker) Run(ctx context.Context) error {
+func (c *ReleaseChecker) Run(ctx context.Context) error {
 	for {
 		interval, err := c.storage.GetCheckUpdateInterval(ctx)
 		if err != nil {
@@ -62,19 +51,7 @@ func (c *GitHubReleaseChecker) Run(ctx context.Context) error {
 	}
 }
 
-// GetLatest returns latest version in GitHub Releases, or returns empty if no
-// release are available
-func (c *GitHubReleaseChecker) GetLatest() string {
-	return c.latest.Load().(string)
-}
-
-// HasUpdate returns true if remove version is grater than local version
-func (c *GitHubReleaseChecker) HasUpdate() bool {
-	val := atomic.LoadInt32(&c.hasUpdate)
-	return val != 0
-}
-
-func (c *GitHubReleaseChecker) update(ctx context.Context) error {
+func (c *ReleaseChecker) update(ctx context.Context) error {
 	github := c.github
 	if c.github == nil {
 		var httpc *http.Client
@@ -89,7 +66,7 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 			}
 			httpc = newHTTPClient(u)
 		}
-		github = ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, httpc}
+		github = &ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, httpc}
 	}
 
 	env, err := c.storage.GetEnvConfig(ctx)
@@ -104,7 +81,6 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 		latest, err = github.GetLatestReleaseTag(ctx)
 	} else {
 		log.Warn("Unknown env: "+env, map[string]interface{}{})
-		c.latest.Store("")
 		return nil
 	}
 	if err == ErrNoReleases {
@@ -130,7 +106,6 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 	}
 
 	if !latestVer.GreaterThan(currentVer) {
-		atomic.StoreInt32(&c.hasUpdate, 0)
 		return nil
 	}
 
@@ -138,7 +113,6 @@ func (c *GitHubReleaseChecker) update(ctx context.Context) error {
 		"env":     env,
 		"version": latest,
 	})
-	c.latest.Store(latest)
-	atomic.StoreInt32(&c.hasUpdate, 1)
-	return nil
+
+	return c.storage.UpdateNecoRelease(ctx, latest, c.leaderKey)
 }

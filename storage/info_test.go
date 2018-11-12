@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/coreos/etcd/clientv3/concurrency"
+
 	"github.com/cybozu-go/neco/storage/test"
 	"github.com/google/go-cmp/cmp"
 )
@@ -13,6 +15,7 @@ func TestInfo(t *testing.T) {
 
 	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
+
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
@@ -54,7 +57,18 @@ func TestInfo(t *testing.T) {
 		t.Error("unexpected lrns", lrns)
 	}
 
-	err = st.UpdateNecoRelease(ctx, "1.1.0")
+	sess, err := concurrency.NewSession(etcd)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sess.Close()
+	e := concurrency.NewElection(sess, KeyUpdaterLeader)
+	err = e.Campaign(ctx, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	leaderKey := e.Key()
+	err = st.UpdateNecoRelease(ctx, "1.1.0", leaderKey)
 	if err != nil {
 		t.Fatal(err)
 	}

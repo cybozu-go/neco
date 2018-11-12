@@ -12,7 +12,6 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/neco/storage/test"
-	"github.com/cybozu-go/neco/updater/mock"
 	"github.com/cybozu-go/well"
 )
 
@@ -54,7 +53,6 @@ func (e *Env) Start() {
 			session: e.sess,
 			storage: e.Storage,
 			timeout: time.Second,
-			checker: mock.ReleaseChecker{Version: "1.0.0"},
 		}
 		return server.Run(ctx)
 	})
