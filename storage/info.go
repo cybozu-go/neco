@@ -2,8 +2,6 @@ package storage
 
 import (
 	"context"
-	"sort"
-	"strconv"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/clientv3util"
@@ -45,42 +43,6 @@ func (s Storage) UpdateNecoRelease(ctx context.Context, version, leaderKey strin
 		return ErrNoLeader
 	}
 	return nil
-}
-
-// GetInfo returns the GitHub package version and the current list of boot servers.
-func (s Storage) GetInfo(ctx context.Context, rev int64) (string, []int, error) {
-	resp, err := s.etcd.Get(ctx, KeyNecoRelease, clientv3.WithRev(rev))
-	if err != nil {
-		return "", nil, err
-	}
-	version := ""
-	if resp.Count != 0 {
-		version = string(resp.Kvs[0].Value)
-	}
-
-	resp, err = s.etcd.Get(ctx, KeyBootserversPrefix,
-		clientv3.WithPrefix(),
-		clientv3.WithKeysOnly(),
-		clientv3.WithRev(rev),
-	)
-	if err != nil {
-		return "", nil, err
-	}
-
-	var lrns []int
-	if resp.Count != 0 {
-		lrns = make([]int, resp.Count)
-		for i, kv := range resp.Kvs {
-			lrn, err := strconv.Atoi(string(kv.Key[len(KeyBootserversPrefix):]))
-			if err != nil {
-				return "", nil, err
-			}
-			lrns[i] = lrn
-		}
-		sort.Ints(lrns)
-	}
-
-	return version, lrns, err
 }
 
 // WaitInfo waits for update of keys under `info/`

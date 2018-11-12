@@ -152,9 +152,10 @@ func (s Storage) GetStatus(ctx context.Context, lrn int) (*neco.UpdateStatus, er
 	return st, nil
 }
 
-// GetStatuses returns UpdateStatus of existing boot servers.
-func (s Storage) GetStatuses(ctx context.Context, rev int64) (map[int]*neco.UpdateStatus, error) {
-	resp, err := s.etcd.Get(ctx, KeyWorkerStatusPrefix, clientv3.WithPrefix(), clientv3.WithRev(rev))
+func (s Storage) getStatusesAt(ctx context.Context, rev int64) (map[int]*neco.UpdateStatus, error) {
+	resp, err := s.etcd.Get(ctx, KeyWorkerStatusPrefix,
+		clientv3.WithPrefix(),
+		clientv3.WithRev(rev))
 	if err != nil {
 		return nil, err
 	}
@@ -180,6 +181,11 @@ func (s Storage) GetStatuses(ctx context.Context, rev int64) (map[int]*neco.Upda
 	}
 
 	return stMap, nil
+}
+
+// GetStatuses returns UpdateStatus of existing boot servers.
+func (s Storage) GetStatuses(ctx context.Context) (map[int]*neco.UpdateStatus, error) {
+	return s.getStatusesAt(ctx, 0)
 }
 
 // ClearStatus removes KeyStatusPrefix/* from storage.
