@@ -2,9 +2,8 @@ package updater
 
 import (
 	"context"
+	"errors"
 	"reflect"
-
-	"github.com/pkg/errors"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
@@ -20,7 +19,7 @@ const (
 	ActionReconfigure
 )
 
-func (s Server) NextAction(ctx context.Context, ss *storage.Snapshot, pkg PackageManager) (Action, error) {
+func NextAction(ctx context.Context, ss *storage.Snapshot, pkg PackageManager) (Action, error) {
 	if ss.Latest == "" {
 		return ActionNone, nil
 	}

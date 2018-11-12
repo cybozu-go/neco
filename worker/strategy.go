@@ -1,4 +1,4 @@
-package updater
+package worker
 
 import (
 	"github.com/cybozu-go/neco"

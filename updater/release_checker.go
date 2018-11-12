@@ -2,6 +2,7 @@ package updater
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/url"
 	"time"
@@ -9,35 +10,68 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
-	"github.com/hashicorp/go-version"
 )
 
 // ReleaseChecker checks newer GitHub releases by polling
 type ReleaseChecker struct {
 	storage   storage.Storage
-	github    *ReleaseClient
 	leaderKey string
 
-	pkg PackageManager
+	check   func(context.Context) (string, error)
+	current string
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
 func NewReleaseChecker(st storage.Storage, leaderKey string) ReleaseChecker {
 	return ReleaseChecker{
 		storage:   st,
-		pkg:       DebPackageManager{},
 		leaderKey: leaderKey,
 	}
 }
 
-// Run runs newer release during periodic intervals
+// Run periodically checks the new release of neco package at GitHub.
 func (c *ReleaseChecker) Run(ctx context.Context) error {
-	for {
-		interval, err := c.storage.GetCheckUpdateInterval(ctx)
+	var httpc *http.Client
+	proxyURL, err := c.storage.GetProxyConfig(ctx)
+	switch err {
+	case storage.ErrNotFound:
+	case nil:
+		u, err := url.Parse(proxyURL)
 		if err != nil {
 			return err
 		}
+		httpc = newHTTPClient(u)
+	default:
+		return err
+	}
+	github := &ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, httpc}
 
+	env, err := c.storage.GetEnvConfig(ctx)
+	if err != nil {
+		return err
+	}
+
+	switch env {
+	case neco.StagingEnv:
+		c.check = github.GetLatestPreReleaseTag
+	case neco.ProdEnv:
+		c.check = github.GetLatestReleaseTag
+	default:
+		return errors.New("unknown env: " + env)
+	}
+
+	current, err := c.storage.GetNecoRelease(ctx)
+	if err != nil {
+		return err
+	}
+	c.current = current
+
+	interval, err := c.storage.GetCheckUpdateInterval(ctx)
+	if err != nil {
+		return err
+	}
+
+	for {
 		err = c.update(ctx)
 		if err != nil {
 			return err
@@ -52,37 +86,7 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 }
 
 func (c *ReleaseChecker) update(ctx context.Context) error {
-	github := c.github
-	if c.github == nil {
-		var httpc *http.Client
-		proxyURL, err := c.storage.GetProxyConfig(ctx)
-		if err == storage.ErrNotFound {
-		} else if err != nil {
-			return err
-		} else {
-			u, err := url.Parse(proxyURL)
-			if err != nil {
-				return err
-			}
-			httpc = newHTTPClient(u)
-		}
-		github = &ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, httpc}
-	}
-
-	env, err := c.storage.GetEnvConfig(ctx)
-	if err != nil {
-		return err
-	}
-
-	var latest string
-	if env == neco.StagingEnv {
-		latest, err = github.GetLatestPreReleaseTag(ctx)
-	} else if env == neco.ProdEnv {
-		latest, err = github.GetLatestReleaseTag(ctx)
-	} else {
-		log.Warn("Unknown env: "+env, map[string]interface{}{})
-		return nil
-	}
+	latest, err := c.check(ctx)
 	if err == ErrNoReleases {
 		return nil
 	}
@@ -90,27 +94,12 @@ func (c *ReleaseChecker) update(ctx context.Context) error {
 		return err
 	}
 
-	current, err := c.pkg.GetVersion(ctx, neco.NecoPackageName)
-	if err != nil {
-		return err
-	}
-
-	latestVer, err := version.NewVersion(latest)
-	if err != nil {
-		return err
-	}
-
-	currentVer, err := version.NewVersion(current)
-	if err != nil {
-		return err
-	}
-
-	if !latestVer.GreaterThan(currentVer) {
+	if latest == c.current {
 		return nil
 	}
 
-	log.Info("New neco release is found ", map[string]interface{}{
-		"env":     env,
+	c.current = latest
+	log.Info("found a new neco release", map[string]interface{}{
 		"version": latest,
 	})
 

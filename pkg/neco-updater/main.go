@@ -37,7 +37,7 @@ func main() {
 	}
 
 	st := storage.NewStorage(etcd)
-	server := updater.NewServer(session, st, 2*time.Second)
+	server := updater.NewServer(session, st, updater.DebPackageManager{})
 
 	well.Go(server.Run)
 	well.Go(st.WaitConfigChange)

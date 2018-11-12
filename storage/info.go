@@ -45,6 +45,19 @@ func (s Storage) UpdateNecoRelease(ctx context.Context, version, leaderKey strin
 	return nil
 }
 
+// GetNecoRelease gets the neco package version recorded in etcd.
+func (s Storage) GetNecoRelease(ctx context.Context) (string, error) {
+	resp, err := s.etcd.Get(ctx, KeyNecoRelease)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.Count == 0 {
+		return "", nil
+	}
+	return string(resp.Kvs[0].Value), nil
+}
+
 // WaitInfo waits for update of keys under `info/`
 func (s Storage) WaitInfo(ctx context.Context, rev int64) error {
 	ctx, cancel := context.WithCancel(ctx)

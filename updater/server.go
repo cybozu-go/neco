@@ -19,15 +19,15 @@ import (
 type Server struct {
 	session *concurrency.Session
 	storage storage.Storage
-	timeout time.Duration
+	pkg     PackageManager
 }
 
 // NewServer returns a Server
-func NewServer(session *concurrency.Session, storage storage.Storage, timeout time.Duration) Server {
+func NewServer(session *concurrency.Session, storage storage.Storage, pkg PackageManager) Server {
 	return Server{
 		session: session,
 		storage: storage,
-		timeout: timeout,
+		pkg:     pkg,
 	}
 }
 
@@ -67,9 +67,7 @@ RETRY:
 	env.Stop()
 	err = env.Wait()
 
-	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), s.timeout)
-	defer cancel()
-	err2 := e.Resign(ctxWithTimeout)
+	err2 := e.Resign(context.Background())
 	if err2 != nil {
 		return err2
 	}
@@ -81,13 +79,12 @@ RETRY:
 }
 
 func (s Server) runLoop(ctx context.Context, leaderKey string) error {
-	pkg := DebPackageManager{}
 	for {
 		ss, err := s.storage.NewSnapshot(ctx)
 		if err != nil {
 			return err
 		}
-		action, err := s.NextAction(ctx, ss, pkg)
+		action, err := NextAction(ctx, ss, s.pkg)
 		if err != nil {
 			return err
 		}
