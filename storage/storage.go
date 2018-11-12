@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"encoding/json"
-	"sort"
 	"strconv"
 
 	"github.com/coreos/etcd/clientv3"
@@ -19,43 +18,6 @@ type Storage struct {
 // NewStorage returns Storage that stores data in etcd.
 func NewStorage(etcd *clientv3.Client) Storage {
 	return Storage{etcd}
-}
-
-// RegisterBootserver registers a bootserver
-func (s Storage) RegisterBootserver(ctx context.Context, lrn int) error {
-	_, err := s.etcd.Put(ctx, keyBootServer(lrn), "")
-	return err
-}
-
-// GetBootservers returns LRNs of bootservers
-func (s Storage) GetBootservers(ctx context.Context) ([]int, error) {
-	resp, err := s.etcd.Get(ctx, KeyBootserversPrefix,
-		clientv3.WithPrefix(),
-		clientv3.WithKeysOnly(),
-	)
-	if err != nil {
-		return nil, err
-	}
-	if resp.Count == 0 {
-		return nil, nil
-	}
-
-	lrns := make([]int, resp.Count)
-	for i, kv := range resp.Kvs {
-		lrn, err := strconv.Atoi(string(kv.Key[len(KeyBootserversPrefix):]))
-		if err != nil {
-			return nil, err
-		}
-		lrns[i] = lrn
-	}
-	sort.Ints(lrns)
-
-	return lrns, nil
-}
-
-// GetInfo returns the GitHub package version and the current list of boot servers.
-func (s Storage) GetInfo(ctx context.Context) (string, []int, int64, error) {
-	return "", nil, 0, nil
 }
 
 // RecordContainerTag records installed container image tag
@@ -251,21 +213,5 @@ RETRY:
 		goto RETRY
 	}
 
-	return nil
-}
-
-func (s Storage) DeleteBootServer(ctx context.Context, lrn int) error {
-	resp, err := s.etcd.Txn(ctx).
-		Then(
-			clientv3.OpDelete(keyBootServer(lrn)),
-			clientv3.OpDelete(keyInstall(lrn), clientv3.WithPrefix()),
-		).
-		Commit()
-	if err != nil {
-		return err
-	}
-	if resp.Responses[0].GetResponseDeleteRange().Deleted == 0 {
-		return ErrNotFound
-	}
 	return nil
 }

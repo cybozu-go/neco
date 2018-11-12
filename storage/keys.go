@@ -9,7 +9,9 @@ import (
 const (
 	KeyUpdaterLeader       = "leader/updater/"
 	KeyWorkerLeader        = "leader/worker/"
-	KeyBootserversPrefix   = "bootservers/"
+	KeyInfoPrefix          = "info/"
+	KeyBootserversPrefix   = "info/bootservers/"
+	KeyNecoRelease         = "info/neco-release"
 	KeyStatusPrefix        = "status/"
 	KeyCurrent             = "status/current"
 	KeyWorkerStatusPrefix  = "status/bootservers/"

@@ -18,7 +18,7 @@ This prefix is used to elect a leader `neco-worker`.
 This prefix is current available boot servers. Current available boot server is
 registered as a key `LRN`.  The value is empty.
 
-## `<prefix>/info/package`
+## `<prefix>/info/neco-release`
 
 This key stores the Debian package version of `neco` released at GitHub.
 
