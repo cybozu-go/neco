@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"time"
 
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/neco/updater"
 	"github.com/cybozu-go/well"
@@ -37,9 +39,15 @@ func main() {
 	}
 
 	st := storage.NewStorage(etcd)
-	server := updater.NewServer(session, st, 2*time.Second)
 
-	well.Go(server.Run)
+	well.Go(func(ctx context.Context) error {
+		notifier, err := ext.NewNotifier(ctx, st)
+		if err != nil {
+			return err
+		}
+		server := updater.NewServer(session, st, updater.DebPackageManager{}, notifier)
+		return server.Run(ctx)
+	})
 	well.Go(st.WaitConfigChange)
 	well.Stop()
 	err = well.Wait()

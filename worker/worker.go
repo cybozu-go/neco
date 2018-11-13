@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -14,26 +13,6 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 )
-
-func proxyHTTPClient(proxyURL *url.URL) *http.Client {
-	transport := &http.Transport{
-		Proxy: http.ProxyURL(proxyURL),
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-			DualStack: true,
-		}).DialContext,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-	}
-
-	return &http.Client{
-		Transport: transport,
-		Timeout:   1 * time.Hour,
-	}
-}
 
 func localHTTPClient() *http.Client {
 	transport := &http.Transport{
@@ -132,7 +111,7 @@ func (w *Worker) Run(ctx context.Context) error {
 		if err2 != nil {
 			return err2
 		}
-		if neco.UpdateAborted(req.Version, w.mylrn, stMap) {
+		if UpdateAborted(req.Version, w.mylrn, stMap) {
 			log.Info("previous update was aborted", nil)
 			req, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue

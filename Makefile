@@ -31,8 +31,8 @@ stop-etcd:
 	systemctl --user stop neco-etcd.service
 
 test:
-	test -z "$(gofmt -s -l . | grep -v '^vendor' | tee /dev/stderr)"
-	golint -set_exit_status $(go list -mod=vendor ./... | grep -v /vendor/)
+	test -z "$$(gofmt -s -l . | grep -v '^vendor' | tee /dev/stderr)"
+	golint -set_exit_status $$(go list -mod=vendor ./... | grep -v /vendor/)
 	go build -mod=vendor ./...
 	go test -mod=vendor -race -v ./...
 	go vet -mod=vendor ./...

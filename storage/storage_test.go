@@ -10,53 +10,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func testBootservers(t *testing.T) {
-	t.Parallel()
-
-	etcd := test.NewEtcdClient(t)
-	defer etcd.Close()
-	ctx := context.Background()
-	st := NewStorage(etcd)
-
-	err := st.RegisterBootserver(ctx, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = st.RegisterBootserver(ctx, 2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = st.RegisterBootserver(ctx, 1)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	lrns, err := st.GetBootservers(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !cmp.Equal(lrns, []int{0, 1, 2}) {
-		t.Error("unexpected lrns", lrns)
-	}
-
-	err = st.DeleteBootServer(ctx, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	lrns, err = st.GetBootservers(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !cmp.Equal(lrns, []int{1, 2}) {
-		t.Error("unexpected lrns", lrns)
-	}
-
-	err = st.DeleteBootServer(ctx, 0)
-	if err != ErrNotFound {
-		t.Error("error should be ErrNotFound", err)
-	}
-}
-
 func testContainerTag(t *testing.T) {
 	t.Parallel()
 
@@ -139,7 +92,7 @@ func testRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer sess.Close()
-	e := concurrency.NewElection(sess, KeyLeader)
+	e := concurrency.NewElection(sess, KeyUpdaterLeader)
 	err = e.Campaign(ctx, "test")
 	if err != nil {
 		t.Fatal(err)
@@ -222,7 +175,7 @@ func testClearStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer sess.Close()
-	e := concurrency.NewElection(sess, KeyLeader)
+	e := concurrency.NewElection(sess, KeyUpdaterLeader)
 	err = e.Campaign(ctx, "test")
 	if err != nil {
 		t.Fatal(err)
@@ -302,7 +255,6 @@ func testFinish(t *testing.T) {
 }
 
 func TestStorage(t *testing.T) {
-	t.Run("Bootservers", testBootservers)
 	t.Run("ContainerTag", testContainerTag)
 	t.Run("DebVersion", testDebVersion)
 	t.Run("Request", testRequest)

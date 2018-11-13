@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"encoding/json"
-	"sort"
 	"strconv"
 
 	"github.com/coreos/etcd/clientv3"
@@ -19,38 +18,6 @@ type Storage struct {
 // NewStorage returns Storage that stores data in etcd.
 func NewStorage(etcd *clientv3.Client) Storage {
 	return Storage{etcd}
-}
-
-// RegisterBootserver registers a bootserver
-func (s Storage) RegisterBootserver(ctx context.Context, lrn int) error {
-	_, err := s.etcd.Put(ctx, keyBootServer(lrn), "")
-	return err
-}
-
-// GetBootservers returns LRNs of bootservers
-func (s Storage) GetBootservers(ctx context.Context) ([]int, error) {
-	resp, err := s.etcd.Get(ctx, KeyBootserversPrefix,
-		clientv3.WithPrefix(),
-		clientv3.WithKeysOnly(),
-	)
-	if err != nil {
-		return nil, err
-	}
-	if resp.Count == 0 {
-		return nil, nil
-	}
-
-	lrns := make([]int, resp.Count)
-	for i, kv := range resp.Kvs {
-		lrn, err := strconv.Atoi(string(kv.Key[len(KeyBootserversPrefix):]))
-		if err != nil {
-			return nil, err
-		}
-		lrns[i] = lrn
-	}
-	sort.Ints(lrns)
-
-	return lrns, nil
 }
 
 // RecordContainerTag records installed container image tag
@@ -125,6 +92,34 @@ func (s Storage) PutRequest(ctx context.Context, req neco.UpdateRequest, leaderK
 	return nil
 }
 
+// PutReconfigureRequest stores UpdateRequest to storage and
+// delete worker statuses in a single transaction.
+// leaderKey is the current leader key.
+// If the caller has lost the leadership, this returns ErrNoLeader.
+func (s Storage) PutReconfigureRequest(ctx context.Context, req neco.UpdateRequest, leaderKey string) error {
+	data, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+
+	resp, err := s.etcd.Txn(ctx).
+		If(clientv3util.KeyExists(leaderKey)).
+		Then(
+			clientv3.OpPut(KeyCurrent, string(data)),
+			clientv3.OpDelete(KeyWorkerStatusPrefix, clientv3.WithPrefix()),
+		).
+		Commit()
+	if err != nil {
+		return err
+	}
+
+	if !resp.Succeeded {
+		return ErrNoLeader
+	}
+
+	return nil
+}
+
 // GetRequestWithRev returns UpdateRequest from storage with ModRevision.
 // If there is no request, this returns ErrNotFound
 func (s Storage) GetRequestWithRev(ctx context.Context) (*neco.UpdateRequest, int64, error) {
@@ -185,9 +180,10 @@ func (s Storage) GetStatus(ctx context.Context, lrn int) (*neco.UpdateStatus, er
 	return st, nil
 }
 
-// GetStatuses returns UpdateStatus of existing boot servers.
-func (s Storage) GetStatuses(ctx context.Context) (map[int]*neco.UpdateStatus, error) {
-	resp, err := s.etcd.Get(ctx, KeyWorkerStatusPrefix, clientv3.WithPrefix())
+func (s Storage) getStatusesAt(ctx context.Context, rev int64) (map[int]*neco.UpdateStatus, error) {
+	resp, err := s.etcd.Get(ctx, KeyWorkerStatusPrefix,
+		clientv3.WithPrefix(),
+		clientv3.WithRev(rev))
 	if err != nil {
 		return nil, err
 	}
@@ -213,6 +209,11 @@ func (s Storage) GetStatuses(ctx context.Context) (map[int]*neco.UpdateStatus, e
 	}
 
 	return stMap, nil
+}
+
+// GetStatuses returns UpdateStatus of existing boot servers.
+func (s Storage) GetStatuses(ctx context.Context) (map[int]*neco.UpdateStatus, error) {
+	return s.getStatusesAt(ctx, 0)
 }
 
 // ClearStatus removes KeyStatusPrefix/* from storage.
@@ -246,21 +247,5 @@ RETRY:
 		goto RETRY
 	}
 
-	return nil
-}
-
-func (s Storage) DeleteBootServer(ctx context.Context, lrn int) error {
-	resp, err := s.etcd.Txn(ctx).
-		Then(
-			clientv3.OpDelete(keyBootServer(lrn)),
-			clientv3.OpDelete(keyInstall(lrn), clientv3.WithPrefix()),
-		).
-		Commit()
-	if err != nil {
-		return err
-	}
-	if resp.Responses[0].GetResponseDeleteRange().Deleted == 0 {
-		return ErrNotFound
-	}
 	return nil
 }

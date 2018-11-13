@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 )
 
@@ -36,21 +36,9 @@ type operator struct {
 func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator, error) {
 	st := storage.NewStorage(ec)
 	localClient := localHTTPClient()
-	proxyClient := localClient
-
-	proxy, err := st.GetProxyConfig(ctx)
+	proxyClient, err := ext.HTTPClient(ctx, st)
 	if err != nil {
-		if err != storage.ErrNotFound {
-			return nil, err
-		}
-	} else {
-		if len(proxy) > 0 {
-			proxyURL, err := url.Parse(proxy)
-			if err != nil {
-				return nil, err
-			}
-			proxyClient = proxyHTTPClient(proxyURL)
-		}
+		return nil, err
 	}
 
 	return &operator{

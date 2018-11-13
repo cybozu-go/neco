@@ -3,35 +3,35 @@ package updater
 import (
 	"context"
 	"errors"
-	"net/http"
-	"net/url"
+	"fmt"
 	"os"
 	"time"
 
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
 )
 
 // Server represents neco-updater server
 type Server struct {
-	session *concurrency.Session
-	storage storage.Storage
-	timeout time.Duration
+	session  *concurrency.Session
+	storage  storage.Storage
+	pkg      PackageManager
+	notifier ext.Notifier
 
-	checker ReleaseChecker
+	currentSnapshot storage.Snapshot
 }
 
 // NewServer returns a Server
-func NewServer(session *concurrency.Session, storage storage.Storage, timeout time.Duration) Server {
+func NewServer(session *concurrency.Session, storage storage.Storage, pkg PackageManager, notifier ext.Notifier) Server {
 	return Server{
-		session: session,
-		storage: storage,
-		timeout: timeout,
-
-		checker: NewReleaseChecker(storage),
+		session:  session,
+		storage:  storage,
+		pkg:      pkg,
+		notifier: notifier,
 	}
 }
 
@@ -43,7 +43,7 @@ func (s Server) Run(ctx context.Context) error {
 		return err
 	}
 
-	e := concurrency.NewElection(s.session, storage.KeyLeader)
+	e := concurrency.NewElection(s.session, storage.KeyUpdaterLeader)
 
 RETRY:
 	select {
@@ -66,15 +66,16 @@ RETRY:
 	env.Go(func(ctx context.Context) error {
 		return s.runLoop(ctx, leaderKey)
 	})
-	env.Go(func(ctx context.Context) error {
-		return s.checker.Run(ctx)
-	})
+	checker := NewReleaseChecker(s.storage, leaderKey)
+	env.Go(checker.Run)
 	env.Stop()
 	err = env.Wait()
 
-	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), s.timeout)
-	defer cancel()
+	// workaround for etcd clientv3 bug that hangs up when the first
+	// endpoint is stopping.
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
 	err2 := e.Resign(ctxWithTimeout)
+	cancel()
 	if err2 != nil {
 		return err2
 	}
@@ -86,173 +87,132 @@ RETRY:
 }
 
 func (s Server) runLoop(ctx context.Context, leaderKey string) error {
-	var target string
-	var current *neco.UpdateRequest
-	var currentRev int64
+	timeout, err := s.storage.GetWorkerTimeout(ctx)
+	if err != nil {
+		return err
+	}
+	for {
+		ss, err := s.storage.NewSnapshot(ctx)
+		if err != nil {
+			return err
+		}
 
-	// Updater continues last update without create update reuqest with "skipRequest = true"
-	var skipRequest bool
+		action, err := NextAction(ctx, ss, s.pkg, timeout)
+		if err != nil {
+			return err
+		}
+		log.Info("next action", map[string]interface{}{
+			"action": action.String(),
+		})
 
-	current, currentRev, err := s.storage.GetRequestWithRev(ctx)
-	if err == nil {
-		target = current.Version
-		if current.Stop {
-			log.Info("Last updating is failed, wait for retrying", map[string]interface{}{
-				"version": current.Version,
-			})
-			err := s.storage.WaitRequestDeletion(ctx, currentRev)
+		switch action {
+		case ActionWaitInfo:
+			err = s.storage.WaitInfo(ctx, ss.Revision)
 			if err != nil {
 				return err
 			}
-		} else {
-			log.Info("Last updating is still in progress, wait for workers", map[string]interface{}{
-				"version": current.Version,
-			})
-			skipRequest = true
-		}
-	} else if err != nil && err != storage.ErrNotFound {
-		return err
-	}
-
-	for {
-		if len(target) == 0 {
-			if s.checker.HasUpdate() {
-				target = s.checker.GetLatest()
+		case ActionReconfigure:
+			req := neco.UpdateRequest{
+				Version:   ss.Request.Version,
+				Servers:   ss.Servers,
+				StartedAt: time.Now().UTC(),
 			}
-		}
-		if len(target) != 0 {
-		OUTER:
-			// Found new update
-			for {
-				if !skipRequest {
-					current, currentRev, err = s.startUpdate(ctx, target, leaderKey)
-					if err == ErrNoMembers {
-						break
-					} else if err != nil {
-						return err
-					}
-				}
-				skipRequest = false
-
-				notifier, err := s.notifier(ctx)
-				if err != nil {
-					return err
-				}
-				watcher := newWorkerWatcher(current, notifier)
-
-				timeout, err := s.storage.GetWorkerTimeout(ctx)
-				if err != nil {
-					return err
-				}
-				deadline := current.StartedAt.Add(timeout)
-				ctxWithDeadline, cancel := context.WithDeadline(ctx, deadline)
-				err = storage.NewWorkerWatcher(watcher.handleStatus).
-					Watch(ctxWithDeadline, currentRev, s.storage)
-				cancel()
-
-				switch {
-				case err == nil:
-					break OUTER
-				case err == storage.ErrTimedOut:
-					log.Warn("workers timed-out", map[string]interface{}{
-						"version":    current.Version,
-						"started_at": current.StartedAt,
-					})
-					notifier.NotifyTimeout(ctx, *current)
-					fallthrough
-				case watcher.aborted:
-					err = s.stopUpdate(ctx, current, leaderKey)
-					if err != nil {
-						return err
-					}
-					err = s.storage.WaitRequestDeletion(ctx, currentRev)
-					if err != nil {
-						return err
-					}
-					continue OUTER
-				default:
-					return err
-				}
+			err = s.storage.PutReconfigureRequest(ctx, req, leaderKey)
+			if err != nil {
+				return err
 			}
+		case ActionNewVersion:
+			req := neco.UpdateRequest{
+				Version:   ss.Latest,
+				Servers:   ss.Servers,
+				StartedAt: time.Now().UTC(),
+			}
+			err = s.storage.PutRequest(ctx, req, leaderKey)
+			if err != nil {
+				return err
+			}
+		case ActionWaitWorkers:
+			err = s.waitComplete(ctx, leaderKey, ss, timeout)
+			if err != nil {
+				return err
+			}
+		case ActionStop:
+			req := *ss.Request
+			req.Stop = true
+			err = s.storage.PutRequest(ctx, req, leaderKey)
+			if err != nil {
+				return err
+			}
+		case ActionWaitClear:
+			err = s.storage.WaitRequestDeletion(ctx, ss.Revision)
+			if err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("invalid action %s: %d", action.String(), int(action))
 		}
-
-		timeout, err := s.storage.WaitForMemberUpdated(ctx, current, currentRev)
-		if timeout {
-			// Clear target to check latest update
-			target = ""
-		} else if err != nil {
-			return err
-		}
 	}
 }
 
-// startUpdate starts update with tag.  It returns created request and its
-// modified revision.  It returns ErrNoMembers if no bootservers are registered
-// in etcd.
-func (s Server) startUpdate(ctx context.Context, tag, leaderKey string) (*neco.UpdateRequest, int64, error) {
-	servers, err := s.storage.GetBootservers(ctx)
-	if err != nil {
-		return nil, 0, err
-	}
-	if len(servers) == 0 {
-		log.Info("No bootservers exists in etcd", map[string]interface{}{})
-		return nil, 0, ErrNoMembers
-	}
-	log.Info("Starting updating", map[string]interface{}{
-		"version": tag,
-		"servers": servers,
-	})
-	r := neco.UpdateRequest{
-		Version:   tag,
-		Servers:   servers,
-		Stop:      false,
-		StartedAt: time.Now(),
-	}
-	err = s.storage.PutRequest(ctx, r, leaderKey)
-	if err != nil {
-		return nil, 0, err
-	}
-	return s.storage.GetRequestWithRev(ctx)
-}
-
-// stopUpdate of the current request
-func (s Server) stopUpdate(ctx context.Context, req *neco.UpdateRequest, leaderKey string) error {
-	req.Stop = true
-	return s.storage.PutRequest(ctx, *req, leaderKey)
-}
-
-func (s Server) notifier(ctx context.Context) (Notifier, error) {
-	var notifier Notifier
-	notifier, err := s.newSlackClient(ctx)
-	if err == storage.ErrNotFound {
-		notifier = nopNotifier{}
-	} else if err != nil {
-		return nil, err
-	}
-	return notifier, nil
-}
-
-func (s Server) newSlackClient(ctx context.Context) (*SlackClient, error) {
-	webhookURL, err := s.storage.GetSlackNotification(ctx)
-	if err == storage.ErrNotFound {
-		return nil, storage.ErrNotFound
-	} else if err != nil {
-		return nil, err
-	}
-
-	var http *http.Client
-
-	proxyURL, err := s.storage.GetProxyConfig(ctx)
-	if err == storage.ErrNotFound {
-	} else if err != nil {
-		return nil, err
-	} else {
-		u, err := url.Parse(proxyURL)
+func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.Snapshot, timeout time.Duration) error {
+	deadline := ss.Request.StartedAt.Add(timeout)
+	ctxWithDeadline, cancel := context.WithDeadline(ctx, deadline)
+	defer cancel()
+	s.currentSnapshot = *ss
+	err := storage.NewWorkerWatcher(s.handleStatus).
+		Watch(ctxWithDeadline, ss.Revision, s.storage)
+	if err == storage.ErrTimedOut {
+		log.Warn("workers timed-out", map[string]interface{}{
+			"version":    s.currentSnapshot.Request.Version,
+			"started_at": s.currentSnapshot.Request.StartedAt,
+			"timeout":    timeout.String(),
+		})
+		err = s.notifier.NotifyTimeout(ctx, *s.currentSnapshot.Request)
 		if err != nil {
-			return nil, err
+			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}
-		http = newHTTPClient(u)
+		return nil
+	}
+	return err
+}
+
+func (s Server) handleStatus(ctx context.Context, lrn int, st *neco.UpdateStatus) bool {
+	if st.Version != s.currentSnapshot.Request.Version {
+		return false
+	}
+	s.currentSnapshot.Statuses[lrn] = st
+
+	switch st.Cond {
+	case neco.CondAbort:
+		log.Warn("worker failed updating", map[string]interface{}{
+			"version": s.currentSnapshot.Request.Version,
+			"lrn":     lrn,
+			"message": st.Message,
+		})
+		err := s.notifier.NotifyServerFailure(ctx, *s.currentSnapshot.Request, st.Message)
+		if err != nil {
+			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
+		}
+		return true
+	case neco.CondComplete:
+		log.Info("worker finished updating", map[string]interface{}{
+			"version": s.currentSnapshot.Request.Version,
+			"lrn":     lrn,
+		})
 	}
 
-	return &SlackClient{URL: webhookURL, HTTP: http}, nil
+	completed := neco.UpdateCompleted(s.currentSnapshot.Request.Version, s.currentSnapshot.Servers, s.currentSnapshot.Statuses)
+	if completed {
+		log.Info("all worker finished updating", map[string]interface{}{
+			"version": s.currentSnapshot.Request.Version,
+			"servers": s.currentSnapshot.Servers,
+		})
+		err := s.notifier.NotifySucceeded(ctx, *s.currentSnapshot.Request)
+		if err != nil {
+			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
+		}
+		return true
+	}
+
+	return false
 }
