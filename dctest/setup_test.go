@@ -1,6 +1,7 @@
 package dctest
 
 import (
+	"bytes"
 	"context"
 
 	"github.com/cybozu-go/log"
@@ -71,5 +72,34 @@ func testSetup() {
 			execSafeAt(h, "test", "-f", neco.TimerFile("etcd-backup"))
 			execSafeAt(h, "test", "-f", neco.ServiceFile("etcd-backup"))
 		}
+	})
+
+	var rootToken string
+	It("should get root token", func() {
+		stdout, _, err := execAt(boot0, "/mnt/neco", "vault", "show-root-token")
+		Expect(err).ShouldNot(HaveOccurred())
+		rootToken = string(bytes.TrimSpace(stdout))
+		Expect(rootToken).NotTo(BeEmpty())
+	})
+
+	It("should add a new boot server", func() {
+		stdout, stderr, err := execAt(
+			boot3, "sudo", "env", "VAULT_TOKEN="+rootToken, "/mnt/neco", "join", "0", "1", "2")
+		if err != nil {
+			log.Error("neco join failed", map[string]interface{}{
+				"host":   "boot-3",
+				"stdout": string(stdout),
+				"stderr": string(stderr),
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+		}
+		execSafeAt(boot3, "test", "-f", neco.NecoConfFile)
+		execSafeAt(boot3, "test", "-f", neco.NecoCertFile)
+		execSafeAt(boot3, "test", "-f", neco.NecoKeyFile)
+
+		execSafeAt(boot3, "test", "-f", neco.EtcdBackupCertFile)
+		execSafeAt(boot3, "test", "-f", neco.EtcdBackupKeyFile)
+		execSafeAt(boot3, "test", "-f", neco.TimerFile("etcd-backup"))
+		execSafeAt(boot3, "test", "-f", neco.ServiceFile("etcd-backup"))
 	})
 }

@@ -4,6 +4,7 @@
 BOOT0 = 10.72.48.0
 BOOT1 = 10.72.48.1
 BOOT2 = 10.72.48.2
+BOOT3 = 10.72.48.3
 K8S_CTRLPLANE0 = 10.69.0.4
 K8S_CTRLPLANE1 = 10.69.0.196
 K8S_CTRLPLANE2 = 10.69.1.132
@@ -13,7 +14,7 @@ GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo -v
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
 
-export BOOT0 BOOT1 BOOT2 PLACEMAT GINKGO
+export BOOT0 BOOT1 BOOT2 BOOT3 PLACEMAT GINKGO
 
 CUSTOM_UBUNTU = cybozu-ubuntu-18.04-server-cloudimg-amd64.img
 CUSTOM_UBUNTU_API_URL = https://api.github.com/repos/cybozu/neco-ubuntu/releases/latest
