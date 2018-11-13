@@ -7,11 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cybozu-go/neco/notifier"
-
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/neco/storage/test"
 	"github.com/cybozu-go/well"
@@ -51,21 +50,21 @@ func NewTestEnv(t *testing.T) *Env {
 func (e *Env) Start() {
 	e.env = well.NewEnvironment(context.Background())
 	e.env.Go(func(ctx context.Context) error {
-		slackClient, err := notifier.NewSlackClient(ctx, e.Storage)
+		notifier, err := ext.NewNotifier(ctx, e.Storage)
 		if err != nil {
 			return err
 		}
 		server := Server{
 			session:  e.sess,
 			storage:  e.Storage,
-			notifier: slackClient,
+			notifier: notifier,
 		}
 		return server.Run(ctx)
 	})
 	e.env.Stop()
 }
 
-func (e *Env) WaitMessage() (notifier.Payload, error) {
+func (e *Env) WaitMessage() (ext.Payload, error) {
 	select {
 	case msg, ok := <-e.slack.WatchMessage():
 		if !ok {
@@ -73,7 +72,7 @@ func (e *Env) WaitMessage() (notifier.Payload, error) {
 		}
 		return msg, nil
 	case <-time.After(time.Second):
-		return notifier.Payload{}, errors.New("time out")
+		return ext.Payload{}, errors.New("time out")
 	}
 }
 

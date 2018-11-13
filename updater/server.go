@@ -10,7 +10,7 @@ import (
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/neco/notifier"
+	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
 )
@@ -20,13 +20,13 @@ type Server struct {
 	session  *concurrency.Session
 	storage  storage.Storage
 	pkg      PackageManager
-	notifier notifier.Notifier
+	notifier ext.Notifier
 
 	currentSnapshot storage.Snapshot
 }
 
 // NewServer returns a Server
-func NewServer(session *concurrency.Session, storage storage.Storage, pkg PackageManager, notifier notifier.Notifier) Server {
+func NewServer(session *concurrency.Session, storage storage.Storage, pkg PackageManager, notifier ext.Notifier) Server {
 	return Server{
 		session:  session,
 		storage:  storage,
