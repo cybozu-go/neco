@@ -105,12 +105,22 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				return err
 			}
 		case ActionReconfigure:
-			err = s.storage.ClearStatus(ctx, true)
+			req := neco.UpdateRequest{
+				Version:   ss.Request.Version,
+				Servers:   ss.Servers,
+				StartedAt: time.Now().UTC(),
+			}
+			err = s.storage.PutReconfigureRequest(ctx, req, leaderKey)
 			if err != nil {
 				return err
 			}
 		case ActionNewVersion:
-			err = s.putRequest(ctx, leaderKey, ss)
+			req := neco.UpdateRequest{
+				Version:   ss.Latest,
+				Servers:   ss.Servers,
+				StartedAt: time.Now().UTC(),
+			}
+			err = s.storage.PutRequest(ctx, req, leaderKey)
 			if err != nil {
 				return err
 			}
@@ -120,7 +130,9 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				return err
 			}
 		case ActionStop:
-			err = s.stopRequest(ctx, leaderKey, ss.Request)
+			req := *ss.Request
+			req.Stop = true
+			err = s.storage.PutRequest(ctx, req, leaderKey)
 			if err != nil {
 				return err
 			}

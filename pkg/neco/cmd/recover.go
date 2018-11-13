@@ -25,7 +25,7 @@ var recoverCmd = &cobra.Command{
 		st := storage.NewStorage(etcd)
 
 		well.Go(func(ctx context.Context) error {
-			return st.ClearStatus(ctx, false)
+			return st.ClearStatus(ctx)
 		})
 		well.Stop()
 		err = well.Wait()

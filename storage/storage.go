@@ -92,6 +92,34 @@ func (s Storage) PutRequest(ctx context.Context, req neco.UpdateRequest, leaderK
 	return nil
 }
 
+// PutReconfigureRequest stores UpdateRequest to storage and
+// delete worker statuses in a single transaction.
+// leaderKey is the current leader key.
+// If the caller has lost the leadership, this returns ErrNoLeader.
+func (s Storage) PutReconfigureRequest(ctx context.Context, req neco.UpdateRequest, leaderKey string) error {
+	data, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+
+	resp, err := s.etcd.Txn(ctx).
+		If(clientv3util.KeyExists(leaderKey)).
+		Then(
+			clientv3.OpPut(KeyCurrent, string(data)),
+			clientv3.OpDelete(KeyWorkerStatusPrefix, clientv3.WithPrefix()),
+		).
+		Commit()
+	if err != nil {
+		return err
+	}
+
+	if !resp.Succeeded {
+		return ErrNoLeader
+	}
+
+	return nil
+}
+
 // GetRequestWithRev returns UpdateRequest from storage with ModRevision.
 // If there is no request, this returns ErrNotFound
 func (s Storage) GetRequestWithRev(ctx context.Context) (*neco.UpdateRequest, int64, error) {
@@ -194,7 +222,7 @@ func (s Storage) GetStatuses(ctx context.Context) (map[int]*neco.UpdateStatus, e
 // ErrNotStopped will be returned.
 //
 // Then it removes status keys in a single transaction.
-func (s Storage) ClearStatus(ctx context.Context, force bool) error {
+func (s Storage) ClearStatus(ctx context.Context) error {
 RETRY:
 	req, rev, err := s.GetRequestWithRev(ctx)
 	if err != nil {
