@@ -37,11 +37,18 @@ Synopsis
 
     If `--start` is given, the program is started after initialization.
 
-* `neco join`
+* `neco join LRN [LRN ...]`
 
-    Join this server as a new boot server and an etcd member.
-    It asks vault user and password to generate a vault token, then issue client
-    certificates for etcd and vault for a new boot server.
+    Prepare certificates and files to add this server to the cluster.  
+    `LRN` are a list of LRNs of the existing boot servers.
+
+    To issue certificates, this command asks the user Vault username and password.
+    It also creates `/etc/neco/config.yml` for `neco-updater` and `neco-worker`.
+
+    Etcd and Vault themselves are *not* installed by this command.  They are
+    installed later by `neco-worker`.  Similarly, this command does not
+    add the new server to etcd cluster.  `neco-worker` will add the server
+    to etcd cluster.
 
 * `neco leave LRN`
 
