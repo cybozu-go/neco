@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"time"
 
@@ -37,9 +38,11 @@ func main() {
 	}
 
 	st := storage.NewStorage(etcd)
-	server := updater.NewServer(session, st, updater.DebPackageManager{})
 
-	well.Go(server.Run)
+	well.Go(func(ctx context.Context) error {
+		server := updater.NewServer(session, st, updater.DebPackageManager{})
+		return server.Run(ctx)
+	})
 	well.Go(st.WaitConfigChange)
 	well.Stop()
 	err = well.Wait()

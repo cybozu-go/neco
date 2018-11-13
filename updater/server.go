@@ -18,18 +18,47 @@ import (
 
 // Server represents neco-updater server
 type Server struct {
-	session *concurrency.Session
-	storage storage.Storage
-	pkg     PackageManager
+	session  *concurrency.Session
+	storage  storage.Storage
+	pkg      PackageManager
+	notifier Notifier
+
+	currentSnapshot storage.Snapshot
 }
 
 // NewServer returns a Server
-func NewServer(session *concurrency.Session, storage storage.Storage, pkg PackageManager) Server {
+func NewServer(session *concurrency.Session, storage storage.Storage, pkg PackageManager, notifier Notifier) Server {
 	return Server{
-		session: session,
-		storage: storage,
-		pkg:     pkg,
+		session:  session,
+		storage:  storage,
+		pkg:      pkg,
+		notifier: notifier,
 	}
+}
+
+func newSlackClient(ctx context.Context, st storage.Storage) (Notifier, error) {
+	webhookURL, err := st.GetSlackNotification(ctx)
+	if err == storage.ErrNotFound {
+		return nil, storage.ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	var http *http.Client
+
+	proxyURL, err := st.GetProxyConfig(ctx)
+	if err == storage.ErrNotFound {
+	} else if err != nil {
+		return nil, err
+	} else {
+		u, err := url.Parse(proxyURL)
+		if err != nil {
+			return nil, err
+		}
+		http = newHTTPClient(u)
+	}
+
+	return &SlackClient{URL: webhookURL, HTTP: http}, nil
 }
 
 // Run runs neco-updater
@@ -147,93 +176,66 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 	}
 }
 
-// startUpdate starts update with tag.  It returns created request and its
-// modified revision.  It returns ErrNoMembers if no bootservers are registered
-// in etcd.
-func (s Server) update(ctx context.Context, leaderKey string, snapshot *storage.Snapshot) (int64, error) {
-	servers := snapshot.Servers
-	tag := snapshot.Latest
-	if len(servers) == 0 {
-		log.Info("No bootservers exists in etcd", map[string]interface{}{})
-		return 0, ErrNoMembers
-	}
-	log.Info("Starting updating", map[string]interface{}{
-		"version": tag,
-		"servers": servers,
-	})
-	r := neco.UpdateRequest{
-		Version:   tag,
-		Servers:   servers,
-		Stop:      false,
-		StartedAt: time.Now(),
-	}
-	err := s.storage.PutRequest(ctx, r, leaderKey)
-	if err != nil {
-		return 0, err
-	}
-
-	_, rev, err := s.storage.GetRequestWithRev(ctx)
-	if err != nil {
-		return 0, err
-	}
-
-	notifier, err := s.notifier(ctx)
-	if err != nil {
-		return 0, err
-	}
-	watcher := newWorkerWatcher(&r, notifier)
-
+func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.Snapshot) error {
 	timeout, err := s.storage.GetWorkerTimeout(ctx)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	deadline := r.StartedAt.Add(timeout)
+	deadline := ss.Request.StartedAt.Add(timeout)
 	ctxWithDeadline, cancel := context.WithDeadline(ctx, deadline)
-	err = storage.NewWorkerWatcher(watcher.handleStatus).
-		Watch(ctxWithDeadline, rev, s.storage)
-	cancel()
-
-	return rev, nil
-}
-
-// stopUpdate of the current request
-func (s Server) stopUpdate(ctx context.Context, req *neco.UpdateRequest, leaderKey string) error {
-	req.Stop = true
-	return s.storage.PutRequest(ctx, *req, leaderKey)
-}
-
-func (s Server) notifier(ctx context.Context) (Notifier, error) {
-	var notifier Notifier
-	notifier, err := s.newSlackClient(ctx)
-	if err == storage.ErrNotFound {
-		notifier = nopNotifier{}
-	} else if err != nil {
-		return nil, err
-	}
-	return notifier, nil
-}
-
-func (s Server) newSlackClient(ctx context.Context) (*SlackClient, error) {
-	webhookURL, err := s.storage.GetSlackNotification(ctx)
-	if err == storage.ErrNotFound {
-		return nil, storage.ErrNotFound
-	} else if err != nil {
-		return nil, err
-	}
-
-	var http *http.Client
-
-	proxyURL, err := s.storage.GetProxyConfig(ctx)
-	if err == storage.ErrNotFound {
-	} else if err != nil {
-		return nil, err
-	} else {
-		u, err := url.Parse(proxyURL)
+	defer cancel()
+	s.currentSnapshot = *ss
+	err = storage.NewWorkerWatcher(s.handleStatus).
+		Watch(ctxWithDeadline, ss.Revision, s.storage)
+	if err == storage.ErrTimedOut {
+		log.Warn("workers timed-out", map[string]interface{}{
+			"version":    s.currentSnapshot.Request.Version,
+			"started_at": s.currentSnapshot.Request.StartedAt,
+			"timeout":    timeout.String(),
+		})
+		s.notifier.NotifyTimeout(ctx, *s.currentSnapshot.Request)
+		req := *ss.Request
+		req.Stop = true
+		err = s.storage.PutRequest(ctx, req, leaderKey)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		http = newHTTPClient(u)
+		return nil
+	}
+	return err
+}
+
+func (s Server) handleStatus(ctx context.Context, lrn int, st *neco.UpdateStatus) bool {
+	if st.Version != s.currentSnapshot.Request.Version {
+		return false
+	}
+	s.currentSnapshot.Statuses[lrn] = st
+
+	switch st.Cond {
+	case neco.CondAbort:
+		log.Warn("worker failed updating", map[string]interface{}{
+			"version": s.currentSnapshot.Request.Version,
+			"lrn":     lrn,
+			"message": st.Message,
+		})
+		s.notifier.NotifyServerFailure(ctx, *s.currentSnapshot.Request, st.Message)
+		return true
+	case neco.CondComplete:
+		log.Info("worker finished updating", map[string]interface{}{
+			"version": s.currentSnapshot.Request.Version,
+			"lrn":     lrn,
+		})
 	}
 
-	return &SlackClient{URL: webhookURL, HTTP: http}, nil
+	completed := neco.UpdateCompleted(s.currentSnapshot.Request.Version, s.currentSnapshot.Servers, s.currentSnapshot.Statuses)
+	if completed {
+		log.Info("all worker finished updating", map[string]interface{}{
+			"version": s.currentSnapshot.Request.Version,
+			"servers": s.currentSnapshot.Servers,
+		})
+		s.notifier.NotifySucceeded(ctx, *s.currentSnapshot.Request)
+		return true
+	}
+
+	return false
 }

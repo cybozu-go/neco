@@ -8,6 +8,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/cybozu-go/neco/worker"
+
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
@@ -16,18 +18,14 @@ import (
 )
 
 func showStatus(ctx context.Context, st storage.Storage, w io.Writer) error {
-	lrns, err := st.GetBootservers(ctx)
+	ss, err := st.NewSnapshot(ctx)
 	if err != nil {
 		return err
 	}
-	req, err := st.GetRequest(ctx)
-	if err != nil && err != storage.ErrNotFound {
-		return err
-	}
-	statuses, err := st.GetStatuses(ctx)
-	if err != nil {
-		return err
-	}
+
+	req := ss.Request
+	lrns := ss.Servers
+	statuses := ss.Statuses
 
 	fmt.Fprintln(w, "Boot servers:", lrns)
 	fmt.Fprintln(w, "Update process")
@@ -37,7 +35,7 @@ func showStatus(ctx context.Context, st storage.Storage, w io.Writer) error {
 	}
 
 	switch {
-	case neco.UpdateAborted(req.Version, -1, statuses):
+	case worker.UpdateAborted(req.Version, -1, statuses):
 		fmt.Fprintln(w, "    status: aborted")
 	case neco.UpdateCompleted(req.Version, req.Servers, statuses):
 		fmt.Fprintln(w, "    status: completed")

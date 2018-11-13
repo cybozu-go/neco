@@ -229,7 +229,7 @@ RETRY:
 		return err
 	}
 
-	if !req.Stop && !force {
+	if !req.Stop {
 		return ErrNotStopped
 	}
 

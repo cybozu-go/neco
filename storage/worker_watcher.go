@@ -11,12 +11,12 @@ import (
 
 // WorkerWatcher has callback handlers to handle status changes
 type WorkerWatcher struct {
-	handleStatus func(context.Context, int, *neco.UpdateStatus) (bool, error)
+	handleStatus func(context.Context, int, *neco.UpdateStatus) bool
 }
 
 // NewWorkerWatcher creates a new WorkerWatcher
 func NewWorkerWatcher(
-	handleStatus func(context.Context, int, *neco.UpdateStatus) (bool, error),
+	handleStatus func(context.Context, int, *neco.UpdateStatus) bool,
 ) WorkerWatcher {
 	return WorkerWatcher{
 		handleStatus: handleStatus,
@@ -45,10 +45,7 @@ func (w WorkerWatcher) Watch(ctx context.Context, rev int64, storage Storage) er
 			if err != nil {
 				return err
 			}
-			completed, err := w.handleStatus(ctx, lrn, st)
-			if err != nil {
-				return err
-			}
+			completed := w.handleStatus(ctx, lrn, st)
 			if completed {
 				return nil
 			}
