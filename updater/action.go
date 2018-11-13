@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"time"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
@@ -46,7 +47,7 @@ func (a Action) String() string {
 }
 
 // NextAction decides the next action to do for neco-updater.
-func NextAction(ctx context.Context, ss *storage.Snapshot, pkg PackageManager) (Action, error) {
+func NextAction(ctx context.Context, ss *storage.Snapshot, pkg PackageManager, timeout time.Duration) (Action, error) {
 	if ss.Latest == "" {
 		return ActionWaitInfo, nil
 	}
@@ -90,6 +91,9 @@ func NextAction(ctx context.Context, ss *storage.Snapshot, pkg PackageManager) (
 
 	if !neco.UpdateCompleted(ss.Request.Version, ss.Request.Servers, ss.Statuses) {
 		return ActionWaitWorkers, nil
+	}
+	if time.Now().Sub(ss.Request.StartedAt) > timeout {
+		return ActionStop, nil
 	}
 
 	// reconfigure the new set of boot servers with unchanged neco package version.

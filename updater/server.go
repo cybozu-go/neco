@@ -87,13 +87,17 @@ RETRY:
 }
 
 func (s Server) runLoop(ctx context.Context, leaderKey string) error {
+	timeout, err := s.storage.GetWorkerTimeout(ctx)
+	if err != nil {
+		return err
+	}
 	for {
 		ss, err := s.storage.NewSnapshot(ctx)
 		if err != nil {
 			return err
 		}
 
-		action, err := NextAction(ctx, ss, s.pkg)
+		action, err := NextAction(ctx, ss, s.pkg, timeout)
 		if err != nil {
 			return err
 		}
@@ -128,7 +132,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 				return err
 			}
 		case ActionWaitWorkers:
-			err = s.waitComplete(ctx, leaderKey, ss)
+			err = s.waitComplete(ctx, leaderKey, ss, timeout)
 			if err != nil {
 				return err
 			}
@@ -150,16 +154,12 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 	}
 }
 
-func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.Snapshot) error {
-	timeout, err := s.storage.GetWorkerTimeout(ctx)
-	if err != nil {
-		return err
-	}
+func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.Snapshot, timeout time.Duration) error {
 	deadline := ss.Request.StartedAt.Add(timeout)
 	ctxWithDeadline, cancel := context.WithDeadline(ctx, deadline)
 	defer cancel()
 	s.currentSnapshot = *ss
-	err = storage.NewWorkerWatcher(s.handleStatus).
+	err := storage.NewWorkerWatcher(s.handleStatus).
 		Watch(ctxWithDeadline, ss.Revision, s.storage)
 	if err == storage.ErrTimedOut {
 		log.Warn("workers timed-out", map[string]interface{}{
@@ -167,12 +167,9 @@ func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.
 			"started_at": s.currentSnapshot.Request.StartedAt,
 			"timeout":    timeout.String(),
 		})
-		s.notifier.NotifyTimeout(ctx, *s.currentSnapshot.Request)
-		req := *ss.Request
-		req.Stop = true
-		err = s.storage.PutRequest(ctx, req, leaderKey)
+		err = s.notifier.NotifyTimeout(ctx, *s.currentSnapshot.Request)
 		if err != nil {
-			return err
+			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}
 		return nil
 	}
@@ -192,7 +189,10 @@ func (s Server) handleStatus(ctx context.Context, lrn int, st *neco.UpdateStatus
 			"lrn":     lrn,
 			"message": st.Message,
 		})
-		s.notifier.NotifyServerFailure(ctx, *s.currentSnapshot.Request, st.Message)
+		err := s.notifier.NotifyServerFailure(ctx, *s.currentSnapshot.Request, st.Message)
+		if err != nil {
+			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
+		}
 		return true
 	case neco.CondComplete:
 		log.Info("worker finished updating", map[string]interface{}{
@@ -207,7 +207,10 @@ func (s Server) handleStatus(ctx context.Context, lrn int, st *neco.UpdateStatus
 			"version": s.currentSnapshot.Request.Version,
 			"servers": s.currentSnapshot.Servers,
 		})
-		s.notifier.NotifySucceeded(ctx, *s.currentSnapshot.Request)
+		err := s.notifier.NotifySucceeded(ctx, *s.currentSnapshot.Request)
+		if err != nil {
+			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
+		}
 		return true
 	}
 
