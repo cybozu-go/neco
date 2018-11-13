@@ -1,4 +1,4 @@
-package updater
+package neco
 
 import (
 	"net"
@@ -7,7 +7,8 @@ import (
 	"time"
 )
 
-func newHTTPClient(proxyURL *url.URL) *http.Client {
+// NewHTTPClient creates a http.Client with proxy configuration
+func NewHTTPClient(proxyURL *url.URL) *http.Client {
 	proxy := http.ProxyFromEnvironment
 	if proxyURL != nil {
 		proxy = http.ProxyURL(proxyURL)

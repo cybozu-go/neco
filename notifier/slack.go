@@ -1,4 +1,4 @@
-package updater
+package notifier
 
 import (
 	"bytes"
@@ -6,7 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
+
+	"github.com/cybozu-go/neco/storage"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -54,6 +57,32 @@ type Attachment struct {
 type SlackClient struct {
 	URL  string
 	HTTP *http.Client
+}
+
+// NewSlackClient creates a SlackClient
+func NewSlackClient(ctx context.Context, st storage.Storage) (Notifier, error) {
+	webhookURL, err := st.GetSlackNotification(ctx)
+	if err == storage.ErrNotFound {
+		return nil, storage.ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	var http *http.Client
+
+	proxyURL, err := st.GetProxyConfig(ctx)
+	if err == storage.ErrNotFound {
+	} else if err != nil {
+		return nil, err
+	} else {
+		u, err := url.Parse(proxyURL)
+		if err != nil {
+			return nil, err
+		}
+		http = neco.NewHTTPClient(u)
+	}
+
+	return &SlackClient{URL: webhookURL, HTTP: http}, nil
 }
 
 // PostWebHook posts a payload to slack

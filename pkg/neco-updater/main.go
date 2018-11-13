@@ -5,6 +5,8 @@ import (
 	"flag"
 	"time"
 
+	"github.com/cybozu-go/neco/notifier"
+
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -40,7 +42,11 @@ func main() {
 	st := storage.NewStorage(etcd)
 
 	well.Go(func(ctx context.Context) error {
-		server := updater.NewServer(session, st, updater.DebPackageManager{})
+		slackNotifier, err := notifier.NewSlackClient(ctx, st)
+		if err != nil {
+			return err
+		}
+		server := updater.NewServer(session, st, updater.DebPackageManager{}, slackNotifier)
 		return server.Run(ctx)
 	})
 	well.Go(st.WaitConfigChange)

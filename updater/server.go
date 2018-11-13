@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
-	"net/url"
 	"os"
 	"time"
 
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/notifier"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
 )
@@ -21,44 +20,19 @@ type Server struct {
 	session  *concurrency.Session
 	storage  storage.Storage
 	pkg      PackageManager
-	notifier Notifier
+	notifier notifier.Notifier
 
 	currentSnapshot storage.Snapshot
 }
 
 // NewServer returns a Server
-func NewServer(session *concurrency.Session, storage storage.Storage, pkg PackageManager, notifier Notifier) Server {
+func NewServer(session *concurrency.Session, storage storage.Storage, pkg PackageManager, notifier notifier.Notifier) Server {
 	return Server{
 		session:  session,
 		storage:  storage,
 		pkg:      pkg,
 		notifier: notifier,
 	}
-}
-
-func newSlackClient(ctx context.Context, st storage.Storage) (Notifier, error) {
-	webhookURL, err := st.GetSlackNotification(ctx)
-	if err == storage.ErrNotFound {
-		return nil, storage.ErrNotFound
-	} else if err != nil {
-		return nil, err
-	}
-
-	var http *http.Client
-
-	proxyURL, err := st.GetProxyConfig(ctx)
-	if err == storage.ErrNotFound {
-	} else if err != nil {
-		return nil, err
-	} else {
-		u, err := url.Parse(proxyURL)
-		if err != nil {
-			return nil, err
-		}
-		http = newHTTPClient(u)
-	}
-
-	return &SlackClient{URL: webhookURL, HTTP: http}, nil
 }
 
 // Run runs neco-updater

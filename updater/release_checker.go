@@ -40,7 +40,7 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		httpc = newHTTPClient(u)
+		httpc = neco.NewHTTPClient(u)
 	default:
 		return err
 	}
