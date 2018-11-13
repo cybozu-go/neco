@@ -137,6 +137,24 @@ func execAt(host string, args ...string) (stdout, stderr []byte, e error) {
 	return outBuf.Bytes(), errBuf.Bytes(), err
 }
 
+func execAtWithInput(host string, input []byte, args ...string) error {
+	agent := sshClients[host]
+	err := agent.conn.SetDeadline(time.Now().Add(DefaultRunTimeout))
+	if err != nil {
+		return err
+	}
+	defer agent.conn.SetDeadline(time.Time{})
+
+	sess, err := agent.client.NewSession()
+	if err != nil {
+		return err
+	}
+	defer sess.Close()
+
+	sess.Stdin = bytes.NewReader(input)
+	return sess.Run(strings.Join(args, " "))
+}
+
 func execSafeAt(host string, args ...string) string {
 	stdout, _, err := execAt(host, args...)
 	ExpectWithOffset(1, err).To(Succeed())

@@ -82,6 +82,15 @@ func testSetup() {
 		Expect(rootToken).NotTo(BeEmpty())
 	})
 
+	It("copies root CA certificate from existing server", func() {
+		stdout, _, err := execAt(boot0, "cat", neco.ServerCAFile)
+		Expect(err).ShouldNot(HaveOccurred())
+		err = execAtWithInput(boot3, stdout, "sudo", "tee", neco.ServerCAFile)
+		Expect(err).ShouldNot(HaveOccurred())
+		_, _, err = execAt(boot3, "sudo", "update-ca-certificates")
+		Expect(err).ShouldNot(HaveOccurred())
+	})
+
 	It("should add a new boot server", func() {
 		stdout, stderr, err := execAt(
 			boot3, "sudo", "env", "VAULT_TOKEN="+rootToken, "/mnt/neco", "join", "0", "1", "2")
