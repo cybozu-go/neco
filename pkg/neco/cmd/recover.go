@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"context"
-
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
@@ -24,9 +22,7 @@ var recoverCmd = &cobra.Command{
 		defer etcd.Close()
 		st := storage.NewStorage(etcd)
 
-		well.Go(func(ctx context.Context) error {
-			return st.ClearStatus(ctx)
-		})
+		well.Go(st.ClearStatus)
 		well.Stop()
 		err = well.Wait()
 		if err != nil {
