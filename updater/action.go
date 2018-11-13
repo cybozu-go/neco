@@ -90,10 +90,10 @@ func NextAction(ctx context.Context, ss *storage.Snapshot, pkg PackageManager, t
 	}
 
 	if !neco.UpdateCompleted(ss.Request.Version, ss.Request.Servers, ss.Statuses) {
+		if time.Now().Sub(ss.Request.StartedAt) > timeout {
+			return ActionStop, nil
+		}
 		return ActionWaitWorkers, nil
-	}
-	if time.Now().Sub(ss.Request.StartedAt) > timeout {
-		return ActionStop, nil
 	}
 
 	// reconfigure the new set of boot servers with unchanged neco package version.
