@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cybozu-go/neco/notifier"
+
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/google/go-cmp/cmp"
@@ -83,7 +85,7 @@ func testRunInitialUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if color := msg.Attachments[0].Color; color != ColorGood {
+	if color := msg.Attachments[0].Color; color != notifier.ColorGood {
 		t.Error("color != ColorGood:", color)
 	}
 }
@@ -124,7 +126,7 @@ func testRunUpdateFailure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if color := msg.Attachments[0].Color; color != ColorDanger {
+	if color := msg.Attachments[0].Color; color != notifier.ColorDanger {
 		t.Error("color != ColorDanger:", color)
 	}
 	if !strings.Contains(msg.Attachments[0].Text, "some worker return(s) error") {
@@ -158,7 +160,7 @@ func testRunUpdateTimeout(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if color := msg.Attachments[0].Color; color != ColorDanger {
+	if color := msg.Attachments[0].Color; color != notifier.ColorDanger {
 		t.Error("color != ColorDanger:", color)
 	}
 	if !strings.Contains(msg.Attachments[0].Text, "timed-out from worker updates") {
@@ -212,7 +214,7 @@ func testRunContinueUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if color := msg.Attachments[0].Color; color != ColorGood {
+	if color := msg.Attachments[0].Color; color != notifier.ColorGood {
 		t.Error("color != ColorGreen:", color)
 	}
 }

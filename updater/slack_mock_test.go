@@ -4,17 +4,19 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+
+	"github.com/cybozu-go/neco/notifier"
 )
 
 type SlackServer struct {
 	sv *httptest.Server
 
-	ch    chan Payload
-	queue []Payload
+	ch    chan notifier.Payload
+	queue []notifier.Payload
 }
 
 func NewSlackServer() *SlackServer {
-	ch := make(chan Payload)
+	ch := make(chan notifier.Payload)
 
 	s := &SlackServer{}
 	s.sv = httptest.NewServer(s)
@@ -23,7 +25,7 @@ func NewSlackServer() *SlackServer {
 	return s
 }
 
-func (s *SlackServer) WatchMessage() <-chan Payload {
+func (s *SlackServer) WatchMessage() <-chan notifier.Payload {
 	return s.ch
 }
 
@@ -43,7 +45,7 @@ func (s *SlackServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var payload Payload
+	var payload notifier.Payload
 	err := json.NewDecoder(req.Body).Decode(&payload)
 	if err != nil {
 		w.WriteHeader(400)

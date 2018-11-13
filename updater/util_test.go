@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cybozu-go/neco/notifier"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/neco"
@@ -49,17 +51,21 @@ func NewTestEnv(t *testing.T) *Env {
 func (e *Env) Start() {
 	e.env = well.NewEnvironment(context.Background())
 	e.env.Go(func(ctx context.Context) error {
+		slackClient, err := notifier.NewSlackClient(ctx, e.Storage)
+		if err != nil {
+			return err
+		}
 		server := Server{
-			session: e.sess,
-			storage: e.Storage,
-			timeout: time.Second,
+			session:  e.sess,
+			storage:  e.Storage,
+			notifier: slackClient,
 		}
 		return server.Run(ctx)
 	})
 	e.env.Stop()
 }
 
-func (e *Env) WaitMessage() (Payload, error) {
+func (e *Env) WaitMessage() (notifier.Payload, error) {
 	select {
 	case msg, ok := <-e.slack.WatchMessage():
 		if !ok {
@@ -67,7 +73,7 @@ func (e *Env) WaitMessage() (Payload, error) {
 		}
 		return msg, nil
 	case <-time.After(time.Second):
-		return Payload{}, errors.New("time out")
+		return notifier.Payload{}, errors.New("time out")
 	}
 }
 
