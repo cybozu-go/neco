@@ -43,7 +43,9 @@ Synopsis
     `LRN` are a list of LRNs of the existing boot servers.
 
     To issue certificates, this command asks the user Vault username and password.
-    It also creates `/etc/neco/config.yml` for `neco-updater` and `neco-worker`.
+    If `VAULT_TOKEN` environment variable is not empty, it is used instead.
+
+    This command also creates `/etc/neco/config.yml`.
 
     Etcd and Vault themselves are *not* installed by this command.  They are
     installed later by `neco-worker`.  Similarly, this command does not

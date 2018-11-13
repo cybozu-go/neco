@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"fmt"
+	"errors"
 	"strconv"
 
+	"github.com/cybozu-go/log"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +29,10 @@ add the new server to etcd cluster.  neco-worker will add the server
 to etcd cluster.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return errors.New("at least one LRN must be specified")
+		}
+
 		joinParams.lrns = make([]int, len(args))
 		for i, a := range args {
 			num, err := strconv.ParseUint(a, 10, 32)
@@ -40,7 +45,11 @@ to etcd cluster.`,
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("join to cluster %v\n", joinParams.lrns)
+		vc, err := vaultClient(joinParams.lrns[0])
+		if err != nil {
+			log.ErrorExit(err)
+		}
+		_ = vc
 	},
 }
 
