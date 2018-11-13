@@ -186,3 +186,31 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 
 	return nil
 }
+
+// PrepareFiles prepares certificates and files for new boot server
+func PrepareFiles(ctx context.Context, vc *api.Client, mylrn int, lrns []int) error {
+	err := reissueCerts(ctx, vc, mylrn)
+	if err != nil {
+		return err
+	}
+
+	err = setupEtcdBackup(ctx, vc)
+	if err != nil {
+		return err
+	}
+
+	err = setupNecoFiles(ctx, vc, lrns)
+	if err != nil {
+		return err
+	}
+
+	// etcd client can be created only after setupNecoFiles
+	etcd, err := neco.EtcdClient()
+	if err != nil {
+		return err
+	}
+	defer etcd.Close()
+	st := storage.NewStorage(etcd)
+
+	return st.RegisterBootserver(ctx, mylrn)
+}

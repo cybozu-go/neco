@@ -1,8 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"strconv"
+
+	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/setup"
+	"github.com/cybozu-go/well"
 
 	"github.com/cybozu-go/log"
 	"github.com/spf13/cobra"
@@ -43,13 +48,23 @@ to etcd cluster.`,
 		}
 		return nil
 	},
-
 	Run: func(cmd *cobra.Command, args []string) {
 		vc, err := vaultClient(joinParams.lrns[0])
 		if err != nil {
 			log.ErrorExit(err)
 		}
-		_ = vc
+		mylrn, err := neco.MyLRN()
+		if err != nil {
+			log.ErrorExit(err)
+		}
+		well.Go(func(ctx context.Context) error {
+			return setup.PrepareFiles(ctx, vc, mylrn, joinParams.lrns)
+		})
+		well.Stop()
+		err = well.Wait()
+		if err != nil {
+			log.ErrorExit(err)
+		}
 	},
 }
 
