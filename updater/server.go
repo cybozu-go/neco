@@ -175,7 +175,7 @@ func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.
 			"started_at": s.currentSnapshot.Request.StartedAt,
 			"timeout":    timeout.String(),
 		})
-		err = s.notifier.NotifyFailure(ctx, *s.currentSnapshot.Request, fmt.Sprintf("timeout occurred: %s", timeout))
+		err = s.notifier.NotifyFailure(ctx, *s.currentSnapshot.Request, fmt.Sprintf("timeout occurred: %s", timeout.String()))
 		if err != nil {
 			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}

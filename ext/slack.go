@@ -96,7 +96,7 @@ func (c SlackClient) NotifyInfo(ctx context.Context, req neco.UpdateRequest, mes
 			{Title: "Version", Value: req.Version, Short: true},
 			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
 			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
-			{Title: "Detail", Value: message, Short: true},
+			{Title: "Detail", Value: message, Short: false},
 		},
 	}
 	payload := Payload{Attachments: []Attachment{att}}
@@ -131,7 +131,7 @@ func (c SlackClient) NotifyFailure(ctx context.Context, req neco.UpdateRequest, 
 			{Title: "Version", Value: req.Version, Short: true},
 			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
 			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
-			{Title: "Reason", Value: message, Short: true},
+			{Title: "Reason", Value: message, Short: false},
 		},
 	}
 	payload := Payload{Attachments: []Attachment{att}}
