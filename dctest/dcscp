@@ -2,4 +2,3 @@
 
 CURRENT_DIR=$(cd $(dirname $0);pwd)
 sudo nsenter -n -t $(pmctl pod show operation | jq .pid) scp -F ${CURRENT_DIR}/ssh_config $@
-

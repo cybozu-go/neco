@@ -165,7 +165,10 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 	if err != nil {
 		return err
 	}
-	time.Sleep(1 * time.Second)
+	err = waitVaultLeader(ctx, vc)
+	if err != nil {
+		return err
+	}
 
 	if isLeader {
 		if revoke {
