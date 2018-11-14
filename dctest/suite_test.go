@@ -24,7 +24,7 @@ var _ = BeforeSuite(func() {
 	SetDefaultEventuallyPollingInterval(time.Second)
 	SetDefaultEventuallyTimeout(6 * time.Minute)
 
-	err := prepareSSHClients(boot0, boot1, boot2)
+	err := prepareSSHClients(boot0, boot1, boot2, boot3)
 	Expect(err).NotTo(HaveOccurred())
 
 	// sync VM root filesystem to store newly generated SSH host keys.
@@ -37,7 +37,7 @@ var _ = BeforeSuite(func() {
 	// waiting for auto-config
 	fmt.Println("waiting for auto-config has completed")
 	Eventually(func() error {
-		for _, host := range []string{boot0, boot1, boot2} {
+		for _, host := range []string{boot0, boot1, boot2, boot3} {
 			_, _, err := execAt(host, "test -f /tmp/auto-config-done")
 			if err != nil {
 				return err

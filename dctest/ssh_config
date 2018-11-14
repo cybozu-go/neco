@@ -13,3 +13,6 @@ HostName 10.72.48.1
 
 Host boot-2
 HostName 10.72.48.2
+
+Host boot-3
+HostName 10.72.48.3
