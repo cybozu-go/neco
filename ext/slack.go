@@ -120,7 +120,7 @@ func (c SlackClient) NotifySucceeded(ctx context.Context, req neco.UpdateRequest
 	return c.PostWebHook(ctx, payload)
 }
 
-// NotifyServerFailure notifies to slack that update was failure.
+// NotifyFailure notifies to slack that update was failure.
 func (c SlackClient) NotifyFailure(ctx context.Context, req neco.UpdateRequest, message string) error {
 	att := Attachment{
 		Color:      ColorDanger,
