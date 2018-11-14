@@ -121,6 +121,10 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			if err != nil {
 				return err
 			}
+			err = s.notifier.NotifyInfo(ctx, *s.currentSnapshot.Request, "start boot servers reconfiguration.")
+			if err != nil {
+				log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
+			}
 		case ActionNewVersion:
 			req := neco.UpdateRequest{
 				Version:   ss.Latest,
@@ -130,6 +134,10 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			err = s.storage.PutRequest(ctx, req, leaderKey)
 			if err != nil {
 				return err
+			}
+			err = s.notifier.NotifyInfo(ctx, *s.currentSnapshot.Request, "start updating the new release.")
+			if err != nil {
+				log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 			}
 		case ActionWaitWorkers:
 			err = s.waitComplete(ctx, leaderKey, ss, timeout)
@@ -167,7 +175,7 @@ func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.
 			"started_at": s.currentSnapshot.Request.StartedAt,
 			"timeout":    timeout.String(),
 		})
-		err = s.notifier.NotifyTimeout(ctx, *s.currentSnapshot.Request)
+		err = s.notifier.NotifyFailure(ctx, *s.currentSnapshot.Request, fmt.Sprintf("timeout occurred: %s", timeout.String()))
 		if err != nil {
 			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}
@@ -189,7 +197,7 @@ func (s Server) handleStatus(ctx context.Context, lrn int, st *neco.UpdateStatus
 			"lrn":     lrn,
 			"message": st.Message,
 		})
-		err := s.notifier.NotifyServerFailure(ctx, *s.currentSnapshot.Request, st.Message)
+		err := s.notifier.NotifyFailure(ctx, *s.currentSnapshot.Request, "update request was aborted: "+st.Message)
 		if err != nil {
 			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}
