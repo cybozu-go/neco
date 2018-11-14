@@ -2,8 +2,11 @@ package setup
 
 import (
 	"context"
+	"io"
 	"sort"
 	"time"
+
+	"github.com/cybozu-go/neco/progs/etcd"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -44,7 +47,9 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		return err
 	}
 
-	ec, err := setupEtcd(ctx, mylrn, lrns)
+	ec, err := SetupEtcd(ctx, func(w io.Writer) error {
+		return etcd.GenerateConf(w, mylrn, lrns)
+	})
 	if err != nil {
 		return err
 	}

@@ -5,10 +5,11 @@ import (
 	"io"
 	"strings"
 
+	"github.com/coreos/etcd/etcdserver/etcdserverpb"
 	"github.com/cybozu-go/neco"
 )
 
-// GenerateConf genenates etcd.conf.yml from template.
+// GenerateConf generates etcd.conf.yml from template.
 func GenerateConf(w io.Writer, mylrn int, lrns []int) error {
 	myNode0 := neco.BootNode0IP(mylrn)
 	initialClusters := make([]string, len(lrns))
@@ -29,5 +30,30 @@ func GenerateConf(w io.Writer, mylrn int, lrns []int) error {
 		AdvertiseClientURLs:      fmt.Sprintf("https://%s:2379", myNode0),
 		InitialCluster:           strings.Join(initialClusters, ","),
 		InitialClusterState:      "new",
+	})
+}
+
+// GenerateConfForAdd generates etcd.conf.yml from template to add a new member.
+func GenerateConfForAdd(w io.Writer, mylrn int, members []*etcdserverpb.Member) error {
+	myNode0 := neco.BootNode0IP(mylrn)
+	var initialClusters []string
+	for _, member := range members {
+		for _, u := range member.PeerURLs {
+			initialClusters = append(initialClusters, fmt.Sprintf("%s=%s", member.Name, u))
+		}
+	}
+
+	return confTmpl.Execute(w, struct {
+		LRN                      int
+		InitialAdvertisePeerURLs string
+		AdvertiseClientURLs      string
+		InitialCluster           string
+		InitialClusterState      string
+	}{
+		LRN:                      mylrn,
+		InitialAdvertisePeerURLs: fmt.Sprintf("https://%s:2380", myNode0),
+		AdvertiseClientURLs:      fmt.Sprintf("https://%s:2379", myNode0),
+		InitialCluster:           strings.Join(initialClusters, ","),
+		InitialClusterState:      "existing",
 	})
 }

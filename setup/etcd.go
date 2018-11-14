@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"io"
 	"os"
 	"time"
 
@@ -63,7 +64,8 @@ func waitEtcd(ctx context.Context) (*clientv3.Client, error) {
 	return c, nil
 }
 
-func setupEtcd(ctx context.Context, mylrn int, lrns []int) (*clientv3.Client, error) {
+// SetupEtcd installs and starts etcd
+func SetupEtcd(ctx context.Context, generator func(io.Writer) error) (*clientv3.Client, error) {
 	err := etcd.InstallTools(ctx)
 	if err != nil {
 		return nil, err
@@ -75,7 +77,7 @@ func setupEtcd(ctx context.Context, mylrn int, lrns []int) (*clientv3.Client, er
 	}
 	defer f.Close()
 
-	err = etcd.GenerateConf(f, mylrn, lrns)
+	err = generator(f)
 	if err != nil {
 		return nil, err
 	}
