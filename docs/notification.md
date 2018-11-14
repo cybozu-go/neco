@@ -1,7 +1,7 @@
 Notification
 ============
 
-`neco-updater` will notify to Slack when update is started or finished.
+`neco-updater` will post notification to Slack when update is started or finished.
 
 Start update
 ------------
