@@ -6,10 +6,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/cybozu-go/neco/progs/etcd"
-
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/etcd"
 	"github.com/cybozu-go/neco/progs/vault"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
@@ -18,12 +17,12 @@ import (
 
 // Setup installs and configures etcd and vault cluster.
 func Setup(ctx context.Context, lrns []int, revoke bool) error {
-	err := neco.FetchContainer(ctx, "etcd")
+	err := neco.FetchContainer(ctx, "etcd", nil)
 	if err != nil {
 		return err
 	}
 
-	err = neco.FetchContainer(ctx, "vault")
+	err = neco.FetchContainer(ctx, "vault", nil)
 	if err != nil {
 		return err
 	}
@@ -47,7 +46,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		return err
 	}
 
-	ec, err := SetupEtcd(ctx, func(w io.Writer) error {
+	ec, err := etcd.Setup(ctx, func(w io.Writer) error {
 		return etcd.GenerateConf(w, mylrn, lrns)
 	})
 	if err != nil {
@@ -160,7 +159,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		case <-time.After(1 * time.Second):
 		}
 
-		ec, err = waitEtcd(ctx)
+		ec, err = etcd.WaitEtcd(ctx)
 		if err == nil {
 			break
 		}

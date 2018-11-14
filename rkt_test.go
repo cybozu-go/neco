@@ -6,7 +6,7 @@ import (
 )
 
 func testFetchContainer(t *testing.T) {
-	err := FetchContainer(context.Background(), "vault")
+	err := FetchContainer(context.Background(), "vault", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

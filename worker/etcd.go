@@ -1,7 +1,9 @@
 package worker
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -14,9 +16,7 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/etcd"
-	"github.com/cybozu-go/neco/setup"
 	"github.com/cybozu-go/neco/storage"
-	"github.com/pkg/errors"
 )
 
 const etcdAddTimeout = 10 * time.Minute
@@ -48,6 +48,45 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		if err != nil {
 			return err
 		}
+	}
+
+	need, err := o.needContainerImageUpdate(ctx, "etcd")
+	if err != nil {
+		return err
+	}
+	if need {
+		err = o.fetchContainer(ctx, "etcd")
+		if err != nil {
+			return err
+		}
+	}
+
+	replaced, err := o.replaceEtcdFiles(ctx, req.Servers)
+	if err != nil {
+		return err
+	}
+
+	err = etcd.UpdateNecoConfig(req.Servers)
+	if err != nil {
+		return err
+	}
+
+	if need || replaced {
+		err = neco.StopService(ctx, neco.EtcdService)
+		if err != nil {
+			return err
+		}
+
+		err = neco.StartService(ctx, neco.EtcdService)
+		if err != nil {
+			return err
+		}
+
+		ec, err := etcd.WaitEtcd(ctx)
+		if err != nil {
+			return err
+		}
+		ec.Close()
 	}
 
 	return nil
@@ -109,13 +148,18 @@ func (o *operator) addEtcdMember(ctx context.Context) error {
 		return err
 	}
 
-	ec, err := setup.SetupEtcd(ctx, func(w io.Writer) error {
+	ec, err := etcd.Setup(ctx, func(w io.Writer) error {
 		return etcd.GenerateConfForAdd(w, o.mylrn, resp.Members)
 	})
 	if err != nil {
 		return err
 	}
 	defer ec.Close()
+
+	err = o.storage.RecordContainerTag(ctx, o.mylrn, "etcd")
+	if err != nil {
+		return err
+	}
 
 	deadline := time.Now().Add(etcdAddTimeout)
 	for {
@@ -132,4 +176,30 @@ func (o *operator) addEtcdMember(ctx context.Context) error {
 		case <-time.After(1 * time.Second):
 		}
 	}
+}
+
+func (o *operator) replaceEtcdFiles(ctx context.Context, lrns []int) (bool, error) {
+	buf := new(bytes.Buffer)
+	err := etcd.GenerateService(buf)
+	if err != nil {
+		return false, err
+	}
+
+	r1, err := replaceFile(neco.ServiceFile(neco.EtcdService), buf.Bytes(), 0644)
+	if err != nil {
+		return false, err
+	}
+
+	buf.Reset()
+	err = etcd.GenerateConf(buf, o.mylrn, lrns)
+	if err != nil {
+		return false, err
+	}
+
+	r2, err := replaceFile(neco.EtcdConfFile, buf.Bytes(), 0644)
+	if err != nil {
+		return false, err
+	}
+
+	return (r1 || r2), nil
 }

@@ -19,7 +19,7 @@ type RktImage struct {
 }
 
 // FetchContainer fetches a container image
-func FetchContainer(ctx context.Context, name string) error {
+func FetchContainer(ctx context.Context, name string, env []string) error {
 	img, err := CurrentArtifacts.FindContainerImage(name)
 	if err != nil {
 		return err
@@ -44,6 +44,7 @@ func FetchContainer(ctx context.Context, name string) error {
 
 	for i := 0; i < retryCount; i++ {
 		fetchCmd := exec.CommandContext(ctx, "rkt", "--insecure-options=image", "fetch", "--full", "docker://"+fullname)
+		fetchCmd.Env = env
 		err = fetchCmd.Run()
 		if err == nil {
 			return nil
