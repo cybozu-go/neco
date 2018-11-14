@@ -522,7 +522,7 @@ func reissueCerts(ctx context.Context, vc *api.Client, mylrn int) error {
 // waitVaultLeader waits for Vault to elect a new leader after restart.
 //
 // Vault wrongly recognizes that the old leader is still a leader after
-// rebstarting all Vault servers at once.  This is probablly because the
+// restarting all Vault servers at once.  This is probably because the
 // leader information is stored in etcd and Vault references that data
 // to determine the current leader.
 //
