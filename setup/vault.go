@@ -541,7 +541,7 @@ func waitVaultLeader(ctx context.Context, vc *api.Client) error {
 
 	for i := 0; i < 100; i++ {
 		// We use Sys().ListAuth() because Sys().Leader() or Sys().Health()
-		/// does not help!
+		// does not help!
 		resp, err := vc.Sys().ListAuth()
 		if err == nil && resp != nil {
 			return nil
