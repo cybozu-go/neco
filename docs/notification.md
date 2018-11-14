@@ -1,13 +1,21 @@
 Notification
 ============
 
-`neco-updater` will post following notifications to Slack.
+`neco-updater` will notify to Slack when update is started or finished.
 
-* StartRequest
-  * Update: Start updating by the new release.
-  * Reconfigure: Start reconfiguration by the new set of boot servers.
-* Succeeded: The update request was succeeded.
-* Failure
-  * Aborted: The update request was aborted due to an error on any server.
-  * Timeout: The update request was aborted because boot servers did not return a responce in the specified time. 
+Start update
+------------
 
+When `neco-updater` starts updating, it notifies the following message.
+
+* Update: Start updating since the new neco package is released.
+* Reconfigure: Start reconfiguration since the set of boot servers is changed.
+
+Finish update
+-------------
+
+When `neco-updater` finish updating, it notifies the following message.
+
+* Succeeded: The update was succeeded.
+* Aborted: The update was aborted due to an error on any server.
+* Timeout: The update was aborted because boot servers did not return a responce in time. 
