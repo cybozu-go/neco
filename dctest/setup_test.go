@@ -17,7 +17,7 @@ func testSetup() {
 		env := well.NewEnvironment(context.Background())
 		env.Go(func(ctx context.Context) error {
 			stdout, stderr, err := execAt(
-				boot0, "sudo", "/mnt/neco", "setup", "--no-revoke", "0", "1", "2")
+				boot0, "sudo", "neco", "setup", "--no-revoke", "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-0",
@@ -30,7 +30,7 @@ func testSetup() {
 		})
 		env.Go(func(ctx context.Context) error {
 			stdout, stderr, err := execAt(
-				boot1, "sudo", "/mnt/neco", "setup", "--no-revoke", "0", "1", "2")
+				boot1, "sudo", "neco", "setup", "--no-revoke", "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-1",
@@ -43,7 +43,7 @@ func testSetup() {
 		})
 		env.Go(func(ctx context.Context) error {
 			stdout, stderr, err := execAt(
-				boot2, "sudo", "/mnt/neco", "setup", "--no-revoke", "0", "1", "2")
+				boot2, "sudo", "neco", "setup", "--no-revoke", "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-2",
@@ -62,7 +62,6 @@ func testSetup() {
 
 	It("should install files", func() {
 		for _, h := range []string{boot0, boot1, boot2} {
-			execSafeAt(h, "test", "-x", neco.NecoBin)
 			execSafeAt(h, "test", "-f", neco.NecoConfFile)
 			execSafeAt(h, "test", "-f", neco.NecoCertFile)
 			execSafeAt(h, "test", "-f", neco.NecoKeyFile)
@@ -74,9 +73,18 @@ func testSetup() {
 		}
 	})
 
+	It("should run services", func() {
+		for _, h := range []string{boot0, boot1, boot2} {
+			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
+			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
+			execSafeAt(h, "systemctl", "-q", "is-active", neco.EtcdService+".service")
+			execSafeAt(h, "systemctl", "-q", "is-active", neco.VaultService+".service")
+		}
+	})
+
 	var rootToken string
 	It("should get root token", func() {
-		stdout, _, err := execAt(boot0, "/mnt/neco", "vault", "show-root-token")
+		stdout, _, err := execAt(boot0, "neco", "vault", "show-root-token")
 		Expect(err).ShouldNot(HaveOccurred())
 		rootToken = string(bytes.TrimSpace(stdout))
 		Expect(rootToken).NotTo(BeEmpty())
@@ -93,7 +101,7 @@ func testSetup() {
 
 	It("should add a new boot server", func() {
 		stdout, stderr, err := execAt(
-			boot3, "sudo", "env", "VAULT_TOKEN="+rootToken, "/mnt/neco", "join", "0", "1", "2")
+			boot3, "sudo", "env", "VAULT_TOKEN="+rootToken, "neco", "join", "0", "1", "2")
 		if err != nil {
 			log.Error("neco join failed", map[string]interface{}{
 				"host":   "boot-3",
@@ -110,5 +118,19 @@ func testSetup() {
 		execSafeAt(boot3, "test", "-f", neco.EtcdBackupKeyFile)
 		execSafeAt(boot3, "test", "-f", neco.TimerFile("etcd-backup"))
 		execSafeAt(boot3, "test", "-f", neco.ServiceFile("etcd-backup"))
+
+		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-updater.service")
+		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-worker.service")
+	})
+
+	It("should install programs", func() {
+		Eventually(func() error {
+			_, _, err := execAt(boot3, "systemctl", "-q", "is-active", neco.EtcdService+".service")
+			if err != nil {
+				return err
+			}
+			_, _, err = execAt(boot3, "systemctl", "-q", "is-active", neco.VaultService+".service")
+			return err
+		}).Should(Succeed())
 	})
 }

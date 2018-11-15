@@ -57,7 +57,7 @@ to etcd cluster.`,
 			log.ErrorExit(err)
 		}
 		well.Go(func(ctx context.Context) error {
-			return setup.PrepareFiles(ctx, vc, mylrn, joinParams.lrns)
+			return setup.Join(ctx, vc, mylrn, joinParams.lrns)
 		})
 		well.Stop()
 		err = well.Wait()

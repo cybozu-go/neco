@@ -3,6 +3,11 @@
 SUDO = sudo
 FAKEROOT = fakeroot
 ETCD_DIR = /tmp/neco-etcd
+TAGS =
+
+### for Go
+GOFLAGS = -mod=vendor
+export GOFLAGS
 
 ### for debian package
 PACKAGES := fakeroot
@@ -12,6 +17,7 @@ DOCDIR := $(WORKDIR)/usr/share/doc/neco
 BINDIR := $(WORKDIR)/usr/bin
 SBINDIR := $(WORKDIR)/usr/sbin
 VERSION = 0.0.1-master
+DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 
 all:
@@ -32,10 +38,10 @@ stop-etcd:
 
 test:
 	test -z "$$(gofmt -s -l . | grep -v '^vendor' | tee /dev/stderr)"
-	golint -set_exit_status $$(go list -mod=vendor ./... | grep -v /vendor/)
-	go build -mod=vendor ./...
-	go test -mod=vendor -race -v ./...
-	go vet -mod=vendor ./...
+	golint -set_exit_status $$(go list -tags='$(TAGS)' ./... | grep -v /vendor/)
+	go build -tags='$(TAGS)' ./...
+	go test -tags='$(TAGS)' -race -v ./...
+	go vet -tags='$(TAGS)' ./...
 
 mod:
 	go mod tidy
@@ -51,14 +57,15 @@ $(CONTROL): debian/DEBIAN/control
 deb: $(DEB)
 
 $(DEB): $(CONTROL)
+	@env | grep GOFLAGS
 	mkdir -p $(BINDIR)
-	GOBIN=$(BINDIR) go install -mod=vendor ./pkg/neco
+	GOBIN=$(BINDIR) go install -tags='$(TAGS)' ./pkg/neco
 	mkdir -p $(SBINDIR)
-	GOBIN=$(SBINDIR) go install -mod=vendor ./pkg/neco-updater ./pkg/neco-worker
+	GOBIN=$(SBINDIR) go install -tags='$(TAGS)' ./pkg/neco-updater ./pkg/neco-worker
 	mkdir -p $(DOCDIR)
 	cp README.md LICENSE $(DOCDIR)
 	chmod -R g-w $(WORKDIR)
-	$(FAKEROOT) dpkg-deb --build $(WORKDIR) .
+	$(FAKEROOT) dpkg-deb --build $(WORKDIR) $(DEST)
 
 setup:
 	GO111MODULE=off go get -u golang.org/x/lint/golint

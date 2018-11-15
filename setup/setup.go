@@ -36,11 +36,6 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 
 	isLeader := mylrn == lrns[0]
 
-	err = installNecoBin()
-	if err != nil {
-		return err
-	}
-
 	pems, err := prepareCA(ctx, isLeader, mylrn, lrns)
 	if err != nil {
 		return err
@@ -189,13 +184,23 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 
 	well.CommandContext(ctx, "sync").Run()
 
+	err = neco.StartService(ctx, "neco-worker")
+	if err != nil {
+		return err
+	}
+	err = neco.StartService(ctx, "neco-updater")
+	if err != nil {
+		return err
+	}
+
 	log.Info("setup: completed", nil)
 
 	return nil
 }
 
-// PrepareFiles prepares certificates and files for new boot server
-func PrepareFiles(ctx context.Context, vc *api.Client, mylrn int, lrns []int) error {
+// Join prepares certificates and files for new boot server, start
+// neco-updater and neco-worker, then register the server with etcd.
+func Join(ctx context.Context, vc *api.Client, mylrn int, lrns []int) error {
 	err := reissueCerts(ctx, vc, mylrn)
 	if err != nil {
 		return err
@@ -218,6 +223,15 @@ func PrepareFiles(ctx context.Context, vc *api.Client, mylrn int, lrns []int) er
 	}
 	defer etcd.Close()
 	st := storage.NewStorage(etcd)
+
+	err = neco.StartService(ctx, "neco-worker")
+	if err != nil {
+		return err
+	}
+	err = neco.StartService(ctx, "neco-updater")
+	if err != nil {
+		return err
+	}
 
 	return st.RegisterBootserver(ctx, mylrn)
 }
