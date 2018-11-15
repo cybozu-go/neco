@@ -30,7 +30,7 @@ func etcdClient() (*clientv3.Client, error) {
 	return etcdutil.NewClient(cfg)
 }
 
-// WaitEtcd waits for etcd cluster to stabilize.
+// WaitEtcdForVault waits for etcd cluster to stabilize.
 // It returns etcd client connected to etcd server running on localhost.
 func WaitEtcdForVault(ctx context.Context) (*clientv3.Client, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
