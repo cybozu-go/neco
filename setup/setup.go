@@ -147,17 +147,9 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 	}
 
 	ec.Close()
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(1 * time.Second):
-		}
-
-		ec, err = etcd.WaitEtcd(ctx)
-		if err == nil {
-			break
-		}
+	ec, err = etcd.WaitEtcdForVault(ctx)
+	if err != nil {
+		return err
 	}
 
 	err = neco.RestartService(ctx, "vault")

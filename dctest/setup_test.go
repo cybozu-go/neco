@@ -3,6 +3,8 @@ package dctest
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -132,5 +134,26 @@ func testSetup() {
 			_, _, err = execAt(boot3, "systemctl", "-q", "is-active", neco.VaultService+".service")
 			return err
 		}).Should(Succeed())
+	})
+
+	It("should add boot-3 to etcd cluster", func() {
+		stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+			"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
+		Expect(err).ShouldNot(HaveOccurred())
+		fmt.Println(string(stdout))
+		var mlr struct {
+			Members []struct {
+				Name string `json:"name"`
+			} `json:"members"`
+		}
+
+		err = json.Unmarshal(stdout, &mlr)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		names := make([]string, len(mlr.Members))
+		for _, m := range mlr.Members {
+			names = append(names, m.Name)
+		}
+		Expect(names).Should(ContainElement("boot-3"))
 	})
 }

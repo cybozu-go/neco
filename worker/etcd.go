@@ -85,7 +85,15 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 			return err
 		}
 
-		ec, err := etcd.WaitEtcd(ctx)
+		ec, err := etcd.WaitEtcdForVault(ctx)
+		if err != nil {
+			return err
+		}
+		resp, err := ec.Get(ctx, "/")
+		if err != nil {
+			return err
+		}
+		err = waitEtcdSync(ctx, ec, resp.Header.Revision)
 		if err != nil {
 			return err
 		}
@@ -164,13 +172,17 @@ func (o *operator) addEtcdMember(ctx context.Context) error {
 		return err
 	}
 
+	return waitEtcdSync(ctx, ec, resp.Header.Revision)
+}
+
+func waitEtcdSync(ctx context.Context, ec *clientv3.Client, rev int64) error {
 	deadline := time.Now().Add(etcdAddTimeout)
 	for {
 		if time.Now().After(deadline) {
-			return errors.New("etcd add timed out")
+			return errors.New("etcd does not synchronize")
 		}
 		gr, err := ec.Get(ctx, "health")
-		if err == nil && gr.Header.Revision >= resp.Header.Revision {
+		if err == nil && gr.Header.Revision >= rev {
 			return nil
 		}
 		select {

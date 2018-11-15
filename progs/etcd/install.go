@@ -32,7 +32,27 @@ func etcdClient() (*clientv3.Client, error) {
 
 // WaitEtcd waits for etcd cluster to stabilize.
 // It returns etcd client connected to etcd server running on localhost.
-func WaitEtcd(ctx context.Context) (*clientv3.Client, error) {
+func WaitEtcdForVault(ctx context.Context) (*clientv3.Client, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	defer cancel()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(1 * time.Second):
+		}
+
+		client, err := tryWait(ctx)
+		if err != nil {
+			continue
+		}
+
+		return client, nil
+	}
+}
+
+func tryWait(ctx context.Context) (*clientv3.Client, error) {
 	client, err := etcdClient()
 	if err != nil {
 		return nil, err
@@ -125,19 +145,11 @@ func Setup(ctx context.Context, generator func(io.Writer) error) (*clientv3.Clie
 	}
 
 	log.Info("etcd: waiting cluster...", nil)
-	for {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		case <-time.After(1 * time.Second):
-		}
-
-		client, err := WaitEtcd(ctx)
-		if err != nil {
-			continue
-		}
-
-		log.Info("etcd: setup completed", nil)
-		return client, nil
+	client, err := WaitEtcdForVault(ctx)
+	if err != nil {
+		return nil, err
 	}
+
+	log.Info("etcd: setup completed", nil)
+	return client, nil
 }
