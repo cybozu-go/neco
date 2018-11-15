@@ -51,7 +51,7 @@ mod:
 
 deb: $(DEB)
 
-$(DEB): $(CONTROL)
+$(DEB):
 	rm -rf $(WORKDIR)
 	cp -r debian $(WORKDIR)
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
