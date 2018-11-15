@@ -101,7 +101,9 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		if err != nil {
 			return err
 		}
-		resp, err := ec.Get(ctx, "/")
+
+		// this client has only right to access under /vault/
+		resp, err := ec.Get(ctx, neco.VaultPrefix)
 		if err != nil {
 			return err
 		}
