@@ -22,6 +22,9 @@ type Operator interface {
 
 	// RunStep executes operations for given step.
 	RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error
+
+	// RestoreServices starts installed services at startup.
+	StartServices(ctx context.Context) error
 }
 
 type operator struct {
@@ -77,4 +80,25 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	}
 
 	return fmt.Errorf("invalid step: %d", step)
+}
+
+func (o *operator) restoreService(ctx context.Context, name string, svc string) error {
+	_, err := o.storage.GetContainerTag(ctx, o.mylrn, name)
+	if err == storage.ErrNotFound {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	return neco.StartService(ctx, svc)
+}
+
+func (o *operator) StartServices(ctx context.Context) error {
+	err := o.restoreService(ctx, "etcd", neco.EtcdService)
+	if err != nil {
+		return err
+	}
+
+	return o.restoreService(ctx, "vault", neco.VaultService)
 }
