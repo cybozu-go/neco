@@ -22,7 +22,7 @@ func enableEtcdAuth(ctx context.Context, ec *clientv3.Client) error {
 	if err != nil {
 		return err
 	}
-	err = etcd.UserAdd(ctx, ec, "neco", neco.NecoPrefix)
+	err = etcd.UserAdd(ctx, ec, "neco", "")
 	if err != nil {
 		return err
 	}

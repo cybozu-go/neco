@@ -169,12 +169,13 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		return err
 	}
 
+	st = storage.NewStorage(ec)
+	ver, err := neco.GetDebianVersion(neco.NecoPackageName)
+	if err != nil {
+		return err
+	}
+
 	if isLeader {
-		st = storage.NewStorage(ec)
-		ver, err := neco.GetDebianVersion(neco.NecoPackageName)
-		if err != nil {
-			return err
-		}
 		err = st.UpdateNecoRelease(ctx, ver, storage.KeyVaultUnsealKey)
 		if err != nil {
 			return err
@@ -199,6 +200,10 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		if err != nil {
 			return err
 		}
+	}
+	err = st.PutStatus(ctx, mylrn, neco.UpdateStatus{Version: ver, Cond: neco.CondComplete})
+	if err != nil {
+		return err
 	}
 
 	well.CommandContext(ctx, "sync").Run()
