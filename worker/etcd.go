@@ -33,22 +33,22 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		return err
 	}
 	defer e.Resign(ctx)
-	//leaderKey := e.Key()
+
 	mlr, err := o.ec.MemberList(ctx)
 	if err != nil {
-		log.Info("failed to list members", map[string]interface{}{log.FnError: err.Error()})
+		log.Error("failed to list members", map[string]interface{}{log.FnError: err.Error()})
 		return err
 	}
 	err = o.removeEtcdMembers(ctx, mlr, req)
 	if err != nil {
-		log.Info("failed to remove members", map[string]interface{}{log.FnError: err.Error()})
+		log.Error("failed to remove members", map[string]interface{}{log.FnError: err.Error()})
 		return err
 	}
 
 	if !isMember(mlr.Members, o.mylrn) {
 		err = o.addEtcdMember(ctx)
 		if err != nil {
-			log.Info("failed to add a member", map[string]interface{}{log.FnError: err.Error()})
+			log.Error("failed to add a member", map[string]interface{}{log.FnError: err.Error()})
 			return err
 		}
 	}

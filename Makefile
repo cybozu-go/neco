@@ -63,6 +63,7 @@ $(DEB):
 	cp README.md LICENSE $(DOCDIR)
 	chmod -R g-w $(WORKDIR)
 	$(FAKEROOT) dpkg-deb --build $(WORKDIR) $(DEST)
+	rm -rf $(WORKDIR)
 
 setup:
 	GO111MODULE=off go get -u golang.org/x/lint/golint
