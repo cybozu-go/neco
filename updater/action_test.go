@@ -18,7 +18,6 @@ func (m testPackageManager) GetVersion(ctx context.Context, name string) (string
 }
 
 func TestNextAction(t *testing.T) {
-	ctx := context.Background()
 	timeout := time.Hour
 	req := &neco.UpdateRequest{
 		Version:   "1.0.0",
@@ -47,18 +46,13 @@ func TestNextAction(t *testing.T) {
 	}{
 		{
 			name: "wait-latest",
-			ss:   &storage.Snapshot{Latest: ""},
+			ss:   &storage.Snapshot{Latest: "", Request: req},
 			want: ActionWaitInfo,
 		},
 		{
-			name: "new-release",
-			ss:   &storage.Snapshot{Latest: "1.1.1"},
-			want: ActionNewVersion,
-		},
-		{
-			name: "no-new-release",
+			name: "recover",
 			ss:   &storage.Snapshot{Latest: "1.0.0"},
-			want: ActionWaitInfo,
+			want: ActionNewVersion,
 		},
 		{
 			name: "stopped",
@@ -134,8 +128,7 @@ func TestNextAction(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			pkg := testPackageManager{"1.0.0"}
-			got, err := NextAction(ctx, tt.ss, pkg, timeout)
+			got, err := NextAction(tt.ss, timeout)
 			if err != nil {
 				t.Fatal(err)
 			}

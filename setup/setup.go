@@ -170,6 +170,25 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 	}
 
 	if isLeader {
+		st = storage.NewStorage(ec)
+		ver, err := neco.GetDebianVersion(neco.NecoPackageName)
+		if err != nil {
+			return err
+		}
+		err = st.UpdateNecoRelease(ctx, ver, storage.KeyVaultUnsealKey)
+		if err != nil {
+			return err
+		}
+
+		req := neco.UpdateRequest{
+			Version:   ver,
+			Servers:   lrns,
+			StartedAt: time.Now(),
+		}
+		err = st.PutRequest(ctx, req, storage.KeyVaultUnsealKey)
+		if err != nil {
+			return err
+		}
 		if revoke {
 			err = revokeRootToken(ctx, vc, ec)
 			if err != nil {

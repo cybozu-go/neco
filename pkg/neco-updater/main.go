@@ -45,7 +45,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		server := updater.NewServer(session, st, updater.DebPackageManager{}, notifier)
+		server := updater.NewServer(session, st, notifier)
 		return server.Run(ctx)
 	})
 	well.Go(st.WaitConfigChange)

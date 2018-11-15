@@ -19,18 +19,16 @@ import (
 type Server struct {
 	session  *concurrency.Session
 	storage  storage.Storage
-	pkg      PackageManager
 	notifier ext.Notifier
 
 	currentSnapshot storage.Snapshot
 }
 
 // NewServer returns a Server
-func NewServer(session *concurrency.Session, storage storage.Storage, pkg PackageManager, notifier ext.Notifier) Server {
+func NewServer(session *concurrency.Session, storage storage.Storage, notifier ext.Notifier) Server {
 	return Server{
 		session:  session,
 		storage:  storage,
-		pkg:      pkg,
 		notifier: notifier,
 	}
 }
@@ -97,7 +95,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			return err
 		}
 
-		action, err := NextAction(ctx, ss, s.pkg, timeout)
+		action, err := NextAction(ss, timeout)
 		if err != nil {
 			return err
 		}
