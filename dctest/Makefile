@@ -56,10 +56,10 @@ $(SABAKAN_DIR)/auto-config: auto-config $(DHCP_JSON)
 	cp $< $@
 
 $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb: $(OPERATION_SSH_DIR)
-	cd ..; make VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR))
+	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR))
 
 $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb: $(OPERATION_SSH_DIR)
-	cd ..; make VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=new
+	cd ..; make deb VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=new
 
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):
