@@ -49,15 +49,12 @@ mod:
 	git add -f vendor
 	git add go.mod go.sum
 
-$(CONTROL): debian/DEBIAN/control
-	rm -rf $(WORKDIR)
-	cp -r debian $(WORKDIR)
-	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' $< > $@
-
 deb: $(DEB)
 
 $(DEB): $(CONTROL)
-	@env | grep GOFLAGS
+	rm -rf $(WORKDIR)
+	cp -r debian $(WORKDIR)
+	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
 	mkdir -p $(BINDIR)
 	GOBIN=$(BINDIR) go install -tags='$(TAGS)' ./pkg/neco
 	mkdir -p $(SBINDIR)
