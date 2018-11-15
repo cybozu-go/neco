@@ -22,6 +22,17 @@ import (
 const etcdAddTimeout = 10 * time.Minute
 
 func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) error {
+	need, err := o.needContainerImageUpdate(ctx, "etcd")
+	if err != nil {
+		return err
+	}
+	if need {
+		err = o.fetchContainer(ctx, "etcd")
+		if err != nil {
+			return err
+		}
+	}
+
 	// leader election
 	session, err := concurrency.NewSession(o.ec, concurrency.WithTTL(10))
 	if err != nil {
@@ -57,17 +68,6 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		err = o.addEtcdMember(ctx)
 		if err != nil {
 			log.Error("failed to add a member", map[string]interface{}{log.FnError: err.Error()})
-			return err
-		}
-	}
-
-	need, err := o.needContainerImageUpdate(ctx, "etcd")
-	if err != nil {
-		return err
-	}
-	if need {
-		err = o.fetchContainer(ctx, "etcd")
-		if err != nil {
 			return err
 		}
 	}
