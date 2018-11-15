@@ -213,11 +213,6 @@ func createCA(ctx context.Context, vault *api.Client, mylrn int) ([]*api.Secret,
 }
 
 func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*api.Secret, error) {
-	err := vault.InstallTools(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	cfg := api.DefaultConfig()
 	cfg.Address = fmt.Sprintf("http://%s:8200", neco.BootNode0IP(lrns[0]).String())
 	vc, err := api.NewClient(cfg)

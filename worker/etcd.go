@@ -31,6 +31,10 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		if err != nil {
 			return err
 		}
+		err = etcd.InstallTools(ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	// leader election

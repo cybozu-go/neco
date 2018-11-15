@@ -112,6 +112,8 @@ func testSetup() {
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 		}
+		execSafeAt(boot3, "test", "-f", "/usr/local/bin/etcdctl")
+
 		execSafeAt(boot3, "test", "-f", neco.NecoConfFile)
 		execSafeAt(boot3, "test", "-f", neco.NecoCertFile)
 		execSafeAt(boot3, "test", "-f", neco.NecoKeyFile)

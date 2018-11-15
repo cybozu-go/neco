@@ -95,11 +95,6 @@ func tryWait(ctx context.Context) (*clientv3.Client, error) {
 // Setup installs and starts etcd
 // It returns etcd client connected to etcd server running on localhost.
 func Setup(ctx context.Context, generator func(io.Writer) error) (*clientv3.Client, error) {
-	err := InstallTools(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	f, err := os.OpenFile(neco.EtcdConfFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return nil, err

@@ -21,8 +21,16 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 	if err != nil {
 		return err
 	}
+	err = etcd.InstallTools(ctx)
+	if err != nil {
+		return err
+	}
 
 	err = neco.FetchContainer(ctx, "vault", nil)
+	if err != nil {
+		return err
+	}
+	err = vault.InstallTools(ctx)
 	if err != nil {
 		return err
 	}
