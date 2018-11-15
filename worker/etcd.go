@@ -46,6 +46,14 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 	}
 
 	if !isMember(mlr.Members, o.mylrn) {
+		// wait for several seconds to satisfy etcd server check
+		// https://github.com/etcd-io/etcd/blob/fb674833c21e729fe87fff4addcf93b2aa4df9df/etcdserver/server.go#L1562
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(10 * time.Second):
+		}
+
 		err = o.addEtcdMember(ctx)
 		if err != nil {
 			log.Error("failed to add a member", map[string]interface{}{log.FnError: err.Error()})

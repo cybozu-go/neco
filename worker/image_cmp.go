@@ -10,7 +10,7 @@ import (
 func (o *operator) needContainerImageUpdate(ctx context.Context, name string) (bool, error) {
 	tag, err := o.storage.GetContainerTag(ctx, o.mylrn, name)
 	if err == storage.ErrNotFound {
-		return false, nil
+		return true, nil
 	}
 	if err != nil {
 		return false, err
