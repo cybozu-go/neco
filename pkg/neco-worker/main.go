@@ -21,7 +21,7 @@ func main() {
 	}
 	defer ec.Close()
 
-	version, err := worker.GetDebianVersion(neco.NecoPackageName)
+	version, err := neco.GetDebianVersion(neco.NecoPackageName)
 	if err != nil {
 		log.ErrorExit(err)
 	}
