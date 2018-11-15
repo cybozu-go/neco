@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
@@ -82,23 +83,20 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	return fmt.Errorf("invalid step: %d", step)
 }
 
-func (o *operator) restoreService(ctx context.Context, name string, svc string) error {
-	_, err := o.storage.GetContainerTag(ctx, o.mylrn, name)
-	if err == storage.ErrNotFound {
-		return nil
-	}
+func (o *operator) restoreService(ctx context.Context, svc string) error {
+	_, err := os.Stat(neco.ServiceFile(svc))
 	if err != nil {
-		return err
+		return nil
 	}
 
 	return neco.StartService(ctx, svc)
 }
 
 func (o *operator) StartServices(ctx context.Context) error {
-	err := o.restoreService(ctx, "etcd", neco.EtcdService)
+	err := o.restoreService(ctx, neco.EtcdService)
 	if err != nil {
 		return err
 	}
 
-	return o.restoreService(ctx, "vault", neco.VaultService)
+	return o.restoreService(ctx, neco.VaultService)
 }
