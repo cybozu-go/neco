@@ -77,7 +77,7 @@ func (op *mockOp) StartServices(ctx context.Context) error {
 	return nil
 }
 
-func (op *mockOp) RestartEtcd(ctx context.Context) error {
+func (op *mockOp) RestartEtcd(index int) error {
 	return nil
 }
 

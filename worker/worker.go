@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -286,9 +287,13 @@ func (w *Worker) runStep(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	log.Info("update status as completed", map[string]interface{}{
+		"version": w.req.Version,
+		"step":    w.step,
+	})
 
 	// restart etcd if needed.
-	err = w.operator.RestartEtcd(ctx)
+	err = w.operator.RestartEtcd(sort.SearchInts(w.req.Servers, w.mylrn))
 	if err != nil {
 		return false, err
 	}

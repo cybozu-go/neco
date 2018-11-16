@@ -19,7 +19,10 @@ import (
 	"github.com/cybozu-go/neco/storage"
 )
 
-const etcdAddTimeout = 10 * time.Minute
+const (
+	etcdAddTimeout     = 10 * time.Minute
+	etcdRestartTimeout = 5 * time.Second
+)
 
 func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) error {
 	need, err := o.needContainerImageUpdate(ctx, "etcd")
@@ -219,20 +222,17 @@ func (o *operator) replaceEtcdFiles(ctx context.Context, lrns []int) (bool, erro
 	return (r1 || r2), nil
 }
 
-// restartEtcd restarts etcd after all other steps are completed.
-func (o *operator) RestartEtcd(ctx context.Context) error {
+// RestartEtcd restarts etcd after all other steps are completed.
+func (o *operator) RestartEtcd(index int) error {
 	if !o.etcdRestart {
 		return nil
 	}
 
 	// Since this function is run almost at once on all boot servers,
 	// etcd cluster would become unstable without this jitter.
-	wait := time.Second * time.Duration(o.mylrn+1) * 5
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-time.After(wait):
-	}
+	time.Sleep(etcdRestartTimeout*time.Duration(index) + time.Second)
+
+	ctx := context.Background()
 
 	err := neco.StopService(ctx, neco.EtcdService)
 	if err != nil {
@@ -243,6 +243,9 @@ func (o *operator) RestartEtcd(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	ctx, cancel := context.WithTimeout(ctx, etcdRestartTimeout)
+	defer cancel()
 
 	ec, err := etcd.WaitEtcdForVault(ctx)
 	if err != nil {
