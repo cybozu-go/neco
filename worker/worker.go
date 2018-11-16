@@ -287,5 +287,11 @@ func (w *Worker) runStep(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
+	// restart etcd if needed.
+	err = w.operator.RestartEtcd(ctx)
+	if err != nil {
+		return false, err
+	}
+
 	return true, nil
 }

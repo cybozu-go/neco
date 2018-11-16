@@ -127,10 +127,18 @@ func testSetup() {
 	})
 
 	It("should install programs", func() {
-		waitRequestComplete()
-		execSafeAt(boot3, "systemctl", "-q", "is-active", neco.EtcdService+".service")
-		//execSafeAt(boot3, "systemctl", "-q", "is-active", neco.VaultService+".service")
-		execSafeAt(boot3, "test", "-f", "/usr/local/bin/etcdctl")
+		Eventually(func() error {
+			_, _, err := execAt(boot3, "systemctl", "-q", "is-active", neco.EtcdService+".service")
+			if err != nil {
+				return err
+			}
+			// _, _, err = execAt(boot3, "systemctl", "-q", "is-active", neco.VaultService+".service")
+			// if err != nil {
+			// 	return err
+			// }
+			_, _, err = execAt(boot3, "test", "-f", "/usr/local/bin/etcdctl")
+			return err
+		}).Should(Succeed())
 	})
 
 	It("should add boot-3 to etcd cluster", func() {
@@ -178,22 +186,30 @@ func testSetup() {
 
 	It("should remove boot-3", func() {
 		execSafeAt(boot0, "sudo", "env", "VAULT_TOKEN="+rootToken, "neco", "leave", "3")
-		waitRequestComplete()
-		stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
-			"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
-		Expect(err).ShouldNot(HaveOccurred())
-		var mlr struct {
-			Members []struct {
-				Name string `json:"name"`
-			} `json:"members"`
-		}
-		err = json.Unmarshal(stdout, &mlr)
-		Expect(err).ShouldNot(HaveOccurred())
 
-		names := make([]string, len(mlr.Members))
-		for i, m := range mlr.Members {
-			names[i] = m.Name
-		}
-		Expect(names).ShouldNot(ContainElement("boot-3"))
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
+			if err != nil {
+				return err
+			}
+
+			var mlr struct {
+				Members []struct {
+					Name string `json:"name"`
+				} `json:"members"`
+			}
+			err = json.Unmarshal(stdout, &mlr)
+			if err != nil {
+				return err
+			}
+
+			for _, m := range mlr.Members {
+				if m.Name == "boot-3" {
+					return errors.New("boot-3 is not removed from etcd")
+				}
+			}
+			return nil
+		}).Should(Succeed())
 	})
 }

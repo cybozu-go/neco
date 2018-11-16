@@ -220,14 +220,14 @@ func (o *operator) replaceEtcdFiles(ctx context.Context, lrns []int) (bool, erro
 }
 
 // restartEtcd restarts etcd after all other steps are completed.
-func (o *operator) restartEtcd(ctx context.Context, _ *neco.UpdateRequest) error {
+func (o *operator) RestartEtcd(ctx context.Context, _ *neco.UpdateRequest) error {
 	if !o.etcdRestart {
 		return nil
 	}
 
 	// Since this function is run almost at once on all boot servers,
 	// etcd cluster would become unstable without this jitter.
-	wait := time.Second * 10 * time.Duration(o.mylrn)
+	wait := time.Second * time.Duration(o.mylrn+1) * 5
 	select {
 	case <-ctx.Done():
 		return ctx.Err()

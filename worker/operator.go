@@ -26,6 +26,9 @@ type Operator interface {
 
 	// RestoreServices starts installed services at startup.
 	StartServices(ctx context.Context) error
+
+	// RestartEtcd restarts etcd in case it is necessary.
+	RestartEtcd(ctx context.Context) error
 }
 
 type operator struct {
@@ -90,8 +93,8 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 
 	case 3:
 		// THIS MUST BE THE FINAL STEP!!!!!
-		return o.restartEtcd(ctx, req)
-
+		// to synchronize before restarting etcd.
+		return nil
 		// DO NOT ADD ANY STEP AFTER THIS LINE!!!
 	}
 
