@@ -25,8 +25,8 @@ func InstallTools(ctx context.Context) error {
 func etcdClient() (*clientv3.Client, error) {
 	cfg := etcdutil.NewConfig(neco.NecoPrefix)
 	cfg.Endpoints = []string{"127.0.0.1:2379"}
-	cfg.TLSCertFile = neco.VaultCertFile
-	cfg.TLSKeyFile = neco.VaultKeyFile
+	cfg.TLSCertFile = neco.NecoCertFile
+	cfg.TLSKeyFile = neco.NecoKeyFile
 	return etcdutil.NewClient(cfg)
 }
 

@@ -498,7 +498,7 @@ func reissueCerts(ctx context.Context, vc *api.Client, mylrn int) error {
 	if err != nil {
 		return err
 	}
-	err = dumpCertFiles(secret, "", neco.EtcdPeerCertFile, neco.EtcdPeerKeyFile)
+	err = dumpCertFiles(secret, neco.EtcdPeerCertFile, neco.EtcdPeerCertFile, neco.EtcdPeerKeyFile)
 	if err != nil {
 		return err
 	}
@@ -511,7 +511,7 @@ func reissueCerts(ctx context.Context, vc *api.Client, mylrn int) error {
 	if err != nil {
 		return err
 	}
-	return dumpCertFiles(secret, "", neco.VaultCertFile, neco.VaultKeyFile)
+	return dumpCertFiles(secret, neco.EtcdClientCAFile, neco.VaultCertFile, neco.VaultKeyFile)
 }
 
 // waitVaultLeader waits for Vault to elect a new leader after restart.

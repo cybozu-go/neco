@@ -112,8 +112,6 @@ func testSetup() {
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 		}
-		execSafeAt(boot3, "test", "-f", "/usr/local/bin/etcdctl")
-
 		execSafeAt(boot3, "test", "-f", neco.NecoConfFile)
 		execSafeAt(boot3, "test", "-f", neco.NecoCertFile)
 		execSafeAt(boot3, "test", "-f", neco.NecoKeyFile)
@@ -136,6 +134,8 @@ func testSetup() {
 			_, _, err = execAt(boot3, "systemctl", "-q", "is-active", neco.VaultService+".service")
 			return err
 		}).Should(Succeed())
+
+		execSafeAt(boot3, "test", "-f", "/usr/local/bin/etcdctl")
 	})
 
 	It("should add boot-3 to etcd cluster", func() {

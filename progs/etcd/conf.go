@@ -38,8 +38,12 @@ func GenerateConfForAdd(w io.Writer, mylrn int, members []*etcdserverpb.Member) 
 	myNode0 := neco.BootNode0IP(mylrn)
 	var initialClusters []string
 	for _, member := range members {
+		name := member.Name
+		if name == "" {
+			name = fmt.Sprintf("boot-%d", mylrn)
+		}
 		for _, u := range member.PeerURLs {
-			initialClusters = append(initialClusters, fmt.Sprintf("%s=%s", member.Name, u))
+			initialClusters = append(initialClusters, fmt.Sprintf("%s=%s", name, u))
 		}
 	}
 
