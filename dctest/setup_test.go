@@ -175,4 +175,25 @@ func testSetup() {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 		}
 	})
+
+	It("should remove boot-3", func() {
+		execSafeAt(boot0, "sudo", "env", "VAULT_TOKEN="+rootToken, "neco", "leave", "3")
+		waitRequestComplete()
+		stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+			"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
+		Expect(err).ShouldNot(HaveOccurred())
+		var mlr struct {
+			Members []struct {
+				Name string `json:"name"`
+			} `json:"members"`
+		}
+		err = json.Unmarshal(stdout, &mlr)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		names := make([]string, len(mlr.Members))
+		for i, m := range mlr.Members {
+			names[i] = m.Name
+		}
+		Expect(names).ShouldNot(ContainElement("boot-3"))
+	})
 }
