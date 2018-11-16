@@ -70,6 +70,7 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		}
 
 		defer e.Resign(context.Background())
+		break
 	}
 	if err != nil {
 		return err
