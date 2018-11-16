@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -157,5 +159,28 @@ func testSetup() {
 			names = append(names, m.Name)
 		}
 		Expect(names).Should(ContainElement("boot-3"))
+	})
+
+	It("should update neco package", func() {
+		_, _, err := execAt(boot0, "neco", "config", "set", "env", "test")
+		Expect(err).ShouldNot(HaveOccurred())
+
+		Eventually(func() error {
+			for _, h := range []string{boot0, boot1, boot2, boot3} {
+				stdout, _, err := execAt(h, "systemctl", "show", "etcd-container", "--property=ExecStart")
+				if err != nil {
+					return err
+				}
+				if !strings.Contains(string(stdout), "quay.io/cybozu/etcd:3.3.9-3") {
+					return errors.New("etcd is not updated")
+				}
+			}
+			return nil
+		}).Should(Succeed())
+
+		for _, h := range []string{boot0, boot1, boot2, boot3} {
+			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
+			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
+		}
 	})
 }

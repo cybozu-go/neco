@@ -65,6 +65,13 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 	log.Info("update neco", map[string]interface{}{
 		"version": req.Version,
 	})
+	env, err := o.storage.GetEnvConfig(ctx)
+	if err != nil {
+		return err
+	}
+	if env == neco.TestEnv {
+		return installLocalPackage(ctx, deb)
+	}
 	return InstallDebianPackage(ctx, o.proxyClient, deb)
 }
 

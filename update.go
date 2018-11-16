@@ -4,6 +4,7 @@ import "time"
 
 // Environments to use release or pre-release neco
 const (
+	TestEnv    = "test"
 	StagingEnv = "staging"
 	ProdEnv    = "prod"
 )

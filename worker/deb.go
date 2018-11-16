@@ -63,6 +63,11 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.De
 	return well.CommandContext(ctx, "dpkg", "-i", f.Name()).Run()
 }
 
+func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage) error {
+	deb := fmt.Sprintf("/mnt/%s_%s_amd64.deb", pkg.Name, pkg.Release)
+	return well.CommandContext(ctx, "dpkg", "-i", deb).Run()
+}
+
 func listGithubReleases(ctx context.Context, gh *github.Client, pkg *neco.DebianPackage) ([]*github.RepositoryRelease, error) {
 	opt := &github.ListOptions{PerPage: 100}
 	var allReleases []*github.RepositoryRelease
