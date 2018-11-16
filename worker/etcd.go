@@ -38,28 +38,38 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 	}
 
 	// leader election
-	session, err := concurrency.NewSession(o.ec, concurrency.WithTTL(10))
-	if err != nil {
-		return err
-	}
-	e := concurrency.NewElection(session, storage.KeyWorkerLeader)
-	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
-	if err != nil {
-		return err
-	}
-	defer e.Resign(ctx)
-
-	// check connection stability
 	for i := 0; i < 10; i++ {
-		_, err = o.ec.Get(ctx, "/")
-		if err == nil {
-			break
+		var sess *concurrency.Session
+		sess, err = concurrency.NewSession(o.ec, concurrency.WithTTL(10))
+		if err != nil {
+			log.Warn("etcd: new session is not created", map[string]interface{}{
+				log.FnError: err,
+			})
+
+			select {
+			case <-ctx.Done():
+				return err
+			case <-time.After(1 * time.Second):
+				continue
+			}
 		}
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(1 * time.Second):
+
+		e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
+		err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
+		if err != nil {
+			log.Warn("etcd: cannot join a campaign", map[string]interface{}{
+				log.FnError: err,
+			})
+
+			select {
+			case <-ctx.Done():
+				return err
+			case <-time.After(1 * time.Second):
+				continue
+			}
 		}
+
+		defer e.Resign(context.Background())
 	}
 	if err != nil {
 		return err
