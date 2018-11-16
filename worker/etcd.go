@@ -49,6 +49,22 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 	}
 	defer e.Resign(ctx)
 
+	// check connection stability
+	for i := 0; i < 10; i++ {
+		_, err = o.ec.Get(ctx, "/")
+		if err == nil {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(1 * time.Second):
+		}
+	}
+	if err != nil {
+		return err
+	}
+
 	mlr, err := o.ec.MemberList(ctx)
 	if err != nil {
 		log.Error("failed to list members", map[string]interface{}{log.FnError: err.Error()})
@@ -101,6 +117,7 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		if err != nil {
 			return err
 		}
+		defer ec.Close()
 
 		resp, err := ec.Get(ctx, "/")
 		if err != nil {
@@ -110,7 +127,22 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		if err != nil {
 			return err
 		}
-		ec.Close()
+
+		// check connection stability
+		for i := 0; i < 10; i++ {
+			_, err = o.ec.Get(ctx, "/")
+			if err == nil {
+				break
+			}
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(1 * time.Second):
+			}
+		}
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

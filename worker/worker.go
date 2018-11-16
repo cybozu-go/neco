@@ -197,11 +197,11 @@ func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, st *neco.Updat
 	if st.Version != w.req.Version {
 		return false, errors.New("unexpected version in worker status: " + st.Version)
 	}
-	if st.Step != w.step {
-		return false, fmt.Errorf("unexpected step in worker status: %d", st.Step)
-	}
 	if st.Cond == neco.CondAbort {
 		return false, fmt.Errorf("other boot server failed to update: %d", lrn)
+	}
+	if st.Step != w.step {
+		return false, fmt.Errorf("unexpected step in worker status: %d", st.Step)
 	}
 	if st.Cond == neco.CondComplete {
 		return false, fmt.Errorf("other boot server reports completion: %d", lrn)
