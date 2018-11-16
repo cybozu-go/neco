@@ -37,44 +37,27 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		}
 	}
 
-	// leader election
-	for i := 0; i < 10; i++ {
-		var sess *concurrency.Session
-		sess, err = concurrency.NewSession(o.ec, concurrency.WithTTL(10))
-		if err != nil {
-			log.Warn("etcd: new session is not created", map[string]interface{}{
-				log.FnError: err,
-			})
-
-			select {
-			case <-ctx.Done():
-				return err
-			case <-time.After(1 * time.Second):
-				continue
-			}
-		}
-
-		e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
-		err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
-		if err != nil {
-			log.Warn("etcd: cannot join a campaign", map[string]interface{}{
-				log.FnError: err,
-			})
-
-			select {
-			case <-ctx.Done():
-				return err
-			case <-time.After(1 * time.Second):
-				continue
-			}
-		}
-
-		defer e.Resign(context.Background())
-		break
-	}
+	sess, err := concurrency.NewSession(o.ec, concurrency.WithTTL(10))
 	if err != nil {
+		log.Error("etcd: new session is not created", map[string]interface{}{
+			log.FnError: err,
+		})
 		return err
 	}
+
+	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
+	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
+	if err != nil {
+		log.Error("etcd: cannot join a campaign", map[string]interface{}{
+			log.FnError: err,
+		})
+		return err
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		e.Resign(ctx)
+		cancel()
+	}()
 
 	mlr, err := o.ec.MemberList(ctx)
 	if err != nil {
@@ -108,52 +91,13 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		return err
 	}
 
+	// Restarting etcd is done after update will be completed.
+	// Otherwise, the system would become unstable and update would fail randomly.
+	o.etcdRestart = need || replaced
+
 	err = etcd.UpdateNecoConfig(req.Servers)
 	if err != nil {
 		return err
-	}
-
-	if need || replaced {
-		err = neco.StopService(ctx, neco.EtcdService)
-		if err != nil {
-			return err
-		}
-
-		err = neco.StartService(ctx, neco.EtcdService)
-		if err != nil {
-			return err
-		}
-
-		ec, err := etcd.WaitEtcdForVault(ctx)
-		if err != nil {
-			return err
-		}
-		defer ec.Close()
-
-		resp, err := ec.Get(ctx, "/")
-		if err != nil {
-			return err
-		}
-		err = waitEtcdSync(ctx, ec, resp.Header.Revision)
-		if err != nil {
-			return err
-		}
-
-		// check connection stability
-		for i := 0; i < 10; i++ {
-			_, err = o.ec.Get(ctx, "/")
-			if err == nil {
-				break
-			}
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case <-time.After(1 * time.Second):
-			}
-		}
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -273,4 +217,43 @@ func (o *operator) replaceEtcdFiles(ctx context.Context, lrns []int) (bool, erro
 	}
 
 	return (r1 || r2), nil
+}
+
+// restartEtcd restarts etcd after all other steps are completed.
+func (o *operator) restartEtcd(ctx context.Context, _ *neco.UpdateRequest) error {
+	if !o.etcdRestart {
+		return nil
+	}
+
+	// Since this function is run almost at once on all boot servers,
+	// etcd cluster would become unstable without this jitter.
+	wait := time.Second * 10 * time.Duration(o.mylrn)
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-time.After(wait):
+	}
+
+	err := neco.StopService(ctx, neco.EtcdService)
+	if err != nil {
+		return err
+	}
+
+	err = neco.StartService(ctx, neco.EtcdService)
+	if err != nil {
+		return err
+	}
+
+	ec, err := etcd.WaitEtcdForVault(ctx)
+	if err != nil {
+		return err
+	}
+	defer ec.Close()
+
+	resp, err := ec.Get(ctx, "/")
+	if err != nil {
+		return err
+	}
+
+	return waitEtcdSync(ctx, ec, resp.Header.Revision)
 }

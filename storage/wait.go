@@ -100,10 +100,14 @@ func (s Storage) WaitConfigChange(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		return nil
-	case _, ok := <-ch:
-		if ok {
-			return errors.New("detected config change")
+	case resp, ok := <-ch:
+		if !ok {
+			return nil
 		}
-		return nil
+
+		if resp.Err() != nil {
+			return resp.Err()
+		}
+		return errors.New("detected config change")
 	}
 }

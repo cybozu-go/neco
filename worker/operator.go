@@ -34,6 +34,8 @@ type operator struct {
 	storage     storage.Storage
 	proxyClient *http.Client
 	localClient *http.Client
+
+	etcdRestart bool
 }
 
 // NewOperator creates an Operator
@@ -76,7 +78,7 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 }
 
 func (o *operator) FinalStep() int {
-	return 2
+	return 3
 }
 
 func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error {
@@ -85,6 +87,12 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 		return o.UpdateEtcd(ctx, req)
 	case 2:
 		return o.UpdateVault(ctx, req)
+
+	case 3:
+		// THIS MUST BE THE FINAL STEP!!!!!
+		return o.restartEtcd(ctx, req)
+
+		// DO NOT ADD ANY STEP AFTER THIS LINE!!!
 	}
 
 	return fmt.Errorf("invalid step: %d", step)

@@ -286,5 +286,6 @@ func (w *Worker) runStep(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	return true, nil
 }
