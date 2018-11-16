@@ -25,8 +25,19 @@ func InstallTools(ctx context.Context) error {
 func etcdClient() (*clientv3.Client, error) {
 	cfg := etcdutil.NewConfig(neco.NecoPrefix)
 	cfg.Endpoints = []string{"127.0.0.1:2379"}
-	cfg.TLSCertFile = neco.NecoCertFile
-	cfg.TLSKeyFile = neco.NecoKeyFile
+
+	// during bootstrap, certificate is not yet available
+	_, err := os.Stat(neco.NecoCertFile)
+	switch {
+	case os.IsNotExist(err):
+		cfg.TLSCertFile = neco.VaultCertFile
+		cfg.TLSKeyFile = neco.VaultKeyFile
+	case err == nil:
+		cfg.TLSCertFile = neco.NecoCertFile
+		cfg.TLSKeyFile = neco.NecoKeyFile
+	default:
+		return nil, err
+	}
 	return etcdutil.NewClient(cfg)
 }
 
@@ -92,7 +103,7 @@ func tryWait(ctx context.Context) (*clientv3.Client, error) {
 	return c, nil
 }
 
-// Setup installs and starts etcd
+// Setup installs and starts etcd.
 // It returns etcd client connected to etcd server running on localhost.
 func Setup(ctx context.Context, generator func(io.Writer) error) (*clientv3.Client, error) {
 	f, err := os.OpenFile(neco.EtcdConfFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
