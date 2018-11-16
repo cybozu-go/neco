@@ -160,3 +160,17 @@ func execSafeAt(host string, args ...string) string {
 	ExpectWithOffset(1, err).To(Succeed())
 	return string(stdout)
 }
+
+func waitRequestComplete() {
+	host := "boot-0"
+	EventuallyWithOffset(1, func() error {
+		stdout, _, err := execAt(host, "neco", "status")
+		if err != nil {
+			return err
+		}
+		if strings.Contains(string(stdout), "status: completed") {
+			return nil
+		}
+		return errors.New("request is not completed: " + string(stdout))
+	}).Should(Succeed())
+}

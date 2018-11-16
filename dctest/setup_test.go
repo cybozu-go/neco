@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/cybozu-go/log"
@@ -128,15 +127,9 @@ func testSetup() {
 	})
 
 	It("should install programs", func() {
-		Eventually(func() error {
-			_, _, err := execAt(boot3, "systemctl", "-q", "is-active", neco.EtcdService+".service")
-			// if err != nil {
-			// 	return err
-			// }
-			// _, _, err = execAt(boot3, "systemctl", "-q", "is-active", neco.VaultService+".service")
-			return err
-		}).Should(Succeed())
-
+		waitRequestComplete()
+		execSafeAt(boot3, "systemctl", "-q", "is-active", neco.EtcdService+".service")
+		//execSafeAt(boot3, "systemctl", "-q", "is-active", neco.VaultService+".service")
 		execSafeAt(boot3, "test", "-f", "/usr/local/bin/etcdctl")
 	})
 
@@ -144,7 +137,6 @@ func testSetup() {
 		stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
 			"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
 		Expect(err).ShouldNot(HaveOccurred())
-		fmt.Println(string(stdout))
 		var mlr struct {
 			Members []struct {
 				Name string `json:"name"`
@@ -155,8 +147,8 @@ func testSetup() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		names := make([]string, len(mlr.Members))
-		for _, m := range mlr.Members {
-			names = append(names, m.Name)
+		for i, m := range mlr.Members {
+			names[i] = m.Name
 		}
 		Expect(names).Should(ContainElement("boot-3"))
 	})

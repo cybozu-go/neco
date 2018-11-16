@@ -117,6 +117,14 @@ func (w *Worker) Run(ctx context.Context) error {
 			return err2
 		}
 		if UpdateAborted(req.Version, w.mylrn, stMap) {
+			if myst, ok := stMap[w.mylrn]; ok {
+				status := *myst
+				status.Cond = neco.CondAbort
+				err := w.storage.PutStatus(ctx, w.mylrn, status)
+				if err != nil {
+					return err
+				}
+			}
 			log.Info("previous update was aborted", nil)
 			req, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
