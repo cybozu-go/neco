@@ -498,7 +498,7 @@ func reissueCerts(ctx context.Context, vc *api.Client, mylrn int) error {
 	if err != nil {
 		return err
 	}
-	err = dumpCertFiles(secret, neco.EtcdPeerCertFile, neco.EtcdPeerCertFile, neco.EtcdPeerKeyFile)
+	err = dumpCertFiles(secret, neco.EtcdPeerCAFile, neco.EtcdPeerCertFile, neco.EtcdPeerKeyFile)
 	if err != nil {
 		return err
 	}
