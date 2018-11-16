@@ -162,9 +162,8 @@ func execSafeAt(host string, args ...string) string {
 }
 
 func waitRequestComplete() {
-	host := "boot-0"
 	EventuallyWithOffset(1, func() error {
-		stdout, _, err := execAt(host, "neco", "status")
+		stdout, _, err := execAt(boot0, "neco", "status")
 		if err != nil {
 			return err
 		}
