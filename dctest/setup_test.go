@@ -139,33 +139,28 @@ func testSetup() {
 			_, _, err = execAt(boot3, "test", "-f", "/usr/local/bin/etcdctl")
 			return err
 		}).Should(Succeed())
+
+		waitRequestComplete()
 	})
 
 	It("should add boot-3 to etcd cluster", func() {
-		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
-				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
-			if err != nil {
-				return err
-			}
+		stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+			"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
+		Expect(err).ShouldNot(HaveOccurred())
+		var mlr struct {
+			Members []struct {
+				Name string `json:"name"`
+			} `json:"members"`
+		}
 
-			var mlr struct {
-				Members []struct {
-					Name string `json:"name"`
-				} `json:"members"`
-			}
-			err = json.Unmarshal(stdout, &mlr)
-			if err != nil {
-				return err
-			}
+		err = json.Unmarshal(stdout, &mlr)
+		Expect(err).ShouldNot(HaveOccurred())
 
-			for _, m := range mlr.Members {
-				if m.Name == "boot-3" {
-					return nil
-				}
-			}
-			return errors.New("boot-3 is not added to etcd")
-		}).Should(Succeed())
+		names := make([]string, len(mlr.Members))
+		for i, m := range mlr.Members {
+			names[i] = m.Name
+		}
+		Expect(names).Should(ContainElement("boot-3"))
 	})
 
 	It("should update neco package", func() {
