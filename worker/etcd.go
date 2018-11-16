@@ -220,7 +220,7 @@ func (o *operator) replaceEtcdFiles(ctx context.Context, lrns []int) (bool, erro
 }
 
 // restartEtcd restarts etcd after all other steps are completed.
-func (o *operator) RestartEtcd(ctx context.Context, _ *neco.UpdateRequest) error {
+func (o *operator) RestartEtcd(ctx context.Context) error {
 	if !o.etcdRestart {
 		return nil
 	}
