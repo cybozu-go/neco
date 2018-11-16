@@ -162,7 +162,11 @@ func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.
 	deadline := ss.Request.StartedAt.Add(timeout)
 	ctxWithDeadline, cancel := context.WithDeadline(ctx, deadline)
 	defer cancel()
-	h := statusHandler{req: ss.Request, statuses: ss.Statuses, notifier: s.notifier}
+	statuses := ss.Statuses
+	if statuses == nil {
+		statuses = make(map[int]*neco.UpdateStatus)
+	}
+	h := statusHandler{req: ss.Request, statuses: statuses, notifier: s.notifier}
 	err := storage.NewWorkerWatcher(h.handleStatus).
 		Watch(ctxWithDeadline, ss.Revision, s.storage)
 	if err == storage.ErrTimedOut {
