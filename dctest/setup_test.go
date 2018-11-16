@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -139,10 +140,9 @@ func testSetup() {
 		Expect(err).ShouldNot(HaveOccurred())
 		_, _, err = execAt(boot3, "test", "-f", "/usr/local/bin/etcdctl")
 		Expect(err).ShouldNot(HaveOccurred())
-
-		//By("Checking vault installation")
-		//_, _, err = execAt(boot3, "systemctl", "-q", "is-active", neco.VaultService+".service")
-		//Expect(err).ShouldNot(HaveOccurred())
+		By("Checking vault installation")
+		_, _, err = execAt(boot3, "systemctl", "-q", "is-active", neco.VaultService+".service")
+		Expect(err).ShouldNot(HaveOccurred())
 	})
 
 	It("should add boot-3 to etcd cluster", func() {
@@ -171,14 +171,23 @@ func testSetup() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		By("Wait all etcd servers get updated")
+		artifacts := []struct {
+			service  string
+			imageTag string
+		}{
+			{neco.EtcdService, "quay.io/cybozu/etcd:3.3.9-3"},
+			{neco.VaultService, "quay.io/cybozu/vault:0.11.0-2"},
+		}
 		Eventually(func() error {
-			for _, h := range []string{boot0, boot1, boot2, boot3} {
-				stdout, _, err := execAt(h, "systemctl", "show", "etcd-container", "--property=ExecStart")
-				if err != nil {
-					return err
-				}
-				if !strings.Contains(string(stdout), "quay.io/cybozu/etcd:3.3.9-3") {
-					return errors.New("etcd is not updated")
+			for _, art := range artifacts {
+				for _, h := range []string{boot0, boot1, boot2, boot3} {
+					stdout, _, err := execAt(h, "systemctl", "show", art.service, "--property=ExecStart")
+					if err != nil {
+						return err
+					}
+					if !strings.Contains(string(stdout), art.imageTag) {
+						return fmt.Errorf("%s is not updated: %s", art.service, string(stdout))
+					}
 				}
 			}
 			return nil

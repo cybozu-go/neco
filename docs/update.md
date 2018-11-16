@@ -167,7 +167,7 @@ Updater updates container image and restart OMSA service in any timing.
 
 1. Elect leader updater.
 2. Checks if own serf can be updated.
-3. Update etcd archive and restart a service.
+3. Update serf archive and restart a service.
 4. Resign leader updater.
 
 ### etcdpasswd
