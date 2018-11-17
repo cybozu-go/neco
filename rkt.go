@@ -47,9 +47,12 @@ func FetchContainer(ctx context.Context, name string, env []string) error {
 		fetchCmd.Env = env
 		err = fetchCmd.Run()
 		if err == nil {
+			log.Info("rkt: fetched a container image", map[string]interface{}{
+				"image": fullname,
+			})
 			return nil
 		}
-		log.Warn("failed to fetch container image", map[string]interface{}{
+		log.Warn("rkt: failed to fetch a container image", map[string]interface{}{
 			log.FnError: err,
 			"image":     fullname,
 		})

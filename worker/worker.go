@@ -80,7 +80,7 @@ func NewWorker(ec *clientv3.Client, op Operator, version string, mylrn int) *Wor
 // 4. Update programs for the requested version.
 //
 // 5. Wait for the new request.    If there is a new one, neco-worker updates
-//    the package and exists to be restarted by systemd.
+//    the package and exits to be restarted by systemd.
 func (w *Worker) Run(ctx context.Context) error {
 	err := w.operator.StartServices(ctx)
 	if err != nil {

@@ -166,9 +166,11 @@ func testSetup() {
 	})
 
 	It("should update neco package", func() {
+		By("Changing env for test")
 		_, _, err := execAt(boot0, "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred())
 
+		By("Wait all etcd servers get updated")
 		Eventually(func() error {
 			for _, h := range []string{boot0, boot1, boot2, boot3} {
 				stdout, _, err := execAt(h, "systemctl", "show", "etcd-container", "--property=ExecStart")
@@ -182,6 +184,7 @@ func testSetup() {
 			return nil
 		}).Should(Succeed())
 
+		By("Checking status of neco-updater and neco-worker")
 		for _, h := range []string{boot0, boot1, boot2, boot3} {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
@@ -189,8 +192,10 @@ func testSetup() {
 	})
 
 	It("should remove boot-3", func() {
+		By("Running neco leave 3")
 		execSafeAt(boot0, "sudo", "env", "VAULT_TOKEN="+rootToken, "neco", "leave", "3")
 
+		By("Waiting boot-3 gets removed from etcd")
 		Eventually(func() error {
 			stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
 				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")

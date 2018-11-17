@@ -162,6 +162,9 @@ func execSafeAt(host string, args ...string) string {
 }
 
 func waitRequestComplete() {
+	// wait a moment for neco-updater to put a new request.
+	time.Sleep(time.Second * 2)
+
 	EventuallyWithOffset(1, func() error {
 		stdout, _, err := execAt(boot0, "neco", "status")
 		if err != nil {
