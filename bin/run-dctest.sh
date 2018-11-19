@@ -1,15 +1,6 @@
 #!/bin/sh -ex
 
-PROJECT=neco-test
-ZONE=asia-northeast1-c
-SERVICE_ACCOUNT=neco-test@neco-test.iam.gserviceaccount.com
-INSTANCE_NAME=${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}
-IMAGE_NAME=debian-9-stretch-v20180911-vmx-enabled
-MACHINE_TYPE=n1-standard-8
-DISK_TYPE=pd-ssd
-BOOT_DISK_SIZE=20GB
-GCLOUD="gcloud --quiet --account ${SERVICE_ACCOUNT} --project ${PROJECT}"
-ARCHIVE_SET=$1
+. $(dirname $0)/env
 
 delete_instance() {
   $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} || true
