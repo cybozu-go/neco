@@ -57,8 +57,6 @@ github.com/coreos/go-systemd v0.0.0-20181004131557-b14d3eb023cc h1:EDHXXD9U9N6r9
 github.com/coreos/go-systemd v0.0.0-20181004131557-b14d3eb023cc/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f h1:lBNOc5arjvs8E5mO2tbpBpLoyyu8B6e44T7hJy6potg=
 github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfcXa63jLwjI0eiQQMgzzUDFVpN/nH/eA=
-github.com/cybozu-go/etcdutil v1.3.0 h1:5kzxeVfEJyodstXNHffWAI2K8J6Qah7QJi6l5AW+FNk=
-github.com/cybozu-go/etcdutil v1.3.0/go.mod h1:IxGUSh/mh4psyjS7fEB51xVkjQ00N/Pb71ZrvaLBaKc=
 github.com/cybozu-go/etcdutil v1.3.1 h1:7Y+E0k+lQtIIBRcRdRWl6R9agt9nA/ofdUQcwa1CFkA=
 github.com/cybozu-go/etcdutil v1.3.1/go.mod h1:yXrcY2lR3iZkiupP8xo4zql5duNuwjwYhtDbSqkCpvs=
 github.com/cybozu-go/log v1.5.0 h1:cjLr+pNga4NL5sj5vnnG00xKmKXSWx0grQQ4LnV1Ris=
