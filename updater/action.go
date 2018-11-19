@@ -1,8 +1,6 @@
 package updater
 
 import (
-	"context"
-	"errors"
 	"reflect"
 	"time"
 
@@ -47,7 +45,7 @@ func (a Action) String() string {
 }
 
 // NextAction decides the next action to do for neco-updater.
-func NextAction(ctx context.Context, ss *storage.Snapshot, pkg PackageManager, timeout time.Duration) (Action, error) {
+func NextAction(ss *storage.Snapshot, timeout time.Duration) (Action, error) {
 	if ss.Latest == "" {
 		return ActionWaitInfo, nil
 	}
@@ -56,22 +54,8 @@ func NextAction(ctx context.Context, ss *storage.Snapshot, pkg PackageManager, t
 		return ActionError, err
 	}
 
-	current, err := pkg.GetVersion(ctx, neco.NecoPackageName)
-	if err != nil {
-		return ActionError, err
-	}
-	if current == "" {
-		return ActionError, errors.New("neco package is not installed")
-	}
-	currentVer, err := version.NewVersion(current)
-	if err != nil {
-		return ActionError, err
-	}
 	if ss.Request == nil {
-		if latestVer.GreaterThan(currentVer) {
-			return ActionNewVersion, nil
-		}
-		return ActionWaitInfo, nil
+		return ActionNewVersion, nil
 	}
 
 	if ss.Request.Stop {

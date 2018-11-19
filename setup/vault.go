@@ -213,11 +213,6 @@ func createCA(ctx context.Context, vault *api.Client, mylrn int) ([]*api.Secret,
 }
 
 func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*api.Secret, error) {
-	err := vault.InstallTools(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	cfg := api.DefaultConfig()
 	cfg.Address = fmt.Sprintf("http://%s:8200", neco.BootNode0IP(lrns[0]).String())
 	vc, err := api.NewClient(cfg)
@@ -503,7 +498,7 @@ func reissueCerts(ctx context.Context, vc *api.Client, mylrn int) error {
 	if err != nil {
 		return err
 	}
-	err = dumpCertFiles(secret, "", neco.EtcdPeerCertFile, neco.EtcdPeerKeyFile)
+	err = dumpCertFiles(secret, neco.EtcdPeerCAFile, neco.EtcdPeerCertFile, neco.EtcdPeerKeyFile)
 	if err != nil {
 		return err
 	}
@@ -516,7 +511,7 @@ func reissueCerts(ctx context.Context, vc *api.Client, mylrn int) error {
 	if err != nil {
 		return err
 	}
-	return dumpCertFiles(secret, "", neco.VaultCertFile, neco.VaultKeyFile)
+	return dumpCertFiles(secret, neco.EtcdClientCAFile, neco.VaultCertFile, neco.VaultKeyFile)
 }
 
 // waitVaultLeader waits for Vault to elect a new leader after restart.

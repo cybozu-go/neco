@@ -19,18 +19,14 @@ import (
 type Server struct {
 	session  *concurrency.Session
 	storage  storage.Storage
-	pkg      PackageManager
 	notifier ext.Notifier
-
-	currentSnapshot storage.Snapshot
 }
 
 // NewServer returns a Server
-func NewServer(session *concurrency.Session, storage storage.Storage, pkg PackageManager, notifier ext.Notifier) Server {
+func NewServer(session *concurrency.Session, storage storage.Storage, notifier ext.Notifier) Server {
 	return Server{
 		session:  session,
 		storage:  storage,
-		pkg:      pkg,
 		notifier: notifier,
 	}
 }
@@ -97,7 +93,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			return err
 		}
 
-		action, err := NextAction(ctx, ss, s.pkg, timeout)
+		action, err := NextAction(ss, timeout)
 		if err != nil {
 			return err
 		}
@@ -121,7 +117,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			if err != nil {
 				return err
 			}
-			err = s.notifier.NotifyInfo(ctx, *s.currentSnapshot.Request, "start boot servers reconfiguration.")
+			err = s.notifier.NotifyInfo(ctx, req, "start boot servers reconfiguration.")
 			if err != nil {
 				log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 			}
@@ -135,7 +131,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			if err != nil {
 				return err
 			}
-			err = s.notifier.NotifyInfo(ctx, *s.currentSnapshot.Request, "start updating the new release.")
+			err = s.notifier.NotifyInfo(ctx, *ss.Request, "start updating the new release.")
 			if err != nil {
 				log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 			}
@@ -166,16 +162,20 @@ func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.
 	deadline := ss.Request.StartedAt.Add(timeout)
 	ctxWithDeadline, cancel := context.WithDeadline(ctx, deadline)
 	defer cancel()
-	s.currentSnapshot = *ss
-	err := storage.NewWorkerWatcher(s.handleStatus).
+	statuses := ss.Statuses
+	if statuses == nil {
+		statuses = make(map[int]*neco.UpdateStatus)
+	}
+	h := statusHandler{req: ss.Request, statuses: statuses, notifier: s.notifier}
+	err := storage.NewWorkerWatcher(h.handleStatus).
 		Watch(ctxWithDeadline, ss.Revision, s.storage)
 	if err == storage.ErrTimedOut {
 		log.Warn("workers timed-out", map[string]interface{}{
-			"version":    s.currentSnapshot.Request.Version,
-			"started_at": s.currentSnapshot.Request.StartedAt,
+			"version":    ss.Request.Version,
+			"started_at": ss.Request.StartedAt,
 			"timeout":    timeout.String(),
 		})
-		err = s.notifier.NotifyFailure(ctx, *s.currentSnapshot.Request, fmt.Sprintf("timeout occurred: %s", timeout.String()))
+		err = s.notifier.NotifyFailure(ctx, *ss.Request, fmt.Sprintf("timeout occurred: %s", timeout.String()))
 		if err != nil {
 			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}
@@ -184,38 +184,44 @@ func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.
 	return err
 }
 
-func (s Server) handleStatus(ctx context.Context, lrn int, st *neco.UpdateStatus) bool {
-	if st.Version != s.currentSnapshot.Request.Version {
+type statusHandler struct {
+	req      *neco.UpdateRequest
+	statuses map[int]*neco.UpdateStatus
+	notifier ext.Notifier
+}
+
+func (h statusHandler) handleStatus(ctx context.Context, lrn int, st *neco.UpdateStatus) bool {
+	if st.Version != h.req.Version {
 		return false
 	}
-	s.currentSnapshot.Statuses[lrn] = st
+	h.statuses[lrn] = st
 
 	switch st.Cond {
 	case neco.CondAbort:
 		log.Warn("worker failed updating", map[string]interface{}{
-			"version": s.currentSnapshot.Request.Version,
+			"version": h.req.Version,
 			"lrn":     lrn,
 			"message": st.Message,
 		})
-		err := s.notifier.NotifyFailure(ctx, *s.currentSnapshot.Request, "update request was aborted: "+st.Message)
+		err := h.notifier.NotifyFailure(ctx, *h.req, "update request was aborted: "+st.Message)
 		if err != nil {
 			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}
 		return true
 	case neco.CondComplete:
 		log.Info("worker finished updating", map[string]interface{}{
-			"version": s.currentSnapshot.Request.Version,
+			"version": h.req.Version,
 			"lrn":     lrn,
 		})
 	}
 
-	completed := neco.UpdateCompleted(s.currentSnapshot.Request.Version, s.currentSnapshot.Servers, s.currentSnapshot.Statuses)
+	completed := neco.UpdateCompleted(h.req.Version, h.req.Servers, h.statuses)
 	if completed {
 		log.Info("all worker finished updating", map[string]interface{}{
-			"version": s.currentSnapshot.Request.Version,
-			"servers": s.currentSnapshot.Servers,
+			"version": h.req.Version,
+			"servers": h.req.Servers,
 		})
-		err := s.notifier.NotifySucceeded(ctx, *s.currentSnapshot.Request)
+		err := h.notifier.NotifySucceeded(ctx, *h.req)
 		if err != nil {
 			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}

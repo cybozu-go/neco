@@ -11,7 +11,6 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
-	"github.com/cybozu-go/neco/worker"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +33,7 @@ func showStatus(ctx context.Context, st storage.Storage, w io.Writer) error {
 	}
 
 	switch {
-	case worker.UpdateAborted(req.Version, -1, statuses):
+	case checkUpdateAborted(req.Version, statuses):
 		fmt.Fprintln(w, "    status: aborted")
 	case neco.UpdateCompleted(req.Version, req.Servers, statuses):
 		fmt.Fprintln(w, "    status: completed")
@@ -70,6 +69,17 @@ func showStatus(ctx context.Context, st storage.Storage, w io.Writer) error {
 	}
 
 	return nil
+}
+func checkUpdateAborted(ver string, statuses map[int]*neco.UpdateStatus) bool {
+	for _, status := range statuses {
+		if status.Version != ver {
+			continue
+		}
+		if status.Cond == neco.CondAbort {
+			return true
+		}
+	}
+	return false
 }
 
 // statusCmd implements "neco status"

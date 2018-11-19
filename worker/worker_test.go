@@ -73,6 +73,14 @@ func (op *mockOp) RunStep(ctx context.Context, req *neco.UpdateRequest, step int
 	return nil
 }
 
+func (op *mockOp) StartServices(ctx context.Context) error {
+	return nil
+}
+
+func (op *mockOp) RestartEtcd(index int) error {
+	return nil
+}
+
 type testInput func(ctx context.Context, st storage.Storage, bch <-chan struct{}) error
 
 func inputRequest(req *neco.UpdateRequest, wait bool) testInput {

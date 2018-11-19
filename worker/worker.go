@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -79,8 +80,13 @@ func NewWorker(ec *clientv3.Client, op Operator, version string, mylrn int) *Wor
 // 4. Update programs for the requested version.
 //
 // 5. Wait for the new request.    If there is a new one, neco-worker updates
-//    the package and exists to be restarted by systemd.
+//    the package and exits to be restarted by systemd.
 func (w *Worker) Run(ctx context.Context) error {
+	err := w.operator.StartServices(ctx)
+	if err != nil {
+		return err
+	}
+
 	req, rev, err := w.storage.GetRequestWithRev(ctx)
 
 	for {
@@ -112,6 +118,14 @@ func (w *Worker) Run(ctx context.Context) error {
 			return err2
 		}
 		if UpdateAborted(req.Version, w.mylrn, stMap) {
+			if myst, ok := stMap[w.mylrn]; ok {
+				status := *myst
+				status.Cond = neco.CondAbort
+				err := w.storage.PutStatus(ctx, w.mylrn, status)
+				if err != nil {
+					return err
+				}
+			}
 			log.Info("previous update was aborted", nil)
 			req, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
@@ -184,11 +198,11 @@ func (w *Worker) handleWorkerStatus(ctx context.Context, lrn int, st *neco.Updat
 	if st.Version != w.req.Version {
 		return false, errors.New("unexpected version in worker status: " + st.Version)
 	}
-	if st.Step != w.step {
-		return false, fmt.Errorf("unexpected step in worker status: %d", st.Step)
-	}
 	if st.Cond == neco.CondAbort {
 		return false, fmt.Errorf("other boot server failed to update: %d", lrn)
+	}
+	if st.Step != w.step {
+		return false, fmt.Errorf("unexpected step in worker status: %d", st.Step)
 	}
 	if st.Cond == neco.CondComplete {
 		return false, fmt.Errorf("other boot server reports completion: %d", lrn)
@@ -273,5 +287,16 @@ func (w *Worker) runStep(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	log.Info("update status as completed", map[string]interface{}{
+		"version": w.req.Version,
+		"step":    w.step,
+	})
+
+	// restart etcd if needed.
+	err = w.operator.RestartEtcd(sort.SearchInts(w.req.Servers, w.mylrn))
+	if err != nil {
+		return false, err
+	}
+
 	return true, nil
 }

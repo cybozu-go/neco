@@ -7,28 +7,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
 	"github.com/google/go-github/v18/github"
 )
-
-// GetDebianVersion returns debian package version.
-// If "neco" package is not installed, this returns ("", nil).
-func GetDebianVersion(pkg string) (string, error) {
-	if exec.Command("dpkg", "-s", pkg).Run() != nil {
-		return "", nil
-	}
-
-	data, err := well.CommandContext(context.Background(),
-		"dpkg-query", "--showformat=${Version}", "-W", pkg).Output()
-	if err != nil {
-		return "", err
-	}
-
-	return string(data), nil
-}
 
 // InstallDebianPackage installs a debian package
 func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.DebianPackage) error {
@@ -77,7 +60,13 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.De
 		return err
 	}
 
-	return well.CommandContext(ctx, "dpkg", "-i", f.Name()).Run()
+	return well.CommandContext(context.Background(),
+		"systemd-run", "-q", "dpkg", "-i", f.Name()).Run()
+}
+
+func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage) error {
+	deb := fmt.Sprintf("/mnt/%s_%s_amd64.deb", pkg.Name, pkg.Release)
+	return well.CommandContext(context.Background(), "systemd-run", "-q", "dpkg", "-i", deb).Run()
 }
 
 func listGithubReleases(ctx context.Context, gh *github.Client, pkg *neco.DebianPackage) ([]*github.RepositoryRelease, error) {

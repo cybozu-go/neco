@@ -2,11 +2,13 @@ package setup
 
 import (
 	"context"
+	"io"
 	"sort"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/etcd"
 	"github.com/cybozu-go/neco/progs/vault"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
@@ -15,12 +17,20 @@ import (
 
 // Setup installs and configures etcd and vault cluster.
 func Setup(ctx context.Context, lrns []int, revoke bool) error {
-	err := neco.FetchContainer(ctx, "etcd")
+	err := neco.FetchContainer(ctx, "etcd", nil)
+	if err != nil {
+		return err
+	}
+	err = etcd.InstallTools(ctx)
 	if err != nil {
 		return err
 	}
 
-	err = neco.FetchContainer(ctx, "vault")
+	err = neco.FetchContainer(ctx, "vault", nil)
+	if err != nil {
+		return err
+	}
+	err = vault.InstallTools(ctx)
 	if err != nil {
 		return err
 	}
@@ -34,17 +44,14 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 
 	isLeader := mylrn == lrns[0]
 
-	err = installNecoBin()
-	if err != nil {
-		return err
-	}
-
 	pems, err := prepareCA(ctx, isLeader, mylrn, lrns)
 	if err != nil {
 		return err
 	}
 
-	ec, err := setupEtcd(ctx, mylrn, lrns)
+	ec, err := etcd.Setup(ctx, func(w io.Writer) error {
+		return etcd.GenerateConf(w, mylrn, lrns)
+	})
 	if err != nil {
 		return err
 	}
@@ -148,17 +155,9 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 	}
 
 	ec.Close()
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(1 * time.Second):
-		}
-
-		ec, err = waitEtcd(ctx)
-		if err == nil {
-			break
-		}
+	ec, err = etcd.WaitEtcdForVault(ctx)
+	if err != nil {
+		return err
 	}
 
 	err = neco.RestartService(ctx, "vault")
@@ -171,6 +170,35 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 	}
 
 	if isLeader {
+		st = storage.NewStorage(ec)
+		ver, err := neco.GetDebianVersion(neco.NecoPackageName)
+		if err != nil {
+			return err
+		}
+		for _, lrn := range lrns {
+			err = st.PutStatus(ctx, lrn, neco.UpdateStatus{
+				Version: ver,
+				Cond:    neco.CondComplete,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		err = st.UpdateNecoRelease(ctx, ver, storage.KeyVaultUnsealKey)
+		if err != nil {
+			return err
+		}
+
+		req := neco.UpdateRequest{
+			Version:   ver,
+			Servers:   lrns,
+			StartedAt: time.Now(),
+		}
+		err = st.PutRequest(ctx, req, storage.KeyVaultUnsealKey)
+		if err != nil {
+			return err
+		}
 		if revoke {
 			err = revokeRootToken(ctx, vc, ec)
 			if err != nil {
@@ -185,13 +213,23 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 
 	well.CommandContext(ctx, "sync").Run()
 
+	err = neco.StartService(ctx, "neco-worker")
+	if err != nil {
+		return err
+	}
+	err = neco.StartService(ctx, "neco-updater")
+	if err != nil {
+		return err
+	}
+
 	log.Info("setup: completed", nil)
 
 	return nil
 }
 
-// PrepareFiles prepares certificates and files for new boot server
-func PrepareFiles(ctx context.Context, vc *api.Client, mylrn int, lrns []int) error {
+// Join prepares certificates and files for new boot server, start
+// neco-updater and neco-worker, then register the server with etcd.
+func Join(ctx context.Context, vc *api.Client, mylrn int, lrns []int) error {
 	err := reissueCerts(ctx, vc, mylrn)
 	if err != nil {
 		return err
@@ -214,6 +252,15 @@ func PrepareFiles(ctx context.Context, vc *api.Client, mylrn int, lrns []int) er
 	}
 	defer etcd.Close()
 	st := storage.NewStorage(etcd)
+
+	err = neco.StartService(ctx, "neco-worker")
+	if err != nil {
+		return err
+	}
+	err = neco.StartService(ctx, "neco-updater")
+	if err != nil {
+		return err
+	}
 
 	return st.RegisterBootserver(ctx, mylrn)
 }

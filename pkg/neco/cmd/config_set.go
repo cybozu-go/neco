@@ -46,7 +46,7 @@ Possible keys are:
 		well.Go(func(ctx context.Context) error {
 			switch key {
 			case "env":
-				if value != neco.StagingEnv && value != neco.ProdEnv {
+				if value != neco.TestEnv && value != neco.StagingEnv && value != neco.ProdEnv {
 					return errors.New("invalid environment")
 				}
 				return st.PutEnvConfig(ctx, value)

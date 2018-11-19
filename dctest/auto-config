@@ -2,7 +2,15 @@
 
 set -e
 
+cat > /etc/apt/sources.list <<EOF
+deb http://mirror.math.princeton.edu/pub/ubuntu bionic main restricted universe multiverse
+deb http://mirror.math.princeton.edu/pub/ubuntu bionic-updates main restricted universe multiverse
+deb http://mirror.math.princeton.edu/pub/ubuntu bionic-security main restricted universe multiverse
+EOF
+
 apt-get update
 apt-get install -y --no-install-recommends jq ca-certificates freeipmi-tools
+
+dpkg -i /mnt/neco_0.0.1_amd64.deb
 
 touch /tmp/auto-config-done

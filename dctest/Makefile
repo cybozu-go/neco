@@ -25,7 +25,11 @@ OUTPUT = ./output
 SABAKAN_DIR = $(OUTPUT)/sabakan
 OPERATION_SSH_DIR = $(OUTPUT)/operation-ssh
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
-SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config $(SABAKAN_DIR)/neco
+OLDVER = 0.0.1
+NEWVER = 0.0.2
+SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config \
+	$(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb \
+	$(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb \
 
 SSH_PRIVKEY = ./dctest_key
 
@@ -51,8 +55,11 @@ $(DHCP_JSON):
 $(SABAKAN_DIR)/auto-config: auto-config $(DHCP_JSON)
 	cp $< $@
 
-$(SABAKAN_DIR)/neco: $(OPERATION_SSH_DIR)
-	cd ..; GOBIN=$(realpath $(SABAKAN_DIR)) go install -mod=vendor ./...
+$(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb: $(OPERATION_SSH_DIR)
+	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR))
+
+$(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb: $(OPERATION_SSH_DIR)
+	cd ..; make deb VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=new
 
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):

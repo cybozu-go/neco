@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
@@ -22,6 +23,12 @@ type Operator interface {
 
 	// RunStep executes operations for given step.
 	RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error
+
+	// RestoreServices starts installed services at startup.
+	StartServices(ctx context.Context) error
+
+	// RestartEtcd restarts etcd in case it is necessary.
+	RestartEtcd(index int) error
 }
 
 type operator struct {
@@ -30,6 +37,8 @@ type operator struct {
 	storage     storage.Storage
 	proxyClient *http.Client
 	localClient *http.Client
+
+	etcdRestart bool
 }
 
 // NewOperator creates an Operator
@@ -61,11 +70,18 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 	log.Info("update neco", map[string]interface{}{
 		"version": req.Version,
 	})
+	env, err := o.storage.GetEnvConfig(ctx)
+	if err != nil {
+		return err
+	}
+	if env == neco.TestEnv {
+		return installLocalPackage(ctx, deb)
+	}
 	return InstallDebianPackage(ctx, o.proxyClient, deb)
 }
 
 func (o *operator) FinalStep() int {
-	return 2
+	return 3
 }
 
 func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error {
@@ -74,7 +90,31 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 		return o.UpdateEtcd(ctx, req)
 	case 2:
 		return o.UpdateVault(ctx, req)
+
+	case 3:
+		// THIS MUST BE THE FINAL STEP!!!!!
+		// to synchronize before restarting etcd.
+		return nil
+		// DO NOT ADD ANY STEP AFTER THIS LINE!!!
 	}
 
 	return fmt.Errorf("invalid step: %d", step)
+}
+
+func (o *operator) restoreService(ctx context.Context, svc string) error {
+	_, err := os.Stat(neco.ServiceFile(svc))
+	if err != nil {
+		return nil
+	}
+
+	return neco.StartService(ctx, svc)
+}
+
+func (o *operator) StartServices(ctx context.Context) error {
+	err := o.restoreService(ctx, neco.EtcdService)
+	if err != nil {
+		return err
+	}
+
+	return o.restoreService(ctx, neco.VaultService)
 }
