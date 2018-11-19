@@ -22,7 +22,7 @@ require (
 	github.com/containers/storage v0.0.0-20181019121456-bd5818eda840 // indirect
 	github.com/coreos/bbolt v1.3.1-coreos.6 // indirect
 	github.com/coreos/etcd v3.3.9+incompatible
-	github.com/cybozu-go/etcdutil v1.3.0
+	github.com/cybozu-go/etcdutil v1.3.1
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
 	github.com/cybozu-go/well v1.8.1

@@ -18,8 +18,13 @@ func NewClient(c *Config) (*clientv3.Client, error) {
 		return nil, err
 	}
 
+	// workaround for https://github.com/etcd-io/etcd/issues/9949
+	endpoints := make([]string, len(c.Endpoints))
+	copy(endpoints, c.Endpoints)
+	reorderEndpoints(endpoints, timeout)
+
 	cfg := clientv3.Config{
-		Endpoints:   c.Endpoints,
+		Endpoints:   endpoints,
 		DialTimeout: timeout,
 		Username:    c.Username,
 		Password:    c.Password,

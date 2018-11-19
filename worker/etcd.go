@@ -219,7 +219,7 @@ func (o *operator) replaceEtcdFiles(ctx context.Context, lrns []int) (bool, erro
 		return false, err
 	}
 
-	return (r1 || r2), nil
+	return r1 || r2, nil
 }
 
 // RestartEtcd restarts etcd after all other steps are completed.
