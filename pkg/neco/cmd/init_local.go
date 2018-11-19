@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"errors"
-	"fmt"
 
+	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/etcdpasswd"
+	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +33,30 @@ new a application NAME.`,
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("initialize application '%s' in local\n", initLocalParams.name)
+		mylrn, err := neco.MyLRN()
+		if err != nil {
+			log.ErrorExit(err)
+		}
+		vc, err := vaultClient(mylrn)
+		if err != nil {
+			log.ErrorExit(err)
+		}
+
+		well.Go(func(ctx context.Context) error {
+			switch initParams.name {
+			case "etcdpasswd":
+				return etcdpasswd.IssueCerts(ctx, vc)
+			default:
+				return errors.New("unknown service name: " + initParams.name)
+			}
+
+		})
+
+		well.Stop()
+		err = well.Wait()
+		if err != nil {
+			log.ErrorExit(err)
+		}
 	},
 }
 

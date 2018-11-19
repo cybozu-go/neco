@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"errors"
-	"fmt"
 
+	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/etcd"
+	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +32,26 @@ executed more than once.`,
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("initialize application '%s'\n", initParams.name)
+		ce, err := neco.EtcdClient()
+		if err != nil {
+			log.ErrorExit(err)
+		}
+		defer ce.Close()
+
+		well.Go(func(ctx context.Context) error {
+			switch initParams.name {
+			case "etcdpasswd":
+				return etcd.UserAdd(ctx, ce, "etcdpasswd", neco.EtcdpasswdPrefix)
+			default:
+				return errors.New("unknown service name: " + initParams.name)
+			}
+		})
+
+		well.Stop()
+		err = well.Wait()
+		if err != nil {
+			log.ErrorExit(err)
+		}
 	},
 }
 

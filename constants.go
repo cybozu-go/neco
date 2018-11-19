@@ -47,6 +47,14 @@ const (
 	VaultPrefix = "/vault/"
 )
 
+// Etcdpasswd params
+const (
+	EtcdpasswdDir = "/etc/etcdpasswd"
+
+	EtcdpasswdService = "ep-agent"
+	EtcdpasswdPrefix  = "/etcdpasswd/"
+)
+
 // File locations
 var (
 	rackFile    = filepath.Join(NecoDir, "rack")
@@ -68,6 +76,10 @@ var (
 	VaultCertFile = filepath.Join(VaultDir, "etcd.crt")
 	VaultKeyFile  = filepath.Join(VaultDir, "etcd.key")
 	VaultConfFile = filepath.Join(VaultDir, "config.hcl")
+
+	EtcdpasswdCertFile = filepath.Join(EtcdpasswdDir, "etcd.crt")
+	EtcdpasswdKeyFile  = filepath.Join(EtcdpasswdDir, "etcd.key")
+	EycdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
