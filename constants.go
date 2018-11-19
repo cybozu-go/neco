@@ -79,7 +79,7 @@ var (
 
 	EtcdpasswdCertFile = filepath.Join(EtcdpasswdDir, "etcd.crt")
 	EtcdpasswdKeyFile  = filepath.Join(EtcdpasswdDir, "etcd.key")
-	EycdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
+	EtcdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
