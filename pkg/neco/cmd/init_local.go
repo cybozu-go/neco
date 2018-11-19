@@ -43,11 +43,11 @@ new a application NAME.`,
 		}
 
 		well.Go(func(ctx context.Context) error {
-			switch initParams.name {
+			switch initLocalParams.name {
 			case "etcdpasswd":
 				return etcdpasswd.IssueCerts(ctx, vc)
 			default:
-				return errors.New("unknown service name: " + initParams.name)
+				return errors.New("unknown service name: " + initLocalParams.name)
 			}
 
 		})
