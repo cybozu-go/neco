@@ -8,6 +8,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// GenerateConf generates etcdpasswd config file
 func GenerateConf(w io.Writer, lrns []int) error {
 	endpoints := make([]string, len(lrns))
 	for i, lrn := range lrns {

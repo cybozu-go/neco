@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
@@ -14,7 +13,7 @@ import (
 )
 
 // InstallDebianPackage installs a debian package
-func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.DebianPackage) error {
+func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.DebianPackage, background bool) error {
 	gh := neco.NewGitHubClient(client)
 
 	releases, err := listGithubReleases(ctx, gh, pkg)
@@ -50,18 +49,18 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.De
 	if err != nil {
 		return err
 	}
-	defer func() {
-		f.Close()
-		os.Remove(f.Name())
-	}()
+	defer f.Close()
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
 		return err
 	}
 
-	return well.CommandContext(context.Background(),
-		"systemd-run", "-q", "dpkg", "-i", f.Name()).Run()
+	command := []string{"dpkg", "-i", f.Name(), "&&", "rm", f.Name()}
+	if background {
+		command = append([]string{"systemd-run", "-q"}, command...)
+	}
+	return well.CommandContext(context.Background(), command[0], command[1:]...).Run()
 }
 
 func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage) error {
