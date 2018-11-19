@@ -1,10 +1,6 @@
 #!/bin/sh -e
 
-PROJECT=neco-test
-ZONE=asia-northeast1-c
-SERVICE_ACCOUNT=neco-test@neco-test.iam.gserviceaccount.com
-INSTANCE_NAME=${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}
-GCLOUD="gcloud --quiet --account ${SERVICE_ACCOUNT} --project ${PROJECT}"
+. $(dirname $0)/env
 
 # Run multi-host test
 for i in $(seq 300); do

@@ -25,6 +25,11 @@ jobs:
             ./bin/watch_boot0
           background: true
       - run:
+          name: Watch neco-worker logs
+          command: |
+            ./bin/watch_neco_worker
+          background: true
+      - run:
           command: |
             ./bin/run-dctest.sh
 
