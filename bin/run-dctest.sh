@@ -34,7 +34,7 @@ mkdir -p /var/scratch
 mount -t ext4 /dev/disk/by-id/google-local-ssd-0 /var/scratch
 chmod 1777 /var/scratch
 
-# Run mtest
+# Run dctest
 GOPATH=\$HOME/go
 export GOPATH
 PATH=/usr/local/go/bin:\$GOPATH/bin:\$PATH

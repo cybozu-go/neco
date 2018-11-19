@@ -4,10 +4,11 @@
 
 tail_neco_worker_once() {
   host="$1"
-  $GCLOUD 2>/dev/null compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
-    sudo /root/go/bin/pmctl pod enter operation chmod 600 /etc/ssh/boot_key
-  $GCLOUD 2>/dev/null compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
-    sudo /root/go/bin/pmctl pod enter operation ssh "$host" journalctl -- -f -u neco-worker.service
+  chmod 600 ./dctest/dctest_key
+  $GCLOUD compute scp --zone=${ZONE} ./dctest/dctest_key ./dctest/ssh_config cybozu@${INSTANCE_NAME}:
+  $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
+    sudo nsenter -n -t '$(sudo /root/go/bin/pmctl pod show operation | jq .pid)' ssh -F ssh_config \
+     ${host} journalctl -f -u neco-worker.service
 }
 
 tail_neco_worker() {
