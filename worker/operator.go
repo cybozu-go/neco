@@ -126,6 +126,15 @@ func (o *operator) restoreService(ctx context.Context, svc string) error {
 	return neco.StartService(ctx, svc)
 }
 
+func (o *operator) stopService(ctx context.Context, svc string) error {
+	_, err := os.Stat(neco.ServiceFile(svc))
+	if err != nil {
+		return nil
+	}
+
+	return neco.StopService(ctx, svc)
+}
+
 func (o *operator) StartServices(ctx context.Context) error {
 	err := o.restoreService(ctx, neco.EtcdService)
 	if err != nil {

@@ -5,13 +5,12 @@ import (
 	"context"
 
 	"github.com/cybozu-go/log"
-
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/vault"
 )
 
 func (o *operator) StopVault(ctx context.Context, req *neco.UpdateRequest) error {
-	return neco.StopService(ctx, neco.VaultService)
+	return o.stopService(ctx, neco.VaultService)
 }
 
 func (o *operator) UpdateVault(ctx context.Context, req *neco.UpdateRequest) error {
