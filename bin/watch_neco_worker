@@ -1,0 +1,27 @@
+#!/bin/sh -e
+
+. $(dirname $0)/env
+
+tail_neco_worker_once() {
+  host="$1"
+  $GCLOUD 2>/dev/null compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
+    sudo /root/go/bin/pmctl pod enter operation chmod 600 /etc/ssh/boot_key
+  $GCLOUD 2>/dev/null compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
+    sudo /root/go/bin/pmctl pod enter operation ssh "$host" journalctl -- -f -u neco-worker.service
+}
+
+tail_neco_worker() {
+  host="$1"
+
+  while true; do
+    tail_neco_worker_once $host || continue
+    sleep 3
+  done
+}
+
+tail_neco_worker boot-0 &
+tail_neco_worker boot-1 &
+tail_neco_worker boot-2 &
+tail_neco_worker boot-3 &
+
+wait
