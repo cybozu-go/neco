@@ -12,19 +12,17 @@ import (
 )
 
 var initLocalParams struct {
-	name   string
-	starts bool
+	name string
 }
 
 // initLocalCmd represents the initLocal command
 var initLocalCmd = &cobra.Command{
-	Use:   "init-local [--start] NAME",
+	Use:   "init-local NAME",
 	Short: "Initialize data for new application of a boot server executes",
 	Long: `Initialize data for new application of a boot server executes. This
 command should not be executed more than once.  It asks vault user and
 password to generate a vault token, then issue client certificates for
-new a application NAME.  This commands starts the service if --start flag
-is present.`,
+new a application NAME.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -55,9 +53,6 @@ is present.`,
 			if err != nil {
 				return err
 			}
-			if !initLocalParams.starts {
-				return nil
-			}
 
 			switch initLocalParams.name {
 			case "etcdpasswd":
@@ -75,7 +70,5 @@ is present.`,
 }
 
 func init() {
-	initLocalCmd.Flags().BoolVar(&initLocalParams.starts, "start", false, "starts service")
-
 	rootCmd.AddCommand(initLocalCmd)
 }
