@@ -52,7 +52,7 @@ const (
 	EtcdpasswdDir = "/etc/etcdpasswd"
 
 	EtcdpasswdService = "ep-agent"
-	EtcdpasswdPrefix  = "/etcdpasswd/"
+	EtcdpasswdPrefix  = "/passwd/"
 )
 
 // File locations
@@ -79,7 +79,10 @@ var (
 
 	EtcdpasswdCertFile = filepath.Join(EtcdpasswdDir, "etcd.crt")
 	EtcdpasswdKeyFile  = filepath.Join(EtcdpasswdDir, "etcd.key")
-	EtcdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
+
+	// TODO release latest etcdpasswd
+	// EtcdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
+	EtcdpasswdConfFile = "/etc/etcdpasswd.yml"
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")

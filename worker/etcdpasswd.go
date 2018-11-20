@@ -12,15 +12,11 @@ import (
 )
 
 func (o *operator) UpdateEtcdpasswd(ctx context.Context, req *neco.UpdateRequest) error {
-	replaced, err := o.replaceEtcdpasswdFiles(ctx, req.Servers)
-	if err != nil {
-		return err
-	}
-
 	need, err := o.needDebUpdate(ctx, "etcdpasswd")
 	if err != nil {
 		return err
 	}
+
 	if need {
 		deb, err := neco.CurrentArtifacts.FindDebianPackage("etcdpasswd")
 		if err != nil {
@@ -32,7 +28,14 @@ func (o *operator) UpdateEtcdpasswd(ctx context.Context, req *neco.UpdateRequest
 		}
 	}
 
-	if replaced && !need {
+	replaced, err := o.replaceEtcdpasswdFiles(ctx, req.Servers)
+	if err != nil {
+		return err
+	}
+
+	active := neco.IsActiveService(ctx, neco.EtcdpasswdService)
+
+	if replaced && !need && active {
 		err = neco.RestartService(ctx, neco.EtcdpasswdService)
 		if err != nil {
 			return err

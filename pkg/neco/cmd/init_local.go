@@ -12,17 +12,19 @@ import (
 )
 
 var initLocalParams struct {
-	name string
+	name   string
+	starts bool
 }
 
 // initLocalCmd represents the initLocal command
 var initLocalCmd = &cobra.Command{
-	Use:   "init-local NAME",
+	Use:   "init-local [--start] NAME",
 	Short: "Initialize data for new application of a boot server executes",
 	Long: `Initialize data for new application of a boot server executes. This
 command should not be executed more than once.  It asks vault user and
 password to generate a vault token, then issue client certificates for
-new a application NAME.`,
+new a application NAME.  This commands starts the service if --start flag
+is present.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -43,13 +45,25 @@ new a application NAME.`,
 		}
 
 		well.Go(func(ctx context.Context) error {
+			var err error
 			switch initLocalParams.name {
 			case "etcdpasswd":
-				return etcdpasswd.IssueCerts(ctx, vc)
+				err = etcdpasswd.IssueCerts(ctx, vc)
 			default:
 				return errors.New("unknown service name: " + initLocalParams.name)
 			}
+			if err != nil {
+				return err
+			}
+			if !initLocalParams.starts {
+				return nil
+			}
 
+			switch initLocalParams.name {
+			case "etcdpasswd":
+				err = neco.StartService(ctx, neco.EtcdpasswdService)
+			}
+			return nil
 		})
 
 		well.Stop()
@@ -61,5 +75,7 @@ new a application NAME.`,
 }
 
 func init() {
+	initLocalCmd.Flags().BoolVar(&initLocalParams.starts, "start", false, "starts service")
+
 	rootCmd.AddCommand(initLocalCmd)
 }
