@@ -7,6 +7,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// GenerateConf genenates sabakan config file
 func GenerateConf(w io.Writer, mylrn int, lrns []int) error {
 	myip := neco.BootNode0IP(mylrn)
 	endpoints := make([]string, len(lrns))

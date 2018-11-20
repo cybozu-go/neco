@@ -56,5 +56,24 @@ func (o *operator) replaceSabakanFiles(ctx context.Context, mylrn int, lrns []in
 	if err != nil {
 		return false, err
 	}
-	return replaceFile(neco.SabakanConfFile, buf.Bytes(), 0644)
+	r1, err := replaceFile(neco.SabakanConfFile, buf.Bytes(), 0644)
+	if err != nil {
+		return false, err
+	}
+
+	buf.Reset()
+	err = sabakan.GenerateService(buf)
+	if err != nil {
+		return false, err
+	}
+	err = os.MkdirAll(filepath.Dir(neco.ServiceFile("sabakan")), 0755)
+	if err != nil {
+		return false, err
+	}
+	r2, err := replaceFile(neco.ServiceFile("sabakan"), buf.Bytes(), 0644)
+	if err != nil {
+		return false, err
+	}
+
+	return r1 || r2, nil
 }

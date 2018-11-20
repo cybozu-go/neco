@@ -61,6 +61,7 @@ const (
 
 	SabakanService = "sabakan"
 	SabakanPrefix  = "/sabakan/"
+	SabakanDataDir = "/var/lib/sabakan"
 )
 
 // File locations

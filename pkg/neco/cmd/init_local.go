@@ -49,7 +49,7 @@ new a application NAME.`,
 			case "etcdpasswd":
 				err = etcdpasswd.IssueCerts(ctx, vc)
 			case "sabakan":
-				err = sabakan.IssueCerts(ctx, vc)
+				err = sabakan.InitLocal(ctx, vc)
 			default:
 				return errors.New("unknown service name: " + initLocalParams.name)
 			}
