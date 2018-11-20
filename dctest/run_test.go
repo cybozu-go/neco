@@ -170,9 +170,10 @@ func waitRequestComplete() {
 		if err != nil {
 			return err
 		}
-		if strings.Contains(string(stdout), "status: completed") {
-			return nil
+		if !strings.Contains(string(stdout), "status: completed") {
+			return errors.New("request is not completed: " + string(stdout))
 		}
-		return errors.New("request is not completed: " + string(stdout))
+		return nil
+
 	}).Should(Succeed())
 }
