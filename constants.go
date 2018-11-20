@@ -66,7 +66,8 @@ const (
 
 // Serf params
 const (
-	SerfDir = "/etc/serf"
+	SerfService = "serf"
+	SerfDir     = "/etc/serf"
 )
 
 // File locations
