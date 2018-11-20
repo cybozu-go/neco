@@ -37,6 +37,13 @@ func testWorker() {
 		}
 	})
 
+	It("should success initialize Serf", func() {
+		for _, host := range []string{boot0, boot1, boot2} {
+			execSafeAt(host, "test", "-f", neco.SerfConfFile)
+			execSafeAt(host, "systemctl", "-q", "is-active", "serf.service")
+		}
+	})
+
 	It("should success initialize sabakan", func() {
 		token := getVaultToken()
 
@@ -67,5 +74,4 @@ func testWorker() {
 		execSafeAt(boot0, "sabactl", "dhcp", "set", "-f", "/mnt/dhcp.json")
 		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
 	})
-
 }
