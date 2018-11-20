@@ -87,7 +87,6 @@ require (
 	github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529 // indirect
 	github.com/spf13/cobra v0.0.3
 	github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926 // indirect
-	go.etcd.io/etcd v3.3.10+incompatible
 	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
 	gopkg.in/asn1-ber.v1 v1.0.0-20170511165959-379148ca0225 // indirect
 	gopkg.in/ldap.v2 v2.5.1 // indirect
