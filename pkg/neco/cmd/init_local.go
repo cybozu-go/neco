@@ -63,7 +63,7 @@ is present.`,
 			case "etcdpasswd":
 				err = neco.StartService(ctx, neco.EtcdpasswdService)
 			}
-			return nil
+			return err
 		})
 
 		well.Stop()

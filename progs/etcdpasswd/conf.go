@@ -22,3 +22,14 @@ func GenerateConf(w io.Writer, lrns []int) error {
 	}
 	return yaml.NewEncoder(w).Encode(data)
 }
+
+// GenerateSystemdDropIn generates systemd drop-in file
+func GenerateSystemdDropIn(w io.Writer) error {
+	tmpl := `
+[Unit]
+ConditionPathExists=%s
+ConditionPathExists=%s
+`
+	_, err := fmt.Fprintf(w, tmpl, neco.EtcdpasswdCertFile, neco.EtcdpasswdKeyFile)
+	return err
+}

@@ -35,12 +35,6 @@ func StopService(ctx context.Context, name string) error {
 	return well.CommandContext(ctx, "systemctl", "stop", name+".service").Run()
 }
 
-// IsActiveService returns true if the service is active
-func IsActiveService(ctx context.Context, name string) bool {
-	err := well.CommandContext(ctx, "systemctl", "is-active", name+".service").Run()
-	return err == nil
-}
-
 // StartTimer does following:
 // 1. systemctl daemon-reload
 // 2. systemctl enable NAME.timer

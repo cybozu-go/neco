@@ -79,10 +79,10 @@ var (
 
 	EtcdpasswdCertFile = filepath.Join(EtcdpasswdDir, "etcd.crt")
 	EtcdpasswdKeyFile  = filepath.Join(EtcdpasswdDir, "etcd.key")
-
 	// TODO release latest etcdpasswd
 	// EtcdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
 	EtcdpasswdConfFile = "/etc/etcdpasswd.yml"
+	EtcdpasswdDropIn   = "/etc/systemd/system/ep-agent.service.d/10-check-certificate.conf"
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")

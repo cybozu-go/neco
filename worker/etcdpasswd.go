@@ -12,6 +12,11 @@ import (
 )
 
 func (o *operator) UpdateEtcdpasswd(ctx context.Context, req *neco.UpdateRequest) error {
+	replaced, err := o.replaceEtcdpasswdFiles(ctx, req.Servers)
+	if err != nil {
+		return err
+	}
+
 	need, err := o.needDebUpdate(ctx, "etcdpasswd")
 	if err != nil {
 		return err
@@ -28,14 +33,7 @@ func (o *operator) UpdateEtcdpasswd(ctx context.Context, req *neco.UpdateRequest
 		}
 	}
 
-	replaced, err := o.replaceEtcdpasswdFiles(ctx, req.Servers)
-	if err != nil {
-		return err
-	}
-
-	active := neco.IsActiveService(ctx, neco.EtcdpasswdService)
-
-	if replaced && !need && active {
+	if replaced && !need {
 		err = neco.RestartService(ctx, neco.EtcdpasswdService)
 		if err != nil {
 			return err
@@ -50,15 +48,32 @@ func (o *operator) UpdateEtcdpasswd(ctx context.Context, req *neco.UpdateRequest
 func (o *operator) replaceEtcdpasswdFiles(ctx context.Context, lrns []int) (bool, error) {
 	buf := new(bytes.Buffer)
 
-	err := etcdpasswd.GenerateConf(buf, lrns)
+	err := etcdpasswd.GenerateSystemdDropIn(buf)
+	if err != nil {
+		return false, err
+	}
+	err = os.MkdirAll(filepath.Dir(neco.EtcdpasswdDropIn), 0755)
+	if err != nil {
+		return false, err
+	}
+	r1, err := replaceFile(neco.EtcdpasswdDropIn, buf.Bytes(), 0644)
 	if err != nil {
 		return false, err
 	}
 
+	buf.Reset()
+	err = etcdpasswd.GenerateConf(buf, lrns)
+	if err != nil {
+		return false, err
+	}
 	err = os.MkdirAll(filepath.Dir(neco.EtcdpasswdConfFile), 0755)
 	if err != nil {
 		return false, err
 	}
+	r2, err := replaceFile(neco.EtcdpasswdConfFile, buf.Bytes(), 0644)
+	if err != nil {
+		return false, err
+	}
 
-	return replaceFile(neco.EtcdpasswdConfFile, buf.Bytes(), 0644)
+	return r1 || r2, nil
 }
