@@ -6,7 +6,7 @@ type tags struct {
 	OsVersion string `json:"os-version"`
 	Serial    string `json:"serial"`
 }
-type confTmpl struct {
+type serfConfig struct {
 	Tags              tags     `json:"tags"`
 	Interface         string   `json:"interface"`
 	EventHandlers     []string `json:"event_handlers"`

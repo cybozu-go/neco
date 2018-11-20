@@ -3,6 +3,7 @@ package worker
 import (
 	"bytes"
 	"context"
+	"os/exec"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -49,7 +50,15 @@ func (o *operator) replaceSerfFiles(ctx context.Context, lrns []int) (bool, erro
 	}
 
 	buf.Reset()
-	err = serf.GenerateConf(buf, lrns)
+	osVer, err := serf.GetOSVersion()
+	if err != nil {
+		return false, err
+	}
+	serial, err := exec.Command("cat", "/sys/class/dmi/id/product_serial").Output()
+	if err != nil {
+		return false, err
+	}
+	err = serf.GenerateConf(buf, lrns, osVer, string(serial))
 	if err != nil {
 		return false, err
 	}

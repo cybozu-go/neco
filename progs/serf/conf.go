@@ -5,32 +5,22 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"os/exec"
 	"strings"
 
 	"github.com/cybozu-go/neco"
 )
 
 // GenerateConf generates serf.json from template.
-func GenerateConf(w io.Writer, lrns []int) error {
+func GenerateConf(w io.Writer, lrns []int, osVer string, serial string) error {
 	endpoints := make([]string, len(lrns))
 	for i, lrn := range lrns {
 		endpoints[i] = neco.BootNode0IP(lrn).String()
 	}
 
-	osVer, err := getOSVersion()
-	if err != nil {
-		return err
-	}
-	serial, err := exec.Command("cat", "/sys/class/dmi/id/product_serial").Output()
-	if err != nil {
-		return err
-	}
-
-	data := confTmpl{
+	data := serfConfig{
 		Tags: tags{
 			OsVersion: osVer,
-			Serial:    string(serial),
+			Serial:    serial,
 		},
 		Interface:         "node0",
 		EventHandlers:     []string{"member-join", "member-failed", "member-leave=/etc/serf/handler"},
@@ -45,7 +35,9 @@ func GenerateConf(w io.Writer, lrns []int) error {
 	return json.NewEncoder(w).Encode(data)
 }
 
-func getOSVersion() (string, error) {
+// GetOSVersion get OS version.
+// Currently, this method is worked only on Linux.
+func GetOSVersion() (string, error) {
 	out, err := ioutil.ReadFile("/etc/lsb-release")
 	if err != nil {
 		return "", err
