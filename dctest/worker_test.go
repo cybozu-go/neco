@@ -2,12 +2,10 @@ package dctest
 
 import (
 	"bytes"
-	"context"
-	"fmt"
+	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/hashicorp/vault/api"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -22,13 +20,8 @@ func testWorker() {
 	})
 
 	It("should success initialize etcdpasswd", func() {
-		cfg := api.DefaultConfig()
-		cfg.Address = fmt.Sprintf("https://%s:8200", neco.BootNode0IP(0).String())
-		vc, err := api.NewClient(cfg)
-		Expect(err).ShouldNot(HaveOccurred())
-
-		err = neco.WaitVaultLeader(context.Background(), vc)
-		Expect(err).ShouldNot(HaveOccurred())
+		// wait for vault leader election
+		time.Sleep(10 * time.Second)
 
 		execSafeAt(boot0, "neco", "init", "etcdpasswd")
 
