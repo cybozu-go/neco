@@ -177,3 +177,10 @@ func waitRequestComplete() {
 
 	}).Should(Succeed())
 }
+
+func getVaultToken() string {
+	stdout, stderr, err := execAt(boot0, "neco", "vault", "show-root-token")
+	Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+
+	return string(bytes.TrimSpace(stdout))
+}
