@@ -3,7 +3,9 @@ package worker
 import (
 	"bytes"
 	"context"
+	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -43,7 +45,10 @@ func (o *operator) replaceSerfFiles(ctx context.Context, lrns []int) (bool, erro
 	if err != nil {
 		return false, err
 	}
-
+	err = os.MkdirAll(filepath.Dir(neco.SerfConfFile), 0755)
+	if err != nil {
+		return false, err
+	}
 	r1, err := replaceFile(neco.ServiceFile(neco.SerfService), buf.Bytes(), 0644)
 	if err != nil {
 		return false, err
