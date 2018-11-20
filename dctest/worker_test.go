@@ -3,6 +3,7 @@ package dctest
 import (
 	"bytes"
 	"context"
+	"fmt"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -22,6 +23,7 @@ func testWorker() {
 
 	It("should success initialize etcdpasswd", func() {
 		cfg := api.DefaultConfig()
+		cfg.Address = fmt.Sprintf("https://%s:8200", neco.BootNode0IP(0).String())
 		vc, err := api.NewClient(cfg)
 		Expect(err).ShouldNot(HaveOccurred())
 
