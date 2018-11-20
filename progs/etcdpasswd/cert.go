@@ -24,6 +24,9 @@ func IssueCerts(ctx context.Context, vc *api.Client) error {
 		"common_name":          "etcdpasswd",
 		"exclude_cn_from_sans": true,
 	})
+	if err != nil {
+		return err
+	}
 	err = writeFile(neco.EtcdpasswdCertFile, secret.Data["certificate"].(string))
 	if err != nil {
 		return err
