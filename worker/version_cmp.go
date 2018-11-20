@@ -38,5 +38,4 @@ func (o *operator) needDebUpdate(ctx context.Context, name string) (bool, error)
 		return false, err
 	}
 	return ver != deb.Release, nil
-
 }
