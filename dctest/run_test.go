@@ -156,8 +156,8 @@ func execAtWithInput(host string, input []byte, args ...string) error {
 }
 
 func execSafeAt(host string, args ...string) string {
-	stdout, _, err := execAt(host, args...)
-	ExpectWithOffset(1, err).To(Succeed())
+	stdout, stderr, err := execAt(host, args...)
+	ExpectWithOffset(1, err).To(Succeed(), "[%s] %v: %s", host, args, stderr)
 	return string(stdout)
 }
 
