@@ -77,7 +77,7 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 	if env == neco.TestEnv {
 		return installLocalPackage(ctx, deb)
 	}
-	return InstallDebianPackage(ctx, o.proxyClient, deb)
+	return InstallDebianPackage(ctx, o.proxyClient, deb, true)
 }
 
 func (o *operator) FinalStep() int {

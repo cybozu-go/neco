@@ -27,15 +27,13 @@ Synopsis
 
     This command should be **executed only once in the cluster**.
 
-* `neco init-local [--start] NAME`
+* `neco init-local NAME`
 
     Prepare files to start `NAME`.  For example, this issues a client certificate
     for etcd authentication.    This will ask users to input Vault username and
     password to issue certificates.
 
     This command should be **executed on all boot servers**.
-
-    If `--start` is given, the program is started after initialization.
 
 * `neco join LRN [LRN ...]`
 
@@ -148,10 +146,6 @@ Use case
     1. Add etcd key `<prefix>/bootservers/LRN` on the finished boot server.
 1. Run `neco init NAME` on one of boot servers. etcd user/role has created.
 1. Run `neco init-local NAME` on each boot server. Client certificates for `NAME` have issued.
-1. Run `systemctl start neco-worker.service` to install applications.
-     1. Create configuration file and systemd unit files for each applications.
-     1. Download container images and deb packages.
-     1. Install applications, and start them.
 
 ### Add a new boot server
 
@@ -163,13 +157,6 @@ Use case
     1. Add member to the etcd cluster.
     1. Add a new boot server to the etcd key `<prefix>/bootservers/LRN`.
 1. Run `neco init-local NAME` on a new boot server. Client certificates for `NAME` have issued.
-1. Run `systemctl start neco-worker.service` to install applications.
-    1. Create etcd configuration file with a new member.
-    1. Start etcd.
-    1. Create vault configuration file with a new member.
-    1. Start vault.
-    1. Unseal vault.
-    1. Install and start other applications.
 
 Existing boot servers need to maintain application configuration files
 to update the list of etcd endpoints.
@@ -180,7 +167,7 @@ When a new program is added to `artifacts.go`, it should be setup as follows:
 
 0. `neco-worker` installs the program but does not start it yet.
 1. Run `neco init NAME` on a boot server.
-2. Run `neco init-local --start NAME` on all boot servers.
+2. Run `neco init-local NAME` on all boot servers.
 
 ### Remove a dead boot server
 

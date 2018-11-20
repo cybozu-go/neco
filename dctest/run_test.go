@@ -156,8 +156,8 @@ func execAtWithInput(host string, input []byte, args ...string) error {
 }
 
 func execSafeAt(host string, args ...string) string {
-	stdout, _, err := execAt(host, args...)
-	ExpectWithOffset(1, err).To(Succeed())
+	stdout, stderr, err := execAt(host, args...)
+	ExpectWithOffset(1, err).To(Succeed(), "[%s] %v: %s", host, args, stderr)
 	return string(stdout)
 }
 
@@ -170,9 +170,10 @@ func waitRequestComplete() {
 		if err != nil {
 			return err
 		}
-		if strings.Contains(string(stdout), "status: completed") {
-			return nil
+		if !strings.Contains(string(stdout), "status: completed") {
+			return errors.New("request is not completed: " + string(stdout))
 		}
-		return errors.New("request is not completed: " + string(stdout))
+		return nil
+
 	}).Should(Succeed())
 }

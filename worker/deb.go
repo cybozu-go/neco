@@ -14,7 +14,7 @@ import (
 )
 
 // InstallDebianPackage installs a debian package
-func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.DebianPackage) error {
+func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.DebianPackage, background bool) error {
 	gh := neco.NewGitHubClient(client)
 
 	releases, err := listGithubReleases(ctx, gh, pkg)
@@ -60,13 +60,16 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.De
 		return err
 	}
 
-	return well.CommandContext(context.Background(),
-		"systemd-run", "-q", "dpkg", "-i", f.Name()).Run()
+	command := []string{"sh", "-c", "dpkg -i " + f.Name() + "&& rm " + f.Name()}
+	if background {
+		command = append([]string{"systemd-run", "-q", "--wait"}, command...)
+	}
+	return well.CommandContext(context.Background(), command[0], command[1:]...).Run()
 }
 
 func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage) error {
 	deb := fmt.Sprintf("/mnt/%s_%s_amd64.deb", pkg.Name, pkg.Release)
-	return well.CommandContext(context.Background(), "systemd-run", "-q", "dpkg", "-i", deb).Run()
+	return well.CommandContext(context.Background(), "systemd-run", "-q", "--wait", "dpkg", "-i", deb).Run()
 }
 
 func listGithubReleases(ctx context.Context, gh *github.Client, pkg *neco.DebianPackage) ([]*github.RepositoryRelease, error) {
