@@ -7,6 +7,7 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/etcdpasswd"
+	"github.com/cybozu-go/neco/progs/sabakan"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
@@ -47,6 +48,8 @@ new a application NAME.`,
 			switch initLocalParams.name {
 			case "etcdpasswd":
 				err = etcdpasswd.IssueCerts(ctx, vc)
+			case "sabakan":
+				err = sabakan.IssueCerts(ctx, vc)
 			default:
 				return errors.New("unknown service name: " + initLocalParams.name)
 			}
@@ -57,6 +60,8 @@ new a application NAME.`,
 			switch initLocalParams.name {
 			case "etcdpasswd":
 				err = neco.StartService(ctx, neco.EtcdpasswdService)
+			case "sabakan":
+				err = neco.StartService(ctx, neco.SabakanService)
 			}
 			return err
 		})

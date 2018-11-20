@@ -55,6 +55,14 @@ const (
 	EtcdpasswdPrefix  = "/passwd/"
 )
 
+// Sabakan params
+const (
+	SabakanDir = "/etc/sabakan"
+
+	SabakanService = "sabakan"
+	SabakanPrefix  = "/sabakan/"
+)
+
 // File locations
 var (
 	rackFile    = filepath.Join(NecoDir, "rack")
@@ -83,6 +91,10 @@ var (
 	// EtcdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
 	EtcdpasswdConfFile = "/etc/etcdpasswd.yml"
 	EtcdpasswdDropIn   = "/etc/systemd/system/ep-agent.service.d/10-check-certificate.conf"
+
+	SabakanCertFile = filepath.Join(SabakanDir, "etcd.crt")
+	SabakanKeyFile  = filepath.Join(SabakanDir, "etcd.key")
+	SabakanConfFile = filepath.Join(SabakanDir, "config.yml")
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
