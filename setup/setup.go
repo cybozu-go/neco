@@ -164,7 +164,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 	if err != nil {
 		return err
 	}
-	err = waitVaultLeader(ctx, vc)
+	err = neco.WaitVaultLeader(ctx, vc)
 	if err != nil {
 		return err
 	}

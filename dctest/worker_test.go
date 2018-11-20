@@ -2,9 +2,11 @@ package dctest
 
 import (
 	"bytes"
+	"context"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/hashicorp/vault/api"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -19,6 +21,13 @@ func testWorker() {
 	})
 
 	It("should success initialize etcdpasswd", func() {
+		cfg := api.DefaultConfig()
+		vc, err := api.NewClient(cfg)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		err = neco.WaitVaultLeader(context.Background(), vc)
+		Expect(err).ShouldNot(HaveOccurred())
+
 		execSafeAt(boot0, "neco", "init", "etcdpasswd")
 
 		for _, host := range []string{boot0, boot1, boot2} {
