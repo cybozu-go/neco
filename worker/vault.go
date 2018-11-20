@@ -3,6 +3,7 @@ package worker
 import (
 	"bytes"
 	"context"
+	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -37,6 +38,13 @@ func (o *operator) UpdateVault(ctx context.Context, req *neco.UpdateRequest) err
 	err = neco.StartService(ctx, neco.VaultService)
 	if err != nil {
 		return err
+	}
+
+	// wait for vault leader election
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-time.After(10 * time.Second):
 	}
 
 	log.Info("vault: updated", nil)
