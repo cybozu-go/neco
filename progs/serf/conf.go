@@ -2,10 +2,7 @@ package serf
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
-	"io/ioutil"
-	"strings"
 
 	"github.com/cybozu-go/neco"
 )
@@ -33,20 +30,4 @@ func GenerateConf(w io.Writer, lrns []int, osVer string, serial string) error {
 		LogLevel:          "debug",
 	}
 	return json.NewEncoder(w).Encode(data)
-}
-
-// GetOSVersion get OS version.
-// Currently, this method is worked only on Linux.
-func GetOSVersion() (string, error) {
-	out, err := ioutil.ReadFile("/etc/lsb-release")
-	if err != nil {
-		return "", err
-	}
-	target := "DISTRIB_RELEASE="
-	for _, line := range strings.Split(string(out), "\n") {
-		if strings.HasPrefix(line, target) {
-			return line[len(target):], nil
-		}
-	}
-	return "", errors.New("failed to get os version")
 }

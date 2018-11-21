@@ -3,10 +3,8 @@ package worker
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -56,15 +54,15 @@ func (o *operator) replaceSerfFiles(ctx context.Context, lrns []int) (bool, erro
 	}
 
 	buf.Reset()
-	osVer, err := serf.GetOSVersion()
+	os, err := serf.GetOSVersionID()
 	if err != nil {
 		return false, err
 	}
-	serial, err := ioutil.ReadFile("/sys/class/dmi/id/product_serial")
+	serial, err := serf.GetSerial()
 	if err != nil {
 		return false, err
 	}
-	err = serf.GenerateConf(buf, lrns, osVer, strings.TrimSpace(string(serial)))
+	err = serf.GenerateConf(buf, lrns, os, serial)
 	if err != nil {
 		return false, err
 	}
