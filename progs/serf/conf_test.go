@@ -24,7 +24,7 @@ func TestGenerateConf(t *testing.T) {
 			Serial:    serial,
 		},
 		Interface:         "node0",
-		EventHandlers:     []string{"member-join", "member-failed", "member-leave=/etc/serf/handler"},
+		EventHandlers:     []string{"member-join,member-failed,member-leave=/etc/serf/handler"},
 		ReconnectInterval: "30s",
 		ReconnectTimeout:  "24h",
 		TombstoneTimeout:  "24h",

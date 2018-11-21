@@ -23,7 +23,7 @@ func GenerateConf(w io.Writer, lrns []int, osVer string, serial string) error {
 			Serial:    serial,
 		},
 		Interface:         "node0",
-		EventHandlers:     []string{"member-join", "member-failed", "member-leave=/etc/serf/handler"},
+		EventHandlers:     []string{"member-join,member-failed,member-leave=/etc/serf/handler"},
 		ReconnectInterval: "30s",
 		ReconnectTimeout:  "24h",
 		TombstoneTimeout:  "24h",
