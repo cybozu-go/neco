@@ -47,6 +47,11 @@ const (
 	VaultPrefix = "/vault/"
 )
 
+// OMSA params
+const (
+	OMSAService = "omsa"
+)
+
 // Etcdpasswd params
 const (
 	EtcdpasswdDir = "/etc/etcdpasswd"
