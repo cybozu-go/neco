@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"sort"
-	"strconv"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/neco"
@@ -40,42 +38,6 @@ func (s Storage) WaitRequest(ctx context.Context, rev int64) (*neco.UpdateReques
 	}
 
 	return nil, 0, errors.New("waitRequest was interrupted")
-}
-
-// WaitForMemberUpdated waits for new member added or member removed until with
-// check-update-interval. It returns (true, nil) when timed-out.  It returns
-// (false, nil) if member list is updated.
-func (s Storage) WaitForMemberUpdated(ctx context.Context, req *neco.UpdateRequest, rev int64) (timeout bool, err error) {
-	interval, err := s.GetCheckUpdateInterval(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	withTimeoutCtx, cancel := context.WithTimeout(ctx, interval)
-	defer cancel()
-
-	ch := s.etcd.Watch(
-		withTimeoutCtx, KeyBootserversPrefix, clientv3.WithRev(rev+1), clientv3.WithPrefix(),
-	)
-
-	for resp := range ch {
-		for _, ev := range resp.Events {
-			lrn, err := strconv.Atoi(string(ev.Kv.Key[len(KeyBootserversPrefix):]))
-			if err != nil {
-				return false, err
-			}
-			if ev.Type == clientv3.EventTypePut {
-				if i := sort.SearchInts(req.Servers, lrn); i < len(req.Servers) && req.Servers[i] == lrn {
-					continue
-				}
-			}
-			return false, nil
-		}
-	}
-	if withTimeoutCtx.Err() == context.DeadlineExceeded {
-		return true, nil
-	}
-	return false, withTimeoutCtx.Err()
 }
 
 // WaitRequestDeletion waits for a UpdateRequest to be deleted.
