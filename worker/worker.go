@@ -299,7 +299,6 @@ func (w *Worker) runStep(ctx context.Context) (bool, error) {
 		log.Error("error occurs on etcd restarting after update completed", map[string]interface{}{
 			log.FnError: err,
 		})
-		return false, nil
 	}
 
 	return true, nil
