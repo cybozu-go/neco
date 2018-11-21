@@ -18,7 +18,7 @@ func writeFile(filename string, data string) error {
 	return ioutil.WriteFile(filename, []byte(data), 0644)
 }
 
-// IssueCerts issues etcdpasswd's certificates
+// IssueCerts issues sabakan's certificates
 func IssueCerts(ctx context.Context, vc *api.Client) error {
 	secret, err := vc.Logical().Write(neco.CAEtcdClient+"/issue/system", map[string]interface{}{
 		"common_name":          "sabakan",
