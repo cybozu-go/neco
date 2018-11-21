@@ -295,7 +295,11 @@ func (w *Worker) runStep(ctx context.Context) (bool, error) {
 	// restart etcd if needed.
 	err = w.operator.RestartEtcd(sort.SearchInts(w.req.Servers, w.mylrn))
 	if err != nil {
-		return false, err
+		// NOTE: ignore error due to no way to handle etcd cluster after update completed
+		log.Error("error occurs on etcd restarting after update completed", map[string]interface{}{
+			log.FnError: err,
+		})
+		return false, nil
 	}
 
 	return true, nil
