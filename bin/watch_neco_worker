@@ -23,9 +23,9 @@ while ! $GCLOUD 2>/dev/null compute scp --zone=${ZONE} ./dctest/dctest_key ./dct
     sleep 1
 done
 
-tail_neco_worker boot-0 &
-tail_neco_worker boot-1 &
-tail_neco_worker boot-2 &
-tail_neco_worker boot-3 &
+tail_neco_worker boot-0 | sed -e s/^/$(tput -Txterm setaf 1)/ &
+tail_neco_worker boot-1 | sed -e s/^/$(tput -Txterm setaf 2)/ &
+tail_neco_worker boot-2 | sed -e s/^/$(tput -Txterm setaf 3)/ &
+tail_neco_worker boot-3 | sed -e s/^/$(tput -Txterm setaf 4)/ &
 
 wait
