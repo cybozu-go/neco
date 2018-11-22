@@ -12,6 +12,14 @@ import (
 )
 
 func (o *operator) UpdateOMSA(ctx context.Context, req *neco.UpdateRequest) error {
+	hw, err := neco.DetectHardware()
+	if err != nil {
+		return err
+	}
+	if hw != neco.HWTypeDell {
+		return nil
+	}
+
 	need, err := o.needContainerImageUpdate(ctx, "omsa")
 	if err != nil {
 		return err
