@@ -25,6 +25,7 @@ var quayRepos = []string{
 	"sabakan",
 	"serf",
 	"vault",
+	"hyperkube",
 }
 
 var debRepos = []string{
