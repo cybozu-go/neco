@@ -27,7 +27,7 @@ type server struct {
 }
 
 func (s server) handle(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodPut {
 		w.WriteHeader(400)
 		return
 	}

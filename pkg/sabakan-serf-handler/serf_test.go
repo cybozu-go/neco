@@ -12,7 +12,7 @@ func TestParsePayload(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := &Event{
+	expected := &Payload{
 		Name:    "mitchellh.local",
 		Address: "127.0.0.1",
 		Role:    "web",

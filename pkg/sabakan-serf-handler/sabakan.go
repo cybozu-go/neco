@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// Sabakan path and parameters
 const (
 	UpdateStatePrefix = "/api/v1/state/"
 	UpdateLabelPrefix = "/api/v1/labels/"

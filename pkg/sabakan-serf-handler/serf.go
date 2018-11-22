@@ -5,20 +5,23 @@ import (
 	"strings"
 )
 
+// Event types stored in SERF_EVENT envvar
 const (
 	EventMemberJoin   = "member-join"
 	EventMemberLeave  = "member-leave"
 	EventMemberFailed = "member-failed"
 )
 
-type Event struct {
+// Payload represents payload in serf event
+type Payload struct {
 	Name    string
 	Address string
 	Role    string
 	Tags    map[string]string
 }
 
-func ParsePayload(line string) (*Event, error) {
+// ParsePayload parses an input line of serf event
+func ParsePayload(line string) (*Payload, error) {
 	fields := strings.Split(line, "\t")
 	if len(fields) != 4 {
 		return nil, errors.New("line does not have 4 fields")
@@ -35,7 +38,7 @@ func ParsePayload(line string) (*Event, error) {
 		}
 	}
 
-	ev := &Event{
+	ev := &Payload{
 		Name:    fields[0],
 		Address: fields[1],
 		Role:    fields[2],
