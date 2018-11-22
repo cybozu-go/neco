@@ -11,6 +11,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "0.24-1"},
 		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.8.1-3"},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "0.11.0-1"},
+		{Name: "hyperkube", Repository: "quay.io/cybozu/hyperkube", Tag: "1.11.2-5"},
 	},
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.5"},
