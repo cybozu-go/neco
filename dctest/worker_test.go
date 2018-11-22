@@ -75,4 +75,17 @@ func testWorker() {
 		execSafeAt(boot0, "sabactl", "dhcp", "set", "-f", "/mnt/dhcp.json")
 		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
 	})
+
+	It("should update machine state in sabakan", func() {
+		// Restart serf after machine registered to update state in sabakan
+		for _, host := range []string{boot0, boot1, boot2} {
+			execSafeAt(host, "sudo", "systemctl", "restart", "serf.service")
+		}
+
+		for _, ip := range []string{"10.69.0.3", "10.69.0.195", "10.69.1.131"} {
+			Eventually(func() string {
+				return execSafeAt(boot0, "sabactl", "machines", "get", "-ipv4", ip)
+			}).Should(ContainSubstring(`"state": "healthy"`))
+		}
+	})
 }
