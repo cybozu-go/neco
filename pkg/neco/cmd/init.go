@@ -6,6 +6,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/cke"
 	"github.com/cybozu-go/neco/progs/etcd"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
@@ -44,6 +45,8 @@ executed more than once.`,
 				return etcd.UserAdd(ctx, ce, "etcdpasswd", neco.EtcdpasswdPrefix)
 			case "sabakan":
 				return etcd.UserAdd(ctx, ce, "sabakan", neco.SabakanPrefix)
+			case "cke":
+				return cke.Init(ctx, ce)
 			default:
 				return errors.New("unknown service name: " + initParams.name)
 			}

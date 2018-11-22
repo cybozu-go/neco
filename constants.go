@@ -71,6 +71,14 @@ const (
 	SerfHandler = "/usr/sbin/sabakan-serf-handler"
 )
 
+// CKE params
+const (
+	CKEDir = "/etc/cke"
+
+	CKEService = "cke"
+	CKEPrefix  = "/cke/"
+)
+
 // File locations
 var (
 	rackFile    = filepath.Join(NecoDir, "rack")

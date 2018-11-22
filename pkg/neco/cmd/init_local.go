@@ -38,7 +38,7 @@ new a application NAME.`,
 		if err != nil {
 			log.ErrorExit(err)
 		}
-		vc, err := vaultClient(mylrn)
+		vc, err := neco.VaultClient(mylrn)
 		if err != nil {
 			log.ErrorExit(err)
 		}
