@@ -7,6 +7,13 @@ import (
 	"github.com/cybozu-go/neco"
 )
 
+// NOTE: Administrator must consider protocol version in the Serf cluster on
+// upgrading.  neco-worker currently does not support upgrading Serf and use
+// fixed version number explicitly in the configuration for safety.
+//
+// See also https://www.serf.io/docs/upgrading.html
+const protocolVersion = 5
+
 // GenerateConf generates serf.json from template.
 func GenerateConf(w io.Writer, lrns []int, osVer string, serial string) error {
 	endpoints := make([]string, len(lrns))
@@ -28,6 +35,9 @@ func GenerateConf(w io.Writer, lrns []int, osVer string, serial string) error {
 		RetryMaxAttempts:  0,
 		RetryInterval:     "30s",
 		LogLevel:          "debug",
+		Protocol:          protocolVersion,
 	}
-	return json.NewEncoder(w).Encode(data)
+	e := json.NewEncoder(w)
+	e.SetIndent("", "  ")
+	return e.Encode(data)
 }

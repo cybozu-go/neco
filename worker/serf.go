@@ -5,10 +5,14 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
+	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/serf"
+	"github.com/cybozu-go/neco/storage"
 )
 
 func (o *operator) UpdateSerf(ctx context.Context, req *neco.UpdateRequest) error {
@@ -26,15 +30,42 @@ func (o *operator) UpdateSerf(ctx context.Context, req *neco.UpdateRequest) erro
 			return err
 		}
 	}
-	_, err = o.replaceSerfFiles(ctx, req.Servers)
+	replaced, err := o.replaceSerfFiles(ctx, req.Servers)
 	if err != nil {
 		return err
 	}
+	if !need && !replaced {
+		return nil
+	}
+
+	sess, err := concurrency.NewSession(o.ec, concurrency.WithTTL(10))
+	if err != nil {
+		log.Error("etcd: new session is not created", map[string]interface{}{
+			log.FnError: err,
+		})
+		return err
+	}
+	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
+	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
+	if err != nil {
+		log.Error("serf: cannot join a campaign", map[string]interface{}{
+			log.FnError: err,
+		})
+		return err
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		e.Resign(ctx)
+		cancel()
+
+		log.Info("serf: updated", nil)
+	}()
+
 	err = neco.RestartService(ctx, neco.SerfService)
 	if err != nil {
 		return err
 	}
-	log.Info("serf: updated", nil)
+
 	return nil
 }
 

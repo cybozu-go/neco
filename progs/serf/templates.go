@@ -6,6 +6,7 @@ type tags struct {
 	OsVersion string `json:"os-version"`
 	Serial    string `json:"serial"`
 }
+
 type serfConfig struct {
 	Tags              tags     `json:"tags"`
 	Interface         string   `json:"interface"`
@@ -17,6 +18,7 @@ type serfConfig struct {
 	RetryMaxAttempts  int      `json:"retry_max_attempts"`
 	RetryInterval     string   `json:"retry_interval"`
 	LogLevel          string   `json:"log_level"`
+	Protocol          int      `json:"protocol"`
 }
 
 var serviceTmpl = template.Must(template.New("serf.service").
