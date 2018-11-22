@@ -3,6 +3,8 @@ package worker
 import (
 	"bytes"
 	"context"
+	"os"
+	"path/filepath"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -60,22 +62,29 @@ func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error
 
 func (o *operator) replaceCKEFiles(ctx context.Context, lrns []int) (bool, error) {
 	buf := new(bytes.Buffer)
-	err := cke.GenerateService(buf)
+	err := cke.GenerateConf(buf, lrns)
 	if err != nil {
 		return false, err
 	}
-
-	r1, err := replaceFile(neco.ServiceFile(neco.CKEService), buf.Bytes(), 0644)
+	err = os.MkdirAll(filepath.Dir(neco.CKEConfFile), 0755)
+	if err != nil {
+		return false, err
+	}
+	r1, err := replaceFile(neco.CKEConfFile, buf.Bytes(), 0644)
 	if err != nil {
 		return false, err
 	}
 
 	buf.Reset()
-	err = cke.GenerateConf(buf, lrns)
+	err = cke.GenerateService(buf)
 	if err != nil {
 		return false, err
 	}
-	r2, err := replaceFile(neco.CKEConfFile, buf.Bytes(), 0644)
+	err = os.MkdirAll(filepath.Dir(neco.ServiceFile("cke")), 0755)
+	if err != nil {
+		return false, err
+	}
+	r2, err := replaceFile(neco.ServiceFile(neco.CKEService), buf.Bytes(), 0644)
 	if err != nil {
 		return false, err
 	}
