@@ -24,7 +24,11 @@ type sabakan struct {
 }
 
 func (c sabakan) post(url string, body io.Reader) error {
-	resp, err := http.Post(url, "", body)
+	req, err := http.NewRequest("PUT", url, body)
+	if err != nil {
+		return err
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
