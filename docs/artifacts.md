@@ -8,6 +8,15 @@ It is given as a go file with structs to include neco binaries see details in [t
 
 There are two artifacts files.
 
-- [artifacts.go](../artifacts.go): For developers. They can update it anytime using `generate-artifacts`.
-- [artifacts_release.go](../artifacts.go): For CI. The job updates it using `generate-artifacts --release`.  
-  The developers are PROHIBITED to modify it using the command to prevent merge conficts in CI flow.
+- [artifacts.go](../artifacts.go)
+
+    For developers. They can update it anytime using `generate-artifacts`.
+
+- [artifacts_new.go](../artifacts_new.go)
+
+    For update test. [dctest/Makefile](../dctest/Makefile) builds testing new version of `neco` package builds with this artifacts.
+
+- [artifacts_release.go](../artifacts.go)
+
+    For CI. The job updates it using `generate-artifacts --release`.  
+    The developers are PROHIBITED to modify it using the command to prevent merge conficts in CI flow.

@@ -17,3 +17,4 @@ $ generate-artifacts [OPTIONS]
 Option      | Default value | Description
 ------      | ------------- | -----------
 `--release` | false         | Generate for `artifacts_release.go`
+`--new`     | false         | Generate for `artifacts_new.go`

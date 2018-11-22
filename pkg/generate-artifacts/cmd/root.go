@@ -46,8 +46,11 @@ This command gathers the latest release candidates of tools used to
 build Neco data center, and generates "artifacts.go".
 
 If --release is given, the generated source code will have a build
-tag "release".  If not, the generated code will have tag "!release".`,
+tag "release".  If not, the generated code will have tag "!release,!new".
 
+If --new is given, the generated source code will have a build
+tag "new".  If not, the generated code will have tag "!release,!new".
+`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		user := os.Getenv("QUAY_USER")
 		if len(user) > 0 {
@@ -68,6 +71,7 @@ tag "release".  If not, the generated code will have tag "!release".`,
 			User:     params.quayUser,
 			Password: params.quayPassword,
 			Release:  *flagRelease,
+			New:      *flagNew,
 		}
 		err := generator.Generate(context.Background(), cfg, os.Stdout)
 		if err != nil {
@@ -85,8 +89,12 @@ func Execute() {
 	}
 }
 
-var flagRelease *bool
+var (
+	flagRelease *bool
+	flagNew     *bool
+)
 
 func init() {
 	flagRelease = rootCmd.Flags().Bool("release", false, "Generate artifacts_release.go")
+	flagNew = rootCmd.Flags().Bool("new", false, "Generate artifacts_new.go")
 }
