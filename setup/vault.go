@@ -3,7 +3,6 @@ package setup
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -20,28 +19,19 @@ import (
 
 const vaultPath = "/usr/local/bin/vault"
 
-func writeFile(filename string, data string) error {
-	err := os.MkdirAll(filepath.Dir(filename), 0755)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(filename, []byte(data), 0644)
-}
-
 func dumpCertFiles(secret *api.Secret, caFile, certFile, keyFile string) error {
-	err := writeFile(certFile, secret.Data["certificate"].(string))
+	err := neco.WriteFile(certFile, secret.Data["certificate"].(string))
 	if err != nil {
 		return err
 	}
-	err = writeFile(keyFile, secret.Data["private_key"].(string))
+	err = neco.WriteFile(keyFile, secret.Data["private_key"].(string))
 	if err != nil {
 		return err
 	}
 	if caFile == "" {
 		return nil
 	}
-	return writeFile(caFile, secret.Data["issuing_ca"].(string))
+	return neco.WriteFile(caFile, secret.Data["issuing_ca"].(string))
 }
 
 func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {

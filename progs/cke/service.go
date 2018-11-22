@@ -15,8 +15,12 @@ func GenerateService(w io.Writer) error {
 	return serviceTmpl.Execute(w, struct {
 		Image    string
 		ConfFile string
+		CertFile string
+		KeyFile  string
 	}{
 		Image:    img.FullName(),
 		ConfFile: neco.CKEConfFile,
+		CertFile: neco.CKECertFile,
+		KeyFile:  neco.CKEKeyFile,
 	})
 }

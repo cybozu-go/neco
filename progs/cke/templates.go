@@ -1,25 +1,15 @@
 package cke
 
-import "html/template"
-
-var ckePolicy = `
-path "cke/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-`
-
-var confTmpl = template.Must(template.New("config.yml").
-	Parse(`endpoints: {{ .EtcdEndpoints }}
-tls-cert-file: {{ .EtcdCertFile }}
-tls-key-file: {{ .EtcdKeyFile }}
-`))
+import "text/template"
 
 var serviceTmpl = template.Must(template.New("cke.service").
 	Parse(`[Unit]
 Description=CKE container
 Wants=network-online.target
 After=network-online.target
+ConditionPathExists={{ .ConfFile }}
+ConditionPathExists={{ .CertFile }}
+ConditionPathExists={{ .KeyFile }}
 
 [Service]
 Slice=machine.slice
@@ -32,6 +22,7 @@ ExecStart=/usr/bin/rkt run \
   --net=host \
   --dns=host \
   --hosts-entry=host \
+  --hostname=%H \
   --volume certs,kind=host,source=/etc/ssl/certs,readOnly=true \
   --mount volume=certs,target=/etc/ssl/certs \
   --volume conf,kind=host,source=/etc/cke,readOnly=true \

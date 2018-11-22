@@ -71,7 +71,7 @@ func (o *operator) replaceCKEFiles(ctx context.Context, lrns []int) (bool, error
 	}
 
 	buf.Reset()
-	err = cke.GenerateConf(buf, o.mylrn, lrns)
+	err = cke.GenerateConf(buf, lrns)
 	if err != nil {
 		return false, err
 	}

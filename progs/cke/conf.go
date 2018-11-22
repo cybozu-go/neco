@@ -8,8 +8,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// GenerateConf genenates config.yml from template.
-func GenerateConf(w io.Writer, mylrn int, lrns []int) error {
+// GenerateConf generates config.yml from template.
+func GenerateConf(w io.Writer, lrns []int) error {
 	endpoints := make([]string, len(lrns))
 	for i, lrn := range lrns {
 		ip := neco.BootNode0IP(lrn).String()

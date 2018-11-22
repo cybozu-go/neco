@@ -1,4 +1,4 @@
-package etcdpasswd
+package cke
 
 import (
 	"bytes"
@@ -36,5 +36,4 @@ func TestGenerateConf(t *testing.T) {
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("unexpected config: %#v", actual)
 	}
-
 }
