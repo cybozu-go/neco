@@ -64,6 +64,13 @@ const (
 	SabakanDataDir = "/var/lib/sabakan"
 )
 
+// Serf params
+const (
+	SerfService = "serf"
+	SerfDir     = "/etc/serf"
+	SerfHandler = "/usr/sbin/sabakan-serf-handler"
+)
+
 // File locations
 var (
 	rackFile    = filepath.Join(NecoDir, "rack")
@@ -96,6 +103,8 @@ var (
 	SabakanCertFile = filepath.Join(SabakanDir, "etcd.crt")
 	SabakanKeyFile  = filepath.Join(SabakanDir, "etcd.key")
 	SabakanConfFile = filepath.Join(SabakanDir, "config.yml")
+
+	SerfConfFile = filepath.Join(SerfDir, "serf.json")
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
