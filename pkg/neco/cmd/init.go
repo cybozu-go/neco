@@ -42,6 +42,10 @@ executed more than once.`,
 			switch initParams.name {
 			case "etcdpasswd":
 				return etcd.UserAdd(ctx, ce, "etcdpasswd", neco.EtcdpasswdPrefix)
+			case "sabakan":
+				return etcd.UserAdd(ctx, ce, "sabakan", neco.SabakanPrefix)
+			case "cke":
+				return etcd.UserAdd(ctx, ce, "cke", neco.CKEPrefix)
 			default:
 				return errors.New("unknown service name: " + initParams.name)
 			}

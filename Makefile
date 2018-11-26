@@ -58,7 +58,7 @@ $(DEB):
 	mkdir -p $(BINDIR)
 	GOBIN=$(BINDIR) go install -tags='$(TAGS)' ./pkg/neco
 	mkdir -p $(SBINDIR)
-	GOBIN=$(SBINDIR) go install -tags='$(TAGS)' ./pkg/neco-updater ./pkg/neco-worker ./pkg/setup-hw
+	GOBIN=$(SBINDIR) go install -tags='$(TAGS)' ./pkg/neco-updater ./pkg/neco-worker ./pkg/setup-hw ./pkg/sabakan-serf-handler
 	mkdir -p $(DOCDIR)
 	cp README.md LICENSE $(DOCDIR)
 	chmod -R g-w $(WORKDIR)

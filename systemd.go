@@ -27,6 +27,14 @@ func StartService(ctx context.Context, name string) error {
 
 // RestartService restarts the service simply.
 func RestartService(ctx context.Context, name string) error {
+	err := well.CommandContext(ctx, "systemctl", "daemon-reload").Run()
+	if err != nil {
+		return err
+	}
+	err = well.CommandContext(ctx, "systemctl", "enable", name+".service").Run()
+	if err != nil {
+		return err
+	}
 	return well.CommandContext(ctx, "systemctl", "restart", name+".service").Run()
 }
 

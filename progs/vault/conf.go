@@ -8,7 +8,7 @@ import (
 	"github.com/cybozu-go/neco"
 )
 
-// GenerateConf genenates vault.hcl from template.
+// GenerateConf generates vault.hcl from template.
 func GenerateConf(w io.Writer, mylrn int, lrns []int) error {
 	myip := neco.BootNode0IP(mylrn).String()
 	return confTmpl.Execute(w, struct {
