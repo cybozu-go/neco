@@ -88,4 +88,33 @@ func testWorker() {
 			}).Should(ContainSubstring(`"state": "healthy"`))
 		}
 	})
+
+	It("should success initialize cke", func() {
+		token := getVaultToken()
+
+		execSafeAt(boot0, "neco", "init", "cke")
+
+		for _, host := range []string{boot0, boot1, boot2} {
+			stdout, stderr, err := execAt(
+				host, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "cke")
+			if err != nil {
+				log.Error("neco init-local cke", map[string]interface{}{
+					"host":   host,
+					"stdout": string(stdout),
+					"stderr": string(stderr),
+				})
+				Expect(err).ShouldNot(HaveOccurred())
+			}
+			execSafeAt(host, "test", "-f", neco.CKEConfFile)
+			execSafeAt(host, "test", "-f", neco.CKEKeyFile)
+			execSafeAt(host, "test", "-f", neco.CKECertFile)
+
+			execSafeAt(host, "systemctl", "-q", "is-active", "cke.service")
+		}
+	})
+
+	It("should success retrieve cke leader", func() {
+		stdout := execSafeAt(boot0, "ckecli", "leader")
+		Expect(stdout).To(ContainSubstring("boot-"))
+	})
 }
