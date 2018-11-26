@@ -3,6 +3,7 @@ package neco
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os/exec"
 
@@ -92,4 +93,54 @@ func RunContainer(ctx context.Context, name string, binds []Bind, args []string)
 
 	cmd := well.CommandContext(ctx, "rkt", rktArgs...)
 	return cmd.Run()
+}
+
+// RktPod represents rkt pod information
+type RktPod struct {
+	Name     string   `json:"name"`
+	State    string   `json:"state"`
+	AppNames []string `json:"app_names"`
+}
+
+// EnterContainerAppCommand returns well.LogCmd to enter the named app.
+func EnterContainerAppCommand(ctx context.Context, app string, args []string) (*well.LogCmd, error) {
+	uuid, err := getRunningPodByApp(ctx, app)
+	if err != nil {
+		return nil, err
+	}
+
+	rktArgs := []string{"enter", "--app", app, uuid}
+	rktArgs = append(rktArgs, args...)
+	return well.CommandContext(ctx, "rkt", rktArgs...), nil
+}
+
+func getRunningPodByApp(ctx context.Context, app string) (string, error) {
+	cmd := well.CommandContext(ctx, "rkt", "list", "--format=json")
+	data, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+
+	var pods []RktPod
+	err = json.Unmarshal(data, &pods)
+	if err != nil {
+		return "", err
+	}
+
+	// for unknown reason, "rkt list" sometimes returns "null"
+	if len(pods) == 0 {
+		return "", errors.New("failed to get pod list")
+	}
+
+	for _, pod := range pods {
+		if pod.State != "running" {
+			continue
+		}
+		for _, appName := range pod.AppNames {
+			if appName == app {
+				return pod.Name, nil
+			}
+		}
+	}
+	return "", errors.New("failed to find specified app")
 }
