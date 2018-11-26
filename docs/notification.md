@@ -18,4 +18,4 @@ When `neco-updater` finish updating, it notifies the following message.
 
 * Succeeded: The update was succeeded.
 * Aborted: The update was aborted due to an error on any server.
-* Timeout: The update was aborted because boot servers did not return a responce in time. 
+* Timeout: The update was aborted because boot servers did not return a response in time. 

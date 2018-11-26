@@ -10,9 +10,5 @@ import (
 
 // InitLocal initialize sabakan on local machine
 func InitLocal(ctx context.Context, vc *api.Client) error {
-	err := os.MkdirAll(neco.SabakanDataDir, 0755)
-	if err != nil {
-		return err
-	}
-	return IssueCerts(ctx, vc)
+	return os.MkdirAll(neco.SabakanDataDir, 0755)
 }

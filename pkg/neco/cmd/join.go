@@ -48,7 +48,7 @@ to etcd cluster.`,
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		vc, err := vaultClient(joinParams.lrns[0])
+		vc, err := neco.VaultClient(joinParams.lrns[0])
 		if err != nil {
 			log.ErrorExit(err)
 		}

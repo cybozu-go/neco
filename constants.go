@@ -71,6 +71,14 @@ const (
 	SerfHandler = "/usr/sbin/sabakan-serf-handler"
 )
 
+// CKE params
+const (
+	CKEDir = "/etc/cke"
+
+	CKEService = "cke"
+	CKEPrefix  = "/cke/"
+)
+
 // File locations
 var (
 	rackFile    = filepath.Join(NecoDir, "rack")
@@ -105,6 +113,10 @@ var (
 	SabakanConfFile = filepath.Join(SabakanDir, "config.yml")
 
 	SerfConfFile = filepath.Join(SerfDir, "serf.json")
+
+	CKECertFile = filepath.Join(CKEDir, "etcd.crt")
+	CKEKeyFile  = filepath.Join(CKEDir, "etcd.key")
+	CKEConfFile = filepath.Join(CKEDir, "config.yml")
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")

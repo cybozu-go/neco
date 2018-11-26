@@ -103,8 +103,8 @@ func testJoinRemove() {
 			service  string
 			imageTag string
 		}{
-			{neco.EtcdService, "quay.io/cybozu/etcd:3.3.9-3"},
-			{neco.VaultService, "quay.io/cybozu/vault:0.11.0-2"},
+			{neco.EtcdService, "quay.io/cybozu/etcd:3.3.9-4"},
+			{neco.VaultService, "quay.io/cybozu/vault:0.11.0-3"},
 		}
 		Eventually(func() error {
 			for _, art := range artifacts {

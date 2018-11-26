@@ -6,9 +6,9 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/neco/progs/etcdpasswd"
 	"github.com/cybozu-go/neco/progs/sabakan"
 	"github.com/cybozu-go/well"
+	"github.com/hashicorp/vault/api"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +38,7 @@ new a application NAME.`,
 		if err != nil {
 			log.ErrorExit(err)
 		}
-		vc, err := vaultClient(mylrn)
+		vc, err := neco.VaultClient(mylrn)
 		if err != nil {
 			log.ErrorExit(err)
 		}
@@ -47,9 +47,15 @@ new a application NAME.`,
 			var err error
 			switch initLocalParams.name {
 			case "etcdpasswd":
-				err = etcdpasswd.IssueCerts(ctx, vc)
+				err = issueCerts(ctx, vc, "etcdpasswd", neco.EtcdpasswdCertFile, neco.EtcdpasswdKeyFile)
 			case "sabakan":
+				err = issueCerts(ctx, vc, "sabakan", neco.SabakanCertFile, neco.SabakanKeyFile)
+				if err != nil {
+					return err
+				}
 				err = sabakan.InitLocal(ctx, vc)
+			case "cke":
+				err = issueCerts(ctx, vc, "cke", neco.CKECertFile, neco.CKEKeyFile)
 			default:
 				return errors.New("unknown service name: " + initLocalParams.name)
 			}
@@ -62,6 +68,8 @@ new a application NAME.`,
 				err = neco.StartService(ctx, neco.EtcdpasswdService)
 			case "sabakan":
 				err = neco.StartService(ctx, neco.SabakanService)
+			case "cke":
+				err = neco.StartService(ctx, neco.CKEService)
 			}
 			return err
 		})
@@ -76,4 +84,20 @@ new a application NAME.`,
 
 func init() {
 	rootCmd.AddCommand(initLocalCmd)
+}
+
+func issueCerts(ctx context.Context, vc *api.Client, commonName, cert, key string) error {
+	secret, err := vc.Logical().Write(neco.CAEtcdClient+"/issue/system", map[string]interface{}{
+		"common_name":          commonName,
+		"exclude_cn_from_sans": true,
+	})
+	if err != nil {
+		return err
+	}
+	err = neco.WriteFile(cert, secret.Data["certificate"].(string))
+	if err != nil {
+		return err
+	}
+	return neco.WriteFile(key, secret.Data["private_key"].(string))
+
 }
