@@ -10,6 +10,7 @@ import (
 // HardwareType represents
 type HardwareType int
 
+// hardware type
 const (
 	HWTypeNil HardwareType = iota
 	HWTypeVM
