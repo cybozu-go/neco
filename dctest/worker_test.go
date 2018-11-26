@@ -117,4 +117,18 @@ func testWorker() {
 		stdout := execSafeAt(boot0, "ckecli", "leader")
 		Expect(stdout).To(ContainSubstring("boot-"))
 	})
+
+	It("should setup hardware", func() {
+		for _, host := range []string{boot0, boot1, boot2} {
+			stdout, stderr, err := execAt(host, "sudo", "setup-hw")
+			if err != nil {
+				log.Error("setup-hw", map[string]interface{}{
+					"host":   host,
+					"stdout": string(stdout),
+					"stderr": string(stderr),
+				})
+				Expect(err).ShouldNot(HaveOccurred())
+			}
+		}
+	})
 }
