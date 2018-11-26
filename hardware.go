@@ -1,40 +1,58 @@
 package neco
 
-import "os/exec"
+import (
+	"errors"
+	"io/ioutil"
+	"os/exec"
+	"strings"
+)
 
 // HardwareType represents
 type HardwareType int
 
-// known hardware types
 const (
 	HWTypeNil HardwareType = iota
-	HWTypePlacematVM
+	HWTypeVM
+	HWTypeContainer
 	HWTypeDell
 )
 
 // DetectHardware detects hardware type.
 func DetectHardware() (HardwareType, error) {
-	vm, err := IsVM()
+	t, err := systemdDetectVirt()
 	if err != nil {
 		return HWTypeNil, err
 	}
-
-	if vm {
-		return HWTypePlacematVM, nil
+	switch t {
+	case "qemu", "kvm", "zvm", "vmware", "microsoft", "oracle", "xen", "bochs", "uml", "parallels", "bhyve":
+		// VM
+		return HWTypeVM, nil
+	case "openvz", "lxc", "lxc-libvirt", "systemd-nspawn", "docker", "rkt":
+		// Container
+		return HWTypeContainer, nil
+	case "none":
+	default:
+		return HWTypeContainer, errors.New("unsupported hardware type: " + t)
 	}
-	return HWTypeDell, nil
+
+	vendorBytes, err := ioutil.ReadFile("/sys/class/dmi/id/chassis_vendor")
+	if err != nil {
+		return HWTypeNil, err
+	}
+	vendor := strings.TrimSpace(string(vendorBytes))
+
+	switch vendor {
+	case "Dell Inc.":
+		return HWTypeDell, nil
+	}
+	return HWTypeNil, errors.New("unsupported hardware vendor: " + vendor)
 }
 
-// IsVM returns true if executed on VM.
-func IsVM() (bool, error) {
-	err := exec.Command("systemd-detect-virt", "-v", "-q").Run()
-	if err == nil {
-		return true, nil
+func systemdDetectVirt() (string, error) {
+	out, err := exec.Command("systemd-detect-virt").Output()
+	t := strings.TrimSpace(string(out))
+	if err != nil && t != "none" {
+		return "", err
 	}
-	if _, ok := err.(*exec.ExitError); ok {
-		// command started successfully, and returned non-zero to say "this is not VM"
-		return false, nil
-	}
-	// command invocation failed
-	return false, err
+	return t, nil
 }

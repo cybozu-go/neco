@@ -115,25 +115,19 @@ func EnterContainerAppCommand(ctx context.Context, app string, args []string) (*
 }
 
 func getRunningPodByApp(ctx context.Context, app string) (string, error) {
-	var pods []RktPod
-	for i := 0; i < retryCount; i++ {
-		cmd := well.CommandContext(ctx, "rkt", "list", "--format=json")
-		data, err := cmd.Output()
-		if err != nil {
-			return "", err
-		}
-
-		err = json.Unmarshal(data, &pods)
-		if err != nil {
-			return "", err
-		}
-
-		// for unknown reason, "rkt list" sometimes returns "null"
-		if len(pods) != 0 {
-			break
-		}
+	cmd := well.CommandContext(ctx, "rkt", "list", "--format=json")
+	data, err := cmd.Output()
+	if err != nil {
+		return "", err
 	}
 
+	var pods []RktPod
+	err = json.Unmarshal(data, &pods)
+	if err != nil {
+		return "", err
+	}
+
+	// for unknown reason, "rkt list" sometimes returns "null"
 	if len(pods) == 0 {
 		return "", errors.New("failed to get pod list")
 	}

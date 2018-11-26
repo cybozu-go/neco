@@ -2,15 +2,14 @@ package cmd
 
 import (
 	"context"
-	"encoding/binary"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/netutil"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
@@ -45,12 +44,15 @@ Not all flags are supported by all hardware types.`,
 			log.ErrorExit(err)
 		}
 		switch hw {
-		case neco.HWTypePlacematVM:
-			rootPlacematVM()
+		case neco.HWTypeVM:
+			err = rootPlacematVM()
 		case neco.HWTypeDell:
-			rootDell()
+			err = rootDell()
 		default:
-			log.ErrorExit(fmt.Errorf("unknown hardware type: %v", hw))
+			err = fmt.Errorf("unknown hardware type: %v", hw)
+		}
+		if err != nil {
+			log.ErrorExit(err)
 		}
 	},
 }
@@ -70,37 +72,32 @@ func init() {
 	rootCmd.Flags().StringVar(&rootParams.name, "rac-name", "", "set hardware name (deprecated)")
 }
 
-func rootPlacematVM() {
+func rootPlacematVM() error {
 	if rootParams.checkOnly {
-		log.ErrorExit(errors.New("--check-only is not supported for Placemat VM"))
+		return errors.New("--check-only is not supported for Placemat VM")
 	}
 	if len(rootParams.name) != 0 {
-		log.ErrorExit(errors.New("--name is not supported for Placemat VM"))
+		return errors.New("--name is not supported for Placemat VM")
 	}
 
 	lrn, err := neco.MyLRN()
 	if err != nil {
-		log.ErrorExit(err)
+		return err
 	}
 
-	base := net.ParseIP(placematBMCAddressBase)
-	baseInt := binary.BigEndian.Uint32([]byte(base.To4()))
-	addressInt := baseInt + 32*uint32(lrn) + 3
-	addressBuf := make([]byte, 4)
-	binary.BigEndian.PutUint32(addressBuf, addressInt)
-	address := net.IP(addressBuf)
+	base := netutil.IP4ToInt(net.ParseIP(placematBMCAddressBase))
+	addr := netutil.IntToIP4(base + 32*uint32(lrn) + 3)
 
-	_, err = os.Stat(placematParamDevice)
+	f, err := os.OpenFile(placematParamDevice, os.O_WRONLY, 0)
 	if err != nil {
-		log.ErrorExit(err)
+		return err
 	}
-	err = ioutil.WriteFile(placematParamDevice, []byte(address.String()+"\n"), 0)
-	if err != nil {
-		log.ErrorExit(err)
-	}
+	f.WriteString(addr.String() + "\n")
+	f.Close()
+	return nil
 }
 
-func rootDell() {
+func rootDell() error {
 	command := []string{"setup-hw"}
 	if rootParams.checkOnly {
 		command = append(command, "--check-only")
@@ -111,12 +108,9 @@ func rootDell() {
 
 	cmd, err := neco.EnterContainerAppCommand(context.Background(), "omsa", command)
 	if err != nil {
-		log.ErrorExit(err)
+		return err
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		log.ErrorExit(err)
-	}
+	return cmd.Run()
 }

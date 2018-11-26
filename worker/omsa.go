@@ -41,11 +41,7 @@ func (o *operator) UpdateOMSA(ctx context.Context, req *neco.UpdateRequest) erro
 	}
 
 	if need || replaced {
-		err = neco.StopService(ctx, neco.OMSAService)
-		if err != nil {
-			return err
-		}
-		err = neco.StartService(ctx, neco.OMSAService)
+		err = neco.RestartService(ctx, neco.OMSAService)
 		if err != nil {
 			return err
 		}

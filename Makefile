@@ -19,6 +19,8 @@ SBINDIR := $(WORKDIR)/usr/sbin
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
+BIN_PKGS = ./pkg/neco
+SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler ./pkg/setup-hw
 
 all:
 	@echo "Specify one of these targets:"
@@ -56,9 +58,9 @@ $(DEB):
 	cp -r debian $(WORKDIR)
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
 	mkdir -p $(BINDIR)
-	GOBIN=$(BINDIR) go install -tags='$(TAGS)' ./pkg/neco
+	GOBIN=$(BINDIR) go install -tags='$(TAGS)' $(BIN_PKGS)
 	mkdir -p $(SBINDIR)
-	GOBIN=$(SBINDIR) go install -tags='$(TAGS)' ./pkg/neco-updater ./pkg/neco-worker ./pkg/setup-hw ./pkg/sabakan-serf-handler
+	GOBIN=$(SBINDIR) go install -tags='$(TAGS)' $(SBIN_PKGS)
 	mkdir -p $(DOCDIR)
 	cp README.md LICENSE $(DOCDIR)
 	chmod -R g-w $(WORKDIR)
