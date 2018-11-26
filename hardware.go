@@ -33,7 +33,7 @@ func DetectHardware() (HardwareType, error) {
 		return HWTypeContainer, nil
 	case "none":
 	default:
-		return HWTypeContainer, errors.New("unsupported hardware type: " + t)
+		return HWTypeNil, errors.New("unsupported hardware type: " + t)
 	}
 
 	vendorBytes, err := ioutil.ReadFile("/sys/class/dmi/id/chassis_vendor")
