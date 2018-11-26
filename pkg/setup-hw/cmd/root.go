@@ -103,7 +103,7 @@ func rootDell() error {
 		command = append(command, "--check-only")
 	}
 	if len(rootParams.name) != 0 {
-		command = append(command, "--rack-name", rootParams.name)
+		command = append(command, "--rac-name", rootParams.name)
 	}
 
 	cmd, err := neco.EnterContainerAppCommand(context.Background(), "omsa", command)
