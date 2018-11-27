@@ -83,3 +83,9 @@ func UpdateCompleted(version string, lrns []int, statuses map[int]*UpdateStatus)
 
 	return true
 }
+
+// SabakanContentsStatus represents update status of Sabakan contents
+type SabakanContentsStatus struct {
+	Version string `json:"version"`
+	Success bool   `json:"success"`
+}

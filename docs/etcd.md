@@ -95,13 +95,11 @@ The value is a JSON object with these fields:
 Name      | Type   | Description
 ----      | ----   | -----------
 `version` | string | Target `neco` version to be updated.
-`message` | string | Description of an error.
 `success` | bool   | If `true`, uploading process succeeded.
 
 ```json
 {
     "version": "1.2.3-1",
-    "message": "os image upload failed",
     "success": false
 }
 ```
