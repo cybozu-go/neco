@@ -86,6 +86,28 @@ Name      | Type   | Description
 `neco-updater` watches these keys to wait all workers to complete update process,
 or detect errors during updates.
 
+## `<prefix>/status/sabakan-content`
+
+`neco-worker` leader creates and updates this key.
+
+The value is a JSON object with these fields:
+
+Name      | Type   | Description
+----      | ----   | -----------
+`version` | string | Target `neco` version to be updated.
+`message` | string | Description of an error.
+`success` | bool   | If `true`, uploading process succeeded.
+
+```json
+{
+    "version": "1.2.3-1",
+    "message": "os image upload failed",
+    "success": false
+}
+```
+
+`neco-worker` checks this key to decide procedure. See details [update.md](update.md#sabakan-contents-eg-container-images-os-images-and-ignitions).
+
 ## `<prefix>/config/notification/slack`
 
 The notification config to slack URL such as `https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXX`.
