@@ -17,7 +17,7 @@ const (
 func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client) error {
 	client, err := client.NewClient(endpoint, sabakanHTTP)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = UploadOSImages(ctx, client, proxyHTTP)
@@ -32,18 +32,18 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 }
 
 // UploadOSImages uploads CoreOS images
-func UploadOSImages(ctx context.Context, c client.Client, p *http.Client) error {
+func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error {
 	index, err := c.ImagesIndex(ctx, imageOS)
 	if err != nil {
 		return nil
 	}
 
-	if len(index) != 0 && index[len(index)-1] == neco.CurrentArtifacts.CoreOS.Version {
+	version := neco.CurrentArtifacts.CoreOS.Version
+	if len(index) != 0 && index[len(index)-1].ID == version {
 		return nil
 	}
 
 	kernel, initrd := neco.CurrentArtifacts.CoreOS.URLs()
-	version := neco.CurrentArtifacts.CoreOS.Version
 
 	req, err := http.NewRequest("GET", kernel, nil)
 	if err != nil {
@@ -69,7 +69,7 @@ func UploadOSImages(ctx context.Context, c client.Client, p *http.Client) error 
 	initrdBody := resp.Body
 	initrdSize := resp.ContentLength
 
-	return c.ImagesUpload(imageOS, version, kernelBody, kernelSize, initrdBody, initrdSize)
+	return c.ImagesUpload(ctx, imageOS, version, kernelBody, kernelSize, initrdBody, initrdSize)
 }
 
 // UploadAssets uploads assets
