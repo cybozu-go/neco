@@ -2,6 +2,7 @@ package sabakan
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/cybozu-go/neco"
@@ -54,6 +55,9 @@ func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 		return err
 	}
 	defer resp.Body.Close()
+	if resp.ContentLength <= 0 {
+		return errors.New("unknown content-length")
+	}
 	kernelBody := resp.Body
 	kernelSize := resp.ContentLength
 
@@ -66,6 +70,9 @@ func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 		return err
 	}
 	defer resp.Body.Close()
+	if resp.ContentLength <= 0 {
+		return errors.New("unknown content-length")
+	}
 	initrdBody := resp.Body
 	initrdSize := resp.ContentLength
 
