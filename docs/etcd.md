@@ -86,7 +86,7 @@ Name      | Type   | Description
 `neco-updater` watches these keys to wait all workers to complete update process,
 or detect errors during updates.
 
-## `<prefix>/status/sabakan-content`
+## `<prefix>/worker/sabakan-content`
 
 `neco-worker` leader creates and updates this key.
 

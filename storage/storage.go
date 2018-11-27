@@ -237,6 +237,7 @@ RETRY:
 		If(clientv3.Compare(clientv3.ModRevision(KeyCurrent), "=", rev)).
 		Then(
 			clientv3.OpDelete(KeyStatusPrefix, clientv3.WithPrefix()),
+			clientv3.OpDelete(KeySabakanContents),
 		).
 		Commit()
 	if err != nil {

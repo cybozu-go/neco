@@ -156,7 +156,7 @@ Updater updates container image and restart `sabakan` in any timing.
 ### sabakan contents e.g. container images, OS images and ignitions
 
 1. Elect leader updater. Only a leader does procedure as follows.
-2. Check `<prefix>/status/sabakan-content`.
+2. Check `<prefix>/worker/sabakan-content`.
 
     1. If `version` matches with current neco version and `success` is true, worker does nothing.
     2. If `version` matches and `success` is false, worker aborts the process.
@@ -164,6 +164,8 @@ Updater updates container image and restart `sabakan` in any timing.
 
 3. Check if each sabakan content can be updated. If so, download artifacts, then upload them to sabakan.
 4. Put `<prefix>/status/sabakan-content` with value.
+
+If on failure, `neco recover` command removes also this key.
 
 ### OMSA
 
