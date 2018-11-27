@@ -42,8 +42,9 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 }
 
 func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRequest) error {
-	// TODO
-	return nil
+	// Leader election
+
+	return sabakan.UploadContents(ctx, o.localClient, o.proxyClient)
 }
 
 func (o *operator) replaceSabakanFiles(ctx context.Context, mylrn int, lrns []int) (bool, error) {
