@@ -38,7 +38,7 @@ func NewNotifier(ctx context.Context, st storage.Storage) (Notifier, error) {
 		return nil, err
 	}
 
-	hc, err := HTTPClient(ctx, st)
+	hc, err := ProxyHTTPClient(ctx, st)
 	if err != nil {
 		return nil, err
 	}

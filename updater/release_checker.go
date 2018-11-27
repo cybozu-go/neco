@@ -30,7 +30,7 @@ func NewReleaseChecker(st storage.Storage, leaderKey string) ReleaseChecker {
 
 // Run periodically checks the new release of neco package at GitHub.
 func (c *ReleaseChecker) Run(ctx context.Context) error {
-	hc, err := ext.HTTPClient(ctx, c.storage)
+	hc, err := ext.ProxyHTTPClient(ctx, c.storage)
 	if err != nil {
 		return err
 	}

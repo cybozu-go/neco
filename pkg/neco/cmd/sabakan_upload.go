@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -29,12 +28,13 @@ If uploaded versions are up to date, do nothing.
 		st := storage.NewStorage(ec)
 
 		well.Go(func(ctx context.Context) error {
-			proxyClient, err := ext.HTTPClient(ctx, st)
+			proxyClient, err := ext.ProxyHTTPClient(ctx, st)
 			if err != nil {
 				return err
 			}
+			localClient := ext.LocalHTTPClient()
 
-			return sabakan.UploadContents(ctx, &http.Client{}, proxyClient)
+			return sabakan.UploadContents(ctx, localClient, proxyClient)
 		})
 
 		well.Stop()
