@@ -50,7 +50,7 @@ github.com/cybozu-go/etcdutil
 github.com/cybozu-go/log
 # github.com/cybozu-go/netutil v1.2.0
 github.com/cybozu-go/netutil
-# github.com/cybozu-go/sabakan v0.0.0-20181127011132-a1ca8d7e86d0
+# github.com/cybozu-go/sabakan v0.0.0-20181127093451-39f685910da5
 github.com/cybozu-go/sabakan/client
 github.com/cybozu-go/sabakan
 # github.com/cybozu-go/well v1.8.1

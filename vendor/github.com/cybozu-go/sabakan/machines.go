@@ -14,6 +14,28 @@ func (ms MachineState) String() string {
 	return string(ms)
 }
 
+// IsValid returns true only if the MachineState is pre-defined.
+func (ms MachineState) IsValid() bool {
+	switch ms {
+	case StateUninitialized:
+		return true
+	case StateHealthy:
+		return true
+	case StateUnhealthy:
+		return true
+	case StateUnreachable:
+		return true
+	case StateUpdating:
+		return true
+	case StateRetiring:
+		return true
+	case StateRetired:
+		return true
+	}
+
+	return false
+}
+
 // Machine state definitions.
 const (
 	StateUninitialized = MachineState("uninitialized")

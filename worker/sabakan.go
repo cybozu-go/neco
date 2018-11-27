@@ -37,7 +37,7 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 		return err
 	}
 
-	err = neco.StartService(ctx, neco.SabakanService)
+	err = neco.RestartService(ctx, neco.SabakanService)
 	if err != nil {
 		return err
 	}
