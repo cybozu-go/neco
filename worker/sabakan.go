@@ -16,6 +16,8 @@ import (
 	"github.com/cybozu-go/neco/storage"
 )
 
+const retryCount = 3
+
 func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) error {
 	need, err := o.needContainerImageUpdate(ctx, "sabakan")
 	if err != nil {
@@ -96,7 +98,15 @@ func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRe
 		}
 	}
 
-	err = sabakan.UploadContents(ctx, o.localClient, o.proxyClient)
+	for i := 0; i < retryCount; i++ {
+		err = sabakan.UploadContents(ctx, o.localClient, o.proxyClient)
+		if err == nil {
+			break
+		}
+		log.Warn("sabakan: failed to upload sabakan contents", map[string]interface{}{
+			log.FnError: err,
+		})
+	}
 	ret := &neco.SabakanContentsStatus{
 		Version: req.Version,
 		Success: err == nil,

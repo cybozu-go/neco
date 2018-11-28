@@ -3,7 +3,10 @@ package sabakan
 import (
 	"context"
 	"errors"
+	"io"
+	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/sabakan/client"
@@ -36,7 +39,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error {
 	index, err := c.ImagesIndex(ctx, imageOS)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	version := neco.CurrentArtifacts.CoreOS.Version
@@ -44,39 +47,53 @@ func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 		return nil
 	}
 
-	kernel, initrd := neco.CurrentArtifacts.CoreOS.URLs()
+	kernelURL, initrdURL := neco.CurrentArtifacts.CoreOS.URLs()
 
-	req, err := http.NewRequest("GET", kernel, nil)
+	kernelFile, err := ioutil.TempFile("", "kernel")
 	if err != nil {
 		return err
 	}
+	defer func() {
+		kernelFile.Close()
+		os.Remove(kernelFile.Name())
+	}()
+	kernelSize, err := downloadFile(ctx, p, kernelURL, kernelFile)
+	if err != nil {
+		return err
+	}
+
+	initrdFile, err := ioutil.TempFile("", "initrd")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		initrdFile.Close()
+		os.Remove(initrdFile.Name())
+	}()
+	initrdSize, err := downloadFile(ctx, p, initrdURL, initrdFile)
+	if err != nil {
+		return err
+	}
+
+	return c.ImagesUpload(ctx, imageOS, version, kernelFile, kernelSize, initrdFile, initrdSize)
+}
+
+func downloadFile(ctx context.Context, p *http.Client, url string, w io.Writer) (int64, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return 0, err
+	}
+	req = req.WithContext(ctx)
 	resp, err := p.Do(req)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer resp.Body.Close()
-	if resp.ContentLength <= 0 {
-		return errors.New("unknown content-length")
-	}
-	kernelBody := resp.Body
-	kernelSize := resp.ContentLength
 
-	req, err = http.NewRequest("GET", initrd, nil)
-	if err != nil {
-		return err
-	}
-	resp, err = p.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
 	if resp.ContentLength <= 0 {
-		return errors.New("unknown content-length")
+		return 0, errors.New("unknown content-length")
 	}
-	initrdBody := resp.Body
-	initrdSize := resp.ContentLength
-
-	return c.ImagesUpload(ctx, imageOS, version, kernelBody, kernelSize, initrdBody, initrdSize)
+	return io.Copy(w, resp.Body)
 }
 
 // UploadAssets uploads assets
