@@ -61,6 +61,10 @@ func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 	if err != nil {
 		return err
 	}
+	_, err = kernelFile.Seek(0, 0)
+	if err != nil {
+		return err
+	}
 
 	initrdFile, err := ioutil.TempFile("", "initrd")
 	if err != nil {
@@ -71,6 +75,10 @@ func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 		os.Remove(initrdFile.Name())
 	}()
 	initrdSize, err := downloadFile(ctx, p, initrdURL, initrdFile)
+	if err != nil {
+		return err
+	}
+	_, err = initrdFile.Seek(0, 0)
 	if err != nil {
 		return err
 	}
