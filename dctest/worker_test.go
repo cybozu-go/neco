@@ -1,10 +1,12 @@
 package dctest
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/sabakan"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -27,7 +29,7 @@ func testWorker() {
 					"stdout": string(stdout),
 					"stderr": string(stderr),
 				})
-				Expect(err).ShouldNot(HaveOccurred())
+				Expect(err).NotTo(HaveOccurred())
 			}
 			execSafeAt(host, "test", "-f", neco.EtcdpasswdConfFile)
 			execSafeAt(host, "test", "-f", neco.EtcdpasswdKeyFile)
@@ -59,7 +61,7 @@ func testWorker() {
 					"stdout": string(stdout),
 					"stderr": string(stderr),
 				})
-				Expect(err).ShouldNot(HaveOccurred())
+				Expect(err).NotTo(HaveOccurred())
 			}
 			execSafeAt(host, "test", "-d", neco.SabakanDataDir)
 			execSafeAt(host, "test", "-f", neco.SabakanConfFile)
@@ -74,6 +76,14 @@ func testWorker() {
 		execSafeAt(boot0, "sabactl", "ipam", "set", "-f", "/mnt/ipam.json")
 		execSafeAt(boot0, "sabactl", "dhcp", "set", "-f", "/mnt/dhcp.json")
 		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
+
+		execSafeAt(boot0, "neco", "sabakan-upload")
+
+		output := execSafeAt(boot0, "sabactl", "images", "index")
+		index := new(sabakan.ImageIndex)
+		err := json.Unmarshal(output, index)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(index.Find(neco.CurrentArtifacts.CoreOS.Version)).NotTo(BeNil())
 	})
 
 	It("should update machine state in sabakan", func() {
@@ -83,7 +93,7 @@ func testWorker() {
 		}
 
 		for _, ip := range []string{"10.69.0.3", "10.69.0.195", "10.69.1.131"} {
-			Eventually(func() string {
+			Eventually(func() []byte {
 				return execSafeAt(boot0, "sabactl", "machines", "get", "-ipv4", ip)
 			}).Should(ContainSubstring(`"state": "healthy"`))
 		}
@@ -103,7 +113,7 @@ func testWorker() {
 					"stdout": string(stdout),
 					"stderr": string(stderr),
 				})
-				Expect(err).ShouldNot(HaveOccurred())
+				Expect(err).NotTo(HaveOccurred())
 			}
 			execSafeAt(host, "test", "-f", neco.CKEConfFile)
 			execSafeAt(host, "test", "-f", neco.CKEKeyFile)
@@ -127,7 +137,7 @@ func testWorker() {
 					"stdout": string(stdout),
 					"stderr": string(stderr),
 				})
-				Expect(err).ShouldNot(HaveOccurred())
+				Expect(err).NotTo(HaveOccurred())
 			}
 		}
 	})

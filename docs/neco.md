@@ -89,6 +89,10 @@ Synopsis
 
     Show the initial root token, if not revoked during `neco setup`.
 
+* `neco sabakan-upload`
+
+    Upload sabakan contents using `artifacts.go`. If uploaded versions are up to date, do nothing.
+
 <a name="config"></a>
 Configurations
 --------------

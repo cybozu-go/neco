@@ -44,8 +44,8 @@ type operator struct {
 // NewOperator creates an Operator
 func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator, error) {
 	st := storage.NewStorage(ec)
-	localClient := localHTTPClient()
-	proxyClient, err := ext.HTTPClient(ctx, st)
+	localClient := ext.LocalHTTPClient()
+	proxyClient, err := ext.ProxyHTTPClient(ctx, st)
 	if err != nil {
 		return nil, err
 	}

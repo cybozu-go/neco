@@ -3,6 +3,7 @@ package neco
 import (
 	"context"
 	"path/filepath"
+	"strings"
 
 	"github.com/cybozu-go/well"
 )
@@ -41,6 +42,18 @@ func RestartService(ctx context.Context, name string) error {
 // StopService stops the service.
 func StopService(ctx context.Context, name string) error {
 	return well.CommandContext(ctx, "systemctl", "stop", name+".service").Run()
+}
+
+// IsActiveService returns true is the service is active.
+func IsActiveService(ctx context.Context, name string) (bool, error) {
+	output, err := well.CommandContext(ctx, "systemctl", "is-active", name+".service").Output()
+	if err == nil {
+		return true, nil
+	}
+	if strings.TrimSpace(string(output)) == "inactive" {
+		return false, nil
+	}
+	return false, err
 }
 
 // StartTimer does following:

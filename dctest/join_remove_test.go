@@ -10,6 +10,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/sabakan"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -126,6 +127,23 @@ func testJoinRemove() {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 		}
+
+		By("Checking newer CoreOS is uploaded")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(boot0, "sabactl", "images", "index")
+			if err != nil {
+				return fmt.Errorf("%v: stderr=%s", err, stderr)
+			}
+
+			index := new(sabakan.ImageIndex)
+			err = json.Unmarshal(stdout, index)
+			Expect(err).NotTo(HaveOccurred())
+
+			if index.Find("1911.3.0") == nil {
+				return errors.New("index does not contains newer version")
+			}
+			return nil
+		}).Should(Succeed())
 	})
 
 	It("should remove boot-3", func() {

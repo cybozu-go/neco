@@ -1,5 +1,7 @@
 # github.com/Microsoft/go-winio v0.4.11
 github.com/Microsoft/go-winio
+# github.com/ajeddeloh/go-json v0.0.0-20170920214419-6a2fe990e083
+github.com/ajeddeloh/go-json
 # github.com/containers/image v0.0.0-20181023201252-4b6d9cf918c1
 github.com/containers/image/docker
 github.com/containers/image/types
@@ -21,12 +23,36 @@ github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes
 github.com/coreos/etcd/mvcc/mvccpb
 github.com/coreos/etcd/pkg/types
 github.com/coreos/etcd/clientv3/namespace
+# github.com/coreos/go-semver v0.2.0
+github.com/coreos/go-semver/semver
+# github.com/coreos/go-systemd v0.0.0-20181004131557-b14d3eb023cc
+github.com/coreos/go-systemd/unit
+# github.com/coreos/ignition v0.28.0
+github.com/coreos/ignition/config/v2_2
+github.com/coreos/ignition/config/shared/errors
+github.com/coreos/ignition/config/util
+github.com/coreos/ignition/config/v2_1
+github.com/coreos/ignition/config/v2_1/types
+github.com/coreos/ignition/config/v2_2/types
+github.com/coreos/ignition/config/validate
+github.com/coreos/ignition/config/validate/report
+github.com/coreos/ignition/config/v2_3_experimental/types
+github.com/coreos/ignition/config/v2_0
+github.com/coreos/ignition/config/v2_0/types
+github.com/coreos/ignition/config/shared/validations
+github.com/coreos/ignition/config/validate/astjson
+github.com/coreos/ignition/config/validate/astnode
+github.com/coreos/ignition/config/v1
+github.com/coreos/ignition/config/v1/types
 # github.com/cybozu-go/etcdutil v1.3.1
 github.com/cybozu-go/etcdutil
 # github.com/cybozu-go/log v1.5.0
 github.com/cybozu-go/log
 # github.com/cybozu-go/netutil v1.2.0
 github.com/cybozu-go/netutil
+# github.com/cybozu-go/sabakan v0.0.0-20181127093451-39f685910da5
+github.com/cybozu-go/sabakan/client
+github.com/cybozu-go/sabakan
 # github.com/cybozu-go/well v1.8.1
 github.com/cybozu-go/well
 # github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65
@@ -194,9 +220,13 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.2.1
 github.com/spf13/viper
+# github.com/vincent-petithory/dataurl v0.0.0-20160330182126-9a301d65acbb
+github.com/vincent-petithory/dataurl
+# go4.org v0.0.0-20180809161055-417644f6feb5
+go4.org/errorutil
 # golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
-golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/terminal
+golang.org/x/crypto/ssh
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20

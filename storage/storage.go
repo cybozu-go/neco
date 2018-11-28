@@ -237,6 +237,7 @@ RETRY:
 		If(clientv3.Compare(clientv3.ModRevision(KeyCurrent), "=", rev)).
 		Then(
 			clientv3.OpDelete(KeyStatusPrefix, clientv3.WithPrefix()),
+			clientv3.OpDelete(KeySabakanContents),
 		).
 		Commit()
 	if err != nil {
@@ -245,6 +246,48 @@ RETRY:
 
 	if !resp.Succeeded {
 		goto RETRY
+	}
+
+	return nil
+}
+
+// GetSabakanContentsStatus returns update status of Sabakan contents.
+func (s Storage) GetSabakanContentsStatus(ctx context.Context) (*neco.SabakanContentsStatus, error) {
+	resp, err := s.etcd.Get(ctx, KeySabakanContents)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Count == 0 {
+		return nil, ErrNotFound
+	}
+
+	st := new(neco.SabakanContentsStatus)
+	err = json.Unmarshal(resp.Kvs[0].Value, st)
+	if err != nil {
+		return nil, err
+	}
+
+	return st, nil
+}
+
+// PutSabakanContentsStatus puts update status of Sabakan contents, only if caller is the leader.
+func (s Storage) PutSabakanContentsStatus(ctx context.Context, st *neco.SabakanContentsStatus, leaderKey string) error {
+	data, err := json.Marshal(st)
+	if err != nil {
+		return err
+	}
+
+	resp, err := s.etcd.Txn(ctx).
+		If(clientv3util.KeyExists(leaderKey)).
+		Then(clientv3.OpPut(KeySabakanContents, string(data))).
+		Commit()
+	if err != nil {
+		return err
+	}
+
+	if !resp.Succeeded {
+		return ErrNoLeader
 	}
 
 	return nil

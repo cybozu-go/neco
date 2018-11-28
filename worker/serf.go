@@ -40,7 +40,7 @@ func (o *operator) UpdateSerf(ctx context.Context, req *neco.UpdateRequest) erro
 
 	sess, err := concurrency.NewSession(o.ec, concurrency.WithTTL(10))
 	if err != nil {
-		log.Error("etcd: new session is not created", map[string]interface{}{
+		log.Error("serf: new session is not created", map[string]interface{}{
 			log.FnError: err,
 		})
 		return err

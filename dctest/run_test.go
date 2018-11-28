@@ -155,10 +155,10 @@ func execAtWithInput(host string, input []byte, args ...string) error {
 	return sess.Run(strings.Join(args, " "))
 }
 
-func execSafeAt(host string, args ...string) string {
+func execSafeAt(host string, args ...string) []byte {
 	stdout, stderr, err := execAt(host, args...)
 	ExpectWithOffset(1, err).To(Succeed(), "[%s] %v: %s", host, args, stderr)
-	return string(stdout)
+	return stdout
 }
 
 func waitRequestComplete() {
