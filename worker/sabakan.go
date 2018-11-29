@@ -112,7 +112,7 @@ func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRe
 		return err
 	}
 
-	log.Info("sabakan: updated", nil)
+	log.Info("sabakan: updated contents", nil)
 	return err2
 }
 
