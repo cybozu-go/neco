@@ -4,6 +4,8 @@ import (
 	"errors"
 	"regexp"
 	"time"
+
+	version "github.com/hashicorp/go-version"
 )
 
 // MachineState represents a machine's state.
@@ -57,6 +59,12 @@ var (
 // IsValidRole returns true if role is valid as machine role
 func IsValidRole(role string) bool {
 	return reValidRole.MatchString(role)
+}
+
+// IsValidIgnitionID returns true if id is valid as ignition ID
+func IsValidIgnitionID(id string) bool {
+	_, err := version.NewVersion(id)
+	return err == nil
 }
 
 // IsValidBmcType returns true if role is valid as BMC type
