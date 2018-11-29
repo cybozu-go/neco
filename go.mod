@@ -26,7 +26,7 @@ require (
 	github.com/cybozu-go/etcdutil v1.3.1
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
-	github.com/cybozu-go/sabakan v0.0.0-20181129090002-0d9e97b41ef2
+	github.com/cybozu-go/sabakan v0.0.0-20181129113720-85db1e6cc11d
 	github.com/cybozu-go/well v1.8.1
 	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
 	github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65 // indirect

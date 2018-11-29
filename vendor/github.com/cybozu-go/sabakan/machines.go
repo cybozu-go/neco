@@ -50,15 +50,14 @@ const (
 )
 
 var (
-	reValidRole      = regexp.MustCompile(`^[a-zA-Z][0-9a-zA-Z._-]*$`)
 	reValidBmcType   = regexp.MustCompile(`^[a-z0-9A-Z-_/.]+$`)
-	reValidLabelVal  = regexp.MustCompile(`^[[:print:]]+$`)
-	reValidLabelName = regexp.MustCompile(`^[a-z0-9A-Z-_/.]+$`)
+	reValidLabelName = regexp.MustCompile(`^[a-z0-9A-Z]([a-z0-9A-Z_.-]{0,61}[a-z0-9A-Z])?$`)
+	reValidLabelVal  = regexp.MustCompile(`^[a-z0-9A-Z]([a-z0-9A-Z_.-]{0,61}[a-z0-9A-Z])?$`)
 )
 
 // IsValidRole returns true if role is valid as machine role
 func IsValidRole(role string) bool {
-	return reValidRole.MatchString(role)
+	return reValidLabelVal.MatchString(role)
 }
 
 // IsValidIgnitionID returns true if id is valid as ignition ID
@@ -73,12 +72,17 @@ func IsValidBmcType(bmcType string) bool {
 }
 
 // IsValidLabelName returns true if label name is valid
+// This is the same as the validation for Kubernetes label names.
 func IsValidLabelName(name string) bool {
 	return reValidLabelName.MatchString(name)
 }
 
 // IsValidLabelValue returns true if label value is valid
+// This is the same as the validation for Kubernetes label values.
 func IsValidLabelValue(value string) bool {
+	if value == "" {
+		return true
+	}
 	return reValidLabelVal.MatchString(value)
 }
 

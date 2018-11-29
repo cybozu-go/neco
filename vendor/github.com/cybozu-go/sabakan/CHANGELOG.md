@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.29] - 2018-11-29
+
+### Changed
+- Change ignition upload API to specify ID (#121).  This breaks backward compatibility of API and stored data.
+- Validate label names and values samely as Kubernetes (#122).
+
 ## [0.28] - 2018-11-28
 
 ### Changed
@@ -95,8 +101,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Fix a bug that leaves files of deleted OS images (#86).
 
 [placemat]: https://github.com/cybozu-go/placemat
-[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v0.28...HEAD
-[0.27]: https://github.com/cybozu-go/sabakan/compare/v0.27...v0.28
+[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v0.29...HEAD
+[0.29]: https://github.com/cybozu-go/sabakan/compare/v0.28...v0.29
+[0.28]: https://github.com/cybozu-go/sabakan/compare/v0.27...v0.28
 [0.27]: https://github.com/cybozu-go/sabakan/compare/v0.26...v0.27
 [0.26]: https://github.com/cybozu-go/sabakan/compare/v0.25...v0.26
 [0.25]: https://github.com/cybozu-go/sabakan/compare/v0.24...v0.25
