@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/sabakan/client"
 )
@@ -16,6 +18,8 @@ const (
 	endpoint = "http://127.0.0.1:10080"
 	imageOS  = "coreos"
 )
+
+const retryCount = 5
 
 // UploadContents upload contents to sabakan
 func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client) error {
@@ -57,15 +61,6 @@ func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 		kernelFile.Close()
 		os.Remove(kernelFile.Name())
 	}()
-	kernelSize, err := downloadFile(ctx, p, kernelURL, kernelFile)
-	if err != nil {
-		return err
-	}
-	_, err = kernelFile.Seek(0, 0)
-	if err != nil {
-		return err
-	}
-
 	initrdFile, err := ioutil.TempFile("", "initrd")
 	if err != nil {
 		return err
@@ -74,16 +69,85 @@ func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 		initrdFile.Close()
 		os.Remove(initrdFile.Name())
 	}()
-	initrdSize, err := downloadFile(ctx, p, initrdURL, initrdFile)
+
+	var kernelSize int64
+	for i := 0; i < retryCount; i++ {
+		err = kernelFile.Truncate(0)
+		if err != nil {
+			return err
+		}
+		_, err = kernelFile.Seek(0, 0)
+		if err != nil {
+			return err
+		}
+		kernelSize, err = downloadFile(ctx, p, kernelURL, kernelFile)
+		if err == nil {
+			break
+		}
+		log.Warn("sabakan: failed to fetch Container Linux kernel", map[string]interface{}{
+			log.FnError: err,
+			"url":       kernelURL,
+		})
+		err2 := neco.SleepContext(ctx, 10*time.Second)
+		if err2 != nil {
+			return err2
+		}
+	}
 	if err != nil {
 		return err
 	}
+	_, err = kernelFile.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+
+	var initrdSize int64
+	for i := 0; i < retryCount; i++ {
+		err = initrdFile.Truncate(0)
+		if err != nil {
+			return err
+		}
+		_, err = initrdFile.Seek(0, 0)
+		if err != nil {
+			return err
+		}
+		initrdSize, err = downloadFile(ctx, p, initrdURL, initrdFile)
+		if err == nil {
+			break
+		}
+		log.Warn("sabakan: failed to fetch Container Linux initrd", map[string]interface{}{
+			log.FnError: err,
+			"url":       initrdURL,
+		})
+		err2 := neco.SleepContext(ctx, 10*time.Second)
+		if err2 != nil {
+			return err2
+		}
+	}
+	if err != nil {
+		return err
+	}
+
 	_, err = initrdFile.Seek(0, 0)
 	if err != nil {
 		return err
 	}
 
-	return c.ImagesUpload(ctx, imageOS, version, kernelFile, kernelSize, initrdFile, initrdSize)
+	for i := 0; i < retryCount; i++ {
+		err = c.ImagesUpload(ctx, imageOS, version, kernelFile, kernelSize, initrdFile, initrdSize)
+		if err == nil {
+			return nil
+
+		}
+		log.Warn("sabakan: failed to upload Container Linux", map[string]interface{}{
+			log.FnError: err,
+		})
+		err2 := neco.SleepContext(ctx, 10*time.Second)
+		if err2 != nil {
+			return err2
+		}
+	}
+	return err
 }
 
 func downloadFile(ctx context.Context, p *http.Client, url string, w io.Writer) (int64, error) {
