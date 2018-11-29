@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+IMAGE_ID=$(/usr/bin/rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/cybozu-serf.aci)
+
+mkdir -p /etc/systemd/system/serf.service.d
+cat <<EOF >/etc/systemd/system/serf.service.d/env.conf
+[Service]
+Environment=IMAGE_ID=$IMAGE_ID
+EOF
+
+systemctl daemon-reload

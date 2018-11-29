@@ -1,0 +1,5 @@
+[Match]
+Name=node0
+
+[Network]
+Address={{ index .IPv4 0 }}/32

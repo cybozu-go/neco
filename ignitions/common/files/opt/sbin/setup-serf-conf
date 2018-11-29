@@ -1,0 +1,24 @@
+#!/bin/sh
+
+os_version=$(awk '/DISTRIB_RELEASE/ {print $2}' FS=\=  /etc/lsb-release)
+serial=$(cat /sys/class/dmi/id/product_serial)
+sabakan_addr=$(echo {{ MyURL }} | awk -F[/:] '{print $4}')
+
+mkdir -p /etc/serf
+cat >/etc/serf/serf.json <<EOF
+{
+    "tags": {
+        "os-version": "${os_version}",
+        "serial": "${serial}"
+    },
+    "interface": "node0",
+    "reconnect_interval": "30s",
+    "reconnect_timeout": "24h",
+    "tombstone_timeout": "24h",
+    "retry_join": [
+      "${sabakan_addr}"
+    ],
+    "retry_max_attempts": 0,
+    "retry_interval": "30s"
+}
+EOF

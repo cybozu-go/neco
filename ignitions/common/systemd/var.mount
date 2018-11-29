@@ -1,0 +1,10 @@
+[Unit]
+Description=/var
+After=setup-var.service
+Wants=setup-var.service
+DefaultDependencies=no
+
+[Mount]
+What=/dev/disk/by-label/var
+Where=/var
+Type=btrfs

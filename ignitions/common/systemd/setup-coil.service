@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup coil container
+After=setup-var.service docker.socket
+Wants=setup-var.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/setup-coil
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup serf container
+ConditionPathExists=!/etc/serf/serf.json
+After=setup-var.service
+Before=setup-network.service
+Wants=setup-network.service setup-var.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/opt/sbin/setup-serf
+ExecStart=/opt/sbin/setup-serf-conf
+RemainAfterExit=yes
