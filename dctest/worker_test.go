@@ -84,6 +84,15 @@ func testWorker() {
 		err := json.Unmarshal(output, index)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(index.Find(neco.CurrentArtifacts.CoreOS.Version)).NotTo(BeNil())
+
+		output = execSafeAt(boot0, "dpkg-query", "--showformat=${Version}", "-W", neco.NecoPackageName)
+		necoVersion := string(output)
+		output = execSafeAt(boot0, "sabactl", "ignitions", "get", "worker")
+		var ignInfo []*sabakan.IgnitionInfo
+		err = json.Unmarshal(output, &ignInfo)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(ignInfo).To(HaveLen(1))
+		Expect(ignInfo[0].ID).To(Equal(necoVersion))
 	})
 
 	It("should update machine state in sabakan", func() {
