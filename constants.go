@@ -127,4 +127,6 @@ var (
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
 	NecoConfFile = filepath.Join(NecoDir, "config.yml")
 	NecoBin      = "/usr/bin/neco"
+
+	IgnitionDirectory = "/usr/share/neco/ignitions/roles"
 )

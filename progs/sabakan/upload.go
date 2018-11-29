@@ -1,12 +1,14 @@
 package sabakan
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -22,25 +24,32 @@ const (
 const retryCount = 5
 
 // UploadContents upload contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string) error {
 	client, err := client.NewClient(endpoint, sabakanHTTP)
 	if err != nil {
 		return err
 	}
 
-	err = UploadOSImages(ctx, client, proxyHTTP)
+	err = uploadOSImages(ctx, client, proxyHTTP)
 	if err != nil {
 		return err
 	}
 
-	// UploadAssets
-	// UploadIgnitions
+	err = uploadAssets(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = uploadIgnitions(ctx, client, version)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-// UploadOSImages uploads CoreOS images
-func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error {
+// uploadOSImages uploads CoreOS images
+func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error {
 	index, err := c.ImagesIndex(ctx, imageOS)
 	if err != nil {
 		return err
@@ -150,6 +159,80 @@ func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 	return err
 }
 
+// uploadAssets uploads assets
+func uploadAssets(ctx context.Context) error {
+	// TODO
+	return nil
+}
+
+// uploadIgnitions updates ignitions from local file
+func uploadIgnitions(ctx context.Context, c *client.Client, id string) error {
+	roles, err := getInstalledRoles()
+	if err != nil {
+		return err
+	}
+
+	for _, role := range roles {
+		path := ignitionPath(role)
+
+		newer := new(bytes.Buffer)
+		err := client.AssembleIgnitionTemplate(path, newer)
+		if err != nil {
+			return err
+		}
+
+		need, err := needIgnitionUpdate(ctx, c, role, id, newer.String())
+		if err != nil {
+			return err
+		}
+		if !need {
+			continue
+		}
+		err = c.IgnitionsSet(ctx, role, id, newer, nil)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func needIgnitionUpdate(ctx context.Context, c *client.Client, role, id string, newer string) (bool, error) {
+	index, err := c.IgnitionsGet(ctx, role)
+	if client.IsNotFound(err) {
+		return true, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	latest := index[len(index)-1].ID
+	if latest == id {
+		return false, nil
+	}
+
+	current := new(bytes.Buffer)
+	err = c.IgnitionsCat(ctx, role, latest, current)
+	if err != nil {
+		return false, err
+	}
+	return current.String() != newer, nil
+}
+
+func getInstalledRoles() ([]string, error) {
+	paths, err := filepath.Glob(filepath.Join(neco.IgnitionDirectory, "*", "site.yml"))
+	if err != nil {
+		return nil, err
+	}
+	for i, path := range paths {
+		paths[i] = filepath.Base(filepath.Dir(path))
+	}
+	return paths, nil
+}
+
+func ignitionPath(role string) string {
+	return filepath.Join(neco.IgnitionDirectory, role, "site.yml")
+}
+
 func downloadFile(ctx context.Context, p *http.Client, url string, w io.Writer) (int64, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -166,16 +249,4 @@ func downloadFile(ctx context.Context, p *http.Client, url string, w io.Writer) 
 		return 0, errors.New("unknown content-length")
 	}
 	return io.Copy(w, resp.Body)
-}
-
-// UploadAssets uploads assets
-func UploadAssets(ctx context.Context) error {
-	// TODO
-	return nil
-}
-
-// UploadIgnitions uploads ignitions
-func UploadIgnitions(ctx context.Context) error {
-	// TODO
-	return nil
 }

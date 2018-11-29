@@ -20,6 +20,11 @@ var sabakanUploadCmd = &cobra.Command{
 If uploaded versions are up to date, do nothing.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		version, err := neco.GetDebianVersion(neco.NecoPackageName)
+		if err != nil {
+			log.ErrorExit(err)
+		}
+
 		ec, err := neco.EtcdClient()
 		if err != nil {
 			log.ErrorExit(err)
@@ -34,7 +39,7 @@ If uploaded versions are up to date, do nothing.
 			}
 			localClient := ext.LocalHTTPClient()
 
-			return sabakan.UploadContents(ctx, localClient, proxyClient)
+			return sabakan.UploadContents(ctx, localClient, proxyClient, version)
 		})
 
 		well.Stop()

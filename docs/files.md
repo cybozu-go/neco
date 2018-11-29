@@ -26,4 +26,13 @@ TLS client certificates for etcd authentication for Neco tools.
 
 etcd configuration defined in [etcdutil][]
 
+`/usr/share/neco/ignitions/roles/ROLE/site.yml`
+-----------------------------------------------
+
+Ignitions registered by neco-worker to sabakan are included in `/usr/share/neco/ignitions/roles` for each roles.
+neco-worker identify role and its ignitions by listing the directory.
+The directory must contain an entry point file `site.yml`, which defined in [sabakan ignition spec.][ignition.md].
+
+
 [etcdutil]: https://github.com/cybozu-go/etcdutil
+[ignition.md]: https://github.com/cybozu-go/sabakan/blob/master/docs/ignition.md
