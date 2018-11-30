@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// SystemContainers are fundamental containers not in artifacts
 var SystemContainers = []ContainerImage{
 	{
 		Name:       "bird",
