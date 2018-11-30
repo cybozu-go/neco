@@ -77,7 +77,7 @@ func testWorker() {
 		execSafeAt(boot0, "sabactl", "dhcp", "set", "-f", "/mnt/dhcp.json")
 		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
 
-		execSafeAt(boot0, "neco", "sabakan-upload")
+		execSafeAt(boot0, "sudo", "neco", "sabakan-upload")
 
 		output := execSafeAt(boot0, "sabactl", "images", "index")
 		index := new(sabakan.ImageIndex)
@@ -93,6 +93,22 @@ func testWorker() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(ignInfo).To(HaveLen(1))
 		Expect(ignInfo[0].ID).To(Equal(necoVersion))
+
+		var images []neco.ContainerImage
+		images = append(images, neco.SystemContainers...)
+		// TODO: check omsa
+		for _, name := range []string{"serf"} {
+			image, err := neco.CurrentArtifacts.FindContainerImage(name)
+			Expect(err).NotTo(HaveOccurred())
+			images = append(images, image)
+		}
+		output = execSafeAt(boot0, "sabactl", "assets", "index")
+		var assets []string
+		err = json.Unmarshal(output, &assets)
+		Expect(err).NotTo(HaveOccurred())
+		for _, image := range images {
+			Expect(assets).To(ContainElement(neco.ImageAssetName(image)))
+		}
 	})
 
 	It("should update machine state in sabakan", func() {

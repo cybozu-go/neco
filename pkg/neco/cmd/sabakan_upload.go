@@ -39,7 +39,7 @@ If uploaded versions are up to date, do nothing.
 			}
 			localClient := ext.LocalHTTPClient()
 
-			return sabakan.UploadContents(ctx, localClient, proxyClient, version, "")
+			return sabakan.UploadContents(ctx, localClient, proxyClient, "", version)
 		})
 
 		well.Stop()

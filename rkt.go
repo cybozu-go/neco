@@ -82,7 +82,7 @@ func HTTPProxyEnv(proxy string) []string {
 
 // ExportContainer exports container image for fullname to filename
 func ExportContainer(ctx context.Context, fullname, filename string) error {
-	return well.CommandContext(ctx, "rkt", "image", "export", fullname, filename).Run()
+	return well.CommandContext(ctx, "rkt", "image", "export", "--overwrite", fullname, filename).Run()
 }
 
 // Bind represents a host bind mount rule.

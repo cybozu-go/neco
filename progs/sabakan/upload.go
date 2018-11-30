@@ -171,7 +171,8 @@ func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error 
 	var fetches []neco.ContainerImage
 	fetches = append(fetches, neco.SystemContainers...)
 
-	for _, name := range []string{"omsa", "serf"} {
+	// TODO: upload omsa
+	for _, name := range []string{"serf"} {
 		img, err := neco.CurrentArtifacts.FindContainerImage(name)
 		if err != nil {
 			return err
