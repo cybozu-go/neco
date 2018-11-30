@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -44,17 +43,18 @@ func newIgnitionBuilder(baseDir string) *ignitionBuilder {
 	}
 }
 
-func generateIgnitionYAML(fname string) (io.Reader, error) {
+// AssembleIgnitionTemplate assemble ignition template from fname to w
+func AssembleIgnitionTemplate(fname string, w io.Writer) error {
 	absPath, err := filepath.Abs(fname)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	baseDir := filepath.Dir(absPath)
 	builder := newIgnitionBuilder(baseDir)
 
 	source, err := loadSource(absPath)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	builder.ignition["ignition"] = map[string]interface{}{
@@ -62,15 +62,9 @@ func generateIgnitionYAML(fname string) (io.Reader, error) {
 	}
 	err = builder.constructIgnitionYAML(source)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	b, err := yaml.Marshal(builder.ignition)
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes.NewReader(b), nil
+	return yaml.NewEncoder(w).Encode(builder.ignition)
 }
 
 func loadSource(fname string) (*ignitionSource, error) {

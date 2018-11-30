@@ -1,0 +1,12 @@
+[Unit]
+Description=Disable transparent hugepage
+DefaultDependencies=false
+Before=basic.target
+AssertPathIsReadWrite=/sys/kernel/mm/transparent_hugepage/enabled
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'
+
+[Install]
+WantedBy=basic.target

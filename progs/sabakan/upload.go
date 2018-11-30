@@ -1,14 +1,19 @@
 package sabakan
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
+	"time"
 
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/sabakan"
 	"github.com/cybozu-go/sabakan/client"
 )
 
@@ -17,27 +22,50 @@ const (
 	imageOS  = "coreos"
 )
 
+const retryCount = 5
+
 // UploadContents upload contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string) error {
 	client, err := client.NewClient(endpoint, sabakanHTTP)
 	if err != nil {
 		return err
 	}
 
-	err = UploadOSImages(ctx, client, proxyHTTP)
+	err = uploadOSImages(ctx, client, proxyHTTP)
 	if err != nil {
 		return err
 	}
 
-	// UploadAssets
-	// UploadIgnitions
+	err = uploadAssets(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = uploadIgnitions(ctx, client, version)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-// UploadOSImages uploads CoreOS images
-func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error {
-	index, err := c.ImagesIndex(ctx, imageOS)
+// uploadOSImages uploads CoreOS images
+func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error {
+	var index sabakan.ImageIndex
+	var err error
+	for i := 0; i < retryCount; i++ {
+		index, err = c.ImagesIndex(ctx, imageOS)
+		if err == nil {
+			break
+		}
+		log.Warn("sabakan: failed to get index of CoreOS images", map[string]interface{}{
+			log.FnError: err,
+		})
+		err2 := neco.SleepContext(ctx, 10*time.Second)
+		if err2 != nil {
+			return err2
+		}
+	}
 	if err != nil {
 		return err
 	}
@@ -57,15 +85,6 @@ func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 		kernelFile.Close()
 		os.Remove(kernelFile.Name())
 	}()
-	kernelSize, err := downloadFile(ctx, p, kernelURL, kernelFile)
-	if err != nil {
-		return err
-	}
-	_, err = kernelFile.Seek(0, 0)
-	if err != nil {
-		return err
-	}
-
 	initrdFile, err := ioutil.TempFile("", "initrd")
 	if err != nil {
 		return err
@@ -74,16 +93,159 @@ func UploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 		initrdFile.Close()
 		os.Remove(initrdFile.Name())
 	}()
-	initrdSize, err := downloadFile(ctx, p, initrdURL, initrdFile)
+
+	var kernelSize int64
+	for i := 0; i < retryCount; i++ {
+		err = kernelFile.Truncate(0)
+		if err != nil {
+			return err
+		}
+		_, err = kernelFile.Seek(0, 0)
+		if err != nil {
+			return err
+		}
+		kernelSize, err = downloadFile(ctx, p, kernelURL, kernelFile)
+		if err == nil {
+			break
+		}
+		log.Warn("sabakan: failed to fetch Container Linux kernel", map[string]interface{}{
+			log.FnError: err,
+			"url":       kernelURL,
+		})
+		err2 := neco.SleepContext(ctx, 10*time.Second)
+		if err2 != nil {
+			return err2
+		}
+	}
 	if err != nil {
 		return err
 	}
+	_, err = kernelFile.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+
+	var initrdSize int64
+	for i := 0; i < retryCount; i++ {
+		err = initrdFile.Truncate(0)
+		if err != nil {
+			return err
+		}
+		_, err = initrdFile.Seek(0, 0)
+		if err != nil {
+			return err
+		}
+		initrdSize, err = downloadFile(ctx, p, initrdURL, initrdFile)
+		if err == nil {
+			break
+		}
+		log.Warn("sabakan: failed to fetch Container Linux initrd", map[string]interface{}{
+			log.FnError: err,
+			"url":       initrdURL,
+		})
+		err2 := neco.SleepContext(ctx, 10*time.Second)
+		if err2 != nil {
+			return err2
+		}
+	}
+	if err != nil {
+		return err
+	}
+
 	_, err = initrdFile.Seek(0, 0)
 	if err != nil {
 		return err
 	}
 
-	return c.ImagesUpload(ctx, imageOS, version, kernelFile, kernelSize, initrdFile, initrdSize)
+	for i := 0; i < retryCount; i++ {
+		err = c.ImagesUpload(ctx, imageOS, version, kernelFile, kernelSize, initrdFile, initrdSize)
+		if err == nil {
+			return nil
+
+		}
+		log.Warn("sabakan: failed to upload Container Linux", map[string]interface{}{
+			log.FnError: err,
+		})
+		err2 := neco.SleepContext(ctx, 10*time.Second)
+		if err2 != nil {
+			return err2
+		}
+	}
+	return err
+}
+
+// uploadAssets uploads assets
+func uploadAssets(ctx context.Context) error {
+	// TODO
+	return nil
+}
+
+// uploadIgnitions updates ignitions from local file
+func uploadIgnitions(ctx context.Context, c *client.Client, id string) error {
+	roles, err := getInstalledRoles()
+	if err != nil {
+		return err
+	}
+
+	for _, role := range roles {
+		path := ignitionPath(role)
+
+		newer := new(bytes.Buffer)
+		err := client.AssembleIgnitionTemplate(path, newer)
+		if err != nil {
+			return err
+		}
+
+		need, err := needIgnitionUpdate(ctx, c, role, id, newer.String())
+		if err != nil {
+			return err
+		}
+		if !need {
+			continue
+		}
+		err = c.IgnitionsSet(ctx, role, id, newer, nil)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func needIgnitionUpdate(ctx context.Context, c *client.Client, role, id string, newer string) (bool, error) {
+	index, err := c.IgnitionsGet(ctx, role)
+	if client.IsNotFound(err) {
+		return true, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	latest := index[len(index)-1].ID
+	if latest == id {
+		return false, nil
+	}
+
+	current := new(bytes.Buffer)
+	err = c.IgnitionsCat(ctx, role, latest, current)
+	if err != nil {
+		return false, err
+	}
+	return current.String() != newer, nil
+}
+
+func getInstalledRoles() ([]string, error) {
+	paths, err := filepath.Glob(filepath.Join(neco.IgnitionDirectory, "*", "site.yml"))
+	if err != nil {
+		return nil, err
+	}
+	for i, path := range paths {
+		paths[i] = filepath.Base(filepath.Dir(path))
+	}
+	return paths, nil
+}
+
+func ignitionPath(role string) string {
+	return filepath.Join(neco.IgnitionDirectory, role, "site.yml")
 }
 
 func downloadFile(ctx context.Context, p *http.Client, url string, w io.Writer) (int64, error) {
@@ -102,16 +264,4 @@ func downloadFile(ctx context.Context, p *http.Client, url string, w io.Writer) 
 		return 0, errors.New("unknown content-length")
 	}
 	return io.Copy(w, resp.Body)
-}
-
-// UploadAssets uploads assets
-func UploadAssets(ctx context.Context) error {
-	// TODO
-	return nil
-}
-
-// UploadIgnitions uploads ignitions
-func UploadIgnitions(ctx context.Context) error {
-	// TODO
-	return nil
 }

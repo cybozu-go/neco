@@ -10,7 +10,7 @@ K8S_CTRLPLANE1 = 10.69.0.196
 K8S_CTRLPLANE2 = 10.69.1.132
 
 PLACEMAT = $(GOPATH)/bin/placemat
-GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo -v
+GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo --failFast -v
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
 

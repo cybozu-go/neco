@@ -16,6 +16,12 @@ import (
 // MaxIgnitions is a number of the ignitions to keep on etcd
 const MaxIgnitions = 10
 
+// IgnitionInfo represents information of an ignition template
+type IgnitionInfo struct {
+	ID       string            `json:"id"`
+	Metadata map[string]string `json:"meta"`
+}
+
 // ValidateIgnitionTemplate validates if the tmpl is a template for a valid ignition.
 // The method returns nil if valid template is given, otherwise returns an error.
 // The method returns template by tmpl nil value of Machine.

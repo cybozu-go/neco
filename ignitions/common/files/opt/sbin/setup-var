@@ -1,0 +1,14 @@
+#!/bin/sh -eu
+
+CRYPTDEV=$(echo /dev/mapper/crypt-pci-*-ata-*)
+if systemd-detect-virt -v >/dev/null; then
+    CRYPTDEV=$(echo /dev/mapper/crypt-virtio-pci-0000:00:07.0)
+fi
+MOUNTDEV=/dev/disk/by-label/var
+
+if [ ! -L "${MOUNTDEV}" ]; then
+    mkfs.btrfs -L var "${CRYPTDEV}"
+
+    # wait for update of /dev/disk/by-label
+    sleep 1
+fi

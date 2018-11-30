@@ -1,6 +1,7 @@
 module github.com/cybozu-go/neco
 
 require (
+	cloud.google.com/go v0.33.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/DataDog/datadog-go v0.0.0-20180822151419-281ae9f2d895 // indirect
 	github.com/Jeffail/gabs v1.1.1 // indirect
@@ -21,11 +22,11 @@ require (
 	github.com/containers/image v0.0.0-20181023201252-4b6d9cf918c1
 	github.com/containers/storage v0.0.0-20181019121456-bd5818eda840 // indirect
 	github.com/coreos/bbolt v1.3.1-coreos.6 // indirect
-	github.com/coreos/etcd v3.3.9+incompatible
+	github.com/coreos/etcd v3.3.10+incompatible
 	github.com/cybozu-go/etcdutil v1.3.1
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
-	github.com/cybozu-go/sabakan v0.0.0-20181127093451-39f685910da5
+	github.com/cybozu-go/sabakan v0.0.0-20181129113720-85db1e6cc11d
 	github.com/cybozu-go/well v1.8.1
 	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
 	github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65 // indirect
@@ -46,7 +47,6 @@ require (
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-github/v18 v18.2.0
 	github.com/gorilla/context v1.1.1 // indirect
-	github.com/gorilla/mux v1.3.1-0.20170217192616-94e7d24fd285 // indirect
 	github.com/gotestyourself/gotestyourself v2.1.0+incompatible // indirect
 	github.com/hashicorp/consul v1.3.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.0 // indirect
@@ -74,8 +74,8 @@ require (
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
-	github.com/onsi/ginkgo v1.6.1-0.20180913204007-46bbc26e8a91
-	github.com/onsi/gomega v1.4.2
+	github.com/onsi/ginkgo v1.7.0
+	github.com/onsi/gomega v1.4.3
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/opencontainers/runc v1.0.0-rc2.0.20170216015123-6b1d0e76f239 // indirect
@@ -88,7 +88,10 @@ require (
 	github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529 // indirect
 	github.com/spf13/cobra v0.0.3
 	github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926 // indirect
-	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
+	golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85
+	golang.org/x/net v0.0.0-20181129055619-fae4c4e3ad76 // indirect
+	golang.org/x/oauth2 v0.0.0-20181128211412-28207608b838 // indirect
+	google.golang.org/appengine v1.3.0 // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20170511165959-379148ca0225 // indirect
 	gopkg.in/ldap.v2 v2.5.1 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce // indirect

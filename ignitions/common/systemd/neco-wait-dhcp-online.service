@@ -1,0 +1,14 @@
+[Unit]
+Description=Wait for Network to be assigned via DHCP
+DefaultDependencies=no
+After=systemd-networkd.service
+Before=neco-dhcp-online.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/usr/sbin/sysctl -w net.ipv4.conf.all.rp_filter=2
+ExecStart=/opt/sbin/neco-wait-dhcp-online
+RemainAfterExit=yes
+
+[Install]
+WantedBy=network-online.target

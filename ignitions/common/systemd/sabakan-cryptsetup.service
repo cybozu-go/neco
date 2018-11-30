@@ -1,0 +1,15 @@
+[Unit]
+Description=sabakan-cryptsetup
+Requires=setup-sabakan-cryptsetup.service
+After=setup-sabakan-cryptsetup.service
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+Environment=SABAKAN_URL={{ MyURL }}
+ExecStart=/opt/sbin/sabakan-cryptsetup $DISK_NAME_PATTERN
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+

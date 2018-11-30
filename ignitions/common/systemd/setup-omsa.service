@@ -1,0 +1,10 @@
+[Unit]
+Description=Setup OMSA container and config
+Before=setup-network.service
+Wants=setup-network.service
+ConditionVirtualization=!kvm
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/setup-omsa
+RemainAfterExit=yes

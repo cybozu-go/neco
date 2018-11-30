@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup network
+ConditionPathExists=!/etc/bird
+After=setup-var.service neco-dhcp-online.target
+Wants=setup-var.service neco-dhcp-online.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/opt/sbin/setup-bird
+ExecStartPre=/opt/sbin/setup-local-network
+ExecStart=/opt/sbin/setup-bird-conf
+RemainAfterExit=yes

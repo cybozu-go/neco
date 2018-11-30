@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup chrony container
+ConditionPathExists=!/etc/chrony.conf
+After=setup-var.service
+Before=setup-network.service
+Wants=setup-network.service setup-var.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/opt/sbin/setup-chrony
+ExecStart=/opt/sbin/setup-chronyd-conf
+RemainAfterExit=yes

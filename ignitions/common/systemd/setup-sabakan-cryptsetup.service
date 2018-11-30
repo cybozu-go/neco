@@ -1,0 +1,13 @@
+[Unit]
+Description=Setup sabakan-cryptsetup
+Wants=neco-dhcp-online.target
+After=neco-dhcp-online.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/setup-sabakan-cryptsetup
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

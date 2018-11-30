@@ -1,0 +1,78 @@
+passwd: passwd.yml
+files:
+  - /etc/hostname
+  - /etc/modprobe.d/conntrack-hashsize.conf
+  - /etc/modules-load.d/cybozu.conf
+  - /etc/neco/rack
+  - /etc/sysctl.d/60-cybozu.conf
+  - /etc/systemd/system.conf.d/50-cybozu.conf
+  - /etc/systemd/system/systemd-journald.service.d/oom_score_adj.conf
+  - /etc/systemd/system/docker.service.d/99-kubernetes-network.conf
+  - /etc/systemd/system/docker.service.d/99-run-after-time-sync.conf
+  - /etc/systemd/system/docker.socket.d/99-run-after-time-sync.conf
+  - /opt/bin/podenter
+  - /opt/sbin/bird-wait
+  - /opt/sbin/chrony-wait
+  - /opt/sbin/neco-wait-dhcp-online
+  - /opt/sbin/setup-bird
+  - /opt/sbin/setup-bird-conf
+  - /opt/sbin/setup-chrony
+  - /opt/sbin/setup-chronyd-conf
+  - /opt/sbin/setup-coil
+  - /opt/sbin/setup-serf
+  - /opt/sbin/setup-serf-conf
+  - /opt/sbin/setup-hw
+  - /opt/sbin/setup-local-network
+  - /opt/sbin/setup-var
+  - /opt/sbin/tune-rt-runtime
+  - /opt/sbin/setup-omsa
+  - /opt/sbin/setup-sabakan-cryptsetup
+systemd:
+  - name: update-engine.service
+    mask: true
+  - name: locksmithd.service
+    mask: true
+  - name: update-engine-stub.timer
+    mask: true
+  - name: tune-rt-runtime.service
+  - name: setup-network.service
+  - name: bird.service
+    enabled: true
+  - name: bird-wait.service
+    enabled: true
+  - name: sabakan-cryptsetup.service
+    enabled: true
+  - name: setup-sabakan-cryptsetup.service
+  - name: setup-var.service
+    enabled: true
+  - name: ntpd.service
+    mask: true
+  - name: systemd-timesyncd.service
+    mask: true
+  - name: chronyd.service
+    enabled: true
+  - name: serf.service
+    enabled: true
+  - name: chrony-wait.service
+    enabled: true
+  - name: setup-chrony.service
+    enabled: false
+  - name: setup-coil.service
+    enabled: true
+  - name: setup-serf.service
+    enabled: false
+  - name: setup-hw.service
+    enabled: true
+  - name: disable-transparent-hugepage.service
+    enabled: true
+  - name: neco.target
+  - name: neco-dhcp-online.target
+  - name: neco-wait-dhcp-online.service
+    enabled: true
+  - name: var.mount
+  - name: omsa.service
+    enabled: true
+  - name: setup-omsa.service
+networkd:
+  - 10-node0.netdev
+  - 10-node0.network

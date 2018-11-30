@@ -1,0 +1,15 @@
+[Unit]
+Description=Wait for chrony to synchronize system clock
+After=chronyd.service
+Requires=chronyd.service
+Before=time-sync.target
+Wants=time-sync.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/chrony-wait
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+RequiredBy=time-sync.target

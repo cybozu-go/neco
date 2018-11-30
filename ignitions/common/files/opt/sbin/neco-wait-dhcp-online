@@ -1,0 +1,37 @@
+#!/bin/sh
+
+wait_for_link() {
+  # Waiting udev renaming
+    for i in $(seq 500); do
+        if systemd-detect-virt -v >/dev/null; then
+            count=$(ls -d /sys/class/net/eth[0-1] | wc -l)
+            [ "$count" -eq 2 ] && return
+        else
+            count=$(ls -d /sys/class/net/eno[1-4] | wc -l)
+            [ "$count" -eq 4 ] && return
+        fi
+        sleep 1
+    done
+
+    echo >&2 "Timed out to wait for interfaces available"
+    exit 1
+}
+
+wait_for_address() {
+    for i in $(seq 500); do
+        if systemd-detect-virt -v >/dev/null; then
+            ip -4 address | grep -w "eth0:\|eth1:" >/dev/null
+            [ "$?" -eq 0 ] && return
+        else
+            ip -4 address | grep -w "eno1:\|eno2:" >/dev/null
+            [ "$?" -eq 0 ] && return
+        fi
+        sleep 1
+    done
+
+    echo >&2 "Timed out to wait for ip addresses are assigned"
+    exit 1
+}
+
+wait_for_link
+wait_for_address

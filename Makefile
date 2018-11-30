@@ -16,6 +16,7 @@ CONTROL := $(WORKDIR)/DEBIAN/control
 DOCDIR := $(WORKDIR)/usr/share/doc/neco
 BINDIR := $(WORKDIR)/usr/bin
 SBINDIR := $(WORKDIR)/usr/sbin
+SHAREDIR := $(WORKDIR)/usr/share/neco
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
@@ -61,6 +62,8 @@ $(DEB):
 	GOBIN=$(BINDIR) go install -tags='$(TAGS)' $(BIN_PKGS)
 	mkdir -p $(SBINDIR)
 	GOBIN=$(SBINDIR) go install -tags='$(TAGS)' $(SBIN_PKGS)
+	mkdir -p $(SHAREDIR)
+	cp -r ignitions $(SHAREDIR)
 	mkdir -p $(DOCDIR)
 	cp README.md LICENSE $(DOCDIR)
 	chmod -R g-w $(WORKDIR)

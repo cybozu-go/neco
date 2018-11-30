@@ -1,0 +1,56 @@
+#!/bin/sh
+
+INF1=eno1
+INF2=eno2
+if systemd-detect-virt -v >/dev/null; then
+    INF1=eth0
+    INF2=eth1
+fi
+
+cat >/etc/systemd/network/10-${INF1}.network <<EOF
+[Match]
+Name=${INF1}
+
+[Network]
+LLDP=true
+EmitLLDP=nearest-bridge
+
+[Address]
+Address={{ index .IPv4 1 }}/26
+Scope=link
+EOF
+
+cat >/etc/systemd/network/10-${INF2}.network <<EOF
+[Match]
+Name=${INF2}
+
+[Network]
+LLDP=true
+EmitLLDP=nearest-bridge
+
+[Address]
+Address={{ index .IPv4 2 }}/26
+Scope=link
+EOF
+
+cat >/etc/systemd/system/disable-offload.service <<EOF
+[Unit]
+Description=Disable network device offload
+Wants=network-online.target
+After=network-online.target
+ConditionVirtualization=!kvm
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ethtool -K ${INF1} tx off rx off
+ExecStart=/usr/sbin/ethtool -K ${INF2} tx off rx off
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable disable-offload.service
+systemctl start disable-offload.service
+systemctl restart systemd-networkd.service

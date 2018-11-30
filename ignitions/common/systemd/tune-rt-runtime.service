@@ -1,0 +1,9 @@
+[Unit]
+Description=Tune cpu.rt_runtime_us
+After=machine.slice
+Wants=machine.slice
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/tune-rt-runtime
+RemainAfterExit=yes
