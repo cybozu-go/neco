@@ -85,7 +85,7 @@ func testWorker() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(index.Find(neco.CurrentArtifacts.CoreOS.Version)).NotTo(BeNil())
 
-		output = execSafeAt(boot0, "dpkg-query", "--showformat=${Version}", "-W", neco.NecoPackageName)
+		output = execSafeAt(boot0, "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
 		necoVersion := string(output)
 		output = execSafeAt(boot0, "sabactl", "ignitions", "get", "worker")
 		var ignInfo []*sabakan.IgnitionInfo
