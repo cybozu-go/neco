@@ -63,7 +63,8 @@ $(DEB):
 	mkdir -p $(SBINDIR)
 	GOBIN=$(SBINDIR) go install -tags='$(TAGS)' $(SBIN_PKGS)
 	mkdir -p $(SHAREDIR)
-	cp -r ignitions $(SHAREDIR)
+	go install -tags='$(TAGS)' ./pkg/fill-asset-name
+	fill-asset-name ignitions $(SHAREDIR)/ignitions
 	mkdir -p $(DOCDIR)
 	cp README.md LICENSE $(DOCDIR)
 	chmod -R g-w $(WORKDIR)
