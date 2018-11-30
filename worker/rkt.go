@@ -20,5 +20,9 @@ func (o *operator) fetchContainer(ctx context.Context, name string) error {
 		env = append(env, os.Environ()...)
 	}
 
-	return neco.FetchContainer(ctx, name, env)
+	fullname, err := neco.ContainerFullName(name)
+	if err != nil {
+		return err
+	}
+	return neco.FetchContainer(ctx, fullname, env)
 }

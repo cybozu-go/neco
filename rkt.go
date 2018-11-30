@@ -19,14 +19,16 @@ type RktImage struct {
 	Name string `json:"name"`
 }
 
-// FetchContainer fetches a container image
-func FetchContainer(ctx context.Context, name string, env []string) error {
+func ContainerFullName(name string) (string, error) {
 	img, err := CurrentArtifacts.FindContainerImage(name)
 	if err != nil {
-		return err
+		return "", err
 	}
-	fullname := img.FullName()
+	return img.FullName(), nil
+}
 
+// FetchContainer fetches a container image
+func FetchContainer(ctx context.Context, fullname string, env []string) error {
 	cmd := well.CommandContext(ctx, "rkt", "image", "list", "--format=json")
 	data, err := cmd.Output()
 	if err != nil {
@@ -59,6 +61,10 @@ func FetchContainer(ctx context.Context, name string, env []string) error {
 		})
 	}
 	return err
+}
+
+func ExportContainer(ctx context.Context, fullname, filename string) error {
+	return well.CommandContext(ctx, "rkt", "image", "export", fullname, filename).Run()
 }
 
 // Bind represents a host bind mount rule.

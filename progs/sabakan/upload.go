@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -36,7 +37,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 		return err
 	}
 
-	err = uploadAssets(ctx)
+	err = uploadAssets(ctx, client)
 	if err != nil {
 		return err
 	}
@@ -47,6 +48,25 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 	}
 
 	return nil
+}
+
+func retry(ctx context.Context, f func(ctx context.Context) error) error {
+	for i := 0; i < retryCount; i++ {
+		err := f(ctx)
+		if err == nil {
+			return nil
+		}
+		log.Warn("sabakan: failed to ", map[string]interface{}{
+			log.FnError: err,
+		})
+		err2 := neco.SleepContext(ctx, 10*time.Second)
+		if err2 != nil {
+			return err2
+		}
+	}
+	if err != nil {
+		return err
+	}
 }
 
 // uploadOSImages uploads CoreOS images
@@ -174,8 +194,44 @@ func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 	return err
 }
 
+var containers = []neco.ContainerImage{
+	{
+		Name:       "bird",
+		Repository: "quay.io/cybozu/bird",
+		Tag:        "2.0.2-7",
+	},
+	{
+		Name:       "chrony",
+		Repository: "quay.io/cybozu/chrony",
+		Tag:        "3.3-4",
+	},
+}
+
+func assetName(image neco.ContainerImage) string {
+	return fmt.Sprintf("cybozu-%s-%s.aci", image.Name, image.Tag)
+}
+
 // uploadAssets uploads assets
-func uploadAssets(ctx context.Context) error {
+func uploadAssets(ctx context.Context, c *client.Client) error {
+	for _, container := range containers {
+		err := neco.FetchContainer(ctx, container.FullName(), nil)
+		if err != nil {
+			return err
+		}
+		f, err := ioutil.TempFile("", "")
+		if err != nil {
+			return err
+		}
+		defer os.Remove(f.Name())
+		err = neco.ExportContainer(ctx, container.FullName(), f.Name())
+		if err != nil {
+			return err
+		}
+		_, err = c.AssetsUpload(ctx, assetName(container), f.Name(), nil)
+		if err != nil {
+			return err
+		}
+	}
 	// TODO
 	return nil
 }
