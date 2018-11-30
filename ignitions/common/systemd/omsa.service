@@ -11,17 +11,17 @@ KillMode=mixed
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
 OOMScoreAdjust=-1000
-ExecStart=/bin/bash -c "/usr/bin/rkt run \
+ExecStart=/usr/bin/rkt run \
   --insecure-options=all \
-  --volume modules,kind=host,source=/lib/modules/$(uname -r),readOnly=true \
-  --mount volume=modules,target=/lib/modules/$(uname -r) \
+  --volume modules,kind=host,source=/lib/modules,readOnly=true \
+  --mount volume=modules,target=/lib/modules \
   --volume dev,kind=host,source=/dev \
   --mount volume=dev,target=/dev \
   --volume neco,kind=host,source=/etc/neco,readOnly=true \
   --mount volume=neco,target=/etc/neco \
-  $IMAGE_ID \
+  {{ MyURL }}/api/v1/assets/%%omsa%% \
   --name omsa \
-  --user-label name=omsa"
+  --user-label name=omsa
 
 [Install]
 WantedBy=multi-user.target

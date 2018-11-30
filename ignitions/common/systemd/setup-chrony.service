@@ -7,6 +7,5 @@ Wants=setup-network.service setup-var.service
 
 [Service]
 Type=oneshot
-ExecStartPre=/opt/sbin/setup-chrony
 ExecStart=/opt/sbin/setup-chronyd-conf
 RemainAfterExit=yes

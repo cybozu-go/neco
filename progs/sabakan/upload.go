@@ -165,24 +165,11 @@ func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 	return err
 }
 
-var systemContainers = []neco.ContainerImage{
-	{
-		Name:       "bird",
-		Repository: "quay.io/cybozu/bird",
-		Tag:        "2.0.2-7",
-	},
-	{
-		Name:       "chrony",
-		Repository: "quay.io/cybozu/chrony",
-		Tag:        "3.3-4",
-	},
-}
-
 // uploadAssets uploads assets
 func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error {
 	// Upload bird and chorny
 	var fetches []neco.ContainerImage
-	fetches = append(fetches, systemContainers...)
+	fetches = append(fetches, neco.SystemContainers...)
 
 	for _, name := range []string{"omsa", "serf"} {
 		img, err := neco.CurrentArtifacts.FindContainerImage(name)

@@ -11,11 +11,12 @@ KillMode=mixed
 Restart=always
 RestartSec=10s
 ExecStart=/usr/bin/rkt run \
-  --pull-policy never --net=host \
+  --insecure-options=image \
+  --net=host \
   --volume conf,kind=host,source=/etc/serf \
   --mount volume=conf,target=/etc/serf \
   --hostname %H \
-  $IMAGE_ID \
+  {{ MyURL }}/api/v1/assets/%%serf%% \
     --name serf \
     --readonly-rootfs=true \
   -- \

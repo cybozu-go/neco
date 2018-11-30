@@ -1,5 +1,5 @@
 [Unit]
-Description=Setup OMSA container and config
+Description=Setup OMSA config
 Before=setup-network.service
 Wants=setup-network.service
 ConditionVirtualization=!kvm

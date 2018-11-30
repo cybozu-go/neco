@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-curl -sfSL -o /opt/sbin/sabakan-cryptsetup {{ MyURL }}/api/v1/assets/sabakan-cryptsetup
+curl -sfSL -o /opt/sbin/sabakan-cryptsetup {{ MyURL }}/api/v1/assets/%%cryptsetup%%
 chmod a+x /opt/sbin/sabakan-cryptsetup
 
 mkdir -p /etc/systemd/system/sabakan-cryptsetup.service.d/

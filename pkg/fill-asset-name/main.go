@@ -21,7 +21,10 @@ func render(src, dest string) error {
 
 	data := string(s)
 
-	for _, image := range neco.CurrentArtifacts.Images {
+	var images []neco.ContainerImage
+	images = append(images, neco.CurrentArtifacts.Images...)
+	images = append(images, neco.SystemContainers...)
+	for _, image := range images {
 		data = strings.Replace(data, "%%"+image.Name+"%%", neco.ImageAssetName(image), -1)
 	}
 
