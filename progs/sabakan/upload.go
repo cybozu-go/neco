@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -26,7 +25,7 @@ const (
 const retryCount = 5
 
 // UploadContents upload contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, proxyURL string, version string) error {
 	client, err := client.NewClient(endpoint, sabakanHTTP)
 	if err != nil {
 		return err
@@ -37,7 +36,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 		return err
 	}
 
-	err = uploadAssets(ctx, client)
+	err = uploadAssets(ctx, client, proxyURL)
 	if err != nil {
 		return err
 	}
@@ -50,42 +49,21 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 	return nil
 }
 
-func retry(ctx context.Context, f func(ctx context.Context) error) error {
-	for i := 0; i < retryCount; i++ {
-		err := f(ctx)
-		if err == nil {
-			return nil
-		}
-		log.Warn("sabakan: failed to ", map[string]interface{}{
-			log.FnError: err,
-		})
-		err2 := neco.SleepContext(ctx, 10*time.Second)
-		if err2 != nil {
-			return err2
-		}
-	}
-	if err != nil {
-		return err
-	}
-}
-
 // uploadOSImages uploads CoreOS images
 func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error {
 	var index sabakan.ImageIndex
-	var err error
-	for i := 0; i < retryCount; i++ {
-		index, err = c.ImagesIndex(ctx, imageOS)
-		if err == nil {
-			break
-		}
-		log.Warn("sabakan: failed to get index of CoreOS images", map[string]interface{}{
-			log.FnError: err,
-		})
-		err2 := neco.SleepContext(ctx, 10*time.Second)
-		if err2 != nil {
-			return err2
-		}
-	}
+	err := neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+		func(ctx context.Context) error {
+			var err error
+			index, err = c.ImagesIndex(ctx, imageOS)
+			return err
+		},
+		func(err error) {
+			log.Warn("sabakan: failed to get index of CoreOS images", map[string]interface{}{
+				log.FnError: err,
+			})
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -115,28 +93,26 @@ func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 	}()
 
 	var kernelSize int64
-	for i := 0; i < retryCount; i++ {
-		err = kernelFile.Truncate(0)
-		if err != nil {
+	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+		func(ctx context.Context) error {
+			err := kernelFile.Truncate(0)
+			if err != nil {
+				return err
+			}
+			_, err = kernelFile.Seek(0, 0)
+			if err != nil {
+				return err
+			}
+			kernelSize, err = downloadFile(ctx, p, kernelURL, kernelFile)
 			return err
-		}
-		_, err = kernelFile.Seek(0, 0)
-		if err != nil {
-			return err
-		}
-		kernelSize, err = downloadFile(ctx, p, kernelURL, kernelFile)
-		if err == nil {
-			break
-		}
-		log.Warn("sabakan: failed to fetch Container Linux kernel", map[string]interface{}{
-			log.FnError: err,
-			"url":       kernelURL,
-		})
-		err2 := neco.SleepContext(ctx, 10*time.Second)
-		if err2 != nil {
-			return err2
-		}
-	}
+		},
+		func(err error) {
+			log.Warn("sabakan: failed to fetch Container Linux kernel", map[string]interface{}{
+				log.FnError: err,
+				"url":       kernelURL,
+			})
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -146,28 +122,27 @@ func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 	}
 
 	var initrdSize int64
-	for i := 0; i < retryCount; i++ {
-		err = initrdFile.Truncate(0)
-		if err != nil {
+	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+		func(ctx context.Context) error {
+			err := initrdFile.Truncate(0)
+			if err != nil {
+				return err
+			}
+			_, err = initrdFile.Seek(0, 0)
+			if err != nil {
+				return err
+			}
+			initrdSize, err = downloadFile(ctx, p, initrdURL, initrdFile)
 			return err
-		}
-		_, err = initrdFile.Seek(0, 0)
-		if err != nil {
-			return err
-		}
-		initrdSize, err = downloadFile(ctx, p, initrdURL, initrdFile)
-		if err == nil {
-			break
-		}
-		log.Warn("sabakan: failed to fetch Container Linux initrd", map[string]interface{}{
-			log.FnError: err,
-			"url":       initrdURL,
-		})
-		err2 := neco.SleepContext(ctx, 10*time.Second)
-		if err2 != nil {
-			return err2
-		}
-	}
+		},
+		func(err error) {
+			log.Warn("sabakan: failed to fetch Container Linux initrd", map[string]interface{}{
+				log.FnError: err,
+				"url":       initrdURL,
+			})
+		},
+	)
+
 	if err != nil {
 		return err
 	}
@@ -177,24 +152,20 @@ func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 		return err
 	}
 
-	for i := 0; i < retryCount; i++ {
-		err = c.ImagesUpload(ctx, imageOS, version, kernelFile, kernelSize, initrdFile, initrdSize)
-		if err == nil {
-			return nil
-
-		}
-		log.Warn("sabakan: failed to upload Container Linux", map[string]interface{}{
-			log.FnError: err,
-		})
-		err2 := neco.SleepContext(ctx, 10*time.Second)
-		if err2 != nil {
-			return err2
-		}
-	}
+	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+		func(ctx context.Context) error {
+			return c.ImagesUpload(ctx, imageOS, version, kernelFile, kernelSize, initrdFile, initrdSize)
+		},
+		func(err error) {
+			log.Warn("sabakan: failed to upload Container Linux", map[string]interface{}{
+				log.FnError: err,
+			})
+		},
+	)
 	return err
 }
 
-var containers = []neco.ContainerImage{
+var systemContainers = []neco.ContainerImage{
 	{
 		Name:       "bird",
 		Repository: "quay.io/cybozu/bird",
@@ -207,33 +178,79 @@ var containers = []neco.ContainerImage{
 	},
 }
 
-func assetName(image neco.ContainerImage) string {
-	return fmt.Sprintf("cybozu-%s-%s.aci", image.Name, image.Tag)
-}
-
 // uploadAssets uploads assets
-func uploadAssets(ctx context.Context, c *client.Client) error {
-	for _, container := range containers {
-		err := neco.FetchContainer(ctx, container.FullName(), nil)
+func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error {
+	// Upload bird and chorny
+	var fetches []neco.ContainerImage
+	fetches = append(fetches, systemContainers...)
+
+	for _, name := range []string{"omsa", "serf"} {
+		img, err := neco.CurrentArtifacts.FindContainerImage(name)
 		if err != nil {
 			return err
 		}
-		f, err := ioutil.TempFile("", "")
-		if err != nil {
-			return err
-		}
-		defer os.Remove(f.Name())
-		err = neco.ExportContainer(ctx, container.FullName(), f.Name())
-		if err != nil {
-			return err
-		}
-		_, err = c.AssetsUpload(ctx, assetName(container), f.Name(), nil)
+		fetches = append(fetches, img)
+	}
+
+	for _, img := range fetches {
+		err := uploadImageAssets(ctx, img, c, proxyURL)
 		if err != nil {
 			return err
 		}
 	}
-	// TODO
-	return nil
+
+	// Upload sabakan with version name
+	img, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
+	if err != nil {
+		return err
+	}
+	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+		func(ctx context.Context) error {
+			_, err := c.AssetsUpload(ctx, neco.CryptsetupAssetName(img.Tag), neco.SabakanCryptsetupPath, nil)
+			return err
+
+		},
+		func(err error) {
+			log.Warn("sabakan: failed to upload asset", map[string]interface{}{
+				log.FnError: err,
+				"name":      neco.CryptsetupAssetName(img.Tag),
+				"source":    neco.SabakanCryptsetupPath,
+			})
+		},
+	)
+	return err
+}
+
+func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client, proxyURL string) error {
+	env := neco.HTTPProxyEnv(proxyURL)
+	err := neco.FetchContainer(ctx, img.FullName(), env)
+	if err != nil {
+		return err
+	}
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(f.Name())
+	err = neco.ExportContainer(ctx, img.FullName(), f.Name())
+	if err != nil {
+		return err
+	}
+	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+		func(ctx context.Context) error {
+			_, err := c.AssetsUpload(ctx, neco.ImageAssetName(img), f.Name(), nil)
+			return err
+
+		},
+		func(err error) {
+			log.Warn("sabakan: failed to upload asset", map[string]interface{}{
+				log.FnError: err,
+				"name":      neco.ImageAssetName(img),
+				"source":    f.Name(),
+			})
+		},
+	)
+	return err
 }
 
 // uploadIgnitions updates ignitions from local file

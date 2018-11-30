@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"os"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
@@ -14,11 +13,7 @@ func (o *operator) fetchContainer(ctx context.Context, name string) error {
 		return err
 	}
 
-	var env []string
-	if p != "" {
-		env = []string{"https_proxy=" + p, "http_proxy=" + p}
-		env = append(env, os.Environ()...)
-	}
+	env := neco.HTTPProxyEnv(p)
 
 	fullname, err := neco.ContainerFullName(name)
 	if err != nil {
