@@ -13,6 +13,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/sabakan"
 	"github.com/cybozu-go/sabakan/client"
 )
 
@@ -50,7 +51,21 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 
 // uploadOSImages uploads CoreOS images
 func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error {
-	index, err := c.ImagesIndex(ctx, imageOS)
+	var index sabakan.ImageIndex
+	var err error
+	for i := 0; i < retryCount; i++ {
+		index, err = c.ImagesIndex(ctx, imageOS)
+		if err == nil {
+			break
+		}
+		log.Warn("sabakan: failed to get index of CoreOS images", map[string]interface{}{
+			log.FnError: err,
+		})
+		err2 := neco.SleepContext(ctx, 10*time.Second)
+		if err2 != nil {
+			return err2
+		}
+	}
 	if err != nil {
 		return err
 	}
