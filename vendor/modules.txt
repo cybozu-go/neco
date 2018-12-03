@@ -1,18 +1,92 @@
-# github.com/Microsoft/go-winio v0.4.11
+# github.com/BurntSushi/toml v0.3.1
+github.com/BurntSushi/toml
+# github.com/Microsoft/go-winio v0.0.0-20180501170546-ab35fc04b636
 github.com/Microsoft/go-winio
+github.com/Microsoft/go-winio/archive/tar
+github.com/Microsoft/go-winio/backuptar
+# github.com/Microsoft/hcsshim v0.0.0-20180606212836-eca7177590cd
+github.com/Microsoft/hcsshim
+github.com/Microsoft/hcsshim/internal/guid
+github.com/Microsoft/hcsshim/internal/hcs
+github.com/Microsoft/hcsshim/internal/hcserror
+github.com/Microsoft/hcsshim/internal/hns
+github.com/Microsoft/hcsshim/internal/mergemaps
+github.com/Microsoft/hcsshim/internal/schema1
+github.com/Microsoft/hcsshim/internal/wclayer
+github.com/Microsoft/hcsshim/internal/interop
+github.com/Microsoft/hcsshim/internal/longpath
+github.com/Microsoft/hcsshim/internal/safefile
 # github.com/ajeddeloh/go-json v0.0.0-20170920214419-6a2fe990e083
 github.com/ajeddeloh/go-json
-# github.com/containers/image v0.0.0-20181023201252-4b6d9cf918c1
-github.com/containers/image/docker
-github.com/containers/image/types
-github.com/containers/image/docker/policyconfiguration
+# github.com/containerd/continuity v0.0.0-20180216233310-d8fb8589b0e8
+github.com/containerd/continuity/pathdriver
+# github.com/containers/image v0.0.0-20181129122009-63a1cbdc5e65
+github.com/containers/image/copy
 github.com/containers/image/docker/reference
+github.com/containers/image/signature
+github.com/containers/image/transports/alltransports
+github.com/containers/image/types
+github.com/containers/image/docker
 github.com/containers/image/image
 github.com/containers/image/manifest
-github.com/containers/image/pkg/docker/config
-github.com/containers/image/pkg/tlsclientconfig
+github.com/containers/image/pkg/compression
 github.com/containers/image/transports
+github.com/containers/image/version
+github.com/containers/image/directory
+github.com/containers/image/docker/archive
+github.com/containers/image/docker/daemon
+github.com/containers/image/oci/archive
+github.com/containers/image/oci/layout
+github.com/containers/image/openshift
+github.com/containers/image/ostree
+github.com/containers/image/storage
+github.com/containers/image/tarball
+github.com/containers/image/docker/policyconfiguration
+github.com/containers/image/pkg/docker/config
+github.com/containers/image/pkg/sysregistriesv2
+github.com/containers/image/pkg/tlsclientconfig
 github.com/containers/image/pkg/strslice
+github.com/containers/image/directory/explicitfilepath
+github.com/containers/image/docker/tarfile
+github.com/containers/image/internal/tmpdir
+github.com/containers/image/oci/internal
+# github.com/containers/storage v0.0.0-20181203181726-ad0f9c4dfa38
+github.com/containers/storage/pkg/homedir
+github.com/containers/storage/pkg/idtools
+github.com/containers/storage/pkg/archive
+github.com/containers/storage/pkg/ioutils
+github.com/containers/storage
+github.com/containers/storage/pkg/system
+github.com/containers/storage/pkg/fileutils
+github.com/containers/storage/pkg/longpath
+github.com/containers/storage/pkg/pools
+github.com/containers/storage/pkg/promise
+github.com/containers/storage/drivers
+github.com/containers/storage/drivers/register
+github.com/containers/storage/pkg/directory
+github.com/containers/storage/pkg/parsers
+github.com/containers/storage/pkg/stringid
+github.com/containers/storage/pkg/stringutils
+github.com/containers/storage/pkg/truncindex
+github.com/containers/storage/pkg/mount
+github.com/containers/storage/pkg/chrootarchive
+github.com/containers/storage/pkg/reexec
+github.com/containers/storage/drivers/aufs
+github.com/containers/storage/drivers/btrfs
+github.com/containers/storage/drivers/devmapper
+github.com/containers/storage/drivers/overlay
+github.com/containers/storage/drivers/vfs
+github.com/containers/storage/drivers/windows
+github.com/containers/storage/drivers/zfs
+github.com/containers/storage/pkg/locker
+github.com/containers/storage/pkg/devicemapper
+github.com/containers/storage/pkg/dmesg
+github.com/containers/storage/pkg/loopback
+github.com/containers/storage/pkg/parsers/kernel
+github.com/containers/storage/drivers/overlayutils
+github.com/containers/storage/drivers/quota
+github.com/containers/storage/pkg/fsutils
+github.com/containers/storage/pkg/ostree
 # github.com/coreos/etcd v3.3.10+incompatible
 github.com/coreos/etcd/clientv3
 github.com/coreos/etcd/clientv3/concurrency
@@ -51,8 +125,8 @@ github.com/cybozu-go/log
 # github.com/cybozu-go/netutil v1.2.0
 github.com/cybozu-go/netutil
 # github.com/cybozu-go/sabakan v0.0.0-20181129113720-85db1e6cc11d
-github.com/cybozu-go/sabakan/client
 github.com/cybozu-go/sabakan
+github.com/cybozu-go/sabakan/client
 # github.com/cybozu-go/well v1.8.1
 github.com/cybozu-go/well
 # github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65
@@ -66,15 +140,37 @@ github.com/docker/distribution/registry/client/transport
 github.com/docker/distribution/registry/storage/cache
 github.com/docker/distribution/registry/storage/cache/memory
 github.com/docker/distribution/digestset
-# github.com/docker/docker v1.13.1
+# github.com/docker/docker v0.0.0-20180522102801-da99009bbb11
 github.com/docker/docker/api/types/versions
+github.com/docker/docker/client
 github.com/docker/docker/pkg/homedir
+github.com/docker/docker/api
+github.com/docker/docker/api/types
+github.com/docker/docker/api/types/container
+github.com/docker/docker/api/types/events
+github.com/docker/docker/api/types/filters
+github.com/docker/docker/api/types/image
+github.com/docker/docker/api/types/network
+github.com/docker/docker/api/types/registry
+github.com/docker/docker/api/types/swarm
+github.com/docker/docker/api/types/time
+github.com/docker/docker/api/types/volume
+github.com/docker/docker/pkg/idtools
+github.com/docker/docker/api/types/mount
+github.com/docker/docker/api/types/blkiodev
+github.com/docker/docker/api/types/strslice
+github.com/docker/docker/api/types/swarm/runtime
+github.com/docker/docker/pkg/system
+github.com/docker/docker/pkg/mount
 # github.com/docker/docker-credential-helpers v0.6.0
 github.com/docker/docker-credential-helpers/client
 github.com/docker/docker-credential-helpers/credentials
-# github.com/docker/go-connections v0.4.0
+# github.com/docker/go-connections v0.0.0-20180212134524-7beb39f0b969
 github.com/docker/go-connections/tlsconfig
 github.com/docker/go-connections/sockets
+github.com/docker/go-connections/nat
+# github.com/docker/go-units v0.3.2
+github.com/docker/go-units
 # github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
 github.com/docker/libtrust
 # github.com/fsnotify/fsnotify v1.4.7
@@ -112,7 +208,7 @@ github.com/hashicorp/errwrap
 github.com/hashicorp/go-cleanhttp
 # github.com/hashicorp/go-multierror v1.0.0
 github.com/hashicorp/go-multierror
-# github.com/hashicorp/go-retryablehttp v0.0.0-20180718195005-e651d75abec6
+# github.com/hashicorp/go-retryablehttp v0.5.0
 github.com/hashicorp/go-retryablehttp
 # github.com/hashicorp/go-rootcerts v0.0.0-20160503143440-6bb64b370b90
 github.com/hashicorp/go-rootcerts
@@ -131,7 +227,7 @@ github.com/hashicorp/hcl/hcl/scanner
 github.com/hashicorp/hcl/hcl/strconv
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
-# github.com/hashicorp/vault v0.11.4
+# github.com/hashicorp/vault v1.0.0
 github.com/hashicorp/vault/api
 github.com/hashicorp/vault/helper/consts
 github.com/hashicorp/vault/helper/hclutil
@@ -147,16 +243,26 @@ github.com/hpcloud/tail/ratelimiter
 github.com/hpcloud/tail/util
 github.com/hpcloud/tail/watch
 github.com/hpcloud/tail/winfile
+# github.com/imdario/mergo v0.0.0-20160517064435-50d4dbd4eb0e
+github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
+# github.com/mattn/go-runewidth v0.0.0-20170201023540-14207d285c6c
+github.com/mattn/go-runewidth
+# github.com/mattn/go-shellwords v1.0.3
+github.com/mattn/go-shellwords
+# github.com/mistifyio/go-zfs v0.0.0-20161103015429-c0224de804d4
+github.com/mistifyio/go-zfs
 # github.com/mitchellh/go-homedir v1.0.0
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
+# github.com/mtrmac/gpgme v0.0.0-20170102180018-b2432428689c
+github.com/mtrmac/gpgme
 # github.com/onsi/ginkgo v1.7.0
 github.com/onsi/ginkgo
 github.com/onsi/ginkgo/config
@@ -189,20 +295,32 @@ github.com/onsi/gomega/matchers/support/goraph/bipartitegraph
 github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
-# github.com/opencontainers/go-digest v1.0.0-rc1
+# github.com/opencontainers/go-digest v1.0.0-rc0
 github.com/opencontainers/go-digest
-# github.com/opencontainers/image-spec v1.0.1
+# github.com/opencontainers/image-spec v1.0.0
 github.com/opencontainers/image-spec/specs-go/v1
 github.com/opencontainers/image-spec/specs-go
-# github.com/opencontainers/runc v1.0.0-rc2.0.20170216015123-6b1d0e76f239
+# github.com/opencontainers/runc v0.0.0-20170216015123-6b1d0e76f239
 github.com/opencontainers/runc/libcontainer/user
+github.com/opencontainers/runc/libcontainer/system
+# github.com/opencontainers/selinux v0.0.0-20181018180444-077c8b6d1c18
+github.com/opencontainers/selinux/go-selinux
+github.com/opencontainers/selinux/go-selinux/label
+# github.com/ostreedev/ostree-go v0.0.0-20170616214430-aeb02c6b6aa2
+github.com/ostreedev/ostree-go/pkg/glibobject
+github.com/ostreedev/ostree-go/pkg/otbuiltin
+# github.com/pborman/uuid v0.0.0-20170112150404-1b00554d8222
+github.com/pborman/uuid
 # github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
 # github.com/pierrec/lz4 v2.0.5+incompatible
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
-# github.com/pkg/errors v0.8.1-0.20161029093637-248dadf4e906
+# github.com/pkg/errors v0.8.0
 github.com/pkg/errors
+# github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7
+github.com/pquerna/ffjson/fflib/v1
+github.com/pquerna/ffjson/fflib/v1/internal
 # github.com/ryanuber/go-glob v0.0.0-20170128012129-256dc444b735
 github.com/ryanuber/go-glob
 # github.com/sirupsen/logrus v1.2.0
@@ -220,20 +338,40 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.2.1
 github.com/spf13/viper
+# github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2
+github.com/syndtr/gocapability/capability
+# github.com/tchap/go-patricia v2.2.6+incompatible
+github.com/tchap/go-patricia/patricia
+# github.com/ulikunitz/xz v0.5.4
+github.com/ulikunitz/xz
+github.com/ulikunitz/xz/internal/xlog
+github.com/ulikunitz/xz/lzma
+github.com/ulikunitz/xz/internal/hash
+# github.com/vbatts/tar-split v0.10.2
+github.com/vbatts/tar-split/tar/asm
+github.com/vbatts/tar-split/tar/storage
+github.com/vbatts/tar-split/archive/tar
 # github.com/vincent-petithory/dataurl v0.0.0-20160330182126-9a301d65acbb
 github.com/vincent-petithory/dataurl
 # go4.org v0.0.0-20181109185143-00e24f1b2599
 go4.org/errorutil
 # golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85
+golang.org/x/crypto/openpgp
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/ssh
+golang.org/x/crypto/openpgp/armor
+golang.org/x/crypto/openpgp/errors
+golang.org/x/crypto/openpgp/packet
+golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/poly1305
+golang.org/x/crypto/cast5
+golang.org/x/crypto/openpgp/elgamal
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/internal/subtle
-# golang.org/x/net v0.0.0-20181129055619-fae4c4e3ad76
+# golang.org/x/net v0.0.0-20181114220301-adae6a3d119a
 golang.org/x/net/netutil
 golang.org/x/net/http2
 golang.org/x/net/context
@@ -241,6 +379,7 @@ golang.org/x/net/trace
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
+golang.org/x/net/context/ctxhttp
 golang.org/x/net/internal/timeseries
 golang.org/x/net/html/charset
 golang.org/x/net/proxy
@@ -301,9 +440,13 @@ google.golang.org/grpc/resolver/passthrough
 google.golang.org/grpc/stats
 google.golang.org/grpc/tap
 google.golang.org/grpc/balancer/base
+# gopkg.in/cheggaaa/pb.v1 v1.0.7
+gopkg.in/cheggaaa/pb.v1
 # gopkg.in/fsnotify.v1 v1.4.7
 gopkg.in/fsnotify.v1
 # gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
 gopkg.in/tomb.v1
 # gopkg.in/yaml.v2 v2.2.1
 gopkg.in/yaml.v2
+# k8s.io/client-go v0.0.0-20170217214107-bcde30fb7eae
+k8s.io/client-go/util/homedir
