@@ -10,7 +10,7 @@ GOFLAGS = -mod=vendor
 export GOFLAGS
 
 ### for debian package
-PACKAGES := fakeroot
+PACKAGES := fakeroot btrfs-tools libdevmapper-dev libgpgme-dev libostree-dev
 WORKDIR := $(CURDIR)/work
 CONTROL := $(WORKDIR)/DEBIAN/control
 DOCDIR := $(WORKDIR)/usr/share/doc/neco
@@ -73,6 +73,7 @@ $(DEB):
 
 setup:
 	GO111MODULE=off go get -u golang.org/x/lint/golint
+	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
 
 clean:
