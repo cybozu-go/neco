@@ -32,7 +32,7 @@ func render(src, dest string) error {
 	if err != nil {
 		return err
 	}
-	data = strings.Replace(data, "%%cryptsetup%%", neco.CryptsetupAssetName(sabakanImage.Tag), -1)
+	data = strings.Replace(data, "%%cryptsetup%%", neco.CryptsetupAssetName(sabakanImage), -1)
 
 	d := []byte(data)
 	return ioutil.WriteFile(dest, d, 0644)

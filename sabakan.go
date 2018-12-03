@@ -34,6 +34,6 @@ func ImageAssetName(img ContainerImage) string {
 }
 
 // CryptsetupAssetName returns asset's name for sabakan-cryptsetup
-func CryptsetupAssetName(version string) string {
-	return "sabakan-cryptsetup-" + version
+func CryptsetupAssetName(img ContainerImage) string {
+	return "sabakan-cryptsetup-" + img.Tag
 }

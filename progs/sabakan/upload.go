@@ -198,16 +198,23 @@ func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error 
 	if err != nil {
 		return err
 	}
+	_, err = c.AssetsInfo(ctx, neco.CryptsetupAssetName(img))
+	if err == nil {
+		return nil
+	}
+	if !client.IsNotFound(err) {
+		return err
+	}
 	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
 		func(ctx context.Context) error {
-			_, err := c.AssetsUpload(ctx, neco.CryptsetupAssetName(img.Tag), neco.SabakanCryptsetupPath, nil)
+			_, err := c.AssetsUpload(ctx, neco.CryptsetupAssetName(img), neco.SabakanCryptsetupPath, nil)
 			return err
 
 		},
 		func(err error) {
 			log.Warn("sabakan: failed to upload asset", map[string]interface{}{
 				log.FnError: err,
-				"name":      neco.CryptsetupAssetName(img.Tag),
+				"name":      neco.CryptsetupAssetName(img),
 				"source":    neco.SabakanCryptsetupPath,
 			})
 		},
@@ -216,7 +223,15 @@ func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error 
 }
 
 func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client) error {
-	err := neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+	need, err := needImageAssetsUpload(ctx, img, c)
+	if err != nil {
+		return err
+	}
+	if !need {
+		return nil
+	}
+
+	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
 		func(ctx context.Context) error {
 			_, err := c.AssetsUpload(ctx, neco.ImageAssetName(img), neco.SystemImagePath(img), nil)
 			return err
@@ -234,8 +249,16 @@ func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *cl
 }
 
 func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client, proxyURL string) error {
+	need, err := needImageAssetsUpload(ctx, img, c)
+	if err != nil {
+		return err
+	}
+	if !need {
+		return nil
+	}
+
 	env := neco.HTTPProxyEnv(proxyURL)
-	err := neco.FetchContainer(ctx, img.FullName(), env)
+	err = neco.FetchContainer(ctx, img.FullName(), env)
 	if err != nil {
 		return err
 	}
@@ -263,6 +286,17 @@ func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.C
 		},
 	)
 	return err
+}
+
+func needImageAssetsUpload(ctx context.Context, img neco.ContainerImage, c *client.Client) (bool, error) {
+	_, err := c.AssetsInfo(ctx, neco.ImageAssetName(img))
+	if err == nil {
+		return false, nil
+	}
+	if client.IsNotFound(err) {
+		return true, nil
+	}
+	return false, err
 }
 
 // uploadIgnitions updates ignitions from local file
@@ -298,10 +332,10 @@ func uploadIgnitions(ctx context.Context, c *client.Client, id string) error {
 
 func needIgnitionUpdate(ctx context.Context, c *client.Client, role, id string, newer string) (bool, error) {
 	index, err := c.IgnitionsGet(ctx, role)
-	if client.IsNotFound(err) {
-		return true, nil
-	}
 	if err != nil {
+		if client.IsNotFound(err) {
+			return true, nil
+		}
 		return false, err
 	}
 
