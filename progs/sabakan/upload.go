@@ -70,6 +70,7 @@ func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 
 	version := neco.CurrentArtifacts.CoreOS.Version
 	if len(index) != 0 && index[len(index)-1].ID == version {
+		// already uploaded
 		return nil
 	}
 
@@ -167,11 +168,17 @@ func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 
 // uploadAssets uploads assets
 func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error {
-	// Upload bird and chorny
-	var fetches []neco.ContainerImage
-	fetches = append(fetches, neco.SystemContainers...)
+	// Upload bird and chrony with ubuntu-debug
+	for _, img := range neco.SystemContainers {
+		err := uploadSystemImageAssets(ctx, img, c)
+		if err != nil {
+			return err
+		}
+	}
 
+	// Upload other images
 	// TODO: upload omsa
+	var fetches []neco.ContainerImage
 	for _, name := range []string{"serf"} {
 		img, err := neco.CurrentArtifacts.FindContainerImage(name)
 		if err != nil {
@@ -179,7 +186,6 @@ func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error 
 		}
 		fetches = append(fetches, img)
 	}
-
 	for _, img := range fetches {
 		err := uploadImageAssets(ctx, img, c, proxyURL)
 		if err != nil {
@@ -187,7 +193,7 @@ func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error 
 		}
 	}
 
-	// Upload sabakan with version name
+	// Upload sabakan-cryptsetup with version name
 	img, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
 	if err != nil {
 		return err
@@ -203,6 +209,24 @@ func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error 
 				log.FnError: err,
 				"name":      neco.CryptsetupAssetName(img.Tag),
 				"source":    neco.SabakanCryptsetupPath,
+			})
+		},
+	)
+	return err
+}
+
+func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client) error {
+	err := neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+		func(ctx context.Context) error {
+			_, err := c.AssetsUpload(ctx, neco.ImageAssetName(img), neco.SystemImagePath(img), nil)
+			return err
+
+		},
+		func(err error) {
+			log.Warn("sabakan: failed to upload asset", map[string]interface{}{
+				log.FnError: err,
+				"name":      neco.ImageAssetName(img),
+				"source":    neco.SystemImagePath(img),
 			})
 		},
 	)

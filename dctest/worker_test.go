@@ -109,6 +109,9 @@ func testWorker() {
 		for _, image := range images {
 			Expect(assets).To(ContainElement(neco.ImageAssetName(image)))
 		}
+		image, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(assets).To(ContainElement(neco.CryptsetupAssetName(image.Tag)))
 	})
 
 	It("should update machine state in sabakan", func() {
