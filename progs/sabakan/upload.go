@@ -257,23 +257,25 @@ func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.C
 		return nil
 	}
 
+	// TODO: use env
 	env := neco.HTTPProxyEnv(proxyURL)
-	err = neco.FetchContainer(ctx, img.FullName(), env)
+	_ = env
+
+	d, err := ioutil.TempDir("", "")
 	if err != nil {
 		return err
 	}
-	f, err := ioutil.TempFile("", "")
+	defer os.RemoveAll(d)
+
+	archive := filepath.Join(d, neco.ImageAssetName(img))
+	err = neco.FetchDockerImageAsArchive(ctx, img, archive)
 	if err != nil {
 		return err
 	}
-	defer os.Remove(f.Name())
-	err = neco.ExportContainer(ctx, img.FullName(), f.Name())
-	if err != nil {
-		return err
-	}
+
 	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
 		func(ctx context.Context) error {
-			_, err := c.AssetsUpload(ctx, neco.ImageAssetName(img), f.Name(), nil)
+			_, err := c.AssetsUpload(ctx, neco.ImageAssetName(img), archive, nil)
 			return err
 
 		},
@@ -281,7 +283,7 @@ func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.C
 			log.Warn("sabakan: failed to upload asset", map[string]interface{}{
 				log.FnError: err,
 				"name":      neco.ImageAssetName(img),
-				"source":    f.Name(),
+				"source":    archive,
 			})
 		},
 	)
