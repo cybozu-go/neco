@@ -45,7 +45,7 @@ cd \$HOME/go/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME
 git checkout -qf ${CIRCLE_SHA1}
 
 cd dctest
-cp \$HOME/secrets .
+cp /home/cybozu/secrets .
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
 export GO111MODULE=on
 make setup
