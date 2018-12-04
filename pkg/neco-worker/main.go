@@ -42,7 +42,7 @@ func main() {
 		// NOTE: hack to set http proxy to container/image
 		st := storage.NewStorage(ec)
 		proxy, err := st.GetProxyConfig(ctx)
-		if err != nil {
+		if err != nil && err != storage.ErrNotFound {
 			return err
 		}
 		if len(proxy) != 0 {
