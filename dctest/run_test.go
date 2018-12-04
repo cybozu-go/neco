@@ -137,6 +137,7 @@ func execAt(host string, args ...string) (stdout, stderr []byte, e error) {
 	return outBuf.Bytes(), errBuf.Bytes(), err
 }
 
+// WARNING: `input` can contain secret data.  Never output `input` to console.
 func execAtWithInput(host string, input []byte, args ...string) error {
 	agent := sshClients[host]
 	err := agent.conn.SetDeadline(time.Now().Add(DefaultRunTimeout))

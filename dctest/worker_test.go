@@ -2,6 +2,7 @@ package dctest
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -77,11 +78,19 @@ func testWorker() {
 		execSafeAt(boot0, "sabactl", "dhcp", "set", "-f", "/mnt/dhcp.json")
 		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
 
-		execSafeAt(boot0, "sudo", "neco", "sabakan-upload")
+		secrets, err := ioutil.ReadFile("secrets")
+		Expect(err).NotTo(HaveOccurred())
+		err = execAtWithInput(boot0, secrets, "dd", "of=secrets.sh")
+		Expect(err).NotTo(HaveOccurred())
+		script, err := ioutil.ReadFile("with_secrets.sh")
+		Expect(err).NotTo(HaveOccurred())
+		err = execAtWithInput(boot0, script, "dd", "of=secrets.sh", "oflag=append", "conv=notrunc")
+		Expect(err).NotTo(HaveOccurred())
+		execSafeAt(boot0, "sh", "-e", "secrets.sh")
 
 		output := execSafeAt(boot0, "sabactl", "images", "index")
 		index := new(sabakan.ImageIndex)
-		err := json.Unmarshal(output, index)
+		err = json.Unmarshal(output, index)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(index.Find(neco.CurrentArtifacts.CoreOS.Version)).NotTo(BeNil())
 
