@@ -4,3 +4,4 @@ Maintainer: Cybozu <oss@cybozu.com>
 Architecture: amd64
 Homepage: https://github.com/cybozu-go/neco
 Description: Continuous delivery tool for Neco project
+Depends: libgpgme11, libostree-dev
