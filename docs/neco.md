@@ -16,6 +16,9 @@ Synopsis
     Change the setting for `KEY` to `VALUE`.
     Key and values are described in [the next section](#config).
 
+    Some special keys read their values from environment variables due to security concerns.
+    In these cases, do not give `VALUE` in command line.
+
 * `neco config get KEY`
 
     Show the current configuration for `KEY`.
@@ -123,7 +126,7 @@ It will be used by `neco-worker`.
 
 ### `quay-password`
 
-Set password to authenticate to quay.io from QUAY_USER envvar.
+Set password to authenticate to quay.io from QUAY_PASSWORD envvar.
 It will be used by `neco-worker`.
 
 ### `check-update-interval`

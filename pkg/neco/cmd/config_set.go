@@ -25,8 +25,8 @@ Possible keys are:
     env                   - "staging" or "prod".  Default is "staging".
     slack                 - Slack WebHook URL.
     proxy                 - HTTP proxy server URL to access Internet.
-    quay-username         - Username to authenticate to quay.io from QUAY_USER.
-    quay-password         - Password to authenticate to quay.io from QUAY_PASSWORD.
+    quay-username         - Username to authenticate to quay.io from QUAY_USER.  This does not take VALUE.
+    quay-password         - Password to authenticate to quay.io from QUAY_PASSWORD.  This does not take VALUE.
     check-update-interval - Polling interval for checking new neco release.
     worker-timeout        - Timeout value to wait for workers.`,
 
@@ -94,10 +94,10 @@ Possible keys are:
 				return st.PutProxyConfig(ctx, value)
 			case "quay-username":
 				value = os.Getenv("QUAY_USER")
-				return st.PutProxyConfig(ctx, value)
+				return st.PutQuayUsername(ctx, value)
 			case "quay-password":
 				value = os.Getenv("QUAY_PASSWORD")
-				return st.PutProxyConfig(ctx, value)
+				return st.PutQuayPassword(ctx, value)
 			case "check-update-interval":
 				value = args[1]
 				duration, err := time.ParseDuration(value)
