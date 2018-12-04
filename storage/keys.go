@@ -19,6 +19,8 @@ const (
 	KeyConfigPrefix        = "config/"
 	KeyNotificationSlack   = "config/notification/slack"
 	KeyProxy               = "config/proxy"
+	KeyQuayUsername        = "config/quay-username"
+	KeyQuayPassword        = "config/quay-password"
 	KeyEnv                 = "config/env"
 	KeyCheckUpdateInterval = "config/check-update-interval"
 	KeyWorkerTimeout       = "config/worker-timeout"

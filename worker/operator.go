@@ -37,12 +37,13 @@ type operator struct {
 	storage     storage.Storage
 	proxyClient *http.Client
 	localClient *http.Client
+	auth        neco.DockerAuth
 
 	etcdRestart bool
 }
 
 // NewOperator creates an Operator
-func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator, error) {
+func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int, auth neco.DockerAuth) (Operator, error) {
 	st := storage.NewStorage(ec)
 	localClient := ext.LocalHTTPClient()
 	proxyClient, err := ext.ProxyHTTPClient(ctx, st)
@@ -56,6 +57,7 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 		storage:     st,
 		proxyClient: proxyClient,
 		localClient: localClient,
+		auth:        auth,
 	}, nil
 }
 

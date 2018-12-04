@@ -14,8 +14,14 @@ import (
 	"github.com/cybozu-go/log"
 )
 
+// DockerAuth represents docker auth config
+type DockerAuth struct {
+	Username string
+	Password string
+}
+
 // FetchDockerImageAsArchive downloads a docker image and saves it as an archive.
-func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archive string) error {
+func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archive string, auth DockerAuth) error {
 	policyContext, err := signature.NewPolicyContext(&signature.Policy{
 		Default: []signature.PolicyRequirement{
 			// NewPRInsecureAcceptAnything returns a new "insecureAcceptAnything" PolicyRequirement.
@@ -42,7 +48,18 @@ func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archiv
 		return errors.New("unexpected error; docker://<FullName> does not produce named-tagged reference")
 	}
 
+	var srcSystemCtx *types.SystemContext
+	if len(auth.Username) > 0 {
+		srcSystemCtx = &types.SystemContext{
+			DockerAuthConfig: &types.DockerAuthConfig{
+				Username: auth.Username,
+				Password: auth.Password,
+			},
+		}
+	}
+
 	options := &copy.Options{
+		SourceCtx: srcSystemCtx,
 		DestinationCtx: &types.SystemContext{
 			DockerArchiveAdditionalTags: []reference.NamedTagged{namedTagged},
 		},

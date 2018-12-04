@@ -116,6 +116,16 @@ Specify [Slack WebHook](https://api.slack.com/incoming-webhooks) URL.
 Specify HTTP proxy server to access Internet.
 It will be used by `neco-updater` and `neco-worker`.
 
+### `quay-username`
+
+Set username to authenticate to quay.io from QUAY_USER envvar.
+It will be used by `neco-worker`.
+
+### `quay-password`
+
+Set password to authenticate to quay.io from QUAY_USER envvar.
+It will be used by `neco-worker`.
+
 ### `check-update-interval`
 
 Specify polling interval for checking new neco package release.

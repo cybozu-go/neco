@@ -25,7 +25,7 @@ const (
 const retryCount = 5
 
 // UploadContents upload contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth neco.DockerAuth) error {
 	client, err := client.NewClient(endpoint, sabakanHTTP)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 		return err
 	}
 
-	err = uploadAssets(ctx, client)
+	err = uploadAssets(ctx, client, auth)
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 }
 
 // uploadAssets uploads assets
-func uploadAssets(ctx context.Context, c *client.Client) error {
+func uploadAssets(ctx context.Context, c *client.Client, auth neco.DockerAuth) error {
 	// Upload bird and chrony with ubuntu-debug
 	for _, img := range neco.SystemContainers {
 		err := uploadSystemImageAssets(ctx, img, c)
@@ -177,9 +177,8 @@ func uploadAssets(ctx context.Context, c *client.Client) error {
 	}
 
 	// Upload other images
-	// TODO: upload omsa
 	var fetches []neco.ContainerImage
-	for _, name := range []string{"serf"} {
+	for _, name := range []string{"serf", "omsa"} {
 		img, err := neco.CurrentArtifacts.FindContainerImage(name)
 		if err != nil {
 			return err
@@ -187,7 +186,7 @@ func uploadAssets(ctx context.Context, c *client.Client) error {
 		fetches = append(fetches, img)
 	}
 	for _, img := range fetches {
-		err := uploadImageAssets(ctx, img, c)
+		err := uploadImageAssets(ctx, img, c, auth)
 		if err != nil {
 			return err
 		}
@@ -248,7 +247,7 @@ func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *cl
 	return err
 }
 
-func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client) error {
+func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client, auth neco.DockerAuth) error {
 	need, err := needImageAssetsUpload(ctx, img, c)
 	if err != nil {
 		return err
@@ -264,7 +263,7 @@ func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.C
 	defer os.RemoveAll(d)
 
 	archive := filepath.Join(d, neco.ImageAssetName(img))
-	err = neco.FetchDockerImageAsArchive(ctx, img, archive)
+	err = neco.FetchDockerImageAsArchive(ctx, img, archive, auth)
 	if err != nil {
 		return err
 	}

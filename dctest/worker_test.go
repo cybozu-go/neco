@@ -96,8 +96,7 @@ func testWorker() {
 
 		var images []neco.ContainerImage
 		images = append(images, neco.SystemContainers...)
-		// TODO: check omsa
-		for _, name := range []string{"serf"} {
+		for _, name := range []string{"serf", "omsa"} {
 			image, err := neco.CurrentArtifacts.FindContainerImage(name)
 			Expect(err).NotTo(HaveOccurred())
 			images = append(images, image)
