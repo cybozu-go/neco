@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -38,6 +39,17 @@ func main() {
 	}
 
 	well.Go(func(ctx context.Context) error {
+		// NOTE: hack to set http proxy to container/image
+		st := storage.NewStorage(ec)
+		proxy, err := st.GetProxyConfig(ctx)
+		if err != nil {
+			return err
+		}
+		if len(proxy) != 0 {
+			os.Setenv("http_proxy", proxy)
+			os.Setenv("https_proxy", proxy)
+		}
+
 		op, err := worker.NewOperator(ctx, ec, mylrn)
 		if err != nil {
 			return err
