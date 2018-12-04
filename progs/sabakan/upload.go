@@ -25,7 +25,7 @@ const (
 const retryCount = 5
 
 // UploadContents upload contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, proxyURL string, version string) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string) error {
 	client, err := client.NewClient(endpoint, sabakanHTTP)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 		return err
 	}
 
-	err = uploadAssets(ctx, client, proxyURL)
+	err = uploadAssets(ctx, client)
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 }
 
 // uploadAssets uploads assets
-func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error {
+func uploadAssets(ctx context.Context, c *client.Client) error {
 	// Upload bird and chrony with ubuntu-debug
 	for _, img := range neco.SystemContainers {
 		err := uploadSystemImageAssets(ctx, img, c)
@@ -187,7 +187,7 @@ func uploadAssets(ctx context.Context, c *client.Client, proxyURL string) error 
 		fetches = append(fetches, img)
 	}
 	for _, img := range fetches {
-		err := uploadImageAssets(ctx, img, c, proxyURL)
+		err := uploadImageAssets(ctx, img, c)
 		if err != nil {
 			return err
 		}
@@ -248,7 +248,7 @@ func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *cl
 	return err
 }
 
-func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client, proxyURL string) error {
+func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client) error {
 	need, err := needImageAssetsUpload(ctx, img, c)
 	if err != nil {
 		return err
@@ -256,10 +256,6 @@ func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.C
 	if !need {
 		return nil
 	}
-
-	// TODO: use env
-	env := neco.HTTPProxyEnv(proxyURL)
-	_ = env
 
 	d, err := ioutil.TempDir("", "")
 	if err != nil {

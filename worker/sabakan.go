@@ -96,12 +96,7 @@ func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRe
 		}
 	}
 
-	proxy, err := o.storage.GetProxyConfig(ctx)
-	if err != nil && err != storage.ErrNotFound {
-		return err
-	}
-
-	err = sabakan.UploadContents(ctx, o.localClient, o.proxyClient, proxy, req.Version)
+	err = sabakan.UploadContents(ctx, o.localClient, o.proxyClient, req.Version)
 	ret := &neco.SabakanContentsStatus{
 		Version: req.Version,
 		Success: err == nil,

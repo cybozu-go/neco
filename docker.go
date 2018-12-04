@@ -16,12 +16,12 @@ import (
 
 // FetchDockerImageAsArchive downloads a docker image and saves it as an archive.
 func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archive string) error {
-	// Is the default policy usable?
-	policy, err := signature.DefaultPolicy(nil)
-	if err != nil {
-		return err
-	}
-	policyContext, err := signature.NewPolicyContext(policy)
+	policyContext, err := signature.NewPolicyContext(&signature.Policy{
+		Default: []signature.PolicyRequirement{
+			// NewPRInsecureAcceptAnything returns a new "insecureAcceptAnything" PolicyRequirement.
+			signature.NewPRInsecureAcceptAnything(),
+		},
+	})
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,6 @@ func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archiv
 		return err
 	}
 
-	// Does this really succeed?
 	namedTagged, ok := src.DockerReference().(reference.NamedTagged)
 	if !ok {
 		return errors.New("unexpected error; docker://<FullName> does not produce named-tagged reference")
@@ -53,7 +52,6 @@ func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archiv
 		func(ctx context.Context) error {
 			_, err = copy.Image(ctx, policyContext, dst, src, options)
 			if err != nil {
-				// no need?
 				os.Remove(archive)
 			}
 			return err
