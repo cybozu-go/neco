@@ -1,25 +1,25 @@
 [Unit]
-Description=Serf container on rkt
-Wants=neco.target setup-serf.service
-After=neco.target setup-serf.service
+Description=Serf container on docker
+Wants=neco.target setup-serf.service docker.socket
+After=neco.target setup-serf.service docker.socket
 ConditionPathExists=/etc/serf/serf.json
 
 [Service]
-Slice=machine.slice
 Type=simple
-KillMode=mixed
 Restart=always
 RestartSec=10s
-ExecStart=/usr/bin/rkt run \
-  --insecure-options=image \
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill serf
+ExecStartPre=-/usr/bin/docker rm serf
+ExecStartPre=/usr/bin/curl -sfSL -o /tmp/%%serf%% {{ MyURL }}/api/v1/assets/%%serf%%
+ExecStartPre=/usr/bin/docker load -i /tmp/%%serf%%
+ExecStart=/usr/bin/docker run \
+  --name serf \
+  --read-only \
   --net=host \
-  --volume conf,kind=host,source=/etc/serf \
-  --mount volume=conf,target=/etc/serf \
+  --mount type=bind,source=/etc/serf,target=/etc/serf,readonly \
   --hostname %H \
-  {{ MyURL }}/api/v1/assets/%%serf%% \
-    --name serf \
-    --readonly-rootfs=true \
-  -- \
+  %%serf%full%% \
     agent -config-file /etc/serf/serf.json
 
 [Install]

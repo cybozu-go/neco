@@ -30,7 +30,7 @@ func SystemImagePath(img ContainerImage) string {
 
 // ImageAssetName returns asset's name for the img
 func ImageAssetName(img ContainerImage) string {
-	return fmt.Sprintf("cybozu-%s-%s.aci", img.Name, img.Tag)
+	return fmt.Sprintf("cybozu-%s-%s.img", img.Name, img.Tag)
 }
 
 // CryptsetupAssetName returns asset's name for sabakan-cryptsetup
