@@ -16,7 +16,6 @@ files:
   - /opt/sbin/neco-wait-dhcp-online
   - /opt/sbin/setup-bird-conf
   - /opt/sbin/setup-chronyd-conf
-  - /opt/sbin/setup-coil
   - /opt/sbin/setup-serf-conf
   - /opt/sbin/setup-hw
   - /opt/sbin/setup-local-network
@@ -54,8 +53,6 @@ systemd:
     enabled: true
   - name: setup-chrony.service
     enabled: false
-  - name: setup-coil.service
-    enabled: true
   - name: setup-serf.service
     enabled: false
   - name: setup-hw.service
