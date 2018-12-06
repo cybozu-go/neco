@@ -104,18 +104,16 @@ func testWorker() {
 		Expect(ignInfo).To(HaveLen(1))
 		Expect(ignInfo[0].ID).To(Equal(necoVersion))
 
-		var images []neco.ContainerImage
-		images = append(images, neco.SystemContainers...)
-		for _, name := range []string{"serf", "omsa"} {
-			image, err := neco.CurrentArtifacts.FindContainerImage(name)
-			Expect(err).NotTo(HaveOccurred())
-			images = append(images, image)
-		}
 		output = execSafeAt(boot0, "sabactl", "assets", "index")
 		var assets []string
 		err = json.Unmarshal(output, &assets)
 		Expect(err).NotTo(HaveOccurred())
-		for _, image := range images {
+		for _, image := range neco.SystemContainers {
+			Expect(assets).To(ContainElement(neco.ACIAssetName(image)))
+		}
+		for _, name := range []string{"serf", "omsa"} {
+			image, err := neco.CurrentArtifacts.FindContainerImage(name)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(assets).To(ContainElement(neco.ImageAssetName(image)))
 		}
 		image, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
