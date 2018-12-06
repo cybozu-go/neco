@@ -111,7 +111,7 @@ func testWorker() {
 		for _, image := range neco.SystemContainers {
 			Expect(assets).To(ContainElement(neco.ACIAssetName(image)))
 		}
-		for _, name := range []string{"serf", "omsa", "coil"} {
+		for _, name := range []string{"serf", "omsa", "coil", "squid"} {
 			image, err := neco.CurrentArtifacts.FindContainerImage(name)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(assets).To(ContainElement(neco.ImageAssetName(image)))
