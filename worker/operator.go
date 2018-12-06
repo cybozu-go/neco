@@ -83,7 +83,7 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 }
 
 func (o *operator) FinalStep() int {
-	return 11
+	return 12
 }
 
 func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error {
@@ -110,6 +110,8 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 10:
 		return o.UpdateCKE(ctx, req)
 	case 11:
+		return o.UpdateCKEContents(ctx, req)
+	case 12:
 		// THIS MUST BE THE FINAL STEP!!!!!
 		// to synchronize before restarting etcd.
 		return nil

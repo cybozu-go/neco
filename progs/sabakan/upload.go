@@ -13,8 +13,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/sabakan"
-	"github.com/cybozu-go/sabakan/client"
+	sabakan "github.com/cybozu-go/sabakan/client"
 )
 
 const (
@@ -26,7 +25,7 @@ const retryCount = 5
 
 // UploadContents upload contents to sabakan
 func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth neco.DockerAuth) error {
-	client, err := client.NewClient(endpoint, sabakanHTTP)
+	client, err := sabakan.NewClient(endpoint, sabakanHTTP)
 	if err != nil {
 		return err
 	}
@@ -50,7 +49,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 }
 
 // uploadOSImages uploads CoreOS images
-func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error {
+func uploadOSImages(ctx context.Context, c *sabakan.Client, p *http.Client) error {
 	var index sabakan.ImageIndex
 	err := neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
 		func(ctx context.Context) error {
@@ -167,7 +166,7 @@ func uploadOSImages(ctx context.Context, c *client.Client, p *http.Client) error
 }
 
 // uploadAssets uploads assets
-func uploadAssets(ctx context.Context, c *client.Client, auth neco.DockerAuth) error {
+func uploadAssets(ctx context.Context, c *sabakan.Client, auth neco.DockerAuth) error {
 	// Upload bird and chrony with ubuntu-debug
 	for _, img := range neco.SystemContainers {
 		err := uploadSystemImageAssets(ctx, img, c)
@@ -186,7 +185,7 @@ func uploadAssets(ctx context.Context, c *client.Client, auth neco.DockerAuth) e
 		fetches = append(fetches, img)
 	}
 	for _, img := range fetches {
-		err := uploadImageAssets(ctx, img, c, auth)
+		err := UploadImageAssets(ctx, img, c, auth)
 		if err != nil {
 			return err
 		}
@@ -222,7 +221,7 @@ func uploadAssets(ctx context.Context, c *client.Client, auth neco.DockerAuth) e
 	return err
 }
 
-func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client) error {
+func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.Client) error {
 	name := neco.ACIAssetName(img)
 	need, err := needAssetUpload(ctx, name, c)
 	if err != nil {
@@ -249,7 +248,8 @@ func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *cl
 	return err
 }
 
-func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client, auth neco.DockerAuth) error {
+// UploadImageAssets upload docker container image as sabakan assets.
+func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.Client, auth neco.DockerAuth) error {
 	name := neco.ImageAssetName(img)
 	need, err := needAssetUpload(ctx, name, c)
 	if err != nil {
@@ -288,19 +288,19 @@ func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.C
 	return err
 }
 
-func needAssetUpload(ctx context.Context, name string, c *client.Client) (bool, error) {
+func needAssetUpload(ctx context.Context, name string, c *sabakan.Client) (bool, error) {
 	_, err := c.AssetsInfo(ctx, name)
 	if err == nil {
 		return false, nil
 	}
-	if client.IsNotFound(err) {
+	if sabakan.IsNotFound(err) {
 		return true, nil
 	}
 	return false, err
 }
 
 // uploadIgnitions updates ignitions from local file
-func uploadIgnitions(ctx context.Context, c *client.Client, id string) error {
+func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string) error {
 	roles, err := getInstalledRoles()
 	if err != nil {
 		return err
@@ -310,7 +310,7 @@ func uploadIgnitions(ctx context.Context, c *client.Client, id string) error {
 		path := ignitionPath(role)
 
 		newer := new(bytes.Buffer)
-		err := client.AssembleIgnitionTemplate(path, newer)
+		err := sabakan.AssembleIgnitionTemplate(path, newer)
 		if err != nil {
 			return err
 		}
@@ -330,10 +330,10 @@ func uploadIgnitions(ctx context.Context, c *client.Client, id string) error {
 	return nil
 }
 
-func needIgnitionUpdate(ctx context.Context, c *client.Client, role, id string, newer string) (bool, error) {
+func needIgnitionUpdate(ctx context.Context, c *sabakan.Client, role, id string, newer string) (bool, error) {
 	index, err := c.IgnitionsGet(ctx, role)
 	if err != nil {
-		if client.IsNotFound(err) {
+		if sabakan.IsNotFound(err) {
 			return true, nil
 		}
 		return false, err

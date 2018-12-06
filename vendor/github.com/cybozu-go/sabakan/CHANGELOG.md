@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.30] - 2018-12-06
+
+### Added
+* [client] aliases to type in `sabakan` package.
+
 ## [0.29] - 2018-11-29
 
 ### Changed
@@ -101,7 +106,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Fix a bug that leaves files of deleted OS images (#86).
 
 [placemat]: https://github.com/cybozu-go/placemat
-[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v0.29...HEAD
+[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v0.30...HEAD
+[0.30]: https://github.com/cybozu-go/sabakan/compare/v0.29...v0.30
 [0.29]: https://github.com/cybozu-go/sabakan/compare/v0.28...v0.29
 [0.28]: https://github.com/cybozu-go/sabakan/compare/v0.27...v0.28
 [0.27]: https://github.com/cybozu-go/sabakan/compare/v0.26...v0.27

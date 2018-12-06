@@ -7,7 +7,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/sabakan"
+	sabakan "github.com/cybozu-go/sabakan/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
