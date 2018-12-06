@@ -36,7 +36,12 @@ func render(src, dest string) error {
 	data = strings.Replace(data, "%%cryptsetup%%", neco.CryptsetupAssetName(sabakanImage), -1)
 
 	d := []byte(data)
-	return ioutil.WriteFile(dest, d, 0644)
+
+	stat, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(dest, d, stat.Mode())
 }
 
 func main() {
