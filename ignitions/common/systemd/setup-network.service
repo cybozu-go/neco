@@ -7,7 +7,7 @@ Wants=setup-var.service neco-dhcp-online.target
 [Service]
 Type=oneshot
 ExecStartPre=/usr/bin/rkt fetch --insecure-options=image \
-  {{ MyURL }}/api/v1/assets/%%bird%%
+  {{ MyURL }}/api/v1/assets/%%bird%img%%
 ExecStartPre=/opt/sbin/setup-local-network
 ExecStart=/opt/sbin/setup-bird-conf
 RemainAfterExit=yes

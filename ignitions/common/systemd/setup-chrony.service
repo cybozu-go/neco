@@ -8,6 +8,6 @@ Wants=setup-network.service setup-var.service
 [Service]
 Type=oneshot
 ExecStartPre=/usr/bin/rkt fetch --insecure-options=image \
-  {{ MyURL }}/api/v1/assets/%%chrony%%
+  {{ MyURL }}/api/v1/assets/%%chrony%img%%
 ExecStart=/opt/sbin/setup-chronyd-conf
 RemainAfterExit=yes

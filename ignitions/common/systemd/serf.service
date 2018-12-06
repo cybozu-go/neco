@@ -11,8 +11,8 @@ RestartSec=10s
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill serf
 ExecStartPre=-/usr/bin/docker rm serf
-ExecStartPre=/usr/bin/curl -sfSL -o /tmp/%%serf%% {{ MyURL }}/api/v1/assets/%%serf%%
-ExecStartPre=/usr/bin/docker load -i /tmp/%%serf%%
+ExecStartPre=/usr/bin/curl -sfSL -o /tmp/%%serf%img%% {{ MyURL }}/api/v1/assets/%%serf%img%%
+ExecStartPre=/usr/bin/docker load -i /tmp/%%serf%img%%
 ExecStart=/usr/bin/docker run \
   --name serf \
   --read-only \

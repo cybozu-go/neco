@@ -25,7 +25,8 @@ func render(src, dest string) error {
 	images = append(images, neco.CurrentArtifacts.Images...)
 	images = append(images, neco.SystemContainers...)
 	for _, image := range images {
-		data = strings.Replace(data, "%%"+image.Name+"%%", neco.ImageAssetName(image), -1)
+		data = strings.Replace(data, "%%"+image.Name+"%img%%", neco.ImageAssetName(image), -1)
+		data = strings.Replace(data, "%%"+image.Name+"%aci%%", neco.ACIAssetName(image), -1)
 		data = strings.Replace(data, "%%"+image.Name+"%full%%", image.FullName(), -1)
 	}
 

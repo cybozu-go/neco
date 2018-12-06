@@ -12,8 +12,8 @@ TimeoutStartSec=0
 OOMScoreAdjust=-1000
 ExecStartPre=-/usr/bin/docker kill omsa
 ExecStartPre=-/usr/bin/docker rm omsa
-ExecStartPre=/usr/bin/curl -sfSL -o /tmp/%%omsa%% {{ MyURL }}/api/v1/assets/%%omsa%%
-ExecStartPre=/usr/bin/docker load -i /tmp/%%omsa%%
+ExecStartPre=/usr/bin/curl -sfSL -o /tmp/%%omsa%img%% {{ MyURL }}/api/v1/assets/%%omsa%img%%
+ExecStartPre=/usr/bin/docker load -i /tmp/%%omsa%img%%
 ExecStart=/usr/bin/docker run \
   --name omsa \
   --label name=omsa \
