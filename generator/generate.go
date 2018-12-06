@@ -27,6 +27,7 @@ var quayRepos = []string{
 	"vault",
 	"hyperkube",
 	"coil",
+	"squid",
 }
 
 var debRepos = []string{

@@ -13,6 +13,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "0.11.0-3"},
 		{Name: "hyperkube", Repository: "quay.io/cybozu/hyperkube", Tag: "1.12.2-1"},
 		{Name: "coil", Repository: "quay.io/cybozu/coil", Tag: "0.3-2"},
+		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "3.5.27-1-3"},
 	},
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.5"},
