@@ -31,7 +31,7 @@ ExecStart=/usr/bin/rkt run \
     --name cke \
     --readonly-rootfs=true \
   -- \
-    -config={{ .ConfFile }}
+    --config={{ .ConfFile }}
 
 [Install]
 WantedBy=multi-user.target

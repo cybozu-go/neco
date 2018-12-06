@@ -163,6 +163,18 @@ func testWorker() {
 		Expect(stdout).To(ContainSubstring("boot-"))
 	})
 
+	It("should upload k8s-related containers", func() {
+		for _, name := range []string{"hyperkube", "pause", "etcd", "coredns", "unbound"} {
+			Eventually(func() []string {
+				output := execSafeAt(boot0, "sabactl", "assets", "index")
+				var assets []string
+				err := json.Unmarshal(output, &assets)
+				Expect(err).NotTo(HaveOccurred())
+				return assets
+			}).Should(ContainElement(MatchRegexp("^cybozu-%s-.*\\.img$", name)))
+		}
+	})
+
 	It("should setup hardware", func() {
 		for _, host := range []string{boot0, boot1, boot2} {
 			stdout, stderr, err := execAt(host, "sudo", "setup-hw")

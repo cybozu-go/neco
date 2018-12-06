@@ -3,6 +3,8 @@ package neco
 import (
 	"errors"
 	"fmt"
+	"path"
+	"strings"
 )
 
 // ArtifactSet represents a set of artifacts.
@@ -47,6 +49,20 @@ type ContainerImage struct {
 
 	// Image tag.
 	Tag string
+}
+
+// ParseContainerImageName parses image name like "quay.io/cybozu/etcd:3.3.9-4"
+func ParseContainerImageName(name string) (ContainerImage, error) {
+	nametag := strings.Split(name, ":")
+	if len(nametag) != 2 {
+		return ContainerImage{}, errors.New("invalid image name: " + name)
+	}
+
+	return ContainerImage{
+		Name:       path.Base(nametag[0]),
+		Repository: nametag[0],
+		Tag:        nametag[1],
+	}, nil
 }
 
 // FullName returns full container image name

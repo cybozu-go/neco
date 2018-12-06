@@ -124,6 +124,7 @@ var (
 	CKECertFile = filepath.Join(CKEDir, "etcd.crt")
 	CKEKeyFile  = filepath.Join(CKEDir, "etcd.key")
 	CKEConfFile = filepath.Join(CKEDir, "config.yml")
+	CKECLIBin   = "/usr/local/bin/ckecli"
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")

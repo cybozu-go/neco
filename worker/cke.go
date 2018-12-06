@@ -147,7 +147,7 @@ func (o *operator) UpdateCKEContents(ctx context.Context, req *neco.UpdateReques
 		}
 	}
 
-	//err = sabakan.UploadContents(ctx, o.localClient, o.proxyClient, req.Version, o.auth)
+	err = cke.UploadContents(ctx, o.localClient, o.proxyClient, req.Version, o.auth)
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,
