@@ -178,7 +178,7 @@ func uploadAssets(ctx context.Context, c *client.Client, auth neco.DockerAuth) e
 
 	// Upload other images
 	var fetches []neco.ContainerImage
-	for _, name := range []string{"serf", "omsa"} {
+	for _, name := range []string{"serf", "omsa", "coil"} {
 		img, err := neco.CurrentArtifacts.FindContainerImage(name)
 		if err != nil {
 			return err
