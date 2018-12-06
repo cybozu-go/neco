@@ -33,6 +33,11 @@ func ImageAssetName(img ContainerImage) string {
 	return fmt.Sprintf("cybozu-%s-%s.img", img.Name, img.Tag)
 }
 
+// ACIAssetName returns aci image file name of img
+func ACIAssetName(img ContainerImage) string {
+	return fmt.Sprintf("cybozu-%s-%s.aci", img.Name, img.Tag)
+}
+
 // CryptsetupAssetName returns asset's name for sabakan-cryptsetup
 func CryptsetupAssetName(img ContainerImage) string {
 	return "sabakan-cryptsetup-" + img.Tag

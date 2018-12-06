@@ -18,7 +18,7 @@ ExecStart=/usr/bin/rkt run \
   --volume run,kind=empty,readOnly=false,mode=0700 \
   --volume volume-var-lib-chrony,kind=empty,readOnly=false,mode=0755 \
   --net=host \
-  {{ MyURL }}/api/v1/assets/%%chrony%% \
+  %%chrony%full%% \
     --name chrony --user-label name=chrony \
     --readonly-rootfs=true \
     --caps-retain=CAP_NET_BIND_SERVICE,CAP_SYS_TIME,CAP_SYS_NICE \

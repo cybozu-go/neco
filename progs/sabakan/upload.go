@@ -197,23 +197,24 @@ func uploadAssets(ctx context.Context, c *client.Client, auth neco.DockerAuth) e
 	if err != nil {
 		return err
 	}
-	_, err = c.AssetsInfo(ctx, neco.CryptsetupAssetName(img))
-	if err == nil {
-		return nil
-	}
-	if !client.IsNotFound(err) {
+	name := neco.CryptsetupAssetName(img)
+	need, err := needAssetUpload(ctx, name, c)
+	if err != nil {
 		return err
+	}
+	if !need {
+		return nil
 	}
 	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
 		func(ctx context.Context) error {
-			_, err := c.AssetsUpload(ctx, neco.CryptsetupAssetName(img), neco.SabakanCryptsetupPath, nil)
+			_, err := c.AssetsUpload(ctx, name, neco.SabakanCryptsetupPath, nil)
 			return err
 
 		},
 		func(err error) {
 			log.Warn("sabakan: failed to upload asset", map[string]interface{}{
 				log.FnError: err,
-				"name":      neco.CryptsetupAssetName(img),
+				"name":      name,
 				"source":    neco.SabakanCryptsetupPath,
 			})
 		},
@@ -222,7 +223,8 @@ func uploadAssets(ctx context.Context, c *client.Client, auth neco.DockerAuth) e
 }
 
 func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client) error {
-	need, err := needImageAssetsUpload(ctx, img, c)
+	name := neco.ACIAssetName(img)
+	need, err := needAssetUpload(ctx, name, c)
 	if err != nil {
 		return err
 	}
@@ -232,14 +234,14 @@ func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *cl
 
 	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
 		func(ctx context.Context) error {
-			_, err := c.AssetsUpload(ctx, neco.ImageAssetName(img), neco.SystemImagePath(img), nil)
+			_, err := c.AssetsUpload(ctx, name, neco.SystemImagePath(img), nil)
 			return err
 
 		},
 		func(err error) {
 			log.Warn("sabakan: failed to upload asset", map[string]interface{}{
 				log.FnError: err,
-				"name":      neco.ImageAssetName(img),
+				"name":      name,
 				"source":    neco.SystemImagePath(img),
 			})
 		},
@@ -248,7 +250,8 @@ func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *cl
 }
 
 func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.Client, auth neco.DockerAuth) error {
-	need, err := needImageAssetsUpload(ctx, img, c)
+	name := neco.ImageAssetName(img)
+	need, err := needAssetUpload(ctx, name, c)
 	if err != nil {
 		return err
 	}
@@ -262,7 +265,7 @@ func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.C
 	}
 	defer os.RemoveAll(d)
 
-	archive := filepath.Join(d, neco.ImageAssetName(img))
+	archive := filepath.Join(d, name)
 	err = neco.FetchDockerImageAsArchive(ctx, img, archive, auth)
 	if err != nil {
 		return err
@@ -270,14 +273,14 @@ func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.C
 
 	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
 		func(ctx context.Context) error {
-			_, err := c.AssetsUpload(ctx, neco.ImageAssetName(img), archive, nil)
+			_, err := c.AssetsUpload(ctx, name, archive, nil)
 			return err
 
 		},
 		func(err error) {
 			log.Warn("sabakan: failed to upload asset", map[string]interface{}{
 				log.FnError: err,
-				"name":      neco.ImageAssetName(img),
+				"name":      name,
 				"source":    archive,
 			})
 		},
@@ -285,8 +288,8 @@ func uploadImageAssets(ctx context.Context, img neco.ContainerImage, c *client.C
 	return err
 }
 
-func needImageAssetsUpload(ctx context.Context, img neco.ContainerImage, c *client.Client) (bool, error) {
-	_, err := c.AssetsInfo(ctx, neco.ImageAssetName(img))
+func needAssetUpload(ctx context.Context, name string, c *client.Client) (bool, error) {
+	_, err := c.AssetsInfo(ctx, name)
 	if err == nil {
 		return false, nil
 	}
