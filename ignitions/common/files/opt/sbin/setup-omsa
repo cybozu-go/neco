@@ -1,17 +1,6 @@
 #!/bin/sh -e
 
-# rkt fetch
-IMAGE_ID=$(/usr/bin/rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/cybozu-omsa.aci)
-
-mkdir -p /etc/systemd/system/omsa.service.d
-cat <<EOF >/etc/systemd/system/omsa.service.d/env.conf
-[Service]
-Environment=IMAGE_ID=$IMAGE_ID
-EOF
-
-systemctl daemon-reload
-
-# install-tools
+# setup config
 mkdir -p /etc/neco
 curl -sfSL -o /tmp/omsa.json {{ MyURL }}/api/v1/assets/omsa.json
 jq '. | .bmc_address = "{{ .BMC.IPv4 }}"' /tmp/omsa.json >/etc/neco/omsa.json

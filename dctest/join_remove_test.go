@@ -143,7 +143,7 @@ func testJoinRemove() {
 				return errors.New("index does not contains newer version")
 			}
 			return nil
-		}).Should(Succeed())
+		}, 10*time.Minute).Should(Succeed())
 	})
 
 	It("should remove boot-3", func() {

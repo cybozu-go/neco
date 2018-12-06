@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"errors"
+	"os"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -12,6 +14,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var sabakanUploadParams = struct {
+	quayUser     string
+	quayPassword string
+}{
+	quayUser: "cybozu+neco_readonly",
+}
+
 // sabakanUploadCmd implements "sabakan-upload"
 var sabakanUploadCmd = &cobra.Command{
 	Use:   "sabakan-upload",
@@ -19,6 +28,21 @@ var sabakanUploadCmd = &cobra.Command{
 	Long: `Upload sabakan contents using artifacts.go
 If uploaded versions are up to date, do nothing.
 `,
+	Args: func(cmd *cobra.Command, args []string) error {
+		user := os.Getenv("QUAY_USER")
+		if len(user) > 0 {
+			sabakanUploadParams.quayUser = user
+		}
+
+		passwd := os.Getenv("QUAY_PASSWORD")
+		if len(passwd) == 0 {
+			return errors.New("QUAY_PASSWORD envvar is not set")
+		}
+		sabakanUploadParams.quayPassword = passwd
+
+		return nil
+	},
+
 	Run: func(cmd *cobra.Command, args []string) {
 		version, err := neco.GetDebianVersion(neco.NecoPackageName)
 		if err != nil {
@@ -39,7 +63,12 @@ If uploaded versions are up to date, do nothing.
 			}
 			localClient := ext.LocalHTTPClient()
 
-			return sabakan.UploadContents(ctx, localClient, proxyClient, version)
+			auth := neco.DockerAuth{
+				Username: sabakanUploadParams.quayUser,
+				Password: sabakanUploadParams.quayPassword,
+			}
+
+			return sabakan.UploadContents(ctx, localClient, proxyClient, version, auth)
 		})
 
 		well.Stop()

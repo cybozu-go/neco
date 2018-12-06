@@ -6,7 +6,10 @@ Wants=setup-var.service neco-dhcp-online.target
 
 [Service]
 Type=oneshot
-ExecStartPre=/opt/sbin/setup-bird
+# This "fetch" must be separated from "run" because "fetch" uses the DHCP-configured network.
+# "setup-local-network" reconfigures network, and "run" starts bird to manage the reconfigured network.
+ExecStartPre=/usr/bin/rkt fetch --insecure-options=image \
+  {{ MyURL }}/api/v1/assets/%%bird%aci%%
 ExecStartPre=/opt/sbin/setup-local-network
 ExecStart=/opt/sbin/setup-bird-conf
 RemainAfterExit=yes

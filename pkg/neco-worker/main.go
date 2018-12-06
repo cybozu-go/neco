@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -38,7 +39,34 @@ func main() {
 	}
 
 	well.Go(func(ctx context.Context) error {
-		op, err := worker.NewOperator(ctx, ec, mylrn)
+		// NOTE: hack to set http proxy to container/image
+		st := storage.NewStorage(ec)
+		proxy, err := st.GetProxyConfig(ctx)
+		if err != nil && err != storage.ErrNotFound {
+			return err
+		}
+		username, err := st.GetQuayUsername(ctx)
+		if err != nil && err != storage.ErrNotFound {
+			return err
+		}
+		var passwd string
+		if err == nil {
+			passwd, err = st.GetQuayPassword(ctx)
+			if err != nil {
+				return err
+			}
+		}
+		if len(proxy) != 0 {
+			os.Setenv("http_proxy", proxy)
+			os.Setenv("https_proxy", proxy)
+		}
+
+		auth := neco.DockerAuth{
+			Username: username,
+			Password: passwd,
+		}
+
+		op, err := worker.NewOperator(ctx, ec, mylrn, auth)
 		if err != nil {
 			return err
 		}

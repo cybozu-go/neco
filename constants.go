@@ -67,6 +67,8 @@ const (
 	SabakanService = "sabakan"
 	SabakanPrefix  = "/sabakan/"
 	SabakanDataDir = "/var/lib/sabakan"
+
+	SabakanCryptsetupPath = "/usr/local/bin/sabakan-cryptsetup"
 )
 
 // Serf params

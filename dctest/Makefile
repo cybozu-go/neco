@@ -90,6 +90,7 @@ fullclean: clean
 	rm -rf $(CUSTOM_UBUNTU)
 
 setup:
+	cd ../ && $(MAKE) setup
 	GO111MODULE=off go get -t -d ./... \
 		github.com/cybozu-go/placemat-menu
 	GO111MODULE=off go get github.com/onsi/ginkgo/ginkgo \

@@ -17,7 +17,11 @@ import (
 
 // Setup installs and configures etcd and vault cluster.
 func Setup(ctx context.Context, lrns []int, revoke bool) error {
-	err := neco.FetchContainer(ctx, "etcd", nil)
+	fullname, err := neco.ContainerFullName("etcd")
+	if err != nil {
+		return err
+	}
+	err = neco.FetchContainer(ctx, fullname, nil)
 	if err != nil {
 		return err
 	}
@@ -26,7 +30,11 @@ func Setup(ctx context.Context, lrns []int, revoke bool) error {
 		return err
 	}
 
-	err = neco.FetchContainer(ctx, "vault", nil)
+	fullname, err = neco.ContainerFullName("vault")
+	if err != nil {
+		return err
+	}
+	err = neco.FetchContainer(ctx, fullname, nil)
 	if err != nil {
 		return err
 	}

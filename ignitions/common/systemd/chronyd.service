@@ -13,19 +13,18 @@ RestartForceExitStatus=SIGPIPE
 OOMScoreAdjust=-1000
 LimitMEMLOCK=infinity
 ExecStart=/usr/bin/rkt run \
-  --pull-policy never \
-  --insecure-options=seccomp \
+  --insecure-options=seccomp,image \
   --volume etc,kind=host,source=/etc/chrony.conf,readOnly=true \
   --volume run,kind=empty,readOnly=false,mode=0700 \
   --volume volume-var-lib-chrony,kind=empty,readOnly=false,mode=0755 \
   --net=host \
-  $IMAGE_ID \
+  %%chrony%full%% \
     --name chrony --user-label name=chrony \
     --readonly-rootfs=true \
     --caps-retain=CAP_NET_BIND_SERVICE,CAP_SYS_TIME,CAP_SYS_NICE \
     --mount volume=etc,target=/etc/chrony.conf \
     --mount volume=run,target=/run/chrony \
-    --mount volume=volume-var-lib-chrony,target=/var/lib/chrony \
+    --mount volume=volume-var-lib-chrony,target=/var/lib/chrony
 
 [Install]
 WantedBy=multi-user.target

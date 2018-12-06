@@ -7,6 +7,9 @@ Wants=setup-network.service setup-var.service
 
 [Service]
 Type=oneshot
-ExecStartPre=/opt/sbin/setup-chrony
+# This "fetch" must be separated from "run" because "fetch" uses the DHCP-configured network.
+# "setup-network" after this unit reconfigures network, and "run" starts chrony to manage the reconfigured network.
+ExecStartPre=/usr/bin/rkt fetch --insecure-options=image \
+  {{ MyURL }}/api/v1/assets/%%chrony%aci%%
 ExecStart=/opt/sbin/setup-chronyd-conf
 RemainAfterExit=yes

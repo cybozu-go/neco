@@ -1,27 +1,26 @@
 [Unit]
 Description=OMSA container
-Requires=setup-omsa.service
-After=setup-omsa.service
+Requires=setup-omsa.service docker.socket
+After=setup-omsa.service docker.socket
 ConditionVirtualization=!kvm
 
 [Service]
-Slice=machine.slice
 Type=simple
-KillMode=mixed
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
+TimeoutStartSec=0
 OOMScoreAdjust=-1000
-ExecStart=/bin/bash -c "/usr/bin/rkt run \
-  --insecure-options=all \
-  --volume modules,kind=host,source=/lib/modules/$(uname -r),readOnly=true \
-  --mount volume=modules,target=/lib/modules/$(uname -r) \
-  --volume dev,kind=host,source=/dev \
-  --mount volume=dev,target=/dev \
-  --volume neco,kind=host,source=/etc/neco,readOnly=true \
-  --mount volume=neco,target=/etc/neco \
-  $IMAGE_ID \
+ExecStartPre=-/usr/bin/docker kill omsa
+ExecStartPre=-/usr/bin/docker rm omsa
+ExecStartPre=/usr/bin/curl -sfSL -o /tmp/%%omsa%img%% {{ MyURL }}/api/v1/assets/%%omsa%img%%
+ExecStartPre=/usr/bin/docker load -i /tmp/%%omsa%img%%
+ExecStart=/usr/bin/docker run \
   --name omsa \
-  --user-label name=omsa"
+  --label name=omsa \
+  --mount type=bind,source=/lib/modules,target=/lib/modules,readonly \
+  --mount type=bind,source=/dev,target=/dev \
+  --mount type=bind,source=/etc/neco,target=/etc/neco,readonly \
+  %%omsa%full%%
 
 [Install]
 WantedBy=multi-user.target

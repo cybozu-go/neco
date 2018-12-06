@@ -16,6 +16,9 @@ Synopsis
     Change the setting for `KEY` to `VALUE`.
     Key and values are described in [the next section](#config).
 
+    Some special keys read their values from environment variables due to security concerns.
+    In these cases, do not give `VALUE` in command line.
+
 * `neco config get KEY`
 
     Show the current configuration for `KEY`.
@@ -115,6 +118,16 @@ Specify [Slack WebHook](https://api.slack.com/incoming-webhooks) URL.
 
 Specify HTTP proxy server to access Internet.
 It will be used by `neco-updater` and `neco-worker`.
+
+### `quay-username`
+
+Set username to authenticate to quay.io from QUAY_USER envvar.
+It will be used by `neco-worker`.
+
+### `quay-password`
+
+Set password to authenticate to quay.io from QUAY_PASSWORD envvar.
+It will be used by `neco-worker`.
 
 ### `check-update-interval`
 

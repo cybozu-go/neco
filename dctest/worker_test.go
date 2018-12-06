@@ -2,6 +2,7 @@ package dctest
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -76,12 +77,21 @@ func testWorker() {
 		execSafeAt(boot0, "sabactl", "ipam", "set", "-f", "/mnt/ipam.json")
 		execSafeAt(boot0, "sabactl", "dhcp", "set", "-f", "/mnt/dhcp.json")
 		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
+		execSafeAt(boot0, "sabactl", "kernel-params", "set", "console=ttyS0")
 
-		execSafeAt(boot0, "neco", "sabakan-upload")
+		secrets, err := ioutil.ReadFile("secrets")
+		Expect(err).NotTo(HaveOccurred())
+		err = execAtWithInput(boot0, secrets, "dd", "of=secrets.sh")
+		Expect(err).NotTo(HaveOccurred())
+		script, err := ioutil.ReadFile("with_secrets.sh")
+		Expect(err).NotTo(HaveOccurred())
+		err = execAtWithInput(boot0, script, "dd", "of=secrets.sh", "oflag=append", "conv=notrunc")
+		Expect(err).NotTo(HaveOccurred())
+		execSafeAt(boot0, "sh", "-e", "secrets.sh")
 
 		output := execSafeAt(boot0, "sabactl", "images", "index")
 		index := new(sabakan.ImageIndex)
-		err := json.Unmarshal(output, index)
+		err = json.Unmarshal(output, index)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(index.Find(neco.CurrentArtifacts.CoreOS.Version)).NotTo(BeNil())
 
@@ -93,6 +103,22 @@ func testWorker() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(ignInfo).To(HaveLen(1))
 		Expect(ignInfo[0].ID).To(Equal(necoVersion))
+
+		output = execSafeAt(boot0, "sabactl", "assets", "index")
+		var assets []string
+		err = json.Unmarshal(output, &assets)
+		Expect(err).NotTo(HaveOccurred())
+		for _, image := range neco.SystemContainers {
+			Expect(assets).To(ContainElement(neco.ACIAssetName(image)))
+		}
+		for _, name := range []string{"serf", "omsa"} {
+			image, err := neco.CurrentArtifacts.FindContainerImage(name)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(assets).To(ContainElement(neco.ImageAssetName(image)))
+		}
+		image, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(assets).To(ContainElement(neco.CryptsetupAssetName(image)))
 	})
 
 	It("should update machine state in sabakan", func() {

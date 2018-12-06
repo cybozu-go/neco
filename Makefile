@@ -10,7 +10,7 @@ GOFLAGS = -mod=vendor
 export GOFLAGS
 
 ### for debian package
-PACKAGES := fakeroot
+PACKAGES := fakeroot btrfs-tools libdevmapper-dev libgpgme-dev libostree-dev
 WORKDIR := $(CURDIR)/work
 CONTROL := $(WORKDIR)/DEBIAN/control
 DOCDIR := $(WORKDIR)/usr/share/doc/neco
@@ -63,7 +63,8 @@ $(DEB):
 	mkdir -p $(SBINDIR)
 	GOBIN=$(SBINDIR) go install -tags='$(TAGS)' $(SBIN_PKGS)
 	mkdir -p $(SHAREDIR)
-	cp -r ignitions $(SHAREDIR)
+	go install -tags='$(TAGS)' ./pkg/fill-asset-name
+	fill-asset-name ignitions $(SHAREDIR)/ignitions
 	mkdir -p $(DOCDIR)
 	cp README.md LICENSE $(DOCDIR)
 	chmod -R g-w $(WORKDIR)
@@ -72,6 +73,7 @@ $(DEB):
 
 setup:
 	GO111MODULE=off go get -u golang.org/x/lint/golint
+	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
 
 clean:
