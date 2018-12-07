@@ -11,18 +11,19 @@ files:
   - /etc/systemd/system/docker.service.d/99-run-after-time-sync.conf
   - /etc/systemd/system/docker.socket.d/99-run-after-time-sync.conf
   - /opt/bin/podenter
+  - /opt/bin/load-image
   - /opt/sbin/bird-wait
   - /opt/sbin/chrony-wait
   - /opt/sbin/neco-wait-dhcp-online
   - /opt/sbin/setup-bird-conf
   - /opt/sbin/setup-chronyd-conf
-  - /opt/sbin/setup-serf-conf
   - /opt/sbin/setup-hw
   - /opt/sbin/setup-local-network
-  - /opt/sbin/setup-var
-  - /opt/sbin/tune-rt-runtime
   - /opt/sbin/setup-omsa
   - /opt/sbin/setup-sabakan-cryptsetup
+  - /opt/sbin/setup-serf-conf
+  - /opt/sbin/setup-var
+  - /opt/sbin/tune-rt-runtime
 systemd:
   - name: update-engine.service
     mask: true
