@@ -351,7 +351,7 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string) error {
 	}
 
 	for _, role := range roles {
-		path := filepath.Join(copyRoot, "ignitions", role, "site.yml")
+		path := filepath.Join(copyRoot, "ignitions", "roles", role, "site.yml")
 
 		newer := new(bytes.Buffer)
 		err := sabakan.AssembleIgnitionTemplate(path, newer)
@@ -397,7 +397,7 @@ func needIgnitionUpdate(ctx context.Context, c *sabakan.Client, role, id string,
 }
 
 func getInstalledRoles() ([]string, error) {
-	paths, err := filepath.Glob(filepath.Join(neco.IgnitionDirectory, "*", "site.yml"))
+	paths, err := filepath.Glob(filepath.Join(neco.IgnitionDirectory, "roles", "*", "site.yml"))
 	if err != nil {
 		return nil, err
 	}

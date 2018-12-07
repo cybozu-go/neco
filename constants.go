@@ -132,5 +132,5 @@ var (
 	NecoConfFile = filepath.Join(NecoDir, "config.yml")
 	NecoBin      = "/usr/bin/neco"
 
-	IgnitionDirectory = "/usr/share/neco/ignitions/roles"
+	IgnitionDirectory = "/usr/share/neco/ignitions"
 )
