@@ -70,6 +70,10 @@ systemd:
   - name: setup-omsa.service
   - name: cke-images.service
     enabled: true
+  - name: squid-image.service
+    enabled: true
+  - name: coil-image.service
+    enabled: true
 networkd:
   - 10-node0.netdev
   - 10-node0.network
