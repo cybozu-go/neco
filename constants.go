@@ -64,9 +64,10 @@ const (
 const (
 	SabakanDir = "/etc/sabakan"
 
-	SabakanService = "sabakan"
-	SabakanPrefix  = "/sabakan/"
-	SabakanDataDir = "/var/lib/sabakan"
+	SabakanService       = "sabakan"
+	SabakanPrefix        = "/sabakan/"
+	SabakanDataDir       = "/var/lib/sabakan"
+	SabakanLocalEndpoint = "http://127.0.0.1:10080"
 
 	SabakanCryptsetupPath = "/usr/local/bin/sabakan-cryptsetup"
 )
@@ -124,6 +125,7 @@ var (
 	CKECertFile = filepath.Join(CKEDir, "etcd.crt")
 	CKEKeyFile  = filepath.Join(CKEDir, "etcd.key")
 	CKEConfFile = filepath.Join(CKEDir, "config.yml")
+	CKECLIBin   = "/usr/local/bin/ckecli"
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")

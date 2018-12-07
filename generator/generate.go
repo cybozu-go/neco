@@ -25,7 +25,7 @@ var quayRepos = []string{
 	"sabakan",
 	"serf",
 	"vault",
-	"hyperkube",
+	"hyperkube", // to install kubectl on boot servers
 	"coil",
 	"squid",
 }

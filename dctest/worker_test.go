@@ -7,7 +7,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/sabakan"
+	sabakan "github.com/cybozu-go/sabakan/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -161,6 +161,16 @@ func testWorker() {
 	It("should success retrieve cke leader", func() {
 		stdout := execSafeAt(boot0, "ckecli", "leader")
 		Expect(stdout).To(ContainSubstring("boot-"))
+	})
+
+	It("should upload k8s-related containers", func() {
+		output := execSafeAt(boot0, "sabactl", "assets", "index")
+		var assets []string
+		err := json.Unmarshal(output, &assets)
+		Expect(err).NotTo(HaveOccurred())
+		for _, name := range []string{"hyperkube", "pause", "etcd", "coredns", "unbound"} {
+			Expect(assets).To(ContainElement(MatchRegexp("^cybozu-%s-.*\\.img$", name)))
+		}
 	})
 
 	It("should setup hardware", func() {
