@@ -1,0 +1,11 @@
+[Unit]
+Description=Load coil container image
+Wants=neco.target docker.socket
+After=neco.target docker.socket
+
+[Service]
+Type=oneshot
+ExecStart=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%coil%img%% %%coil%full%%
+
+[Install]
+WantedBy=multi-user.target

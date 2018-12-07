@@ -1,14 +1,18 @@
 package sabakan
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -305,8 +309,49 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string) error {
 		return err
 	}
 
+	copyRoot, err := ioutil.TempDir("", "")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		os.RemoveAll(copyRoot)
+	}()
+
+	err = exec.Command("cp", "-a", neco.IgnitionDirectory, copyRoot).Run()
+	if err != nil {
+		return err
+	}
+
+	ckeImagePath := filepath.Join(copyRoot, "ignitions", "common", "systemd", "cke-images.service")
+	data, err := ioutil.ReadFile(ckeImagePath)
+	if err != nil {
+		return err
+	}
+
+	ckeData, err := getCKEData()
+	if err != nil {
+		return err
+	}
+	replacer := strings.NewReplacer(
+		"%%ETCD_FILE%%", ckeData["ETCD_FILE"],
+		"%%ETCD_NAME%%", ckeData["ETCD_NAME"],
+		"%%TOOLS_FILE%%", ckeData["CKE-TOOLS_FILE"],
+		"%%TOOLS_NAME%%", ckeData["CKE-TOOLS_NAME"],
+		"%%HYPERKUBE_FILE%%", ckeData["HYPERKUBE_FILE"],
+		"%%HYPERKUBE_NAME%%", ckeData["HYPERKUBE_NAME"],
+		"%%PAUSE_FILE%%", ckeData["PAUSE_FILE"],
+		"%%PAUSE_NAME%%", ckeData["PAUSE_NAME"],
+		"%%COREDNS_FILE%%", ckeData["COREDNS_FILE"],
+		"%%COREDNS_NAME%%", ckeData["COREDNS_NAME"],
+		"%%UNBOUND_FILE%%", ckeData["UNBOUND_FILE"],
+		"%%UNBOUND_NAME%%", ckeData["UNBOUND_NAME"])
+	err = ioutil.WriteFile(ckeImagePath, []byte(replacer.Replace(string(data))), 0644)
+	if err != nil {
+		return err
+	}
+
 	for _, role := range roles {
-		path := ignitionPath(role)
+		path := filepath.Join(copyRoot, "ignitions", "roles", role, "site.yml")
 
 		newer := new(bytes.Buffer)
 		err := sabakan.AssembleIgnitionTemplate(path, newer)
@@ -352,7 +397,7 @@ func needIgnitionUpdate(ctx context.Context, c *sabakan.Client, role, id string,
 }
 
 func getInstalledRoles() ([]string, error) {
-	paths, err := filepath.Glob(filepath.Join(neco.IgnitionDirectory, "*", "site.yml"))
+	paths, err := filepath.Glob(filepath.Join(neco.IgnitionDirectory, "roles", "*", "site.yml"))
 	if err != nil {
 		return nil, err
 	}
@@ -360,10 +405,6 @@ func getInstalledRoles() ([]string, error) {
 		paths[i] = filepath.Base(filepath.Dir(path))
 	}
 	return paths, nil
-}
-
-func ignitionPath(role string) string {
-	return filepath.Join(neco.IgnitionDirectory, role, "site.yml")
 }
 
 func downloadFile(ctx context.Context, p *http.Client, url string, w io.Writer) (int64, error) {
@@ -382,4 +423,29 @@ func downloadFile(ctx context.Context, p *http.Client, url string, w io.Writer) 
 		return 0, errors.New("unknown content-length")
 	}
 	return io.Copy(w, resp.Body)
+}
+
+func getCKEData() (map[string]string, error) {
+	output, err := exec.Command(neco.CKECLIBin, "images").Output()
+	if err != nil {
+		return nil, err
+	}
+
+	data := make(map[string]string)
+	sc := bufio.NewScanner(bytes.NewReader(output))
+	for sc.Scan() {
+		img, err := neco.ParseContainerImageName(sc.Text())
+		if err != nil {
+			return nil, err
+		}
+		nameUpper := strings.ToUpper(img.Name)
+		data[fmt.Sprintf("%s_FILE", nameUpper)] = neco.ImageAssetName(img)
+		data[fmt.Sprintf("%s_NAME", nameUpper)] = img.FullName()
+	}
+	err = sc.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }

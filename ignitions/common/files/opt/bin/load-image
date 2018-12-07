@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+if [ $# -ne 2 ]; then
+    echo "Usage: load-image URL TAG"
+    exit 1
+fi
+
+img="$1"
+tag="$2"
+filename=/tmp/$(basename "$img")
+
+if ! docker image inspect "$tag" >/dev/null 2>&1; then
+    curl -sfSL -o "$filename" "$img"
+    docker load -i "$filename"
+fi

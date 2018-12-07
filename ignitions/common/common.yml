@@ -7,22 +7,24 @@ files:
   - /etc/sysctl.d/60-cybozu.conf
   - /etc/systemd/system.conf.d/50-cybozu.conf
   - /etc/systemd/system/systemd-journald.service.d/oom_score_adj.conf
+  - /etc/systemd/system/docker.service.d/90-proxy.conf
   - /etc/systemd/system/docker.service.d/99-kubernetes-network.conf
   - /etc/systemd/system/docker.service.d/99-run-after-time-sync.conf
   - /etc/systemd/system/docker.socket.d/99-run-after-time-sync.conf
   - /opt/bin/podenter
+  - /opt/bin/load-image
   - /opt/sbin/bird-wait
   - /opt/sbin/chrony-wait
   - /opt/sbin/neco-wait-dhcp-online
   - /opt/sbin/setup-bird-conf
   - /opt/sbin/setup-chronyd-conf
-  - /opt/sbin/setup-serf-conf
   - /opt/sbin/setup-hw
   - /opt/sbin/setup-local-network
-  - /opt/sbin/setup-var
-  - /opt/sbin/tune-rt-runtime
   - /opt/sbin/setup-omsa
   - /opt/sbin/setup-sabakan-cryptsetup
+  - /opt/sbin/setup-serf-conf
+  - /opt/sbin/setup-var
+  - /opt/sbin/tune-rt-runtime
 systemd:
   - name: update-engine.service
     mask: true
@@ -67,6 +69,12 @@ systemd:
   - name: omsa.service
     enabled: true
   - name: setup-omsa.service
+  - name: cke-images.service
+    enabled: true
+  - name: squid-image.service
+    enabled: true
+  - name: coil-image.service
+    enabled: true
 networkd:
   - 10-node0.netdev
   - 10-node0.network
