@@ -8,6 +8,7 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
+	"github.com/cybozu-go/neco/progs/cke"
 	"github.com/cybozu-go/neco/progs/sabakan"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
@@ -68,7 +69,12 @@ If uploaded versions are up to date, do nothing.
 				Password: sabakanUploadParams.quayPassword,
 			}
 
-			return sabakan.UploadContents(ctx, localClient, proxyClient, version, auth)
+			err = sabakan.UploadContents(ctx, localClient, proxyClient, version, auth)
+			if err != nil {
+				return err
+			}
+
+			return cke.UploadContents(ctx, localClient, proxyClient, version, auth)
 		})
 
 		well.Stop()

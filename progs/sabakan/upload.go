@@ -17,15 +17,14 @@ import (
 )
 
 const (
-	endpoint = "http://127.0.0.1:10080"
-	imageOS  = "coreos"
+	imageOS = "coreos"
 )
 
 const retryCount = 5
 
 // UploadContents upload contents to sabakan
 func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth neco.DockerAuth) error {
-	client, err := sabakan.NewClient(endpoint, sabakanHTTP)
+	client, err := sabakan.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
 	if err != nil {
 		return err
 	}

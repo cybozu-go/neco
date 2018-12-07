@@ -164,14 +164,12 @@ func testWorker() {
 	})
 
 	It("should upload k8s-related containers", func() {
+		output := execSafeAt(boot0, "sabactl", "assets", "index")
+		var assets []string
+		err := json.Unmarshal(output, &assets)
+		Expect(err).NotTo(HaveOccurred())
 		for _, name := range []string{"hyperkube", "pause", "etcd", "coredns", "unbound"} {
-			Eventually(func() []string {
-				output := execSafeAt(boot0, "sabactl", "assets", "index")
-				var assets []string
-				err := json.Unmarshal(output, &assets)
-				Expect(err).NotTo(HaveOccurred())
-				return assets
-			}).Should(ContainElement(MatchRegexp("^cybozu-%s-.*\\.img$", name)))
+			Expect(assets).To(ContainElement(MatchRegexp("^cybozu-%s-.*\\.img$", name)))
 		}
 	})
 
