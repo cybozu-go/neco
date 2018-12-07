@@ -335,8 +335,8 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string) error {
 	replacer := strings.NewReplacer(
 		"%%ETCD_FILE%%", ckeData["ETCD_FILE"],
 		"%%ETCD_NAME%%", ckeData["ETCD_NAME"],
-		"%%TOOLS_FILE%%", ckeData["TOOLS_FILE"],
-		"%%TOOLS_NAME%%", ckeData["TOOLS_NAME"],
+		"%%TOOLS_FILE%%", ckeData["CKE-TOOLS_FILE"],
+		"%%TOOLS_NAME%%", ckeData["CKE-TOOLS_NAME"],
 		"%%HYPERKUBE_FILE%%", ckeData["HYPERKUBE_FILE"],
 		"%%HYPERKUBE_NAME%%", ckeData["HYPERKUBE_NAME"],
 		"%%PAUSE_FILE%%", ckeData["PAUSE_FILE"],
