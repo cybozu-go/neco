@@ -7,6 +7,7 @@ files:
   - /etc/sysctl.d/60-cybozu.conf
   - /etc/systemd/system.conf.d/50-cybozu.conf
   - /etc/systemd/system/systemd-journald.service.d/oom_score_adj.conf
+  - /etc/systemd/system/docker.service.d/90-proxy.conf
   - /etc/systemd/system/docker.service.d/99-kubernetes-network.conf
   - /etc/systemd/system/docker.service.d/99-run-after-time-sync.conf
   - /etc/systemd/system/docker.socket.d/99-run-after-time-sync.conf
