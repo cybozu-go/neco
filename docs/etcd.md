@@ -22,6 +22,29 @@ registered as a key `LRN`.  The value is empty.
 
 This key stores the Debian package version of `neco` released at GitHub.
 
+## `<prefix>/info/sabakan-content`
+
+The value is a JSON object with these fields:
+
+Name      | Type   | Description
+----      | ----   | -----------
+`version` | string | sabakan contents version (the same as `neco` package version).
+`success` | bool   | If `true`, update succeeded.
+
+```json
+{
+    "version": "1.2.3-1",
+    "success": false
+}
+```
+
+`neco-worker` checks this key to decide procedure. See details [update.md](update.md#sabakan-contents-eg-container-images-os-images-and-ignitions).
+
+## `<prefix>/info/worker-ssh-pubkey`
+
+The value is a SSH public key.  This key will be used to authenticate
+users in worker nodes.
+
 ## `<prefix>/install/<LRN>/containers/<CONTAINER>`
 
 Installed container image tag.
@@ -85,26 +108,6 @@ Name      | Type   | Description
 
 `neco-updater` watches these keys to wait all workers to complete update process,
 or detect errors during updates.
-
-## `<prefix>/worker/sabakan-content`
-
-`neco-worker` leader creates and updates this key.
-
-The value is a JSON object with these fields:
-
-Name      | Type   | Description
-----      | ----   | -----------
-`version` | string | Target `neco` version to be updated.
-`success` | bool   | If `true`, uploading process succeeded.
-
-```json
-{
-    "version": "1.2.3-1",
-    "success": false
-}
-```
-
-`neco-worker` checks this key to decide procedure. See details [update.md](update.md#sabakan-contents-eg-container-images-os-images-and-ignitions).
 
 ## `<prefix>/config/notification/slack`
 
