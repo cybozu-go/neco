@@ -8,8 +8,7 @@ BOOT3 = 10.72.48.3
 K8S_CTRLPLANE0 = 10.69.0.4
 K8S_CTRLPLANE1 = 10.69.0.196
 K8S_CTRLPLANE2 = 10.69.1.132
-
-PLACEMAT = $(GOPATH)/bin/placemat
+PLACEMAT = /usr/bin/placemat
 GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo --failFast -v
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
@@ -92,8 +91,7 @@ fullclean: clean
 setup:
 	GO111MODULE=off go get -t -d ./... \
 		github.com/cybozu-go/placemat-menu
-	GO111MODULE=off go get github.com/onsi/ginkgo/ginkgo \
-		github.com/cybozu-go/placemat/...
+	GO111MODULE=off go get github.com/onsi/ginkgo/ginkgo
 	cd $(GOPATH)/src/github.com/cybozu-go/placemat-menu; GO111MODULE=on make
 
 .PHONY:	all test placemat test-light clean fullclean setup
