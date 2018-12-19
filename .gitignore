@@ -16,3 +16,6 @@
 # Debian package
 /work
 /neco_*_amd64.deb
+
+# ignore go.sum
+/go.sum
