@@ -29,11 +29,12 @@ require (
 	github.com/chrismalek/oktasdk-go v0.0.0-20180910152513-c38de6febf6b // indirect
 	github.com/circonus-labs/circonus-gometrics v2.2.5+incompatible // indirect
 	github.com/circonus-labs/circonusllhist v0.1.3 // indirect
-	github.com/containerd/continuity v0.0.0-20180216233310-d8fb8589b0e8 // indirect
+	github.com/containerd/continuity v0.0.0-20181203112020-004b46473808 // indirect
 	github.com/containers/image v0.0.0-20181129122009-63a1cbdc5e65
 	github.com/containers/storage v0.0.0-20181203181726-ad0f9c4dfa38 // indirect
 	github.com/coreos/etcd v3.3.10+incompatible
 	github.com/coreos/go-oidc v2.0.0+incompatible // indirect
+	github.com/coreos/ignition v0.30.0
 	github.com/cybozu-go/etcdutil v1.3.1
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0

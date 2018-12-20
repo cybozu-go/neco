@@ -15,9 +15,12 @@ import (
 	"strings"
 	"time"
 
+	ignition "github.com/coreos/ignition/config/v2_3/types"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/storage"
 	sabakan "github.com/cybozu-go/sabakan/client"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -27,7 +30,7 @@ const (
 const retryCount = 5
 
 // UploadContents upload contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth neco.DockerAuth) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth neco.DockerAuth, st storage.Storage) error {
 	client, err := sabakan.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
 	if err != nil {
 		return err
@@ -43,7 +46,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 		return err
 	}
 
-	err = uploadIgnitions(ctx, client, version)
+	err = uploadIgnitions(ctx, client, version, st)
 	if err != nil {
 		return err
 	}
@@ -303,7 +306,7 @@ func needAssetUpload(ctx context.Context, name string, c *sabakan.Client) (bool,
 }
 
 // uploadIgnitions updates ignitions from local file
-func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string) error {
+func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st storage.Storage) error {
 	roles, err := getInstalledRoles()
 	if err != nil {
 		return err
@@ -347,6 +350,38 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string) error {
 		"%%UNBOUND_NAME%%", ckeData["UNBOUND_NAME"])
 	err = ioutil.WriteFile(ckeImagePath, []byte(replacer.Replace(string(data))), 0644)
 	if err != nil {
+		return err
+	}
+
+	pubkey, err := st.GetSSHPubkey(ctx)
+	switch err {
+	case storage.ErrNotFound:
+	case nil:
+		passwdPath := filepath.Join(copyRoot, "ignitions", "common", "passwd.yml")
+		data, err := ioutil.ReadFile(passwdPath)
+		if err != nil {
+			return err
+		}
+		passwd := new(ignition.Passwd)
+		err = yaml.Unmarshal(data, passwd)
+		if err != nil {
+			return err
+		}
+
+		key := ignition.SSHAuthorizedKey(pubkey)
+		for i := range passwd.Users {
+			passwd.Users[i].SSHAuthorizedKeys = append(passwd.Users[i].SSHAuthorizedKeys, key)
+		}
+
+		data, err = yaml.Marshal(passwd)
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(passwdPath, data, 0644)
+		if err != nil {
+			return err
+		}
+	default:
 		return err
 	}
 

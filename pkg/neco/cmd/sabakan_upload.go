@@ -69,7 +69,7 @@ If uploaded versions are up to date, do nothing.
 				Password: sabakanUploadParams.quayPassword,
 			}
 
-			err = sabakan.UploadContents(ctx, localClient, proxyClient, version, auth)
+			err = sabakan.UploadContents(ctx, localClient, proxyClient, version, auth, st)
 			if err != nil {
 				return err
 			}

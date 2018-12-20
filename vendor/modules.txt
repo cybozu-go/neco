@@ -18,7 +18,7 @@ github.com/Microsoft/hcsshim/internal/longpath
 github.com/Microsoft/hcsshim/internal/safefile
 # github.com/ajeddeloh/go-json v0.0.0-20170920214419-6a2fe990e083
 github.com/ajeddeloh/go-json
-# github.com/containerd/continuity v0.0.0-20180216233310-d8fb8589b0e8
+# github.com/containerd/continuity v0.0.0-20181203112020-004b46473808
 github.com/containerd/continuity/pathdriver
 # github.com/containers/image v0.0.0-20181129122009-63a1cbdc5e65
 github.com/containers/image/copy
@@ -101,19 +101,20 @@ github.com/coreos/etcd/clientv3/namespace
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd v0.0.0-20181031085051-9002847aa142
 github.com/coreos/go-systemd/unit
-# github.com/coreos/ignition v0.28.0
-github.com/coreos/ignition/config/v2_2
+# github.com/coreos/ignition v0.30.0
+github.com/coreos/ignition/config/v2_3/types
 github.com/coreos/ignition/config/shared/errors
+github.com/coreos/ignition/config/shared/validations
+github.com/coreos/ignition/config/validate/report
+github.com/coreos/ignition/config/v2_2
 github.com/coreos/ignition/config/util
 github.com/coreos/ignition/config/v2_1
 github.com/coreos/ignition/config/v2_1/types
 github.com/coreos/ignition/config/v2_2/types
 github.com/coreos/ignition/config/validate
-github.com/coreos/ignition/config/validate/report
-github.com/coreos/ignition/config/v2_3_experimental/types
+github.com/coreos/ignition/config/v2_4_experimental/types
 github.com/coreos/ignition/config/v2_0
 github.com/coreos/ignition/config/v2_0/types
-github.com/coreos/ignition/config/shared/validations
 github.com/coreos/ignition/config/validate/astjson
 github.com/coreos/ignition/config/validate/astnode
 github.com/coreos/ignition/config/v1
@@ -356,21 +357,21 @@ github.com/vincent-petithory/dataurl
 # go4.org v0.0.0-20181109185143-00e24f1b2599
 go4.org/errorutil
 # golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85
+golang.org/x/crypto/ssh
 golang.org/x/crypto/openpgp
 golang.org/x/crypto/ssh/terminal
-golang.org/x/crypto/ssh
-golang.org/x/crypto/openpgp/armor
-golang.org/x/crypto/openpgp/errors
-golang.org/x/crypto/openpgp/packet
-golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/poly1305
-golang.org/x/crypto/cast5
-golang.org/x/crypto/openpgp/elgamal
+golang.org/x/crypto/openpgp/armor
+golang.org/x/crypto/openpgp/errors
+golang.org/x/crypto/openpgp/packet
+golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/internal/subtle
+golang.org/x/crypto/cast5
+golang.org/x/crypto/openpgp/elgamal
 # golang.org/x/net v0.0.0-20181114220301-adae6a3d119a
 golang.org/x/net/netutil
 golang.org/x/net/http2

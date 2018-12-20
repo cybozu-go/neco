@@ -12,6 +12,7 @@ const (
 	KeyInfoPrefix          = "info/"
 	KeyBootserversPrefix   = "info/bootservers/"
 	KeyNecoRelease         = "info/neco-release"
+	KeySSHPubkey           = "info/ssh-pubkey"
 	KeyStatusPrefix        = "status/"
 	KeyCurrent             = "status/current"
 	KeyWorkerStatusPrefix  = "status/bootservers/"
