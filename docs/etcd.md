@@ -22,7 +22,14 @@ registered as a key `LRN`.  The value is empty.
 
 This key stores the Debian package version of `neco` released at GitHub.
 
-## `<prefix>/info/sabakan-content`
+## `<prefix>/info/worker-ssh-pubkey`
+
+The value is a SSH public key.  This key will be used to authenticate
+users in worker nodes.
+
+## `<prefix>/contents/<target>`
+
+`<target>` is either `sabakan` or `cke`.
 
 The value is a JSON object with these fields:
 
@@ -38,12 +45,8 @@ Name      | Type   | Description
 }
 ```
 
-`neco-worker` checks this key to decide procedure. See details [update.md](update.md#sabakan-contents-eg-container-images-os-images-and-ignitions).
-
-## `<prefix>/info/worker-ssh-pubkey`
-
-The value is a SSH public key.  This key will be used to authenticate
-users in worker nodes.
+`neco-worker` checks this key to decide procedure for updating contents for `<target>`.
+See details [update.md](update.md#sabakan-contents-eg-container-images-os-images-and-ignitions).
 
 ## `<prefix>/install/<LRN>/containers/<CONTAINER>`
 
