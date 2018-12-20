@@ -22,10 +22,10 @@ registered as a key `LRN`.  The value is empty.
 
 This key stores the Debian package version of `neco` released at GitHub.
 
-## `<prefix>/info/worker-ssh-pubkey`
+## `<prefix>/info/ssh-pubkey`
 
 The value is a SSH public key.  This key will be used to authenticate
-users in worker nodes.
+users in nodes.
 
 ## `<prefix>/contents/<target>`
 
