@@ -1,6 +1,5 @@
 users:
   - name: cybozu
-    passwordHash: "$6$rounds=4096$m3AVOWeB$EPystoHozf.eJNCm4tWyRHpJzgTDymYuGOONWxRN8uk4amLvxwB4Pc7.tEkZdeXewoVEBEX5ujUon9wSpEf1N."
     groups:
       - sudo
       - docker

@@ -34,6 +34,7 @@ require (
 	github.com/containers/storage v0.0.0-20181203181726-ad0f9c4dfa38 // indirect
 	github.com/coreos/etcd v3.3.10+incompatible
 	github.com/coreos/go-oidc v2.0.0+incompatible // indirect
+	github.com/coreos/ignition v0.30.0
 	github.com/cybozu-go/etcdutil v1.3.1
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
