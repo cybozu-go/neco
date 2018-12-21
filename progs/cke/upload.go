@@ -13,7 +13,7 @@ import (
 )
 
 // UploadContents uploads contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth neco.DockerAuth) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string) error {
 	client, err := sabakan.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
 	if err != nil {
 		return err
@@ -39,7 +39,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 	}
 
 	for _, img := range images {
-		err := saba.UploadImageAssets(ctx, img, client, auth)
+		err := saba.UploadImageAssets(ctx, img, client, nil)
 		if err != nil {
 			return err
 		}

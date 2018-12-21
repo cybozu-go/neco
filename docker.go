@@ -21,7 +21,7 @@ type DockerAuth struct {
 }
 
 // FetchDockerImageAsArchive downloads a docker image and saves it as an archive.
-func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archive string, auth DockerAuth) error {
+func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archive string, auth *DockerAuth) error {
 	policyContext, err := signature.NewPolicyContext(&signature.Policy{
 		Default: []signature.PolicyRequirement{
 			// NewPRInsecureAcceptAnything returns a new "insecureAcceptAnything" PolicyRequirement.
@@ -49,7 +49,7 @@ func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archiv
 	}
 
 	var srcSystemCtx *types.SystemContext
-	if len(auth.Username) > 0 {
+	if auth != nil {
 		srcSystemCtx = &types.SystemContext{
 			DockerAuthConfig: &types.DockerAuthConfig{
 				Username: auth.Username,
