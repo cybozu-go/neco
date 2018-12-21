@@ -49,7 +49,7 @@ If uploaded versions are up to date, do nothing.
 				return err
 			}
 
-			auth := neco.DockerAuth{
+			auth := &neco.DockerAuth{
 				Username: username,
 				Password: password,
 			}
@@ -59,7 +59,7 @@ If uploaded versions are up to date, do nothing.
 				return err
 			}
 
-			return cke.UploadContents(ctx, localClient, proxyClient, version, auth)
+			return cke.UploadContents(ctx, localClient, proxyClient, version)
 		})
 
 		well.Stop()

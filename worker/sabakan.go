@@ -57,7 +57,7 @@ func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRe
 		return nil
 	}
 
-	auth, err := getDockerAuth(ctx, o.storage)
+	auth, err := o.getDockerAuth(ctx, o.storage)
 	if err == storage.ErrNotFound {
 		log.Info("sabakan: skipped uploading contents because Quay auth is not set", nil)
 		return nil

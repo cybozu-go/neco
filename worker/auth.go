@@ -7,7 +7,7 @@ import (
 	"github.com/cybozu-go/neco/storage"
 )
 
-func getDockerAuth(ctx context.Context, st storage.Storage) (*neco.DockerAuth, error) {
+func (o *operator) getDockerAuth(ctx context.Context, st storage.Storage) (*neco.DockerAuth, error) {
 	passwd, err := o.storage.GetQuayPassword(ctx)
 	if err != nil {
 		return nil, err
