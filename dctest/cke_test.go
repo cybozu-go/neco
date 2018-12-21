@@ -10,9 +10,9 @@ import (
 )
 
 func testCKE() {
-	vaultToken := getVaultToken()
-
 	It("should success initialize sabakan data", func() {
+		vaultToken := getVaultToken()
+
 		By("initialize Vault for CKE")
 		execSafeAt(boot0, "env", "VAULT_TOKEN="+vaultToken, "ckecli", "vault", "init")
 
