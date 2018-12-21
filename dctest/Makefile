@@ -30,6 +30,7 @@ NEWVER = 0.0.2
 SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config \
 	$(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb \
 	$(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb \
+	$(SABAKAN_DIR)/cke-template.yml
 
 SSH_PRIVKEY = ./dctest_key
 
@@ -60,6 +61,10 @@ $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb: $(OPERATION_SSH_DIR)
 
 $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb: $(OPERATION_SSH_DIR)
 	cd ..; make deb VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=new
+
+$(SABAKAN_DIR)/cke-template.yml: ../etc/cke-template.yml
+	mkdir -p $(SABAKAN_DIR)
+	cp $< $@
 
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):

@@ -18,8 +18,8 @@ spec:
   cluster-id: dev0
   spine: 2
   rack:
-    - cs: 1
-    - cs: 1
+    - cs: 2
+    - cs: 2
     - cs: 1
     - cs: 1
 ---
