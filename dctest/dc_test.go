@@ -9,6 +9,8 @@ import (
 var _ = Describe("Data center test", func() {
 	Context("setup", testSetup)
 	Context("initialize", testInit)
+	Context("contents", testContents)
+	Context("upgrade", testUpgrade)
 	Context("join/remove", testJoinRemove)
 	Context("sabakan", testSabakan)
 	Context("cke", testCKE)
