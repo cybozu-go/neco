@@ -1,6 +1,7 @@
 package dctest
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 
@@ -12,21 +13,26 @@ import (
 
 func testSabakan() {
 	It("should success initialize sabakan data", func() {
+		By("setting configrations")
 		execSafeAt(boot0, "sabactl", "ipam", "set", "-f", "/mnt/ipam.json")
 		execSafeAt(boot0, "sabactl", "dhcp", "set", "-f", "/mnt/dhcp.json")
 		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
 		execSafeAt(boot0, "sabactl", "kernel-params", "set", "console=ttyS0")
 
-		secrets, err := ioutil.ReadFile("secrets")
+		By("uploading sabakan contents")
+		// Don't print secret to console.
+		// Don't print stdout/stderr of commands which handle secret.
+		// The printed log in CircleCI is open to the public.
+		data, err := ioutil.ReadFile("secrets")
 		Expect(err).NotTo(HaveOccurred())
-		err = execAtWithInput(boot0, secrets, "dd", "of=secrets.sh")
+		passwd := string(bytes.TrimSpace(data))
+		_, _, err = execAt(boot0, "env", "QUAY_USER=cybozu+neco_readonly", "neco", "config", "set", "quay-username")
 		Expect(err).NotTo(HaveOccurred())
-		script, err := ioutil.ReadFile("with_secrets.sh")
+		_, _, err = execAt(boot0, "env", "QUAY_PASSWORD="+passwd, "neco", "config", "set", "quay-password")
 		Expect(err).NotTo(HaveOccurred())
-		err = execAtWithInput(boot0, script, "dd", "of=secrets.sh", "oflag=append", "conv=notrunc")
-		Expect(err).NotTo(HaveOccurred())
-		execSafeAt(boot0, "sh", "-e", "secrets.sh")
+		execSafeAt(boot0, "neco", "sabakan-upload")
 
+		By("checking uploaded contents")
 		output := execSafeAt(boot0, "sabactl", "images", "index")
 		index := new(sabakan.ImageIndex)
 		err = json.Unmarshal(output, index)
@@ -57,26 +63,6 @@ func testSabakan() {
 		image, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(assets).To(ContainElement(neco.CryptsetupAssetName(image)))
-	})
-
-	It("should update machine state in sabakan", func() {
-		// Restart serf after machine registered to update state in sabakan
-		for _, host := range []string{boot0, boot1, boot2} {
-			execSafeAt(host, "sudo", "systemctl", "restart", "serf.service")
-		}
-
-		for _, ip := range []string{"10.69.0.3", "10.69.0.195", "10.69.1.131"} {
-			Eventually(func() []byte {
-				return execSafeAt(boot0, "sabactl", "machines", "get", "-ipv4", ip)
-			}).Should(ContainSubstring(`"state": "healthy"`))
-		}
-	})
-
-	It("should upload k8s-related containers", func() {
-		output := execSafeAt(boot0, "sabactl", "assets", "index")
-		var assets []string
-		err := json.Unmarshal(output, &assets)
-		Expect(err).NotTo(HaveOccurred())
 		for _, name := range []string{"hyperkube", "pause", "etcd", "coredns", "unbound"} {
 			Expect(assets).To(ContainElement(MatchRegexp("^cybozu-%s-.*\\.img$", name)))
 		}

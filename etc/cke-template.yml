@@ -1,0 +1,9 @@
+name: dctest
+nodes:
+ - user: cybozu
+   control_plane: true
+ - user: cybozu
+   control_plane: false
+service_subnet: 10.68.0.0/16
+pod_subnet: 10.64.0.0/14
+dns_service: dns/dns

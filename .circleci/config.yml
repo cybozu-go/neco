@@ -25,8 +25,7 @@ jobs:
       - run:
           name: Store secrets
           command: |
-            echo "export QUAY_USER=$QUAY_USER" > secrets
-            echo "export QUAY_PASSWORD=$QUAY_PASSWORD" >> secrets
+            echo "$QUAY_PASSWORD" > secrets
       - run:
           name: Watch console on boot-0
           command: |
