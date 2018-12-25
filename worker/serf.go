@@ -29,6 +29,10 @@ func (o *operator) UpdateSerf(ctx context.Context, req *neco.UpdateRequest) erro
 		if err != nil {
 			return err
 		}
+		err = o.storage.RecordContainerTag(ctx, o.mylrn, "serf")
+		if err != nil {
+			return err
+		}
 	}
 	replaced, err := o.replaceSerfFiles(ctx, req.Servers)
 	if err != nil {

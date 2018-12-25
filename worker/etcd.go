@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -21,7 +22,7 @@ import (
 
 const (
 	etcdAddTimeout     = 10 * time.Minute
-	etcdRestartTimeout = 5 * time.Second
+	etcdRestartTimeout = 60 * time.Second
 )
 
 func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) error {
@@ -35,6 +36,10 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 			return err
 		}
 		err = etcd.InstallTools(ctx)
+		if err != nil {
+			return err
+		}
+		err = o.storage.RecordContainerTag(ctx, o.mylrn, "etcd")
 		if err != nil {
 			return err
 		}
@@ -65,11 +70,6 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 	mlr, err := o.ec.MemberList(ctx)
 	if err != nil {
 		log.Error("failed to list members", map[string]interface{}{log.FnError: err.Error()})
-		return err
-	}
-	err = o.removeEtcdMembers(ctx, mlr, req)
-	if err != nil {
-		log.Error("failed to remove members", map[string]interface{}{log.FnError: err.Error()})
 		return err
 	}
 
@@ -115,8 +115,13 @@ func isMember(members []*etcdserverpb.Member, lrn int) bool {
 	return false
 }
 
-func (o *operator) removeEtcdMembers(ctx context.Context, mlr *clientv3.MemberListResponse, req *neco.UpdateRequest) error {
+func removeEtcdMembers(ctx context.Context, ec *clientv3.Client, req *neco.UpdateRequest) error {
 	var toRemove []*etcdserverpb.Member
+
+	mlr, err := ec.MemberList(ctx)
+	if err != nil {
+		return err
+	}
 
 OUTER:
 	for _, member := range mlr.Members {
@@ -146,7 +151,7 @@ OUTER:
 		toRemove = append(toRemove, member)
 	}
 	for _, member := range toRemove {
-		_, err := o.ec.MemberRemove(ctx, member.ID)
+		_, err := ec.MemberRemove(ctx, member.ID)
 		if err != nil {
 			return err
 		}
@@ -169,11 +174,6 @@ func (o *operator) addEtcdMember(ctx context.Context) error {
 		return err
 	}
 	defer ec.Close()
-
-	err = o.storage.RecordContainerTag(ctx, o.mylrn, "etcd")
-	if err != nil {
-		return err
-	}
 
 	return waitEtcdSync(ctx, ec, resp.Header.Revision)
 }
@@ -223,10 +223,13 @@ func (o *operator) replaceEtcdFiles(ctx context.Context, lrns []int) (bool, erro
 }
 
 // RestartEtcd restarts etcd after all other steps are completed.
-func (o *operator) RestartEtcd(index int) error {
+func (o *operator) RestartEtcd(index int, req *neco.UpdateRequest) error {
 	if !o.etcdRestart {
 		return nil
 	}
+
+	// Exit and restart after restarting etcd to reload configurations.
+	defer os.Exit(3)
 
 	// Since this function is run almost at once on all boot servers,
 	// etcd cluster would become unstable without this jitter.
@@ -258,5 +261,24 @@ func (o *operator) RestartEtcd(index int) error {
 		return err
 	}
 
-	return waitEtcdSync(ctx, ec, resp.Header.Revision)
+	err = waitEtcdSync(ctx, ec, resp.Header.Revision)
+	if err != nil {
+		return err
+	}
+
+	if index != 0 {
+		return nil
+	}
+
+	// etcd internally checks how long it keeps healthy before removing/adding members.
+	// This is hard-coded in the etcd source code.
+	time.Sleep(6 * time.Second)
+
+	err = removeEtcdMembers(ctx, ec, req)
+	if err != nil {
+		log.Error("failed to remove members", map[string]interface{}{log.FnError: err.Error()})
+		return err
+	}
+
+	return nil
 }

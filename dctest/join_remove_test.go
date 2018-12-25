@@ -4,13 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	sabakan "github.com/cybozu-go/sabakan/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -94,58 +91,6 @@ func testJoinRemove() {
 		Expect(names).Should(ContainElement("boot-3"))
 	})
 
-	It("should update neco package", func() {
-		By("Changing env for test")
-		_, _, err := execAt(boot0, "neco", "config", "set", "env", "test")
-		Expect(err).ShouldNot(HaveOccurred())
-
-		By("Wait all etcd servers get updated")
-		artifacts := []struct {
-			service  string
-			imageTag string
-		}{
-			{neco.EtcdService, "quay.io/cybozu/etcd:3.3.9-4"},
-			{neco.VaultService, "quay.io/cybozu/vault:0.11.0-3"},
-		}
-		Eventually(func() error {
-			for _, art := range artifacts {
-				for _, h := range []string{boot0, boot1, boot2, boot3} {
-					stdout, _, err := execAt(h, "systemctl", "show", art.service, "--property=ExecStart")
-					if err != nil {
-						return err
-					}
-					if !strings.Contains(string(stdout), art.imageTag) {
-						return fmt.Errorf("%s is not updated: %s", art.service, string(stdout))
-					}
-				}
-			}
-			return nil
-		}).Should(Succeed())
-
-		By("Checking status of neco-updater and neco-worker")
-		for _, h := range []string{boot0, boot1, boot2, boot3} {
-			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
-			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
-		}
-
-		By("Checking newer CoreOS is uploaded")
-		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "sabactl", "images", "index")
-			if err != nil {
-				return fmt.Errorf("%v: stderr=%s", err, stderr)
-			}
-
-			index := new(sabakan.ImageIndex)
-			err = json.Unmarshal(stdout, index)
-			Expect(err).NotTo(HaveOccurred())
-
-			if index.Find("1911.3.0") == nil {
-				return errors.New("index does not contains newer version")
-			}
-			return nil
-		}, 10*time.Minute).Should(Succeed())
-	})
-
 	It("should remove boot-3", func() {
 		By("Running neco leave 3")
 		execSafeAt(boot0, "sudo", "env", "VAULT_TOKEN="+rootToken, "neco", "leave", "3")
@@ -175,5 +120,9 @@ func testJoinRemove() {
 			}
 			return nil
 		}).Should(Succeed())
+
+		// need to wait for boot-1/2 to restart etcd, or the system would become
+		// unstable during tests.
+		time.Sleep(3 * time.Minute)
 	})
 }

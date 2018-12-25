@@ -77,7 +77,7 @@ func (op *mockOp) StartServices(ctx context.Context) error {
 	return nil
 }
 
-func (op *mockOp) RestartEtcd(index int) error {
+func (op *mockOp) RestartEtcd(index int, req *neco.UpdateRequest) error {
 	return nil
 }
 
@@ -212,7 +212,7 @@ func TestWorker(t *testing.T) {
 				inputStatus(1, testStatus(1, neco.CondRunning), false),
 				inputStatus(3, testStatus(1, neco.CondRunning), false), // ignored
 				inputStatus(1, testStatus(2, neco.CondRunning), true),
-				inputStatus(1, testStatus(2, neco.CondComplete), false),
+				inputStatus(1, testStatus(2, neco.CondComplete), true),
 			},
 			Op:     newMock(false, 0),
 			Expect: expect(false, 2, testReq),
@@ -308,7 +308,7 @@ func TestWorker(t *testing.T) {
 				inputRequest(testReq, false),
 				inputStatus(1, testStatus(1, neco.CondRunning), false),
 				inputStatus(1, testStatus(2, neco.CondRunning), true),
-				inputStatus(1, testStatus(2, neco.CondComplete), false),
+				inputStatus(1, testStatus(2, neco.CondComplete), true),
 			},
 			Op:     newMock(false, 2),
 			Expect: expect(false, 2, testReq),
@@ -320,8 +320,6 @@ func TestWorker(t *testing.T) {
 	for _, c := range testCases {
 		c := c
 		t.Run(c.Name, func(t *testing.T) {
-			t.Parallel()
-
 			ec := test.NewEtcdClient(t)
 			defer ec.Close()
 			_, err := ec.Put(context.Background(), "hoge", "")
@@ -335,7 +333,7 @@ func TestWorker(t *testing.T) {
 			var workerErr error
 			env := well.NewEnvironment(context.Background())
 			env.Go(func(ctx context.Context) error {
-				ctx, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
+				ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 				defer cancel()
 				err := worker.Run(ctx)
 				if ctx.Err() != context.DeadlineExceeded {

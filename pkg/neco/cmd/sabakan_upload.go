@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
-	"os"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -15,12 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var sabakanUploadParams = struct {
-	quayUser     string
-	quayPassword string
-}{
-	quayUser: "cybozu+neco_readonly",
-}
+var ignitionsOnly bool
 
 // sabakanUploadCmd implements "sabakan-upload"
 var sabakanUploadCmd = &cobra.Command{
@@ -29,21 +22,6 @@ var sabakanUploadCmd = &cobra.Command{
 	Long: `Upload sabakan contents using artifacts.go
 If uploaded versions are up to date, do nothing.
 `,
-	Args: func(cmd *cobra.Command, args []string) error {
-		user := os.Getenv("QUAY_USER")
-		if len(user) > 0 {
-			sabakanUploadParams.quayUser = user
-		}
-
-		passwd := os.Getenv("QUAY_PASSWORD")
-		if len(passwd) == 0 {
-			return errors.New("QUAY_PASSWORD envvar is not set")
-		}
-		sabakanUploadParams.quayPassword = passwd
-
-		return nil
-	},
-
 	Run: func(cmd *cobra.Command, args []string) {
 		version, err := neco.GetDebianVersion(neco.NecoPackageName)
 		if err != nil {
@@ -64,9 +42,22 @@ If uploaded versions are up to date, do nothing.
 			}
 			localClient := ext.LocalHTTPClient()
 
-			auth := neco.DockerAuth{
-				Username: sabakanUploadParams.quayUser,
-				Password: sabakanUploadParams.quayPassword,
+			username, err := st.GetQuayUsername(ctx)
+			if err != nil {
+				return err
+			}
+			password, err := st.GetQuayPassword(ctx)
+			if err != nil {
+				return err
+			}
+
+			auth := &neco.DockerAuth{
+				Username: username,
+				Password: password,
+			}
+
+			if ignitionsOnly {
+				return sabakan.UploadIgnitions(ctx, localClient, version, st)
 			}
 
 			err = sabakan.UploadContents(ctx, localClient, proxyClient, version, auth, st)
@@ -74,7 +65,7 @@ If uploaded versions are up to date, do nothing.
 				return err
 			}
 
-			return cke.UploadContents(ctx, localClient, proxyClient, version, auth)
+			return cke.UploadContents(ctx, localClient, proxyClient, version)
 		})
 
 		well.Stop()
@@ -86,5 +77,6 @@ If uploaded versions are up to date, do nothing.
 }
 
 func init() {
+	sabakanUploadCmd.Flags().BoolVar(&ignitionsOnly, "ignitions-only", false, "upload ignitions only")
 	rootCmd.AddCommand(sabakanUploadCmd)
 }

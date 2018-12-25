@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -30,7 +31,7 @@ const (
 const retryCount = 5
 
 // UploadContents upload contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth neco.DockerAuth, st storage.Storage) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth *neco.DockerAuth, st storage.Storage) error {
 	client, err := sabakan.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
 	if err != nil {
 		return err
@@ -172,7 +173,7 @@ func uploadOSImages(ctx context.Context, c *sabakan.Client, p *http.Client) erro
 }
 
 // uploadAssets uploads assets
-func uploadAssets(ctx context.Context, c *sabakan.Client, auth neco.DockerAuth) error {
+func uploadAssets(ctx context.Context, c *sabakan.Client, auth *neco.DockerAuth) error {
 	// Upload bird and chrony with ubuntu-debug
 	for _, img := range neco.SystemContainers {
 		err := uploadSystemImageAssets(ctx, img, c)
@@ -255,7 +256,7 @@ func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *sa
 }
 
 // UploadImageAssets upload docker container image as sabakan assets.
-func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.Client, auth neco.DockerAuth) error {
+func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.Client, auth *neco.DockerAuth) error {
 	name := neco.ImageAssetName(img)
 	need, err := needAssetUpload(ctx, name, c)
 	if err != nil {
@@ -305,7 +306,16 @@ func needAssetUpload(ctx context.Context, name string, c *sabakan.Client) (bool,
 	return false, err
 }
 
-// uploadIgnitions updates ignitions from local file
+// UploadIgnitions updates ignitions from local file
+func UploadIgnitions(ctx context.Context, c *http.Client, id string, st storage.Storage) error {
+	client, err := sabakan.NewClient(neco.SabakanLocalEndpoint, c)
+	if err != nil {
+		return err
+	}
+
+	return uploadIgnitions(ctx, client, id, st)
+}
+
 func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st storage.Storage) error {
 	roles, err := getInstalledRoles()
 	if err != nil {
@@ -373,7 +383,8 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 			passwd.Users[i].SSHAuthorizedKeys = append(passwd.Users[i].SSHAuthorizedKeys, key)
 		}
 
-		data, err = yaml.Marshal(passwd)
+		// Use json because coreos/ignition has annotations for JSON only.
+		data, err = json.Marshal(passwd)
 		if err != nil {
 			return err
 		}

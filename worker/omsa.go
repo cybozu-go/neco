@@ -33,6 +33,10 @@ func (o *operator) UpdateOMSA(ctx context.Context, req *neco.UpdateRequest) erro
 		if err != nil {
 			return err
 		}
+		err = o.storage.RecordContainerTag(ctx, o.mylrn, "omsa")
+		if err != nil {
+			return err
+		}
 	}
 
 	replaced, err := o.replaceOMSAFiles(ctx)

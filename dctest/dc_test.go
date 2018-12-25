@@ -8,6 +8,11 @@ import (
 // Other tests and test containers must be listed in this.
 var _ = Describe("Data center test", func() {
 	Context("setup", testSetup)
-	Context("worker", testWorker)
+	Context("initialize", testInit)
+	Context("sabakan", testSabakan)
+	// uploading contents to sabakan must be done after sabakan configuration.
+	Context("contents", testContents)
+	Context("upgrade", testUpgrade)
 	Context("join/remove", testJoinRemove)
+	Context("cke", testCKE)
 })

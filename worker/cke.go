@@ -34,6 +34,10 @@ func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error
 		if err != nil {
 			return err
 		}
+		err = o.storage.RecordContainerTag(ctx, o.mylrn, "cke")
+		if err != nil {
+			return err
+		}
 	}
 
 	need, err = o.needContainerImageUpdate(ctx, "hyperkube")
@@ -46,6 +50,10 @@ func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error
 			return err
 		}
 		err = cke.InstallToolsHyperKube(ctx)
+		if err != nil {
+			return err
+		}
+		err = o.storage.RecordContainerTag(ctx, o.mylrn, "hyperkube")
 		if err != nil {
 			return err
 		}
@@ -147,7 +155,7 @@ func (o *operator) UpdateCKEContents(ctx context.Context, req *neco.UpdateReques
 		}
 	}
 
-	err = cke.UploadContents(ctx, o.localClient, o.proxyClient, req.Version, o.auth)
+	err = cke.UploadContents(ctx, o.localClient, o.proxyClient, req.Version)
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,

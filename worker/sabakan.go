@@ -30,6 +30,10 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 		if err != nil {
 			return err
 		}
+		err = o.storage.RecordContainerTag(ctx, o.mylrn, "sabakan")
+		if err != nil {
+			return err
+		}
 	}
 
 	_, err = o.replaceSabakanFiles(ctx, o.mylrn, req.Servers)
@@ -53,8 +57,17 @@ func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRe
 		return err
 	}
 	if !isActive {
-		log.Info("sabakan: skipped because sabakan is inactive", nil)
+		log.Info("sabakan: skipped uploading contents because sabakan is inactive", nil)
 		return nil
+	}
+
+	auth, err := o.getDockerAuth(ctx, o.storage)
+	if err == storage.ErrNotFound {
+		log.Info("sabakan: skipped uploading contents because Quay auth is not set", nil)
+		return nil
+	}
+	if err != nil {
+		return err
 	}
 
 	// Leader election
@@ -96,7 +109,7 @@ func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRe
 		}
 	}
 
-	err = sabakan.UploadContents(ctx, o.localClient, o.proxyClient, req.Version, o.auth, o.storage)
+	err = sabakan.UploadContents(ctx, o.localClient, o.proxyClient, req.Version, auth, o.storage)
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,

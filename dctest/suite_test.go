@@ -22,7 +22,7 @@ var _ = BeforeSuite(func() {
 	fmt.Println("Preparing...")
 
 	SetDefaultEventuallyPollingInterval(time.Second)
-	SetDefaultEventuallyTimeout(6 * time.Minute)
+	SetDefaultEventuallyTimeout(10 * time.Minute)
 
 	err := prepareSSHClients(boot0, boot1, boot2, boot3)
 	Expect(err).NotTo(HaveOccurred())

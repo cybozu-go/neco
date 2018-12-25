@@ -173,8 +173,8 @@ require (
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0 // indirect
 	gopkg.in/yaml.v2 v2.2.1
 	gotest.tools v2.2.0+incompatible // indirect
-	k8s.io/api v0.0.0-20181130031204-d04500c8c3dd // indirect
-	k8s.io/apimachinery v0.0.0-20181201231028-18a5ff3097b4 // indirect
+	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
+	k8s.io/apimachinery v0.0.0-20181128191346-49ce2735e507 // indirect
 	k8s.io/client-go v0.0.0-20170217214107-bcde30fb7eae // indirect
 	k8s.io/klog v0.1.0 // indirect
 	layeh.com/radius v0.0.0-20181129000116-83b1b1c7637c // indirect

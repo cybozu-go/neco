@@ -61,6 +61,11 @@ Synopsis
 
     Removes the current update status from etcd to resolve the update failure.
 
+* `neco sabakan-upload`
+
+    Upload sabakan contents using `artifacts.go`.  If uploaded versions are
+    up to date, do nothing.
+
 * `neco setup [--no-revoke] LRN [LRN ...]`
 
     Install and setup etcd cluster as well as Vault using given boot servers.
@@ -71,6 +76,17 @@ Synopsis
 
     When `--no-revoke` option is specified, it does not revoke the initial
     root token.  This is only for testing purpose.
+
+* `neco ssh generate [--dump]`
+
+    Generates a new SSH key pair for sabakan controlled machines.
+
+    The generated public key is stored in etcd.
+    The generated private key is stored in Vault by using
+    `ckecli vault ssh-privkey`.
+
+    When `--dump` option is specified, the generated private key is also dumped
+    to stdout.
 
 * `neco status`
 
@@ -91,10 +107,6 @@ Synopsis
 * `neco vault show-root-token`
 
     Show the initial root token, if not revoked during `neco setup`.
-
-* `neco sabakan-upload`
-
-    Upload sabakan contents using `artifacts.go`. If uploaded versions are up to date, do nothing.
 
 <a name="config"></a>
 Configurations
@@ -121,12 +133,12 @@ It will be used by `neco-updater` and `neco-worker`.
 
 ### `quay-username`
 
-Set username to authenticate to quay.io from QUAY_USER envvar.
+Set username to authenticate to quay.io from `QUAY_USER` envvar.
 It will be used by `neco-worker`.
 
 ### `quay-password`
 
-Set password to authenticate to quay.io from QUAY_PASSWORD envvar.
+Set password to authenticate to quay.io from `QUAY_PASSWORD` envvar.
 It will be used by `neco-worker`.
 
 ### `check-update-interval`
