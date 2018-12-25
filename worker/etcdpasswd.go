@@ -31,6 +31,10 @@ func (o *operator) UpdateEtcdpasswd(ctx context.Context, req *neco.UpdateRequest
 		if err != nil {
 			return err
 		}
+		err = o.storage.RecordDebVersion(ctx, o.mylrn, "etcdpasswd")
+		if err != nil {
+			return err
+		}
 	}
 
 	if replaced && !need {

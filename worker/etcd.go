@@ -38,6 +38,10 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		if err != nil {
 			return err
 		}
+		err = o.storage.RecordContainerTag(ctx, o.mylrn, "etcd")
+		if err != nil {
+			return err
+		}
 	}
 
 	sess, err := concurrency.NewSession(o.ec, concurrency.WithTTL(10))
@@ -169,11 +173,6 @@ func (o *operator) addEtcdMember(ctx context.Context) error {
 		return err
 	}
 	defer ec.Close()
-
-	err = o.storage.RecordContainerTag(ctx, o.mylrn, "etcd")
-	if err != nil {
-		return err
-	}
 
 	return waitEtcdSync(ctx, ec, resp.Header.Revision)
 }

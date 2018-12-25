@@ -28,6 +28,10 @@ func (o *operator) UpdateVault(ctx context.Context, req *neco.UpdateRequest) err
 		if err != nil {
 			return err
 		}
+		err = o.storage.RecordContainerTag(ctx, o.mylrn, "vault")
+		if err != nil {
+			return err
+		}
 	}
 
 	_, err = o.replaceVaultFiles(ctx, req.Servers)

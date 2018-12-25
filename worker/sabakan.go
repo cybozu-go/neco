@@ -30,6 +30,10 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 		if err != nil {
 			return err
 		}
+		err = o.storage.RecordContainerTag(ctx, o.mylrn, "sabakan")
+		if err != nil {
+			return err
+		}
 	}
 
 	_, err = o.replaceSabakanFiles(ctx, o.mylrn, req.Servers)
