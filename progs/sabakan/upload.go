@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -305,7 +306,16 @@ func needAssetUpload(ctx context.Context, name string, c *sabakan.Client) (bool,
 	return false, err
 }
 
-// uploadIgnitions updates ignitions from local file
+// UploadIgnitions updates ignitions from local file
+func UploadIgnitions(ctx context.Context, c *http.Client, id string, st storage.Storage) error {
+	client, err := sabakan.NewClient(neco.SabakanLocalEndpoint, c)
+	if err != nil {
+		return err
+	}
+
+	return uploadIgnitions(ctx, client, id, st)
+}
+
 func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st storage.Storage) error {
 	roles, err := getInstalledRoles()
 	if err != nil {
@@ -373,7 +383,8 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 			passwd.Users[i].SSHAuthorizedKeys = append(passwd.Users[i].SSHAuthorizedKeys, key)
 		}
 
-		data, err = yaml.Marshal(passwd)
+		// Use json because coreos/ignition has annotations for JSON only.
+		data, err = json.Marshal(passwd)
 		if err != nil {
 			return err
 		}

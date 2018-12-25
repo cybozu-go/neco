@@ -19,6 +19,11 @@ func testCKE() {
 		By("generating SSH key for worker nodes")
 		execSafeAt(boot0, "neco", "ssh", "generate")
 
+		By("regenerating ignitions and registering machines")
+		execSafeAt(boot0, "sabactl", "ignitions", "delete", "worker", "0.0.2")
+		execSafeAt(boot0, "neco", "sabakan-upload", "--ignitions-only")
+		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
+
 		By("setting configrations")
 		execSafeAt(boot0, "ckecli", "constraints", "set", "control-plane-count", "3")
 		execSafeAt(boot0, "ckecli", "constraints", "set", "minimum-workers", "2")

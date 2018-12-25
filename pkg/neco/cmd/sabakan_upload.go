@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var ignitionsOnly bool
+
 // sabakanUploadCmd implements "sabakan-upload"
 var sabakanUploadCmd = &cobra.Command{
 	Use:   "sabakan-upload",
@@ -54,6 +56,10 @@ If uploaded versions are up to date, do nothing.
 				Password: password,
 			}
 
+			if ignitionsOnly {
+				return sabakan.UploadIgnitions(ctx, localClient, version, st)
+			}
+
 			err = sabakan.UploadContents(ctx, localClient, proxyClient, version, auth, st)
 			if err != nil {
 				return err
@@ -71,5 +77,6 @@ If uploaded versions are up to date, do nothing.
 }
 
 func init() {
+	sabakanUploadCmd.Flags().BoolVar(&ignitionsOnly, "ignitions-only", false, "upload ignitions only")
 	rootCmd.AddCommand(sabakanUploadCmd)
 }
