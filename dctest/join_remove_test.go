@@ -121,8 +121,8 @@ func testJoinRemove() {
 			return nil
 		}).Should(Succeed())
 
-		// need to wait for request completion, or the system would become
+		// need to wait for boot-1/2 to restart etcd, or the system would become
 		// unstable during tests.
-		waitRequestComplete()
+		time.Sleep(3 * time.Minute)
 	})
 }
