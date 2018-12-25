@@ -28,7 +28,7 @@ type Operator interface {
 	StartServices(ctx context.Context) error
 
 	// RestartEtcd restarts etcd in case it is necessary.
-	RestartEtcd(index int) error
+	RestartEtcd(index int, req *neco.UpdateRequest) error
 }
 
 type operator struct {
