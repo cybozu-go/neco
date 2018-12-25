@@ -22,7 +22,7 @@ import (
 
 const (
 	etcdAddTimeout     = 10 * time.Minute
-	etcdRestartTimeout = 5 * time.Second
+	etcdRestartTimeout = 60 * time.Second
 )
 
 func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) error {
@@ -229,7 +229,7 @@ func (o *operator) RestartEtcd(index int, req *neco.UpdateRequest) error {
 	}
 
 	// Exit and restart after restarting etcd to reload configurations.
-	defer os.Exit(1)
+	defer os.Exit(3)
 
 	// Since this function is run almost at once on all boot servers,
 	// etcd cluster would become unstable without this jitter.
@@ -269,6 +269,10 @@ func (o *operator) RestartEtcd(index int, req *neco.UpdateRequest) error {
 	if index != 0 {
 		return nil
 	}
+
+	// etcd internally checks how long it keeps healthy before removing/adding members.
+	// This is hard-coded in the etcd source code.
+	time.Sleep(6 * time.Second)
 
 	err = removeEtcdMembers(ctx, ec, req)
 	if err != nil {
