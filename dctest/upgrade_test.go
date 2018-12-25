@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -19,7 +20,7 @@ func testUpgrade() {
 		_, _, err := execAt(boot0, "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred())
 
-		By("Wait all etcd servers get updated")
+		By("Wait for systemd unit files to be updated")
 		artifacts := []struct {
 			service  string
 			imageTag string
@@ -64,5 +65,20 @@ func testUpgrade() {
 			}
 			return nil
 		}, 10*time.Minute).Should(Succeed())
+
+		By("Checking new etcd is running")
+		hasNewEtcd := regexp.MustCompile(`etcd\s+quay.io/cybozu/etcd:3.3.9-4\s+running`)
+		Eventually(func() error {
+			for _, h := range []string{boot0, boot1, boot2} {
+				stdout, _, err := execAt(h, "sudo", "rkt", "list")
+				if err != nil {
+					return err
+				}
+				if !hasNewEtcd.Match(stdout) {
+					return errors.New("etcd is not updated on " + h)
+				}
+			}
+			return nil
+		}).Should(Succeed())
 	})
 }
