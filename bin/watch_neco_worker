@@ -5,7 +5,7 @@
 tail_neco_worker_once() {
   host="$1"
   $GCLOUD 2>/dev/null compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
-    sudo nsenter -n -t '$(sudo /root/go/bin/pmctl pod show operation | jq .pid)' ssh -F ssh_config \
+    sudo nsenter -n -t '$(sudo pmctl pod show operation | jq .pid)' ssh -F ssh_config \
      ${host} journalctl -f -u neco-worker.service
 }
 

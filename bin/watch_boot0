@@ -15,4 +15,4 @@ if [ i = 100 ]; then
 fi
 
 $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
-  sudo /root/go/bin/pmctl node enter boot-0
+  sudo pmctl node enter boot-0
