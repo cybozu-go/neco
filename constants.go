@@ -4,6 +4,12 @@ import "path/filepath"
 
 const systemdDir = "/etc/systemd/system"
 
+// SabakanImages is the list of container image names to be uploaded to sabakan.
+var SabakanImages = []string{"serf", "omsa", "coil", "squid"}
+
+// RktImages is the list of container image names to be run as rkt contaienrs.
+var RktImages = []string{"cke", "etcd", "omsa", "sabakan", "serf", "vault", "hyperkube"}
+
 // Neco params
 const (
 	NecoDir = "/etc/neco"

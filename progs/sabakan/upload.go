@@ -184,7 +184,7 @@ func uploadAssets(ctx context.Context, c *sabakan.Client, auth *neco.DockerAuth)
 
 	// Upload other images
 	var fetches []neco.ContainerImage
-	for _, name := range []string{"serf", "omsa", "coil", "squid"} {
+	for _, name := range neco.SabakanImages {
 		img, err := neco.CurrentArtifacts.FindContainerImage(name)
 		if err != nil {
 			return err

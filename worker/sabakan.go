@@ -22,10 +22,6 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 		return err
 	}
 	if need {
-		err = o.fetchContainer(ctx, "sabakan")
-		if err != nil {
-			return err
-		}
 		err = sabakan.InstallTools(ctx)
 		if err != nil {
 			return err

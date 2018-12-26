@@ -20,10 +20,6 @@ func (o *operator) UpdateVault(ctx context.Context, req *neco.UpdateRequest) err
 		return err
 	}
 	if need {
-		err = o.fetchContainer(ctx, "vault")
-		if err != nil {
-			return err
-		}
 		err = vault.InstallTools(ctx)
 		if err != nil {
 			return err
