@@ -3,6 +3,7 @@ package dctest
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -34,7 +35,7 @@ func testCKE() {
 		Eventually(func() error {
 			_, _, err := execAt(boot0, "ckecli", "cluster", "get")
 			return err
-		}).Should(Succeed())
+		}, 20*time.Minute).Should(Succeed())
 	})
 
 	It("wait for Kubernetes cluster to become ready", func() {
