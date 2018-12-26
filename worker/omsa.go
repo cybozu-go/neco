@@ -12,11 +12,11 @@ import (
 )
 
 func (o *operator) UpdateOMSA(ctx context.Context, req *neco.UpdateRequest) error {
-	hw, err := neco.DetectHardware()
+	needHandle, err := needToHandle("omsa")
 	if err != nil {
 		return err
 	}
-	if hw != neco.HWTypeDell {
+	if !needHandle {
 		return nil
 	}
 
