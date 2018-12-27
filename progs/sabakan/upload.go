@@ -21,6 +21,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	sabakan "github.com/cybozu-go/sabakan/client"
+	"github.com/cybozu-go/well"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -37,22 +38,18 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 		return err
 	}
 
-	err = uploadOSImages(ctx, client, proxyHTTP)
-	if err != nil {
-		return err
-	}
-
-	err = uploadAssets(ctx, client, auth)
-	if err != nil {
-		return err
-	}
-
-	err = uploadIgnitions(ctx, client, version, st)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	env := well.NewEnvironment(ctx)
+	env.Go(func(ctx context.Context) error {
+		return uploadOSImages(ctx, client, proxyHTTP)
+	})
+	env.Go(func(ctx context.Context) error {
+		return uploadAssets(ctx, client, auth)
+	})
+	env.Go(func(ctx context.Context) error {
+		return uploadIgnitions(ctx, client, version, st)
+	})
+	env.Stop()
+	return env.Wait()
 }
 
 // uploadOSImages uploads CoreOS images
@@ -99,67 +96,71 @@ func uploadOSImages(ctx context.Context, c *sabakan.Client, p *http.Client) erro
 		os.Remove(initrdFile.Name())
 	}()
 
+	env := well.NewEnvironment(ctx)
+
 	var kernelSize int64
-	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
-		func(ctx context.Context) error {
-			err := kernelFile.Truncate(0)
-			if err != nil {
+	env.Go(func(ctx context.Context) error {
+		return neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+			func(ctx context.Context) error {
+				err := kernelFile.Truncate(0)
+				if err != nil {
+					return err
+				}
+				_, err = kernelFile.Seek(0, 0)
+				if err != nil {
+					return err
+				}
+				kernelSize, err = downloadFile(ctx, p, kernelURL, kernelFile)
 				return err
-			}
-			_, err = kernelFile.Seek(0, 0)
-			if err != nil {
+			},
+			func(err error) {
+				log.Warn("sabakan: failed to fetch Container Linux kernel", map[string]interface{}{
+					log.FnError: err,
+					"url":       kernelURL,
+				})
+			},
+		)
+	})
+
+	var initrdSize int64
+	env.Go(func(ctx context.Context) error {
+		return neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+			func(ctx context.Context) error {
+				err := initrdFile.Truncate(0)
+				if err != nil {
+					return err
+				}
+				_, err = initrdFile.Seek(0, 0)
+				if err != nil {
+					return err
+				}
+				initrdSize, err = downloadFile(ctx, p, initrdURL, initrdFile)
 				return err
-			}
-			kernelSize, err = downloadFile(ctx, p, kernelURL, kernelFile)
-			return err
-		},
-		func(err error) {
-			log.Warn("sabakan: failed to fetch Container Linux kernel", map[string]interface{}{
-				log.FnError: err,
-				"url":       kernelURL,
-			})
-		},
-	)
+			},
+			func(err error) {
+				log.Warn("sabakan: failed to fetch Container Linux initrd", map[string]interface{}{
+					log.FnError: err,
+					"url":       initrdURL,
+				})
+			},
+		)
+	})
+	env.Stop()
+	err = env.Wait()
 	if err != nil {
 		return err
 	}
+
 	_, err = kernelFile.Seek(0, 0)
 	if err != nil {
 		return err
 	}
-
-	var initrdSize int64
-	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
-		func(ctx context.Context) error {
-			err := initrdFile.Truncate(0)
-			if err != nil {
-				return err
-			}
-			_, err = initrdFile.Seek(0, 0)
-			if err != nil {
-				return err
-			}
-			initrdSize, err = downloadFile(ctx, p, initrdURL, initrdFile)
-			return err
-		},
-		func(err error) {
-			log.Warn("sabakan: failed to fetch Container Linux initrd", map[string]interface{}{
-				log.FnError: err,
-				"url":       initrdURL,
-			})
-		},
-	)
-
-	if err != nil {
-		return err
-	}
-
 	_, err = initrdFile.Seek(0, 0)
 	if err != nil {
 		return err
 	}
 
-	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+	return neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
 		func(ctx context.Context) error {
 			return c.ImagesUpload(ctx, imageOS, version, kernelFile, kernelSize, initrdFile, initrdSize)
 		},
@@ -169,7 +170,6 @@ func uploadOSImages(ctx context.Context, c *sabakan.Client, p *http.Client) erro
 			})
 		},
 	)
-	return err
 }
 
 // uploadAssets uploads assets
@@ -191,11 +191,18 @@ func uploadAssets(ctx context.Context, c *sabakan.Client, auth *neco.DockerAuth)
 		}
 		fetches = append(fetches, img)
 	}
+
+	env := well.NewEnvironment(ctx)
 	for _, img := range fetches {
-		err := UploadImageAssets(ctx, img, c, auth)
-		if err != nil {
-			return err
-		}
+		img := img
+		env.Go(func(ctx context.Context) error {
+			return UploadImageAssets(ctx, img, c, auth)
+		})
+	}
+	env.Stop()
+	err := env.Wait()
+	if err != nil {
+		return err
 	}
 
 	// Upload sabakan-cryptsetup with version name
