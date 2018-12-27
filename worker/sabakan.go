@@ -50,7 +50,14 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 
 	err = neco.RetryWithSleep(ctx, 3, 5*time.Second,
 		func(ctx context.Context) error {
-			_, err := sabac.MachinesGet(ctx, nil)
+			_, err := os.Stat(neco.SabakanKeyFile)
+			if err == nil {
+				_, err := sabac.MachinesGet(ctx, nil)
+				return err
+			}
+			if os.IsNotExist(err) {
+				return nil
+			}
 			return err
 		},
 		func(err error) {})
