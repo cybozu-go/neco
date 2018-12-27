@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -14,7 +15,6 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/sabakan"
 	"github.com/cybozu-go/neco/storage"
-	saba "github.com/cybozu-go/sabakan/client"
 )
 
 func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) error {
@@ -43,30 +43,36 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 		return err
 	}
 
-	sabac, err := saba.NewClient(neco.SabakanLocalEndpoint, o.localClient)
+	_, err = os.Stat(neco.SabakanKeyFile)
 	if err != nil {
+		if os.IsNotExist(err) {
+			log.Info("sabakan: updated", nil)
+			return nil
+		}
 		return err
 	}
 
-	err = neco.RetryWithSleep(ctx, 3, 5*time.Second,
-		func(ctx context.Context) error {
-			_, err := os.Stat(neco.SabakanKeyFile)
-			if err == nil {
-				_, err := sabac.MachinesGet(ctx, nil)
-				return err
-			}
-			if os.IsNotExist(err) {
-				return nil
-			}
-			return err
-		},
-		func(err error) {})
+	hreq, err := http.NewRequest(http.MethodGet, neco.SabakanLocalEndpoint, nil)
 	if err != nil {
 		return err
 	}
-
-	log.Info("sabakan: updated", nil)
-	return nil
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+	for {
+		hreq := hreq.WithContext(ctx)
+		resp, err := o.localClient.Do(hreq)
+		if err != nil {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(time.Second):
+			}
+			continue
+		}
+		resp.Body.Close()
+		log.Info("sabakan: updated", nil)
+		return nil
+	}
 }
 
 func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRequest) error {
