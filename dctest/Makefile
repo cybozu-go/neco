@@ -12,6 +12,7 @@ PLACEMAT = /usr/bin/placemat
 GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo --failFast -v
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
+MENU = menu.yml
 
 export BOOT0 BOOT1 BOOT2 BOOT3 PLACEMAT GINKGO
 
@@ -50,7 +51,7 @@ $(OUTPUT)/$(CUSTOM_UBUNTU): $(CUSTOM_UBUNTU)
 
 # SABAKAN_CONTENTS
 $(DHCP_JSON):
-	$(GOPATH)/bin/placemat-menu -f menu.yml -o $(OUTPUT)
+	$(GOPATH)/bin/placemat-menu -f $(MENU) -o $(OUTPUT)
 
 $(SABAKAN_DIR)/auto-config: auto-config $(DHCP_JSON)
 	cp $< $@
