@@ -1,6 +1,7 @@
 [Unit]
 Description=Load container images for CKE
-Wants=neco.target docker.socket
+Wants=neco.target
+Requires=docker.socket
 After=neco.target docker.socket
 
 [Service]

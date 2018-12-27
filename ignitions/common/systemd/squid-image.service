@@ -1,6 +1,7 @@
 [Unit]
 Description=Load Squid container image
-Wants=neco.target docker.socket
+Wants=neco.target
+Requires=docker.socket
 After=neco.target docker.socket
 
 [Service]
