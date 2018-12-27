@@ -7,3 +7,8 @@ nodes:
 service_subnet: 10.68.0.0/16
 pod_subnet: 10.64.0.0/14
 dns_service: dns/dns
+options:
+  kubelet:
+    boot_taints:
+      - key: coil.cybozu.com/bootstrap
+        effect: NoSchedule

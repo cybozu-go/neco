@@ -66,6 +66,14 @@ $(SABAKAN_DIR)/cke-template.yml: ../etc/cke-template.yml
 	mkdir -p $(SABAKAN_DIR)
 	cp $< $@
 
+$(SABAKAN_DIR)/coil-rbac.yml: ../etc/coil-rbac.yml
+	mkdir -p $(SABAKAN_DIR)
+	cp $< $@
+
+$(SABAKAN_DIR)/coil-deploy.yml: ../etc/coil-deploy.yml
+	mkdir -p $(SABAKAN_DIR)
+	cp $< $@
+
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):
 	mkdir -p $(OPERATION_SSH_DIR)
