@@ -14,6 +14,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/sabakan"
 	"github.com/cybozu-go/neco/storage"
+	saba "github.com/cybozu-go/sabakan/client"
 )
 
 func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) error {
@@ -38,6 +39,21 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 	}
 
 	err = neco.RestartService(ctx, neco.SabakanService)
+	if err != nil {
+		return err
+	}
+
+	sabac, err := saba.NewClient(neco.SabakanLocalEndpoint, o.localClient)
+	if err != nil {
+		return err
+	}
+
+	err = neco.RetryWithSleep(ctx, 3, 5*time.Second,
+		func(ctx context.Context) error {
+			_, err := sabac.MachinesGet(ctx, nil)
+			return err
+		},
+		func(err error) {})
 	if err != nil {
 		return err
 	}
