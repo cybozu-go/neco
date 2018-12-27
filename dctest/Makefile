@@ -30,7 +30,9 @@ NEWVER = 0.0.2
 SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config \
 	$(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb \
 	$(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb \
-	$(SABAKAN_DIR)/cke-template.yml
+	$(SABAKAN_DIR)/cke-template.yml \
+	$(SABAKAN_DIR)/coil-rbac.yml \
+	$(SABAKAN_DIR)/coil-deploy.yml
 
 SSH_PRIVKEY = ./dctest_key
 
