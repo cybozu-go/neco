@@ -3,7 +3,8 @@ Description=Setup chrony container
 ConditionPathExists=!/etc/chrony.conf
 After=setup-var.service
 Before=setup-network.service
-Wants=setup-network.service setup-var.service
+Wants=setup-network.service
+Requires=setup-var.service
 
 [Service]
 Type=oneshot

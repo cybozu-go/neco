@@ -1,5 +1,6 @@
 passwd: passwd.yml
 files:
+  - /etc/fstab
   - /etc/hostname
   - /etc/modprobe.d/conntrack-hashsize.conf
   - /etc/modules-load.d/cybozu.conf
@@ -65,7 +66,6 @@ systemd:
   - name: neco-dhcp-online.target
   - name: neco-wait-dhcp-online.service
     enabled: true
-  - name: var.mount
   - name: omsa.service
     enabled: true
   - name: setup-omsa.service

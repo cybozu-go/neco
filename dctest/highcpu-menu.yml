@@ -1,0 +1,48 @@
+kind: Network
+spec:
+  ipam-config: ../etc/ipam.json
+  asn-base: 64600
+  internet: 10.0.0.0/24
+  spine-tor: 10.0.1.0
+  core-spine: 10.0.2.0/31
+  core-external: 10.0.3.0/24
+  core-operation: 10.0.4.0/24
+  exposed:
+    loadbalancer: 10.72.32.0/20
+    bastion: 10.72.48.0/26
+    ingress: 10.72.48.64/26
+    global: 172.17.0.0/24
+---
+kind: Inventory
+spec:
+  cluster-id: dev0
+  spine: 2
+  rack:
+    - cs: 2
+    - cs: 2
+    - cs: 1
+    - cs: 1
+---
+kind: Image
+name: custom-ubuntu-image
+file: cybozu-ubuntu-18.04-server-cloudimg-amd64.img
+---
+kind: Node
+type: boot
+spec:
+  cpu: 8
+  memory: 2G
+  image: custom-ubuntu-image
+  cloud-init-template: boot-seed.yml.template
+---
+kind: Node
+type: cs
+spec:
+  cpu: 4
+  memory: 3G
+---
+kind: Node
+type: ss
+spec:
+  cpu: 4
+  memory: 3G

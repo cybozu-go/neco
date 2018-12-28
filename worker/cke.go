@@ -26,10 +26,6 @@ func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error
 		return err
 	}
 	if need {
-		err = o.fetchContainer(ctx, "cke")
-		if err != nil {
-			return err
-		}
 		err = cke.InstallToolsCKE(ctx)
 		if err != nil {
 			return err
@@ -45,10 +41,6 @@ func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error
 		return err
 	}
 	if need {
-		err = o.fetchContainer(ctx, "hyperkube")
-		if err != nil {
-			return err
-		}
 		err = cke.InstallToolsHyperKube(ctx)
 		if err != nil {
 			return err

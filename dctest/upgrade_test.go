@@ -49,6 +49,21 @@ func testUpgrade() {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 		}
 
+		By("Checking new etcd is running")
+		hasNewEtcd := regexp.MustCompile(`etcd\s+quay.io/cybozu/etcd:3.3.9-4\s+running`)
+		Eventually(func() error {
+			for _, h := range []string{boot0, boot1, boot2} {
+				stdout, _, err := execAt(h, "sudo", "rkt", "list")
+				if err != nil {
+					return err
+				}
+				if !hasNewEtcd.Match(stdout) {
+					return errors.New("etcd is not updated on " + h)
+				}
+			}
+			return nil
+		}).Should(Succeed())
+
 		By("Checking newer CoreOS is uploaded")
 		Eventually(func() error {
 			stdout, stderr, err := execAt(boot0, "sabactl", "images", "index")
@@ -65,20 +80,5 @@ func testUpgrade() {
 			}
 			return nil
 		}, 10*time.Minute).Should(Succeed())
-
-		By("Checking new etcd is running")
-		hasNewEtcd := regexp.MustCompile(`etcd\s+quay.io/cybozu/etcd:3.3.9-4\s+running`)
-		Eventually(func() error {
-			for _, h := range []string{boot0, boot1, boot2} {
-				stdout, _, err := execAt(h, "sudo", "rkt", "list")
-				if err != nil {
-					return err
-				}
-				if !hasNewEtcd.Match(stdout) {
-					return errors.New("etcd is not updated on " + h)
-				}
-			}
-			return nil
-		}).Should(Succeed())
 	})
 }

@@ -1,7 +1,9 @@
 [Unit]
 Description=Serf container on docker
-Wants=neco.target setup-serf.service docker.socket
+Wants=neco.target
+Requires=setup-serf.service docker.socket
 After=neco.target setup-serf.service docker.socket
+After=cke-images.service coil-image.service squid-image.service
 ConditionPathExists=/etc/serf/serf.json
 
 [Service]

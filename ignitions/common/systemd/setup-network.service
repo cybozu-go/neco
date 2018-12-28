@@ -2,7 +2,8 @@
 Description=Setup network
 ConditionPathExists=!/etc/bird
 After=setup-var.service neco-dhcp-online.target
-Wants=setup-var.service neco-dhcp-online.target
+Wants=neco-dhcp-online.target
+Requires=setup-var.service
 
 [Service]
 Type=oneshot

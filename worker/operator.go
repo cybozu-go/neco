@@ -81,35 +81,37 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 }
 
 func (o *operator) FinalStep() int {
-	return 12
+	return 13
 }
 
 func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error {
 
 	switch step {
 	case 1:
-		return o.UpdateEtcd(ctx, req)
+		return o.FetchImages(ctx, req)
 	case 2:
-		return o.StopVault(ctx, req)
+		return o.UpdateEtcd(ctx, req)
 	case 3:
-		return o.UpdateVault(ctx, req)
+		return o.StopVault(ctx, req)
 	case 4:
-		return o.UpdateOMSA(ctx, req)
+		return o.UpdateVault(ctx, req)
 	case 5:
-		return o.UpdateSerf(ctx, req)
+		return o.UpdateOMSA(ctx, req)
 	case 6:
-		return o.UpdateEtcdpasswd(ctx, req)
+		return o.UpdateSerf(ctx, req)
 	case 7:
-		return o.UpdateSabakan(ctx, req)
+		return o.UpdateEtcdpasswd(ctx, req)
 	case 8:
-		return o.UpdateSabakanContents(ctx, req)
+		return o.UpdateSabakan(ctx, req)
 	case 9:
-		return o.StopCKE(ctx, req)
+		return o.UpdateSabakanContents(ctx, req)
 	case 10:
-		return o.UpdateCKE(ctx, req)
+		return o.StopCKE(ctx, req)
 	case 11:
-		return o.UpdateCKEContents(ctx, req)
+		return o.UpdateCKE(ctx, req)
 	case 12:
+		return o.UpdateCKEContents(ctx, req)
+	case 13:
 		// THIS MUST BE THE FINAL STEP!!!!!
 		// to synchronize before restarting etcd.
 		return nil

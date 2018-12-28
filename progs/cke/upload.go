@@ -10,6 +10,7 @@ import (
 	"github.com/cybozu-go/neco"
 	saba "github.com/cybozu-go/neco/progs/sabakan"
 	sabakan "github.com/cybozu-go/sabakan/client"
+	"github.com/cybozu-go/well"
 )
 
 // UploadContents uploads contents to sabakan
@@ -38,12 +39,13 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 		return err
 	}
 
+	env := well.NewEnvironment(ctx)
 	for _, img := range images {
-		err := saba.UploadImageAssets(ctx, img, client, nil)
-		if err != nil {
-			return err
-		}
+		img := img
+		env.Go(func(ctx context.Context) error {
+			return saba.UploadImageAssets(ctx, img, client, nil)
+		})
 	}
-
-	return nil
+	env.Stop()
+	return env.Wait()
 }

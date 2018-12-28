@@ -3,6 +3,7 @@ package dctest
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -10,7 +11,7 @@ import (
 )
 
 func testCKE() {
-	It("should success initialize sabakan data", func() {
+	It("should generates cluster.yml automatically", func() {
 		vaultToken := getVaultToken()
 
 		By("initialize Vault for CKE")
@@ -24,7 +25,7 @@ func testCKE() {
 		execSafeAt(boot0, "neco", "sabakan-upload", "--ignitions-only")
 		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
 
-		By("setting configrations")
+		By("setting configurations")
 		execSafeAt(boot0, "ckecli", "constraints", "set", "control-plane-count", "3")
 		execSafeAt(boot0, "ckecli", "constraints", "set", "minimum-workers", "2")
 		execSafeAt(boot0, "ckecli", "sabakan", "set-template", "/mnt/cke-template.yml")
@@ -34,7 +35,7 @@ func testCKE() {
 		Eventually(func() error {
 			_, _, err := execAt(boot0, "ckecli", "cluster", "get")
 			return err
-		}).Should(Succeed())
+		}, 20*time.Minute).Should(Succeed())
 	})
 
 	It("wait for Kubernetes cluster to become ready", func() {

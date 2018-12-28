@@ -15,6 +15,47 @@ import (
 
 var ignitionsOnly bool
 
+func sabakanUpload(ctx context.Context, st storage.Storage) error {
+	version, err := neco.GetDebianVersion(neco.NecoPackageName)
+	if err != nil {
+		return err
+	}
+
+	proxyClient, err := ext.ProxyHTTPClient(ctx, st)
+	if err != nil {
+		return err
+	}
+	localClient := ext.LocalHTTPClient()
+
+	username, err := st.GetQuayUsername(ctx)
+	if err != nil {
+		return err
+	}
+	password, err := st.GetQuayPassword(ctx)
+	if err != nil {
+		return err
+	}
+
+	auth := &neco.DockerAuth{
+		Username: username,
+		Password: password,
+	}
+
+	if ignitionsOnly {
+		return sabakan.UploadIgnitions(ctx, localClient, version, st)
+	}
+
+	env := well.NewEnvironment(ctx)
+	env.Go(func(ctx context.Context) error {
+		return sabakan.UploadContents(ctx, localClient, proxyClient, version, auth, st)
+	})
+	env.Go(func(ctx context.Context) error {
+		return cke.UploadContents(ctx, localClient, proxyClient, version)
+	})
+	env.Stop()
+	return env.Wait()
+}
+
 // sabakanUploadCmd implements "sabakan-upload"
 var sabakanUploadCmd = &cobra.Command{
 	Use:   "sabakan-upload",
@@ -23,11 +64,6 @@ var sabakanUploadCmd = &cobra.Command{
 If uploaded versions are up to date, do nothing.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		version, err := neco.GetDebianVersion(neco.NecoPackageName)
-		if err != nil {
-			log.ErrorExit(err)
-		}
-
 		ec, err := neco.EtcdClient()
 		if err != nil {
 			log.ErrorExit(err)
@@ -36,38 +72,8 @@ If uploaded versions are up to date, do nothing.
 		st := storage.NewStorage(ec)
 
 		well.Go(func(ctx context.Context) error {
-			proxyClient, err := ext.ProxyHTTPClient(ctx, st)
-			if err != nil {
-				return err
-			}
-			localClient := ext.LocalHTTPClient()
-
-			username, err := st.GetQuayUsername(ctx)
-			if err != nil {
-				return err
-			}
-			password, err := st.GetQuayPassword(ctx)
-			if err != nil {
-				return err
-			}
-
-			auth := &neco.DockerAuth{
-				Username: username,
-				Password: password,
-			}
-
-			if ignitionsOnly {
-				return sabakan.UploadIgnitions(ctx, localClient, version, st)
-			}
-
-			err = sabakan.UploadContents(ctx, localClient, proxyClient, version, auth, st)
-			if err != nil {
-				return err
-			}
-
-			return cke.UploadContents(ctx, localClient, proxyClient, version)
+			return sabakanUpload(ctx, st)
 		})
-
 		well.Stop()
 		err = well.Wait()
 		if err != nil {

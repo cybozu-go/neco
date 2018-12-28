@@ -13,10 +13,17 @@ while true; do
     sleep 1
 done
 
-for i in $(seq 600); do
-  rkt enter --app=chrony $uuid chronyc waitsync 1 0.1 0.0 1 && exit 0
-  sleep 1
+TMOUT_SECS=600
+EXIT_CODE=2
+if systemd-detect-virt -v -q; then
+    TMOUT_SECS=10
+    EXIT_CODE=0
+fi
+
+for i in $(seq $TMOUT_SECS); do
+    rkt enter --app=chrony $uuid chronyc waitsync 1 0.1 0.0 1 && exit 0
+    sleep 1
 done
 
 echo >&2 "Timed-out to synchronize NTP to upstream servers"
-exit 1
+exit $EXIT_CODE

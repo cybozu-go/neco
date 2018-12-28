@@ -21,10 +21,6 @@ func (o *operator) UpdateSerf(ctx context.Context, req *neco.UpdateRequest) erro
 		return err
 	}
 	if need {
-		err = o.fetchContainer(ctx, "serf")
-		if err != nil {
-			return err
-		}
 		err = serf.InstallTools(ctx)
 		if err != nil {
 			return err

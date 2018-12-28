@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -22,10 +23,6 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 		return err
 	}
 	if need {
-		err = o.fetchContainer(ctx, "sabakan")
-		if err != nil {
-			return err
-		}
 		err = sabakan.InstallTools(ctx)
 		if err != nil {
 			return err
@@ -46,8 +43,36 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 		return err
 	}
 
-	log.Info("sabakan: updated", nil)
-	return nil
+	_, err = os.Stat(neco.SabakanKeyFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Info("sabakan: updated", nil)
+			return nil
+		}
+		return err
+	}
+
+	hreq, err := http.NewRequest(http.MethodGet, neco.SabakanLocalEndpoint, nil)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+	for {
+		hreq := hreq.WithContext(ctx)
+		resp, err := o.localClient.Do(hreq)
+		if err != nil {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(time.Second):
+			}
+			continue
+		}
+		resp.Body.Close()
+		log.Info("sabakan: updated", nil)
+		return nil
+	}
 }
 
 func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRequest) error {
