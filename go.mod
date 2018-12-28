@@ -57,6 +57,7 @@ require (
 	github.com/gammazero/deque v0.0.0-20180920172122-f6adf94963e4 // indirect
 	github.com/gammazero/workerpool v0.0.0-20180920155329-48371c973101 // indirect
 	github.com/garyburd/redigo v1.6.0 // indirect
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-ldap/ldap v2.5.1+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
@@ -176,7 +177,5 @@ require (
 	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
 	k8s.io/apimachinery v0.0.0-20181128191346-49ce2735e507 // indirect
 	k8s.io/client-go v0.0.0-20170217214107-bcde30fb7eae // indirect
-	k8s.io/klog v0.1.0 // indirect
 	layeh.com/radius v0.0.0-20181129000116-83b1b1c7637c // indirect
-	sigs.k8s.io/yaml v1.1.0 // indirect
 )

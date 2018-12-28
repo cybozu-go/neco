@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -22,7 +21,7 @@ import (
 	"github.com/cybozu-go/neco/storage"
 	sabakan "github.com/cybozu-go/sabakan/client"
 	"github.com/cybozu-go/well"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/ghodss/yaml"
 )
 
 const (
@@ -331,8 +330,7 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 			passwd.Users[i].SSHAuthorizedKeys = append(passwd.Users[i].SSHAuthorizedKeys, key)
 		}
 
-		// Use json because coreos/ignition has annotations for JSON only.
-		data, err = json.Marshal(passwd)
+		data, err = yaml.Marshal(passwd)
 		if err != nil {
 			return err
 		}
