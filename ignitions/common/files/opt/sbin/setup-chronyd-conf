@@ -46,7 +46,4 @@ smoothtime 400 0.001 leaponly
 
 # mlockall
 lock_all
-
-# set highest scheduling priority
-sched_priority 99
 EOF

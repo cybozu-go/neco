@@ -6,6 +6,8 @@ Conflicts=systemd-timesyncd.service ntpd.service
 
 [Service]
 Slice=machine.slice
+CPUSchedulingPolicy=rr
+CPUSchedulingPriority=99
 Type=simple
 KillMode=mixed
 Restart=on-failure
