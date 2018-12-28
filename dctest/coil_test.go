@@ -2,7 +2,7 @@ package dctest
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,7 +24,6 @@ func testCoil() {
 		execSafeAt(boot0, "kubectl", "create", "-f", "/mnt/coil-rbac.yml")
 		execSafeAt(boot0, "kubectl", "create", "-f", "/mnt/coil-deploy.yml")
 
-		cluster := getCluster()
 		Eventually(func() error {
 			stdout, _, err := execAt(boot0, "kubectl", "get", "daemonsets/coil-node", "--namespace=kube-system", "-o=json")
 			if err != nil {
@@ -37,8 +36,8 @@ func testCoil() {
 				return err
 			}
 
-			if int(daemonset.Status.NumberReady) != len(cluster.Nodes) {
-				return fmt.Errorf("NumberReady is not %d", len(cluster.Nodes))
+			if int(daemonset.Status.NumberReady) != 5 {
+				return errors.New("NumberReady is not 5")
 			}
 			return nil
 		}).Should(Succeed())

@@ -10,10 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cybozu-go/cke"
 	. "github.com/onsi/gomega"
 	"golang.org/x/crypto/ssh"
-	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -186,23 +184,4 @@ func getVaultToken() string {
 	Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
 	return string(bytes.TrimSpace(stdout))
-}
-
-func getCluster() *cke.Cluster {
-	stdout, _, err := execAt(boot0, "ckecli", "cluster", "get")
-	Expect(err).NotTo(HaveOccurred())
-
-	var cluster cke.Cluster
-	err = yaml.NewDecoder(bytes.NewReader(stdout)).Decode(&cluster)
-	Expect(err).NotTo(HaveOccurred())
-	err = cluster.Validate()
-	Expect(err).NotTo(HaveOccurred())
-
-	// TODO: Set dnsServers after deploy dmz-dns-cache
-	// fill service address of DMZ DNS cache; this address is unknown at boot time
-	//if dnsServers != nil {
-	//	cluster.DNSServers = dnsServers
-	//}
-
-	return &cluster
 }
