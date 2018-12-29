@@ -43,7 +43,7 @@ func testCoil() {
 		}).Should(Succeed())
 
 		By("create IP address pool")
-		stdout, stderr, err := execAt(boot0, "kubectl", "get", "pods", "--selector=k8s-app=coil-controllers", "-o=json")
+		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=k8s-app=coil-controllers", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		podList := new(corev1.PodList)
@@ -54,13 +54,11 @@ func testCoil() {
 
 		_, _, err = execAt(boot0, "test", "-f", "/tmp/coil-pool-create-done")
 		if err != nil {
-			_, stderr, err = execAt(boot0, "kubectl", "exec", podName, "/coilctl", "pool", "create", "default", "10.64.0.0/14", "4")
+			_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "default", "10.64.0.0/14", "4")
 			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
 			_, stderr, err = execAt(boot0, "kubectl", "create", "namespace", "dmz")
 			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
-			_, stderr, err = execAt(boot0, "kubectl", "exec", podName, "/coilctl", "pool", "create", "dmz", "172.17.0.0/26", "0")
-			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
-			_, stderr, err = execAt(boot0, "touch", "/tmp/coil-pool-create-done")
+			_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "dmz", "172.17.0.0/26", "0")
 			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
 		}
 	})
