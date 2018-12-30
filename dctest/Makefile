@@ -27,12 +27,11 @@ OPERATION_SSH_DIR = $(OUTPUT)/operation-ssh
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
 OLDVER = 0.0.1
 NEWVER = 0.0.2
+YAMLS = $(patsubst ../etc/%,$(SABAKAN_DIR)/%,$(wildcard ../etc/*.yml))
 SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config \
 	$(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb \
 	$(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb \
-	$(SABAKAN_DIR)/cke-template.yml \
-	$(SABAKAN_DIR)/coil-rbac.yml \
-	$(SABAKAN_DIR)/coil-deploy.yml
+	$(YAMLS)
 
 SSH_PRIVKEY = ./dctest_key
 
@@ -64,15 +63,7 @@ $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb: $(OPERATION_SSH_DIR)
 $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb: $(OPERATION_SSH_DIR)
 	cd ..; make deb VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=new
 
-$(SABAKAN_DIR)/cke-template.yml: ../etc/cke-template.yml
-	mkdir -p $(SABAKAN_DIR)
-	cp $< $@
-
-$(SABAKAN_DIR)/coil-rbac.yml: ../etc/coil-rbac.yml
-	mkdir -p $(SABAKAN_DIR)
-	cp $< $@
-
-$(SABAKAN_DIR)/coil-deploy.yml: ../etc/coil-deploy.yml
+$(SABAKAN_DIR)/%.yml: ../etc/%.yml
 	mkdir -p $(SABAKAN_DIR)
 	cp $< $@
 

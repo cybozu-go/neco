@@ -54,11 +54,11 @@ func testCoil() {
 
 		_, _, err = execAt(boot0, "test", "-f", "/tmp/coil-pool-create-done")
 		if err != nil {
-			_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "default", "10.64.0.0/14", "4")
+			_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "default", "10.64.0.0/14", "5")
 			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
-			_, stderr, err = execAt(boot0, "kubectl", "create", "namespace", "dmz")
+			_, stderr, err = execAt(boot0, "kubectl", "create", "namespace", "internet-egress")
 			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
-			_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "dmz", "172.17.0.0/26", "0")
+			_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "internet-egress", "172.17.0.0/28", "0")
 			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
 		}
 	})

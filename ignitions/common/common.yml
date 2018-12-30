@@ -6,6 +6,7 @@ files:
   - /etc/modules-load.d/cybozu.conf
   - /etc/neco/rack
   - /etc/sysctl.d/60-cybozu.conf
+  - /etc/systemd/resolved.conf
   - /etc/systemd/system.conf.d/50-cybozu.conf
   - /etc/systemd/system/systemd-journald.service.d/oom_score_adj.conf
   - /etc/systemd/system/docker.service.d/90-proxy.conf

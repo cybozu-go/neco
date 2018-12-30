@@ -62,7 +62,7 @@ func testUpgrade() {
 				}
 			}
 			return nil
-		}).Should(Succeed())
+		}, 20*time.Minute).Should(Succeed())
 
 		By("Checking newer CoreOS is uploaded")
 		Eventually(func() error {

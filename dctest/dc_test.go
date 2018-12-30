@@ -16,4 +16,5 @@ var _ = Describe("Data center test", func() {
 	Context("join/remove", testJoinRemove)
 	Context("cke", testCKE)
 	Context("coil", testCoil)
+	Context("unbound", testUnbound)
 })
