@@ -15,7 +15,8 @@ func testUnbound() {
 			"sed", "s,%%UNBOUND_IMAGE%%,$(ckecli images | grep quay.io/cybozu/unbound),",
 			"/mnt/unbound.yml", "|", "kubectl", "create", "-f", "-")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "--namespace=internet-egress", "get", "deployments/unbound", "--namespace=kube-system", "-o=json")
+			stdout, _, err := execAt(boot0, "kubectl", "--namespace=internet-egress",
+				"get", "deployments/unbound", "-o=json")
 			if err != nil {
 				return err
 			}
