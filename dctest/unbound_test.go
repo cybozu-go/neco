@@ -27,8 +27,8 @@ func testUnbound() {
 				return err
 			}
 
-			if int(deployment.Status.AvailableReplicas) != 3 {
-				return errors.New("AvailableReplicas is not 3")
+			if int(deployment.Status.AvailableReplicas) != 2 {
+				return errors.New("AvailableReplicas is not 2")
 			}
 			return nil
 		}).Should(Succeed())

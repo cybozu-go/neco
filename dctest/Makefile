@@ -67,6 +67,10 @@ $(SABAKAN_DIR)/%.yml: ../etc/%.yml
 	mkdir -p $(SABAKAN_DIR)
 	cp $< $@
 
+$(SABAKAN_DIR)/squid.yml: ../etc/squid.yml
+	mkdir -p $(SABAKAN_DIR)
+	sed 's,cache_mem 6 GB,cache_mem 200 MB,' $< > $@
+
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):
 	mkdir -p $(OPERATION_SSH_DIR)

@@ -1,0 +1,118 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: squid
+  namespace: internet-egress
+data:
+  squid.conf: |-
+    acl neco_network src 10.64.0.0/12
+    # Only allow cachemgr access from localhost
+    http_access allow manager localhost
+    http_access deny manager
+    http_access allow neco_network
+    http_access deny all
+    http_port 3128
+    access_log stdio:/var/log/squid/access.log
+    pid_filename "none"
+    cache_dir aufs /var/spool/squid 50000 16 256
+    coredump_dir /var/spool/squid
+    cache_mem 6 GB
+    maximum_object_size_in_memory 100 MB
+    maximum_object_size 100 MB
+    detect_broken_pconn on
+    forwarded_for delete
+    httpd_suppress_version_string on
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: squid
+  namespace: internet-egress
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      k8s-app: squid
+  template:
+    metadata:
+      labels:
+        k8s-app: squid
+    spec:
+      # system priority class cannot be specified for pods in namespaces
+      # other than kube-system as of k8s 1.12.
+      # see https://github.com/kubernetes/kubernetes/pull/65593
+      #priorityClassName: system-cluster-critical
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        - key: CriticalAddonsOnly
+          operator: Exists
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: k8s-app
+                  operator: In
+                  values:
+                  - squid
+              topologyKey: "cke.cybozu.com/rack"
+      containers:
+        - name: squid
+          image: "%%SQUID_IMAGE%%"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /var/spool/squid
+              name: cache
+            - mountPath: /etc/squid
+              name: config
+          ports:
+           - name: proxy
+             containerPort: 3128
+             protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - NET_BIND_SERVICE
+                - CHOWN
+                - SETUID
+                - SETGID
+              drop:
+                - all
+            readOnlyRootFilesystem: true
+          livenessProbe:
+            tcpSocket:
+              port: 3128
+            periodSeconds: 1
+            initialDelaySeconds: 10
+            failureThreshold: 6
+      volumes:
+        - name: cache
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: squid
+            items:
+              - key: squid.conf
+                path: squid.conf
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: squid
+  namespace: internet-egress
+spec:
+  type: NodePort
+  selector:
+    k8s-app: squid
+  ports:
+    - protocol: TCP
+      port: 30128
+      targetPort: 3128

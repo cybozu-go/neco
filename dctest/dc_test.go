@@ -17,4 +17,5 @@ var _ = Describe("Data center test", func() {
 	Context("cke", testCKE)
 	Context("coil", testCoil)
 	Context("unbound", testUnbound)
+	Context("squid", testSquid)
 })

@@ -11,8 +11,8 @@ import (
 )
 
 func testCoil() {
-	It("should success initialize coil", func() {
-		By("coilctl configuration")
+	It("should be deployed successfully", func() {
+		By("preparing etcd user and certificates")
 		execSafeAt(boot0, "ckecli", "etcd", "user-add", "coil", "/coil/")
 
 		_, stderr, err := execAt(boot0, "ckecli", "etcd", "issue", "coil", "--output", "file")
@@ -25,6 +25,7 @@ func testCoil() {
 			"--from-file=etcd-coil.key")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
+		By("creating k8s resources")
 		execSafeAt(boot0, "kubectl", "create", "-f", "/mnt/coil-rbac.yml")
 		execSafeAt(boot0, "sed", "s,%%COIL_IMAGE%%,$(neco image coil),",
 			"/mnt/coil-deploy.yml", "|", "kubectl", "create", "-f", "-")
@@ -48,7 +49,7 @@ func testCoil() {
 			return nil
 		}).Should(Succeed())
 
-		By("create IP address pool")
+		By("creating IP address pool")
 		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=k8s-app=coil-controllers", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
@@ -58,14 +59,11 @@ func testCoil() {
 		Expect(len(podList.Items)).To(Equal(1))
 		podName := podList.Items[0].Name
 
-		_, _, err = execAt(boot0, "test", "-f", "/tmp/coil-pool-create-done")
-		if err != nil {
-			_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "default", "10.64.0.0/14", "5")
-			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
-			_, stderr, err = execAt(boot0, "kubectl", "create", "namespace", "internet-egress")
-			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
-			_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "internet-egress", "172.17.0.0/28", "0")
-			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
-		}
+		_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "default", "10.64.0.0/14", "5")
+		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
+		_, stderr, err = execAt(boot0, "kubectl", "create", "namespace", "internet-egress")
+		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
+		_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "internet-egress", "172.17.0.0/28", "0")
+		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
 	})
 }
