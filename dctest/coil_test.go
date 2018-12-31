@@ -18,14 +18,20 @@ func testCoil() {
 		_, stderr, err := execAt(boot0, "ckecli", "etcd", "issue", "coil", "--output", "file")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
-		_, stderr, err = execAt(boot0, "kubectl", "create", "secret", "generic", "coil-etcd-secrets", "--from-file=etcd-ca.crt", "--from-file=etcd-coil.crt", "--from-file=etcd-coil.key", "-n", "kube-system")
+		_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "create", "secret",
+			"generic", "coil-etcd-secrets",
+			"--from-file=etcd-ca.crt",
+			"--from-file=etcd-coil.crt",
+			"--from-file=etcd-coil.key")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
 		execSafeAt(boot0, "kubectl", "create", "-f", "/mnt/coil-rbac.yml")
-		execSafeAt(boot0, "kubectl", "create", "-f", "/mnt/coil-deploy.yml")
+		execSafeAt(boot0, "sed", "s,%%COIL_IMAGE%%,$(neco image coil),",
+			"/mnt/coil-deploy.yml", "|", "kubectl", "create", "-f", "-")
 
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "daemonsets/coil-node", "--namespace=kube-system", "-o=json")
+			stdout, _, err := execAt(boot0, "kubectl", "--namespace=kube-system",
+				"get", "daemonsets/coil-node", "-o=json")
 			if err != nil {
 				return err
 			}
