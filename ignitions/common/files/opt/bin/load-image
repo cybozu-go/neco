@@ -9,7 +9,16 @@ img="$1"
 tag="$2"
 filename=/tmp/$(basename "$img")
 
-if ! docker image inspect "$tag" >/dev/null 2>&1; then
-    curl -sfSL -o "$filename" "$img"
-    docker load -i "$filename"
+if docker image inspect "$tag" >/dev/null 2>&1; then
+    exit 0
 fi
+
+for i in $(seq 5); do
+    if curl -sfSL -o "$filename" "$img"; then
+        break
+    fi
+    rm -f "$filename"
+    sleep 5
+done
+
+docker load -i "$filename"
