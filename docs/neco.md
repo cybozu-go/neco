@@ -23,6 +23,10 @@ Synopsis
 
     Show the current configuration for `KEY`.
 
+* `neco image NAME`
+
+    Show docker image URL of `NAME` (e.g. "etcd", "coil", "squid").
+
 * `neco init NAME`
 
     Initialize data for a new application.
@@ -162,19 +166,19 @@ Use case
 
 1. Run `neco setup 0 1 2` on each boot server.
     1. Install etcd and vault.
-    1. Start `vault` service temporarily to prepare CA and initial certificates
-    1. Start TLS-enabled cluster.
-    1. Restart `vault` as a real service, import CA to the `vault`.
-    1. Reissue certificates for etcd and vault.
-    1. Restart etcd and vault with new certificates.
-    1. Save root token to the etcd key `<prefix>/vault-root-token`.
-    1. Save new client certificates as `/etc/neco/etcd.crt` and `/etc/neco/etcd.key`
-    1. Create `/etc/neco/neco-updater.yml` and `/etc/nec/neco-worker.yml`.
-    1. Create an etcd key `<prefix>/vault-unseal-key`.
-    1. Remove an etcd key `<prefix>/vault-root-token` by default.
-    1. Add etcd key `<prefix>/bootservers/LRN` on the finished boot server.
-1. Run `neco init NAME` on one of boot servers. etcd user/role has created.
-1. Run `neco init-local NAME` on each boot server. Client certificates for `NAME` have issued.
+    2. Start `vault` service temporarily to prepare CA and initial certificates
+    3. Start TLS-enabled cluster.
+    4. Restart `vault` as a real service, import CA to the `vault`.
+    5. Reissue certificates for etcd and vault.
+    6. Restart etcd and vault with new certificates.
+    7. Save root token to the etcd key `<prefix>/vault-root-token`.
+    8. Save new client certificates as `/etc/neco/etcd.crt` and `/etc/neco/etcd.key`
+    9. Create `/etc/neco/neco-updater.yml` and `/etc/nec/neco-worker.yml`.
+    10. Create an etcd key `<prefix>/vault-unseal-key`.
+    11. Remove an etcd key `<prefix>/vault-root-token` by default.
+    12. Add etcd key `<prefix>/bootservers/LRN` on the finished boot server.
+2. Run `neco init NAME` on one of boot servers. etcd user/role has created.
+3. Run `neco init-local NAME` on each boot server. Client certificates for `NAME` have issued.
 
 ### Add a new boot server
 
