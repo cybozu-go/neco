@@ -114,5 +114,6 @@ spec:
     k8s-app: squid
   ports:
     - protocol: TCP
-      port: 30128
+      nodePort: 30128
+      port: 3128
       targetPort: 3128

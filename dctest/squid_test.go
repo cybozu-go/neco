@@ -34,4 +34,30 @@ func testSquid() {
 			return nil
 		}).Should(Succeed())
 	})
+
+	It("should serve for docker daemon", func() {
+		By("running nginx pods")
+		execSafeAt(boot0, "kubectl", "run", "nginx", "--image=nginx", "--replicas=2")
+
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/nginx", "-o=json")
+			if err != nil {
+				return err
+			}
+
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return err
+			}
+
+			if int(deployment.Status.AvailableReplicas) != 2 {
+				return errors.New("AvailableReplicas is not 2")
+			}
+			return nil
+		}).Should(Succeed())
+
+		By("removing nginx pods")
+		execSafeAt(boot0, "kubectl", "delete", "deployments/nginx")
+	})
 }
