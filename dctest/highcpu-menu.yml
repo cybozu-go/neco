@@ -39,10 +39,4 @@ kind: Node
 type: cs
 spec:
   cpu: 4
-  memory: 3G
----
-kind: Node
-type: ss
-spec:
-  cpu: 4
-  memory: 3G
+  memory: 6G
