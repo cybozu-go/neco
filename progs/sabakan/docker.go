@@ -1,4 +1,4 @@
-package neco
+package sabakan
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 	"github.com/containers/image/transports/alltransports"
 	"github.com/containers/image/types"
 	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/neco"
 )
 
 // DockerAuth represents docker auth config
@@ -20,8 +21,7 @@ type DockerAuth struct {
 	Password string
 }
 
-// FetchDockerImageAsArchive downloads a docker image and saves it as an archive.
-func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archive string, auth *DockerAuth) error {
+func fetchDockerImageAsArchive(ctx context.Context, image neco.ContainerImage, archive string, auth *DockerAuth) error {
 	policyContext, err := signature.NewPolicyContext(&signature.Policy{
 		Default: []signature.PolicyRequirement{
 			// NewPRInsecureAcceptAnything returns a new "insecureAcceptAnything" PolicyRequirement.
@@ -65,7 +65,7 @@ func FetchDockerImageAsArchive(ctx context.Context, image ContainerImage, archiv
 		},
 	}
 
-	err = RetryWithSleep(ctx, retryCount, time.Second,
+	err = neco.RetryWithSleep(ctx, retryCount, time.Second,
 		func(ctx context.Context) error {
 			_, err = copy.Image(ctx, policyContext, dst, src, options)
 			if err != nil {
