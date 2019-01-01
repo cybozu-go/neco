@@ -7,10 +7,11 @@ TAGS =
 
 ### for Go
 GOFLAGS = -mod=vendor
+GOTAGS = $(TAGS) containers_image_openpgp containers_image_ostree_stub
 export GOFLAGS
 
 ### for debian package
-PACKAGES := fakeroot btrfs-tools libdevmapper-dev libgpgme-dev libostree-dev
+PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev
 WORKDIR := $(CURDIR)/work
 CONTROL := $(WORKDIR)/DEBIAN/control
 DOCDIR := $(WORKDIR)/usr/share/doc/neco
@@ -41,10 +42,10 @@ stop-etcd:
 
 test:
 	test -z "$$(gofmt -s -l . | grep -v '^vendor' | tee /dev/stderr)"
-	golint -set_exit_status $$(go list -tags='$(TAGS)' ./... | grep -v /vendor/)
-	go build -tags='$(TAGS)' ./...
-	go test -tags='$(TAGS)' -race -v ./...
-	go vet -tags='$(TAGS)' ./...
+	golint -set_exit_status $$(go list -tags='$(GOTAGS)' ./... | grep -v /vendor/)
+	go build -tags='$(GOTAGS)' ./...
+	go test -tags='$(GOTAGS)' -race -v ./...
+	go vet -tags='$(GOTAGS)' ./...
 
 mod:
 	go mod tidy
@@ -59,11 +60,11 @@ $(DEB):
 	cp -r debian $(WORKDIR)
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
 	mkdir -p $(BINDIR)
-	GOBIN=$(BINDIR) go install -tags='$(TAGS)' $(BIN_PKGS)
+	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
 	mkdir -p $(SBINDIR)
-	GOBIN=$(SBINDIR) go install -tags='$(TAGS)' $(SBIN_PKGS)
+	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
 	mkdir -p $(SHAREDIR)
-	go install -tags='$(TAGS)' ./pkg/fill-asset-name
+	go install -tags='$(GOTAGS)' ./pkg/fill-asset-name
 	fill-asset-name ignitions $(SHAREDIR)/ignitions
 	mkdir -p $(DOCDIR)
 	cp README.md LICENSE $(DOCDIR)

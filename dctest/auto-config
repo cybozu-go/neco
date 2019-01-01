@@ -11,7 +11,6 @@ EOF
 apt-get update
 apt-get install -y --no-install-recommends jq ca-certificates freeipmi-tools
 
-dpkg -i /mnt/neco_0.0.1_amd64.deb || true
-apt-get install -fy --no-install-recommends
+dpkg -i /mnt/neco_0.0.1_amd64.deb
 
 touch /tmp/auto-config-done
