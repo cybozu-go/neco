@@ -28,17 +28,20 @@ func sabakanUpload(ctx context.Context, st storage.Storage) error {
 	localClient := ext.LocalHTTPClient()
 
 	username, err := st.GetQuayUsername(ctx)
-	if err != nil {
+	if err != nil && err != storage.ErrNotFound {
 		return err
 	}
 	password, err := st.GetQuayPassword(ctx)
-	if err != nil {
+	if err != nil && err != storage.ErrNotFound {
 		return err
 	}
 
-	auth := &sabakan.DockerAuth{
-		Username: username,
-		Password: password,
+	var auth *sabakan.DockerAuth
+	if len(username) != 0 && len(password) != 0 {
+		auth = &sabakan.DockerAuth{
+			Username: username,
+			Password: password,
+		}
 	}
 
 	if ignitionsOnly {
