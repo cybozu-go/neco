@@ -7,7 +7,7 @@ fi
 MOUNTDEV=/dev/disk/by-label/var
 
 if [ ! -L "${MOUNTDEV}" ]; then
-    mkfs.btrfs -L var "${CRYPTDEV}"
+    mkfs.ext4 -L var "${CRYPTDEV}"
 
     # wait for update of /dev/disk/by-label
     sleep 1

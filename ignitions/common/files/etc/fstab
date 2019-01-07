@@ -1,1 +1,1 @@
-LABEL=var /var btrfs x-systemd.device-timeout=300 0 0
+LABEL=var /var ext4 x-systemd.device-timeout=300 0 0

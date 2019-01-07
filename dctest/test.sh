@@ -6,6 +6,10 @@ PLACEMAT_PID=$(cat /tmp/placemat_pid$$)
 echo "placemat PID: $PLACEMAT_PID"
 
 fin() {
+    if [ "$RET" -ne 0 ]; then
+        # do not kill placemat upon test failure to help debugging.
+        return
+    fi
     sudo kill $PLACEMAT_PID
     echo "waiting for placemat to terminate..."
     while true; do

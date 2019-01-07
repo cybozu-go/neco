@@ -418,7 +418,7 @@ golang.org/x/text/internal/tag
 golang.org/x/time/rate
 # google.golang.org/genproto v0.0.0-20181127195345-31ac5d88444a
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.16.0
+# google.golang.org/grpc v1.17.0
 google.golang.org/grpc
 google.golang.org/grpc/codes
 google.golang.org/grpc/credentials
@@ -434,9 +434,11 @@ google.golang.org/grpc/encoding
 google.golang.org/grpc/encoding/proto
 google.golang.org/grpc/internal
 google.golang.org/grpc/internal/backoff
+google.golang.org/grpc/internal/binarylog
 google.golang.org/grpc/internal/channelz
 google.golang.org/grpc/internal/envconfig
 google.golang.org/grpc/internal/grpcrand
+google.golang.org/grpc/internal/grpcsync
 google.golang.org/grpc/internal/transport
 google.golang.org/grpc/naming
 google.golang.org/grpc/peer
@@ -445,7 +447,10 @@ google.golang.org/grpc/resolver/dns
 google.golang.org/grpc/resolver/passthrough
 google.golang.org/grpc/stats
 google.golang.org/grpc/tap
+google.golang.org/grpc/credentials/internal
 google.golang.org/grpc/balancer/base
+google.golang.org/grpc/binarylog/grpc_binarylog_v1
+google.golang.org/grpc/internal/syscall
 # gopkg.in/cheggaaa/pb.v1 v1.0.7
 gopkg.in/cheggaaa/pb.v1
 # gopkg.in/fsnotify.v1 v1.4.7
@@ -457,14 +462,15 @@ gopkg.in/tomb.v1
 # gopkg.in/yaml.v2 v2.2.1
 gopkg.in/yaml.v2
 # k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
+k8s.io/api/apps/v1
 k8s.io/api/core/v1
 # k8s.io/apimachinery v0.0.0-20181128191346-49ce2735e507
-k8s.io/apimachinery/pkg/api/resource
 k8s.io/apimachinery/pkg/apis/meta/v1
 k8s.io/apimachinery/pkg/runtime
 k8s.io/apimachinery/pkg/runtime/schema
-k8s.io/apimachinery/pkg/types
 k8s.io/apimachinery/pkg/util/intstr
+k8s.io/apimachinery/pkg/api/resource
+k8s.io/apimachinery/pkg/types
 k8s.io/apimachinery/pkg/conversion
 k8s.io/apimachinery/pkg/fields
 k8s.io/apimachinery/pkg/labels
