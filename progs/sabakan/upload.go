@@ -31,7 +31,7 @@ const (
 const retryCount = 5
 
 // UploadContents upload contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth *neco.DockerAuth, st storage.Storage) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth *DockerAuth, st storage.Storage) error {
 	client, err := sabakan.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
 	if err != nil {
 		return err
@@ -151,7 +151,7 @@ func uploadOSImages(ctx context.Context, c *sabakan.Client, p *http.Client) erro
 }
 
 // uploadAssets uploads assets
-func uploadAssets(ctx context.Context, c *sabakan.Client, auth *neco.DockerAuth) error {
+func uploadAssets(ctx context.Context, c *sabakan.Client, auth *DockerAuth) error {
 	// Upload bird and chrony with ubuntu-debug
 	for _, img := range neco.SystemContainers {
 		err := uploadSystemImageAssets(ctx, img, c)
@@ -216,7 +216,7 @@ func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *sa
 }
 
 // UploadImageAssets upload docker container image as sabakan assets.
-func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.Client, auth *neco.DockerAuth) error {
+func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.Client, auth *DockerAuth) error {
 	name := neco.ImageAssetName(img)
 	need, err := needAssetUpload(ctx, name, c)
 	if err != nil {
@@ -233,7 +233,7 @@ func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.
 	defer os.RemoveAll(d)
 
 	archive := filepath.Join(d, name)
-	err = neco.FetchDockerImageAsArchive(ctx, img, archive, auth)
+	err = fetchDockerImageAsArchive(ctx, img, archive, auth)
 	if err != nil {
 		return err
 	}

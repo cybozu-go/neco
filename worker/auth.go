@@ -3,11 +3,11 @@ package worker
 import (
 	"context"
 
-	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/progs/sabakan"
 	"github.com/cybozu-go/neco/storage"
 )
 
-func (o *operator) getDockerAuth(ctx context.Context, st storage.Storage) (*neco.DockerAuth, error) {
+func (o *operator) getDockerAuth(ctx context.Context, st storage.Storage) (*sabakan.DockerAuth, error) {
 	passwd, err := o.storage.GetQuayPassword(ctx)
 	if err != nil {
 		return nil, err
@@ -16,7 +16,7 @@ func (o *operator) getDockerAuth(ctx context.Context, st storage.Storage) (*neco
 	if err != nil {
 		return nil, err
 	}
-	return &neco.DockerAuth{
+	return &sabakan.DockerAuth{
 		Username: username,
 		Password: passwd,
 	}, nil

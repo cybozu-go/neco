@@ -36,7 +36,7 @@ func sabakanUpload(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
-	auth := &neco.DockerAuth{
+	auth := &sabakan.DockerAuth{
 		Username: username,
 		Password: password,
 	}
