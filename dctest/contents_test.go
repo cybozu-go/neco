@@ -18,6 +18,8 @@ func testContents() {
 		secretExists := false
 		if !os.IsNotExist(err) {
 			secretExists = true
+		} else {
+			Expect(err).NotTo(HaveOccurred())
 		}
 
 		if secretExists {
