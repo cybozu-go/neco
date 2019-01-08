@@ -14,10 +14,12 @@ import (
 
 func testContents() {
 	It("should upload sabakan contents", func() {
+		var secretExists bool
 		_, err := os.Stat("secrets")
-		secretExists := false
-		if !os.IsNotExist(err) {
+		if err == nil {
 			secretExists = true
+		} else if os.IsNotExist(err) {
+			secretExists = false
 		} else {
 			Expect(err).NotTo(HaveOccurred())
 		}
