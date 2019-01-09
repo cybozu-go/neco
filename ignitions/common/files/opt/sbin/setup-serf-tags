@@ -1,0 +1,10 @@
+#!/bin/sh
+
+systemd_units_failed="$(systemctl list-units --state=failed)"
+if echo "${systemd_units_failed}" | grep "0 loaded units listed" >/dev/null; then
+    systemd_units_failed=""
+fi
+
+docker exec -i serf serf tags \
+       -set uptime="$(uptime -p)" \
+       -set systemctl-units-failed="${systemd_units_failed}"

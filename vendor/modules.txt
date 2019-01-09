@@ -18,19 +18,31 @@ github.com/Microsoft/hcsshim/internal/longpath
 github.com/Microsoft/hcsshim/internal/safefile
 # github.com/ajeddeloh/go-json v0.0.0-20170920214419-6a2fe990e083
 github.com/ajeddeloh/go-json
+# github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e
+github.com/armon/circbuf
+# github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da
+github.com/armon/go-metrics
+# github.com/armon/go-radix v1.0.0
+github.com/armon/go-radix
+# github.com/bgentry/speakeasy v0.1.0
+github.com/bgentry/speakeasy
 # github.com/containerd/continuity v0.0.0-20181203112020-004b46473808
 github.com/containerd/continuity/pathdriver
 # github.com/containers/image v0.0.0-20181129122009-63a1cbdc5e65
+github.com/containers/image/docker
+github.com/containers/image/types
 github.com/containers/image/copy
 github.com/containers/image/docker/reference
 github.com/containers/image/signature
 github.com/containers/image/transports/alltransports
-github.com/containers/image/types
-github.com/containers/image/docker
+github.com/containers/image/docker/policyconfiguration
 github.com/containers/image/image
 github.com/containers/image/manifest
-github.com/containers/image/pkg/compression
+github.com/containers/image/pkg/docker/config
+github.com/containers/image/pkg/sysregistriesv2
+github.com/containers/image/pkg/tlsclientconfig
 github.com/containers/image/transports
+github.com/containers/image/pkg/compression
 github.com/containers/image/version
 github.com/containers/image/directory
 github.com/containers/image/docker/archive
@@ -41,10 +53,6 @@ github.com/containers/image/openshift
 github.com/containers/image/ostree
 github.com/containers/image/storage
 github.com/containers/image/tarball
-github.com/containers/image/docker/policyconfiguration
-github.com/containers/image/pkg/docker/config
-github.com/containers/image/pkg/sysregistriesv2
-github.com/containers/image/pkg/tlsclientconfig
 github.com/containers/image/pkg/strslice
 github.com/containers/image/directory/explicitfilepath
 github.com/containers/image/docker/tarfile
@@ -143,8 +151,9 @@ github.com/docker/distribution/registry/storage/cache/memory
 github.com/docker/distribution/digestset
 # github.com/docker/docker v0.0.0-20180522102801-da99009bbb11
 github.com/docker/docker/api/types/versions
-github.com/docker/docker/client
 github.com/docker/docker/pkg/homedir
+github.com/docker/docker/client
+github.com/docker/docker/pkg/idtools
 github.com/docker/docker/api
 github.com/docker/docker/api/types
 github.com/docker/docker/api/types/container
@@ -156,12 +165,11 @@ github.com/docker/docker/api/types/registry
 github.com/docker/docker/api/types/swarm
 github.com/docker/docker/api/types/time
 github.com/docker/docker/api/types/volume
-github.com/docker/docker/pkg/idtools
+github.com/docker/docker/pkg/system
 github.com/docker/docker/api/types/mount
 github.com/docker/docker/api/types/blkiodev
 github.com/docker/docker/api/types/strslice
 github.com/docker/docker/api/types/swarm/runtime
-github.com/docker/docker/pkg/system
 github.com/docker/docker/pkg/mount
 # github.com/docker/docker-credential-helpers v0.6.0
 github.com/docker/docker-credential-helpers/client
@@ -174,6 +182,8 @@ github.com/docker/go-connections/nat
 github.com/docker/go-units
 # github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
 github.com/docker/libtrust
+# github.com/fatih/color v1.7.0
+github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
@@ -212,6 +222,10 @@ github.com/gorilla/mux
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-cleanhttp v0.5.0
 github.com/hashicorp/go-cleanhttp
+# github.com/hashicorp/go-immutable-radix v1.0.0
+github.com/hashicorp/go-immutable-radix
+# github.com/hashicorp/go-msgpack v0.0.0-20150518234257-fa3f63826f7c
+github.com/hashicorp/go-msgpack/codec
 # github.com/hashicorp/go-multierror v1.0.0
 github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-retryablehttp v0.5.0
@@ -220,8 +234,16 @@ github.com/hashicorp/go-retryablehttp
 github.com/hashicorp/go-rootcerts
 # github.com/hashicorp/go-sockaddr v0.0.0-20180320115054-6d291a969b86
 github.com/hashicorp/go-sockaddr
+# github.com/hashicorp/go-syslog v0.0.0-20170829120034-326bf4a7f709
+github.com/hashicorp/go-syslog
 # github.com/hashicorp/go-version v1.0.0
 github.com/hashicorp/go-version
+# github.com/hashicorp/go.net v0.0.0-20151006203346-104dcad90073
+github.com/hashicorp/go.net/ipv4
+github.com/hashicorp/go.net/ipv6
+github.com/hashicorp/go.net/internal/iana
+# github.com/hashicorp/golang-lru v0.5.0
+github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
 github.com/hashicorp/hcl
 github.com/hashicorp/hcl/hcl/ast
@@ -233,6 +255,18 @@ github.com/hashicorp/hcl/hcl/scanner
 github.com/hashicorp/hcl/hcl/strconv
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
+# github.com/hashicorp/logutils v1.0.0
+github.com/hashicorp/logutils
+# github.com/hashicorp/mdns v0.0.0-20170221172940-4e527d9d8081
+github.com/hashicorp/mdns
+# github.com/hashicorp/memberlist v0.1.0
+github.com/hashicorp/memberlist
+# github.com/hashicorp/serf v0.8.1
+github.com/hashicorp/serf/cmd/serf/command
+github.com/hashicorp/serf/client
+github.com/hashicorp/serf/cmd/serf/command/agent
+github.com/hashicorp/serf/serf
+github.com/hashicorp/serf/coordinate
 # github.com/hashicorp/vault v1.0.0
 github.com/hashicorp/vault/api
 github.com/hashicorp/vault/helper/consts
@@ -257,12 +291,20 @@ github.com/inconshreveable/mousetrap
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
+# github.com/mattn/go-colorable v0.0.9
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.4
+github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.0-20170201023540-14207d285c6c
 github.com/mattn/go-runewidth
 # github.com/mattn/go-shellwords v1.0.3
 github.com/mattn/go-shellwords
+# github.com/miekg/dns v1.1.1
+github.com/miekg/dns
 # github.com/mistifyio/go-zfs v0.0.0-20161103015429-c0224de804d4
 github.com/mistifyio/go-zfs
+# github.com/mitchellh/cli v1.0.0
+github.com/mitchellh/cli
 # github.com/mitchellh/go-homedir v1.0.0
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.1.2
@@ -324,11 +366,20 @@ github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
 # github.com/pkg/errors v0.8.0
 github.com/pkg/errors
+# github.com/posener/complete v1.1.1
+github.com/posener/complete
+github.com/posener/complete/cmd/install
+github.com/posener/complete/cmd
+github.com/posener/complete/match
 # github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7
 github.com/pquerna/ffjson/fflib/v1
 github.com/pquerna/ffjson/fflib/v1/internal
+# github.com/ryanuber/columnize v2.1.0+incompatible
+github.com/ryanuber/columnize
 # github.com/ryanuber/go-glob v0.0.0-20170128012129-256dc444b735
 github.com/ryanuber/go-glob
+# github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529
+github.com/sean-/seed
 # github.com/sirupsen/logrus v1.2.0
 github.com/sirupsen/logrus
 # github.com/spf13/afero v1.1.2
@@ -363,18 +414,18 @@ github.com/vincent-petithory/dataurl
 go4.org/errorutil
 # golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85
 golang.org/x/crypto/ssh
-golang.org/x/crypto/openpgp
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/poly1305
+golang.org/x/crypto/openpgp
+golang.org/x/crypto/ed25519/internal/edwards25519
+golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/openpgp/armor
 golang.org/x/crypto/openpgp/errors
 golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
-golang.org/x/crypto/ed25519/internal/edwards25519
-golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/cast5
 golang.org/x/crypto/openpgp/elgamal
 # golang.org/x/net v0.0.0-20181114220301-adae6a3d119a
@@ -385,13 +436,18 @@ golang.org/x/net/trace
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-golang.org/x/net/context/ctxhttp
 golang.org/x/net/internal/timeseries
 golang.org/x/net/html/charset
 golang.org/x/net/proxy
+golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
 golang.org/x/net/internal/socks
+golang.org/x/net/ipv4
+golang.org/x/net/ipv6
 golang.org/x/net/html/atom
+golang.org/x/net/bpf
+golang.org/x/net/internal/iana
+golang.org/x/net/internal/socket
 # golang.org/x/sys v0.0.0-20181128092732-4ed8d59d0b35
 golang.org/x/sys/unix
 golang.org/x/sys/windows

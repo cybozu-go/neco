@@ -1,0 +1,7 @@
+[Unit]
+Description=Set serf tags
+Requires=serf.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/setup-serf-tags

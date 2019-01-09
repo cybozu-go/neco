@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	serf "github.com/hashicorp/serf/cmd/serf/command"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -36,6 +37,32 @@ func testCKE() {
 			_, _, err := execAt(boot0, "ckecli", "cluster", "get")
 			return err
 		}, 20*time.Minute).Should(Succeed())
+	})
+
+	It("all systemd units are active", func() {
+		By("getting systemd unit statuses by serf members")
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "os-version=1911.3.0")
+			if err != nil {
+				return err
+			}
+			var m serf.MemberContainer
+			err = json.Unmarshal(stdout, &m)
+			if err != nil {
+				return err
+			}
+			if len(m.Members) != 6 {
+				return fmt.Errorf("too few serf members: %d", len(m.Members))
+			}
+
+			for _, member := range m.Members {
+				if member.Tags["systemd-units-failed"] != "" {
+					return fmt.Errorf("member %s fails systemd units: %s", member.Name, member.Tags["systemd-units-failed"])
+				}
+			}
+
+			return nil
+		}).Should(Succeed())
 	})
 
 	It("wait for Kubernetes cluster to become ready", func() {
