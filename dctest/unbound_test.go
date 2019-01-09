@@ -2,7 +2,7 @@ package dctest
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,7 +28,7 @@ func testUnbound() {
 			}
 
 			if int(deployment.Status.AvailableReplicas) != 2 {
-				return errors.New("AvailableReplicas is not 2")
+				return fmt.Errorf("AvailableReplicas is not 2: %d", int(deployment.Status.AvailableReplicas))
 			}
 			return nil
 		}).Should(Succeed())
