@@ -1,6 +1,8 @@
 [Unit]
 Description=Set serf tags
+Wants=neco.target
 Requires=serf.service
+After=neco.target serf.service
 
 [Service]
 Type=oneshot

@@ -16,7 +16,6 @@ require (
 	github.com/SermoDigital/jose v0.9.1 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20181203113445-8c8880c89d00 // indirect
 	github.com/araddon/gou v0.0.0-20180803232539-d7d8174cb8b3 // indirect
-	github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e // indirect
 	github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf // indirect
@@ -52,6 +51,7 @@ require (
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/duosecurity/duo_api_golang v0.0.0-20181024123116-92fea9203dbc // indirect
 	github.com/elazarl/go-bindata-assetfs v1.0.0 // indirect
+	github.com/fatih/color v1.7.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180613152042-8306686428a5 // indirect
 	github.com/gammazero/deque v0.0.0-20180920172122-f6adf94963e4 // indirect
@@ -81,19 +81,16 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/go-memdb v0.0.0-20181108192425-032f93b25bec // indirect
 	github.com/hashicorp/go-msgpack v0.0.0-20150518234257-fa3f63826f7c // indirect
+	github.com/hashicorp/go-multierror v1.0.0 // indirect
 	github.com/hashicorp/go-plugin v0.0.0-20181030172320-54b6ff97d818 // indirect
 	github.com/hashicorp/go-retryablehttp v0.5.0 // indirect
 	github.com/hashicorp/go-rootcerts v0.0.0-20160503143440-6bb64b370b90 // indirect
 	github.com/hashicorp/go-sockaddr v0.0.0-20180320115054-6d291a969b86 // indirect
-	github.com/hashicorp/go-syslog v0.0.0-20170829120034-326bf4a7f709 // indirect
 	github.com/hashicorp/go-version v1.0.0
-	github.com/hashicorp/go.net v0.0.0-20151006203346-104dcad90073 // indirect
-	github.com/hashicorp/logutils v1.0.0 // indirect
-	github.com/hashicorp/mdns v0.0.0-20170221172940-4e527d9d8081 // indirect
 	github.com/hashicorp/memberlist v0.1.0 // indirect
 	github.com/hashicorp/nomad v0.8.6 // indirect
 	github.com/hashicorp/raft v1.0.0 // indirect
-	github.com/hashicorp/serf v0.8.1
+	github.com/hashicorp/serf v0.8.1 // indirect
 	github.com/hashicorp/vault v1.0.0
 	github.com/hashicorp/vault-plugin-auth-alicloud v0.0.0-20181109180636-f278a59ca3e8 // indirect
 	github.com/hashicorp/vault-plugin-auth-azure v0.0.0-20180816201044-d75e09c45e50 // indirect
@@ -117,13 +114,13 @@ require (
 	github.com/keybase/go-crypto v0.0.0-20181127160227-255a5089e85a // indirect
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mattbaird/elastigo v0.0.0-20170123220020-2fe47fd29e4b // indirect
+	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mattn/go-runewidth v0.0.0-20170201023540-14207d285c6c // indirect
 	github.com/mattn/go-shellwords v1.0.3 // indirect
 	github.com/michaelklishin/rabbit-hole v1.4.0 // indirect
 	github.com/miekg/dns v1.1.1 // indirect
 	github.com/mistifyio/go-zfs v0.0.0-20161103015429-c0224de804d4 // indirect
-	github.com/mitchellh/cli v1.0.0 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
@@ -147,7 +144,6 @@ require (
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 // indirect
 	github.com/pquerna/otp v1.0.0 // indirect
-	github.com/ryanuber/columnize v2.1.0+incompatible // indirect
 	github.com/ryanuber/go-glob v0.0.0-20170128012129-256dc444b735 // indirect
 	github.com/samuel/go-zookeeper v0.0.0-20180130194729-c4fab1ac1bec // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect

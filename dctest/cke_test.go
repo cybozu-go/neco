@@ -5,11 +5,28 @@ import (
 	"fmt"
 	"time"
 
-	serf "github.com/hashicorp/serf/cmd/serf/command"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 )
+
+// serfMember is copied from type Member https://godoc.org/github.com/hashicorp/serf/cmd/serf/command#Member
+// to prevent much vendoring
+type serfMember struct {
+	Name   string            `json:"name"`
+	Addr   string            `json:"addr"`
+	Port   uint16            `json:"port"`
+	Tags   map[string]string `json:"tags"`
+	Status string            `json:"status"`
+	Proto  map[string]uint8  `json:"protocol"`
+	// contains filtered or unexported fields
+}
+
+// serfMemberContainer is copied from type MemberContainer https://godoc.org/github.com/hashicorp/serf/cmd/serf/command#MemberContainer
+// to prevent much vendoring
+type serfMemberContainer struct {
+	Members []serfMember `json:"members"`
+}
 
 func testCKE() {
 	It("should generates cluster.yml automatically", func() {
@@ -46,7 +63,7 @@ func testCKE() {
 			if err != nil {
 				return err
 			}
-			var m serf.MemberContainer
+			var m serfMemberContainer
 			err = json.Unmarshal(stdout, &m)
 			if err != nil {
 				return err
