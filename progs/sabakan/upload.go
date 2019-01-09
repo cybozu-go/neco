@@ -162,7 +162,11 @@ func uploadAssets(ctx context.Context, c *sabakan.Client, auth *DockerAuth) erro
 
 	// Upload other images
 	var fetches []neco.ContainerImage
-	for _, name := range neco.SabakanImages {
+	images := neco.SabakanPublicImages
+	if auth != nil {
+		images = append(images, neco.SabakanPrivateImages...)
+	}
+	for _, name := range images {
 		img, err := neco.CurrentArtifacts.FindContainerImage(name)
 		if err != nil {
 			return err

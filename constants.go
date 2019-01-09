@@ -4,8 +4,11 @@ import "path/filepath"
 
 const systemdDir = "/etc/systemd/system"
 
-// SabakanImages is the list of container image names to be uploaded to sabakan.
-var SabakanImages = []string{"serf", "omsa", "coil", "squid"}
+// SabakanPublicImages is the list of container image names to be uploaded to sabakan.
+var SabakanPublicImages = []string{"serf", "coil", "squid"}
+
+// SabakanPrivateImages is the list of private container image names to be uploaded to sabakan.
+var SabakanPrivateImages = []string{"omsa"}
 
 // RktImages is the list of container image names to be run as rkt contaienrs.
 var RktImages = []string{"cke", "etcd", "omsa", "sabakan", "serf", "vault", "hyperkube"}

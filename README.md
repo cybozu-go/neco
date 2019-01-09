@@ -81,7 +81,7 @@ tests in a virtual data center environment.
 to create complex network topology and virtual servers using Linux
 networking stacks, [rkt][], and [QEMU][].
 
-See [dctest/README.md](dctest/README.md)
+See [docs/dctest.md](docs/dctest.md)
 
 ### CI/CD
 
