@@ -19,6 +19,7 @@ func testContents() {
 		if err == nil {
 			secretExists = true
 		} else if os.IsNotExist(err) {
+			By("Skipping quay.io auth test")
 			secretExists = false
 		} else {
 			Expect(err).NotTo(HaveOccurred())
@@ -64,9 +65,9 @@ func testContents() {
 		for _, image := range neco.SystemContainers {
 			Expect(assets).To(ContainElement(neco.ACIAssetName(image)))
 		}
-		images := []string{"serf", "coil", "squid"}
+		images := neco.SabakanPublicImages
 		if secretExists {
-			images = append(images, "omsa")
+			images = append(images, neco.SabakanPrivateImages...)
 		}
 		for _, name := range images {
 			image, err := neco.CurrentArtifacts.FindContainerImage(name)
