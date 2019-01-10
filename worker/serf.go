@@ -85,7 +85,11 @@ func (o *operator) replaceSerfFiles(ctx context.Context, lrns []int) (bool, erro
 	}
 
 	buf.Reset()
-	os, err := serf.GetOSVersionID()
+	name, err := serf.GetOSName()
+	if err != nil {
+		return false, err
+	}
+	version, err := serf.GetOSVersionID()
 	if err != nil {
 		return false, err
 	}
@@ -93,7 +97,7 @@ func (o *operator) replaceSerfFiles(ctx context.Context, lrns []int) (bool, erro
 	if err != nil {
 		return false, err
 	}
-	err = serf.GenerateConf(buf, lrns, os, serial)
+	err = serf.GenerateConf(buf, lrns, name, version, serial)
 	if err != nil {
 		return false, err
 	}

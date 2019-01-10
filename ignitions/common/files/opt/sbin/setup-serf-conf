@@ -1,6 +1,7 @@
 #!/bin/sh
 
-os_version=$(awk '/DISTRIB_RELEASE/ {print $2}' FS=\=  /etc/lsb-release)
+os_name="$(awk '/\<NAME\>/ {gsub(/\"/, "", $2); print $2}' FS=\=  /etc/os-release)"
+os_version=$(awk '/VERSION_ID/ {print $2}' FS=\=  /etc/os-release)
 serial=$(cat /sys/class/dmi/id/product_serial)
 sabakan_addr=$(echo {{ MyURL }} | awk -F[/:] '{print $4}')
 
@@ -8,6 +9,7 @@ mkdir -p /etc/serf
 cat >/etc/serf/serf.json <<EOF
 {
     "tags": {
+        "os-name": "${os_name}",
         "os-version": "${os_version}",
         "serial": "${serial}"
     },

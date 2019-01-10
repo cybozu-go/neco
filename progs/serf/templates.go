@@ -3,6 +3,7 @@ package serf
 import "html/template"
 
 type tags struct {
+	OsName    string `json:"os-name"`
 	OsVersion string `json:"os-version"`
 	Serial    string `json:"serial"`
 }

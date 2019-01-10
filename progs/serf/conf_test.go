@@ -11,6 +11,7 @@ import (
 
 func TestGenerateConf(t *testing.T) {
 	t.Parallel()
+	osName := "Ubuntu"
 	osVer := "18.04"
 	serial := "abc"
 	expectedRetryJoin := []string{
@@ -20,6 +21,7 @@ func TestGenerateConf(t *testing.T) {
 	}
 	expected := serfConfig{
 		Tags: tags{
+			OsName:    osName,
 			OsVersion: osVer,
 			Serial:    serial,
 		},
@@ -36,7 +38,7 @@ func TestGenerateConf(t *testing.T) {
 	}
 
 	buf := new(bytes.Buffer)
-	err := GenerateConf(buf, []int{0, 1, 2}, osVer, serial)
+	err := GenerateConf(buf, []int{0, 1, 2}, osName, osVer, serial)
 	if err != nil {
 		t.Fatal(err)
 	}
