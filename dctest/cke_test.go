@@ -74,12 +74,12 @@ func testCKE() {
 			}
 
 			for _, member := range m.Members {
-				_, ok := member.Tags["systemd-units-failed"]
+				tag, ok := member.Tags["systemd-units-failed"]
 				if !ok {
 					return fmt.Errorf("member %s does not define tag systemd-units-failed", member.Name)
 				}
-				if member.Tags["systemd-units-failed"] != "" {
-					return fmt.Errorf("member %s fails systemd units: %s", member.Name, member.Tags["systemd-units-failed"])
+				if tag != "" {
+					return fmt.Errorf("member %s fails systemd units: %s", member.Name, tag)
 				}
 			}
 
