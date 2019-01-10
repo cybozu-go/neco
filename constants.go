@@ -13,7 +13,8 @@ var SabakanPublicImages = []string{"serf", "coil", "squid"}
 var SabakanPrivateImages []string
 
 // RktImages is the list of container image names to be run as rkt containers.
-var RktImages = []string{"cke", "etcd", "omsa", "sabakan", "serf", "vault", "hyperkube"}
+//var RktImages = []string{"cke", "etcd", "omsa", "sabakan", "serf", "vault", "hyperkube"}
+var RktImages = []string{"cke", "etcd", "sabakan", "serf", "vault", "hyperkube"}
 
 // Neco params
 const (

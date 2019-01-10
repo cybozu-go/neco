@@ -67,9 +67,9 @@ systemd:
   - name: neco-dhcp-online.target
   - name: neco-wait-dhcp-online.service
     enabled: true
-  - name: omsa.service
-    enabled: true
-  - name: setup-omsa.service
+#  - name: omsa.service
+#    enabled: true
+#  - name: setup-omsa.service
   - name: cke-images.service
     enabled: true
   - name: squid-image.service
