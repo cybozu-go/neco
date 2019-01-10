@@ -8,9 +8,11 @@ const systemdDir = "/etc/systemd/system"
 var SabakanPublicImages = []string{"serf", "coil", "squid"}
 
 // SabakanPrivateImages is the list of private container image names to be uploaded to sabakan.
-var SabakanPrivateImages = []string{"omsa"}
+// TODO: Update this slice when the setup-hw container is created
+//var SabakanPrivateImages = []string{"omsa"}
+var SabakanPrivateImages []string
 
-// RktImages is the list of container image names to be run as rkt contaienrs.
+// RktImages is the list of container image names to be run as rkt containers.
 var RktImages = []string{"cke", "etcd", "omsa", "sabakan", "serf", "vault", "hyperkube"}
 
 // Neco params
