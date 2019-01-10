@@ -7,4 +7,4 @@ fi
 
 docker exec -i serf serf tags \
        -set uptime="$(uptime -p)" \
-       -set systemctl-units-failed="${systemd_units_failed}"
+       -set systemd-units-failed="${systemd_units_failed}"
