@@ -59,8 +59,8 @@ systemd:
     enabled: false
   - name: setup-serf.service
     enabled: false
-  - name: setup-hw.service
-    enabled: true
+#  - name: setup-hw.service
+#    enabled: true
   - name: disable-transparent-hugepage.service
     enabled: true
   - name: neco.target
