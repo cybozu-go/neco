@@ -1,9 +1,8 @@
 [Unit]
 Description=Set serf tags
 PartOf=setup-sert-tags.service
-Wants=neco.target
 Requires=serf.service
-After=neco.target serf.service
+After=serf.service
 
 [Timer]
 OnCalendar=*-*-* *:*:0/20
