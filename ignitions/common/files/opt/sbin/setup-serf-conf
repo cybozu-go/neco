@@ -1,7 +1,8 @@
 #!/bin/sh
 
-os_name="$(awk '/\<NAME\>/ {gsub(/\"/, "", $2); print $2}' FS=\=  /etc/os-release)"
-os_version=$(awk '/VERSION_ID/ {print $2}' FS=\=  /etc/os-release)
+. /etc/os-release
+os_name="${NAME}"
+os_version="${VERSION_ID}"
 serial=$(cat /sys/class/dmi/id/product_serial)
 sabakan_addr=$(echo {{ MyURL }} | awk -F[/:] '{print $4}')
 
