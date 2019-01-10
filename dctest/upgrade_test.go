@@ -1,7 +1,6 @@
 package dctest
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -9,7 +8,6 @@ import (
 	"time"
 
 	"github.com/cybozu-go/neco"
-	sabakan "github.com/cybozu-go/sabakan/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -25,8 +23,8 @@ func testUpgrade() {
 			service  string
 			imageTag string
 		}{
-			{neco.EtcdService, "quay.io/cybozu/etcd:3.3.9-4"},
-			{neco.VaultService, "quay.io/cybozu/vault:0.11.0-3"},
+			{neco.EtcdService, "quay.io/cybozu/etcd:3.3.10-1"},
+			{neco.VaultService, "quay.io/cybozu/vault:1.0.0-1"},
 		}
 		Eventually(func() error {
 			for _, art := range artifacts {
@@ -50,7 +48,7 @@ func testUpgrade() {
 		}
 
 		By("Checking new etcd is running")
-		hasNewEtcd := regexp.MustCompile(`etcd\s+quay.io/cybozu/etcd:3.3.9-4\s+running`)
+		hasNewEtcd := regexp.MustCompile(`etcd\s+quay.io/cybozu/etcd:3.3.10-1\s+running`)
 		Eventually(func() error {
 			for _, h := range []string{boot0, boot1, boot2} {
 				stdout, _, err := execAt(h, "sudo", "rkt", "list")
@@ -63,22 +61,5 @@ func testUpgrade() {
 			}
 			return nil
 		}, 20*time.Minute).Should(Succeed())
-
-		By("Checking newer CoreOS is uploaded")
-		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "sabactl", "images", "index")
-			if err != nil {
-				return fmt.Errorf("%v: stderr=%s", err, stderr)
-			}
-
-			index := new(sabakan.ImageIndex)
-			err = json.Unmarshal(stdout, index)
-			Expect(err).NotTo(HaveOccurred())
-
-			if index.Find("1911.3.0") == nil {
-				return errors.New("index does not contains newer version")
-			}
-			return nil
-		}, 10*time.Minute).Should(Succeed())
 	})
 }
