@@ -47,7 +47,7 @@ Not all flags are supported by all hardware types.`,
 		case neco.HWTypeVM:
 			err = rootPlacematVM()
 		case neco.HWTypeDell:
-			err = rootDell()
+			//err = rootDell()
 		default:
 			err = fmt.Errorf("unknown hardware type: %v", hw)
 		}

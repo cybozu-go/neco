@@ -59,17 +59,17 @@ systemd:
     enabled: false
   - name: setup-serf.service
     enabled: false
-  - name: setup-hw.service
-    enabled: true
+#  - name: setup-hw.service
+#    enabled: true
   - name: disable-transparent-hugepage.service
     enabled: true
   - name: neco.target
   - name: neco-dhcp-online.target
   - name: neco-wait-dhcp-online.service
     enabled: true
-  - name: omsa.service
-    enabled: true
-  - name: setup-omsa.service
+#  - name: omsa.service
+#    enabled: true
+#  - name: setup-omsa.service
   - name: cke-images.service
     enabled: true
   - name: squid-image.service

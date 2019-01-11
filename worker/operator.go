@@ -96,7 +96,8 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 4:
 		return o.UpdateVault(ctx, req)
 	case 5:
-		return o.UpdateOMSA(ctx, req)
+		//return o.UpdateOMSA(ctx, req)
+		return nil
 	case 6:
 		return o.UpdateSerf(ctx, req)
 	case 7:
