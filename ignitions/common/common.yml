@@ -25,6 +25,7 @@ files:
   - /opt/sbin/setup-omsa
   - /opt/sbin/setup-sabakan-cryptsetup
   - /opt/sbin/setup-serf-conf
+  - /opt/sbin/setup-serf-tags
   - /opt/sbin/setup-var
   - /opt/sbin/tune-rt-runtime
 systemd:
@@ -61,6 +62,10 @@ systemd:
     enabled: false
 #  - name: setup-hw.service
 #    enabled: true
+  - name: setup-serf-tags.service
+    enabled: false
+  - name: setup-serf-tags.timer
+    enabled: true
   - name: disable-transparent-hugepage.service
     enabled: true
   - name: neco.target

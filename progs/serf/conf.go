@@ -15,7 +15,7 @@ import (
 const protocolVersion = 5
 
 // GenerateConf generates serf.json from template.
-func GenerateConf(w io.Writer, lrns []int, osVer string, serial string) error {
+func GenerateConf(w io.Writer, lrns []int, osName, osVersion, serial string) error {
 	endpoints := make([]string, len(lrns))
 	for i, lrn := range lrns {
 		endpoints[i] = neco.BootNode0IP(lrn).String()
@@ -23,7 +23,8 @@ func GenerateConf(w io.Writer, lrns []int, osVer string, serial string) error {
 
 	data := serfConfig{
 		Tags: tags{
-			OsVersion: osVer,
+			OsName:    osName,
+			OsVersion: osVersion,
 			Serial:    serial,
 		},
 		Interface:         "node0",

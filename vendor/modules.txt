@@ -21,16 +21,20 @@ github.com/ajeddeloh/go-json
 # github.com/containerd/continuity v0.0.0-20181203112020-004b46473808
 github.com/containerd/continuity/pathdriver
 # github.com/containers/image v0.0.0-20181129122009-63a1cbdc5e65
+github.com/containers/image/docker
+github.com/containers/image/types
 github.com/containers/image/copy
 github.com/containers/image/docker/reference
 github.com/containers/image/signature
 github.com/containers/image/transports/alltransports
-github.com/containers/image/types
-github.com/containers/image/docker
+github.com/containers/image/docker/policyconfiguration
 github.com/containers/image/image
 github.com/containers/image/manifest
-github.com/containers/image/pkg/compression
+github.com/containers/image/pkg/docker/config
+github.com/containers/image/pkg/sysregistriesv2
+github.com/containers/image/pkg/tlsclientconfig
 github.com/containers/image/transports
+github.com/containers/image/pkg/compression
 github.com/containers/image/version
 github.com/containers/image/directory
 github.com/containers/image/docker/archive
@@ -41,10 +45,6 @@ github.com/containers/image/openshift
 github.com/containers/image/ostree
 github.com/containers/image/storage
 github.com/containers/image/tarball
-github.com/containers/image/docker/policyconfiguration
-github.com/containers/image/pkg/docker/config
-github.com/containers/image/pkg/sysregistriesv2
-github.com/containers/image/pkg/tlsclientconfig
 github.com/containers/image/pkg/strslice
 github.com/containers/image/directory/explicitfilepath
 github.com/containers/image/docker/tarfile
@@ -143,8 +143,9 @@ github.com/docker/distribution/registry/storage/cache/memory
 github.com/docker/distribution/digestset
 # github.com/docker/docker v0.0.0-20180522102801-da99009bbb11
 github.com/docker/docker/api/types/versions
-github.com/docker/docker/client
 github.com/docker/docker/pkg/homedir
+github.com/docker/docker/client
+github.com/docker/docker/pkg/idtools
 github.com/docker/docker/api
 github.com/docker/docker/api/types
 github.com/docker/docker/api/types/container
@@ -156,12 +157,11 @@ github.com/docker/docker/api/types/registry
 github.com/docker/docker/api/types/swarm
 github.com/docker/docker/api/types/time
 github.com/docker/docker/api/types/volume
-github.com/docker/docker/pkg/idtools
+github.com/docker/docker/pkg/system
 github.com/docker/docker/api/types/mount
 github.com/docker/docker/api/types/blkiodev
 github.com/docker/docker/api/types/strslice
 github.com/docker/docker/api/types/swarm/runtime
-github.com/docker/docker/pkg/system
 github.com/docker/docker/pkg/mount
 # github.com/docker/docker-credential-helpers v0.6.0
 github.com/docker/docker-credential-helpers/client
@@ -363,18 +363,18 @@ github.com/vincent-petithory/dataurl
 go4.org/errorutil
 # golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85
 golang.org/x/crypto/ssh
-golang.org/x/crypto/openpgp
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/poly1305
+golang.org/x/crypto/openpgp
+golang.org/x/crypto/ed25519/internal/edwards25519
+golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/openpgp/armor
 golang.org/x/crypto/openpgp/errors
 golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
-golang.org/x/crypto/ed25519/internal/edwards25519
-golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/cast5
 golang.org/x/crypto/openpgp/elgamal
 # golang.org/x/net v0.0.0-20181114220301-adae6a3d119a
@@ -385,10 +385,10 @@ golang.org/x/net/trace
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-golang.org/x/net/context/ctxhttp
 golang.org/x/net/internal/timeseries
 golang.org/x/net/html/charset
 golang.org/x/net/proxy
+golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
 golang.org/x/net/internal/socks
 golang.org/x/net/html/atom

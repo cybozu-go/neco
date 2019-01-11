@@ -1,0 +1,12 @@
+[Unit]
+Description=Set serf tags
+PartOf=setup-sert-tags.service
+Requires=serf.service
+After=serf.service
+
+[Timer]
+OnCalendar=*-*-* *:*:0/20
+Persistent=true
+
+[Install]
+WantedBy=multi-user.target

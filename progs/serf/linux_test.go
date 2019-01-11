@@ -8,8 +8,7 @@ import (
 	"testing"
 )
 
-func TestGetOSVersionID(t *testing.T) {
-	ubuntu := `NAME="Ubuntu"
+const ubuntu = `NAME="Ubuntu"
 VERSION="18.04.1 LTS (Bionic Beaver)"
 ID=ubuntu
 ID_LIKE=debian
@@ -22,7 +21,8 @@ PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-poli
 VERSION_CODENAME=bionic
 UBUNTU_CODENAME=bionic
 `
-	containerLinux := `NAME="Container Linux by CoreOS"
+
+const containerLinux = `NAME="Container Linux by CoreOS"
 ID=coreos
 VERSION=1911.3.0
 VERSION_ID=1911.3.0
@@ -34,6 +34,43 @@ BUG_REPORT_URL="https://issues.coreos.com"
 COREOS_BOARD="amd64-usr"
 `
 
+func TestGetOSName(t *testing.T) {
+	cases := []struct {
+		content string
+		name    string
+	}{
+		{content: ubuntu, name: "Ubuntu"},
+		{content: containerLinux, name: "Container Linux by CoreOS"},
+	}
+
+	for _, c := range cases {
+		f, err := ioutil.TempFile("", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			f.Close()
+			os.Remove(f.Name())
+		}()
+
+		_, err = f.WriteString(c.content)
+		if err != nil {
+			t.Fatal(err)
+		}
+		f.Sync()
+
+		osReleasePath = f.Name()
+		name, err := GetOSName()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if name != c.name {
+			t.Error("id != c.id:", name)
+		}
+	}
+}
+
+func TestGetOSVersionID(t *testing.T) {
 	cases := []struct {
 		content string
 		id      string
