@@ -13,7 +13,7 @@ func testUnbound() {
 	It("should be deployed as internet-egress/unbound", func() {
 		execSafeAt(boot0,
 			"sed", "s,%%UNBOUND_IMAGE%%,$(ckecli images | grep quay.io/cybozu/unbound),",
-			"/mnt/unbound.yml", "|", "kubectl", "create", "-f", "-")
+			"/usr/share/neco/unbound.yml", "|", "kubectl", "create", "-f", "-")
 		Eventually(func() error {
 			stdout, _, err := execAt(boot0, "kubectl", "--namespace=internet-egress",
 				"get", "deployments/unbound", "-o=json")

@@ -13,7 +13,8 @@ func testSquid() {
 	It("should be deployed successfully", func() {
 		By("creating k8s resources")
 		execSafeAt(boot0, "sed", "-e", "s,%%SQUID_IMAGE%%,$(neco image squid),",
-			"/mnt/squid.yml", "|", "kubectl", "create", "-f", "-")
+			"-e", "'s,cache_mem .*,cache_mem 200 MB,'",
+			"/usr/share/neco/squid.yml", "|", "kubectl", "create", "-f", "-")
 
 		Eventually(func() error {
 			stdout, _, err := execAt(boot0, "kubectl", "--namespace=internet-egress",

@@ -27,12 +27,9 @@ OPERATION_SSH_DIR = $(OUTPUT)/operation-ssh
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
 OLDVER = 0.0.1
 NEWVER = 0.0.2
-YAMLS = $(patsubst ../etc/%,$(SABAKAN_DIR)/%,$(wildcard ../etc/*.yml))
 SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config \
 	$(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb \
-	$(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb \
-	$(YAMLS)
-
+	$(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb
 SSH_PRIVKEY = ./dctest_key
 
 export SSH_PRIVKEY
@@ -62,14 +59,6 @@ $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb: $(OPERATION_SSH_DIR)
 
 $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb: $(OPERATION_SSH_DIR)
 	cd ..; make deb VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=new
-
-$(SABAKAN_DIR)/%.yml: ../etc/%.yml
-	mkdir -p $(SABAKAN_DIR)
-	cp $< $@
-
-$(SABAKAN_DIR)/squid.yml: ../etc/squid.yml
-	mkdir -p $(SABAKAN_DIR)
-	sed 's,cache_mem 6 GB,cache_mem 200 MB,' $< > $@
 
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):

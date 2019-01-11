@@ -26,9 +26,9 @@ func testCoil() {
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
 		By("creating k8s resources")
-		execSafeAt(boot0, "kubectl", "create", "-f", "/mnt/coil-rbac.yml")
+		execSafeAt(boot0, "kubectl", "create", "-f", "/usr/share/neco/coil-rbac.yml")
 		execSafeAt(boot0, "sed", "s,%%COIL_IMAGE%%,$(neco image coil),",
-			"/mnt/coil-deploy.yml", "|", "kubectl", "create", "-f", "-")
+			"/usr/share/neco/coil-deploy.yml", "|", "kubectl", "create", "-f", "-")
 
 		Eventually(func() error {
 			stdout, _, err := execAt(boot0, "kubectl", "--namespace=kube-system",
