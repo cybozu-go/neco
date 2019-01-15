@@ -75,21 +75,21 @@ Possible keys are:
 			case "slack":
 				value = args[1]
 				u, err := url.Parse(value)
-				if !u.IsAbs() {
-					return errors.New("invalid URL")
-				}
 				if err != nil {
 					return err
+				}
+				if !u.IsAbs() {
+					return errors.New("invalid URL")
 				}
 				return st.PutSlackNotification(ctx, value)
 			case "proxy":
 				value = args[1]
 				u, err := url.Parse(value)
-				if !u.IsAbs() {
-					return errors.New("invalid URL")
-				}
 				if err != nil {
 					return err
+				}
+				if !u.IsAbs() {
+					return errors.New("invalid URL")
 				}
 				return st.PutProxyConfig(ctx, value)
 			case "quay-username":
