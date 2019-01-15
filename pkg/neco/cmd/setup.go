@@ -13,9 +13,9 @@ import (
 )
 
 var setupParams struct {
-	lrns     []int
-	noRevoke bool
-	proxy    string
+	lrns        []int
+	noRevoke    bool
+	configProxy string
 }
 
 // setupCmd represents the setup command
@@ -31,9 +31,10 @@ This command should be invoked at once on all boot servers specified by LRN.
 When --no-revoke option is specified, it does not remove the etcd key
 <prefix>/vault-root-token. This option is used by automatic setup of dctest.
 
-When --proxy option is specified, it stores proxy configuration in the etcd
-database after it starts etcd, in order to run neco-updater and neco-worker
-with a proxy from the start.`,
+When --config-proxy option is specified, it stores proxy configuration
+in the etcd database after it starts etcd, in order to run neco-updater
+and neco-worker with a proxy from the start.  You'll also need to provide
+http_proxy and https_proxy environment variables for neco.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 3 {
@@ -48,8 +49,8 @@ with a proxy from the start.`,
 			setupParams.lrns[i] = int(num)
 		}
 
-		if len(setupParams.proxy) > 0 {
-			u, err := url.Parse(setupParams.proxy)
+		if len(setupParams.configProxy) > 0 {
+			u, err := url.Parse(setupParams.configProxy)
 			if err != nil {
 				return err
 			}
@@ -63,7 +64,7 @@ with a proxy from the start.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		well.Go(func(ctx context.Context) error {
-			return setup.Setup(ctx, setupParams.lrns, !setupParams.noRevoke, setupParams.proxy)
+			return setup.Setup(ctx, setupParams.lrns, !setupParams.noRevoke, setupParams.configProxy)
 		})
 		well.Stop()
 		err := well.Wait()
@@ -77,5 +78,5 @@ func init() {
 	rootCmd.AddCommand(setupCmd)
 
 	setupCmd.Flags().BoolVar(&setupParams.noRevoke, "no-revoke", false, "keep vault root token in etcd")
-	setupCmd.Flags().StringVar(&setupParams.proxy, "proxy", "", "store config of HTTP proxy server")
+	setupCmd.Flags().StringVar(&setupParams.configProxy, "config-proxy", "", "store config of HTTP proxy server")
 }

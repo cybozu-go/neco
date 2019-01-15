@@ -70,7 +70,7 @@ Synopsis
     Upload sabakan contents using `artifacts.go`.  If uploaded versions are
     up to date, do nothing.
 
-* `neco setup [--no-revoke] [--proxy=PROXY] LRN [LRN ...]`
+* `neco setup [--no-revoke] [--config-proxy=PROXY] LRN [LRN ...]`
 
     Install and setup etcd cluster as well as Vault using given boot servers.
     `LRN` is the logical rack number of the boot server.  At least 3 LRNs
@@ -81,9 +81,10 @@ Synopsis
     When `--no-revoke` option is specified, it does not revoke the initial
     root token.  This is only for testing purpose.
 
-    When `--proxy` option is specified, it stores [`proxy` configuration](#configproxy)
+    When `--config-proxy` option is specified, it stores [`proxy` configuration](#configproxy)
     in the etcd database after it starts etcd, in order to run neco-updater and
-    neco-worker with a proxy from the start.
+    neco-worker with a proxy from the start.  You'll also need to provide
+    `http_proxy` and `https_proxy` environment variables for `neco`.
 
 * `neco ssh generate [--dump]`
 

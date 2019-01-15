@@ -16,7 +16,7 @@ import (
 )
 
 // Setup installs and configures etcd and vault cluster.
-func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
+func Setup(ctx context.Context, lrns []int, revoke bool, configProxy string) error {
 	fullname, err := neco.ContainerFullName("etcd")
 	if err != nil {
 		return err
@@ -189,8 +189,8 @@ func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
 			return err
 		}
 
-		if len(proxy) > 0 {
-			err = st.PutProxyConfig(ctx, proxy)
+		if len(configProxy) > 0 {
+			err = st.PutProxyConfig(ctx, configProxy)
 			if err != nil {
 				return err
 			}
