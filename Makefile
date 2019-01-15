@@ -64,6 +64,7 @@ $(DEB):
 	mkdir -p $(SBINDIR)
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
 	mkdir -p $(SHAREDIR)
+	cp etc/* $(SHAREDIR)
 	go install -tags='$(GOTAGS)' ./pkg/fill-asset-name
 	fill-asset-name ignitions $(SHAREDIR)/ignitions
 	mkdir -p $(DOCDIR)

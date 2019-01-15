@@ -26,6 +26,31 @@ TLS client certificates for etcd authentication for Neco tools.
 
 etcd configuration defined in [etcdutil][]
 
+`/usr/share/neco`
+-----------------
+
+This directory holds miscellaneous configuration files for applications installed by Neco.
+
+### `dhcp.json` and `ipam.json`
+
+[sabakan][] configuration.
+
+### `cke-template.yml`
+
+[cke][] configuration.
+
+### `coil-deploy.yml` and `coil-rbac.yml`
+
+Manifests for [coil][].
+
+### `squid.yml`
+
+Manifest for [squid][].
+
+### `unbound.yml`
+
+Manifest for [unbound][].
+
 `/usr/share/neco/ignitions/roles/ROLE/site.yml`
 -----------------------------------------------
 
@@ -35,4 +60,9 @@ The directory must contain an entry point file `site.yml`, which defined in [sab
 
 
 [etcdutil]: https://github.com/cybozu-go/etcdutil
+[sabakan]: https://github.com/cybozu-go/sabakan
+[cke]: https://github.com/cybozu-go/cke
+[coil]: https://github.com/cybozu-go/coil
+[squid]: http://www.squid-cache.org/
+[unbound]: https://nlnetlabs.nl/projects/unbound/about/
 [ignition.md]: https://github.com/cybozu-go/sabakan/blob/master/docs/ignition.md
