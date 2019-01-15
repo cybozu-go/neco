@@ -4,15 +4,17 @@ curl -sfSL -o /opt/sbin/sabakan-cryptsetup {{ MyURL }}/api/v1/assets/%%cryptsetu
 chmod a+x /opt/sbin/sabakan-cryptsetup
 
 mkdir -p /etc/systemd/system/sabakan-cryptsetup.service.d/
-if /usr/bin/systemd-detect-virt -v >/dev/null; then \
+if /usr/bin/systemd-detect-virt -v >/dev/null; then
+    lsblk --json 
     cat >/etc/systemd/system/sabakan-cryptsetup.service.d/10-env.conf <<EOF
 [Service]
-Environment='DISK_NAME_PATTERN=virtio-pci-0000:00:07.0'
+Environment='DISK_NAME_PATTERN=virtio-pci-*'
 EOF
 else
     cat >/etc/systemd/system/sabakan-cryptsetup.service.d/10-env.conf <<EOF
 [Service]
-Environment='DISK_NAME_PATTERN=*-nvme-* *-ata-* *-sas-*'
+# Patterns indicates BOSS, NVMe SSD, HDD in this order.
+Environment='DISK_NAME_PATTERN=pci-*-ata-1 pci-*-nvme-1 pci-*-sas-*-phy*-lun-0'
 EOF
 fi
 

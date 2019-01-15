@@ -1,7 +1,8 @@
 [Unit]
 Description=Setup filesystem for /var
-After=sabakan-cryptsetup.service
+Wants=lvm2-lvmetad.service
 Requires=sabakan-cryptsetup.service
+After=lvm2-lvmetad.service sabakan-cryptsetup.service
 DefaultDependencies=no
 
 [Service]
