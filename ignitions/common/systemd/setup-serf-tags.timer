@@ -1,6 +1,6 @@
 [Unit]
 Description=Set serf tags
-PartOf=setup-sert-tags.service
+PartOf=setup-serf-tags.service
 Requires=serf.service
 After=serf.service
 
