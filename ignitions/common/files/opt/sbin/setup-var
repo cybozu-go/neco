@@ -1,14 +1,53 @@
 #!/bin/sh -eu
 
-CRYPTDEV=$(echo /dev/mapper/crypt-pci-*-ata-*)
-if systemd-detect-virt -v >/dev/null; then
-    CRYPTDEV=$(echo /dev/mapper/crypt-virtio-pci-0000:00:07.0)
-fi
+VG=vg1
+LV=var
 MOUNTDEV=/dev/disk/by-label/var
 
-if [ ! -L "${MOUNTDEV}" ]; then
-    mkfs.ext4 -L var "${CRYPTDEV}"
+prepare_lv() {
+    vgchange -a ay
+    sleep 1
 
-    # wait for update of /dev/disk/by-label
+    if ! vgs $VG >/dev/null 2>&1; then
+        vgcreate $VG $PVS -y
+        sync
+    fi
+
+    lvchange $VG -a ay
+    sleep 1
+
+    if ! lvs $VG/$LV >/dev/null 2>&1; then
+        lvcreate -y -n $LV -L $SIZE $VG
+        sync
+    fi
+}
+
+if ls /dev/mapper/crypt-virtio-pci-* >/dev/null 2>&1; then
+    PVS=$(ls /dev/mapper/crypt-virtio-pci-*)
+    SIZE=30g
+    prepare_lv
+    DEV=/dev/$VG/$LV
+elif ls /dev/mapper/crypt-pci-*-nvme-1 >/dev/null 2>&1; then
+    PVS=$(ls /dev/mapper/crypt-pci-*-nvme-1)
+    SIZE=1t
+    prepare_lv
+    DEV=/dev/$VG/$LV
+else
+    DEV=$(ls /dev/mapper/crypt-pci-*-ata-1)
+fi
+
+sleep 1
+
+if [ ! -L "${MOUNTDEV}" ]; then
+    mkfs.ext4 -L var "${DEV}"
     sleep 1
 fi
+
+# wait for /var mount
+while true; do
+    dev=$(awk '{ if( $2 == "/var" ) { print "ok" } }' /proc/mounts)
+    if [ "$dev" = ok ]; then
+        exit 0
+    fi
+    sleep 1
+done

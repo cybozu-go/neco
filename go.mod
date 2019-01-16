@@ -38,7 +38,7 @@ require (
 	github.com/cybozu-go/etcdutil v1.3.1
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
-	github.com/cybozu-go/sabakan v0.0.0-20181206081258-4829cdf6bd66
+	github.com/cybozu-go/sabakan v0.0.0-20181226060325-5b9df5cc6c5e
 	github.com/cybozu-go/well v1.8.1
 	github.com/dancannon/gorethink v4.0.0+incompatible // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
@@ -106,7 +106,6 @@ require (
 	github.com/hashicorp/vault-plugin-secrets-kv v0.0.0-20181106190520-2236f141171e // indirect
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/imdario/mergo v0.0.0-20160517064435-50d4dbd4eb0e // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jeffchao/backoff v0.0.0-20140404060208-9d7fd7aa17f2 // indirect
 	github.com/jefferai/jsonx v0.0.0-20160721235117-9cc31c3135ee // indirect
 	github.com/json-iterator/go v1.1.5 // indirect

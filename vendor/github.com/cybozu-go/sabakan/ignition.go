@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"net/url"
-	"text/template"
 
-	ignition "github.com/coreos/ignition/config/v2_2"
+	ignition "github.com/coreos/ignition/config/v2_3"
 	"github.com/vincent-petithory/dataurl"
-	yaml "gopkg.in/yaml.v2"
 )
 
 // MaxIgnitions is a number of the ignitions to keep on etcd
@@ -20,6 +19,13 @@ const MaxIgnitions = 10
 type IgnitionInfo struct {
 	ID       string            `json:"id"`
 	Metadata map[string]string `json:"meta"`
+}
+
+// IgnitionParams represents parameters in ignition template
+type IgnitionParams struct {
+	MyURL       *url.URL
+	MachineSpec MachineSpec
+	Metadata    map[string]string
 }
 
 // ValidateIgnitionTemplate validates if the tmpl is a template for a valid ignition.
@@ -36,8 +42,7 @@ func ValidateIgnitionTemplate(tmpl string, metadata map[string]string, ipam *IPA
 	}
 
 	ipam.GenerateIP(mc)
-	ign, err := RenderIgnition(tmpl, metadata, mc, u)
-
+	ign, err := RenderIgnition(tmpl, &IgnitionParams{Metadata: metadata, MachineSpec: mc.Spec, MyURL: u})
 	if err != nil {
 		return err
 	}
@@ -52,91 +57,107 @@ func ValidateIgnitionTemplate(tmpl string, metadata map[string]string, ipam *IPA
 }
 
 // RenderIgnition returns the rendered ignition from the template and a machine
-func RenderIgnition(tmpl string, metadata map[string]string, m *Machine, myURL *url.URL) (string, error) {
-	getMyURL := func() string {
-		return myURL.String()
-	}
-	getMetadata := func(key string) string {
-		return metadata[key]
-	}
-	t, err := template.New("ignition").
-		Funcs(template.FuncMap{"MyURL": getMyURL, "Metadata": getMetadata}).
-		Parse(tmpl)
-	if err != nil {
-		return "", err
-	}
-	buf := new(bytes.Buffer)
-	err = t.Execute(buf, m.Spec)
+func RenderIgnition(tmpl string, params *IgnitionParams) (string, error) {
+	var raw interface{}
+	err := json.Unmarshal([]byte(tmpl), &raw)
 	if err != nil {
 		return "", err
 	}
 
-	var ign ignitionMap
-	err = yaml.Unmarshal(buf.Bytes(), &ign)
+	dst, err := renderLeaves("", raw, params)
 	if err != nil {
 		return "", err
 	}
-	ign.escapeDataURL()
+	escapeDataURL(dst)
 
-	dataOut, err := json.Marshal(&ign)
+	b, err := json.Marshal(dst)
 	if err != nil {
 		return "", err
 	}
-
-	return string(dataOut), nil
+	return string(b), nil
 }
 
-type ignitionMap struct {
-	fields map[string]interface{}
-}
-
-func (i *ignitionMap) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var ign interface{}
-	err := unmarshal(&ign)
-	if err != nil {
-		return err
-	}
-	ign = normalizeMap(ign)
-	ignMap, ok := ign.(map[string]interface{})
-	if !ok {
-		return errors.New("invalid ignition, failed to convert")
-	}
-	i.fields = ignMap
-	return nil
-}
-
-func (i *ignitionMap) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&i.fields)
-}
-
-func (i *ignitionMap) escapeDataURL() {
-	if storageMap, ok := i.fields["storage"].(map[string]interface{}); ok {
-		if files, ok := storageMap["files"].([]interface{}); ok {
-			for _, elem := range files {
-				if f, ok := elem.(map[string]interface{}); ok {
-					if contents, ok := f["contents"].(map[string]interface{}); ok {
-						if source, ok := contents["source"].(string); ok {
-							contents["source"] = fmt.Sprintf("data:,%s", dataurl.EscapeString(source))
-						}
-					}
-				}
+func renderLeaves(name string, src interface{}, params *IgnitionParams) (interface{}, error) {
+	var err error
+	switch x := src.(type) {
+	case map[string]interface{}:
+		m := make(map[string]interface{})
+		for k, v := range x {
+			m[k], err = renderLeaves(name+"."+k, v, params)
+			if err != nil {
+				return nil, err
 			}
 		}
+		return m, nil
+	case []interface{}:
+		s := make([]interface{}, len(x))
+		for i, v := range x {
+			s[i], err = renderLeaves(fmt.Sprintf("%s[%d]", name, i), v, params)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return s, err
+	case string:
+		r, err := renderString(name, x, params)
+		if err != nil {
+			return nil, err
+		}
+		return r, nil
+	}
+	return src, nil
+}
+
+func escapeDataURL(src interface{}) {
+	var root map[string]interface{}
+	var ok bool
+	if root, ok = src.(map[string]interface{}); !ok {
+		return
+	}
+	var storage map[string]interface{}
+	if storage, ok = root["storage"].(map[string]interface{}); !ok {
+		return
+	}
+	var files []interface{}
+	if files, ok = storage["files"].([]interface{}); !ok {
+		return
+	}
+
+	for _, elem := range files {
+		var file map[string]interface{}
+		if file, ok = elem.(map[string]interface{}); !ok {
+			continue
+		}
+		var contents map[string]interface{}
+		if contents, ok = file["contents"].(map[string]interface{}); !ok {
+			continue
+		}
+		var source string
+		if source, ok = contents["source"].(string); !ok {
+			continue
+		}
+		contents["source"] = "data:," + dataurl.EscapeString(source)
 	}
 }
 
-func normalizeMap(input interface{}) interface{} {
-	switch x := input.(type) {
-	case map[interface{}]interface{}:
-		newMap := map[string]interface{}{}
-		for k, v := range x {
-			newMap[k.(string)] = normalizeMap(v)
-		}
-		return newMap
-	case []interface{}:
-		for i, v := range x {
-			x[i] = normalizeMap(v)
-		}
+func renderString(name string, src string, params *IgnitionParams) (string, error) {
+	getMyURL := func() string {
+		return params.MyURL.String()
 	}
-	return input
+	getMetadata := func(key string) string {
+		return params.Metadata[key]
+	}
+
+	var dst bytes.Buffer
+	t, err := template.New(name).
+		Funcs(template.FuncMap{"MyURL": getMyURL, "Metadata": getMetadata}).
+		Parse(src)
+	if err != nil {
+		return "", err
+	}
+	err = t.Execute(&dst, params.MachineSpec)
+	if err != nil {
+		return "", err
+	}
+	return dst.String(), nil
 }

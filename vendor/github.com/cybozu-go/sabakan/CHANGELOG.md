@@ -5,10 +5,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.31] - 2018-12-25
+
+### Changed
+* Update github.com/coreos/ignition to v0.30.0 and spec version v2.3.0 (#127).
+- Use cobra in for sabactl (#129).
+- Fix being suck on registering ignitions with already registed ID and ROLE (#130).
+
 ## [0.30] - 2018-12-06
 
 ### Added
-* [client] aliases to type in `sabakan` package.
+* client: aliases to type in `sabakan` package.
 
 ## [0.29] - 2018-11-29
 
@@ -106,7 +113,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Fix a bug that leaves files of deleted OS images (#86).
 
 [placemat]: https://github.com/cybozu-go/placemat
-[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v0.30...HEAD
+[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v0.31...HEAD
+[0.31]: https://github.com/cybozu-go/sabakan/compare/v0.30...v0.31
 [0.30]: https://github.com/cybozu-go/sabakan/compare/v0.29...v0.30
 [0.29]: https://github.com/cybozu-go/sabakan/compare/v0.28...v0.29
 [0.28]: https://github.com/cybozu-go/sabakan/compare/v0.27...v0.28

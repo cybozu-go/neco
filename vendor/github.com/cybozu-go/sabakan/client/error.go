@@ -10,7 +10,7 @@ type httpError struct {
 }
 
 func (e *httpError) Error() string {
-	return http.StatusText(e.code)
+	return http.StatusText(e.code) + ": " + e.reason
 }
 
 // Is4xx returns true if err contains 4xx status code
