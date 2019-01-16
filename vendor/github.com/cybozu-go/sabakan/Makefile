@@ -10,7 +10,7 @@ export GOFLAGS
 
 build: $(BUILT_TARGET)
 $(BUILT_TARGET): $(GO_FILES)
-	go build ./cmd/$@
+	go build ./pkg/$@
 
 start-etcd:
 	systemd-run --user --unit neco-etcd.service etcd --data-dir $(ETCD_DIR)

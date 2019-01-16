@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -64,7 +65,7 @@ func AssembleIgnitionTemplate(fname string, w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	return yaml.NewEncoder(w).Encode(builder.ignition)
+	return json.NewEncoder(w).Encode(builder.normalized())
 }
 
 func loadSource(fname string) (*ignitionSource, error) {
@@ -257,4 +258,29 @@ func (b *ignitionBuilder) constructNetworkd(n string) error {
 	b.ignition["networkd"] = networkd
 
 	return nil
+}
+
+func (b *ignitionBuilder) normalized() interface{} {
+	return normalizeMap(b.ignition)
+}
+
+func normalizeMap(src interface{}) interface{} {
+	switch x := src.(type) {
+	case map[string]interface{}:
+		for k, v := range x {
+			x[k] = normalizeMap(v)
+		}
+	case map[interface{}]interface{}:
+		m := map[string]interface{}{}
+		for k, v := range x {
+			m[k.(string)] = normalizeMap(v)
+		}
+		return m
+	case []interface{}:
+		for i, v := range x {
+			x[i] = normalizeMap(v)
+		}
+	}
+	return src
+
 }

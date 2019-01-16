@@ -65,10 +65,10 @@ func (c *Client) do(req *http.Request) (*http.Response, error) {
 	case 200 <= resp.StatusCode && resp.StatusCode < 400:
 	case 400 <= resp.StatusCode && resp.StatusCode < 600:
 		body, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
 		if err != nil {
 			return nil, err
 		}
-		resp.Body.Close()
 
 		var msg map[string]interface{}
 		err = json.Unmarshal(body, &msg)

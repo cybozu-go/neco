@@ -1,4 +1,4 @@
 package sabakan
 
 // Version is sabakan version
-const Version = "0.30"
+const Version = "0.31"
