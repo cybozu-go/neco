@@ -15,6 +15,11 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
+const (
+	stageBeforeRestart = iota
+	stageAfterRestart
+)
+
 // Setup installs and configures etcd and vault cluster.
 func Setup(ctx context.Context, lrns []int, revoke bool, configProxy string) error {
 	fullname, err := neco.ContainerFullName("etcd")
@@ -131,14 +136,14 @@ func Setup(ctx context.Context, lrns []int, revoke bool, configProxy string) err
 		return err
 	}
 
-	err = st.Finish(ctx, mylrn)
+	err = st.Finish(ctx, mylrn, stageBeforeRestart)
 	if err != nil {
 		return err
 	}
 
 	for {
 		log.Info("waiting for all servers to finish", nil)
-		finished, err := st.GetFinished(ctx)
+		finished, err := st.GetFinished(ctx, stageBeforeRestart)
 		if err != nil {
 			return err
 		}
@@ -177,8 +182,28 @@ func Setup(ctx context.Context, lrns []int, revoke bool, configProxy string) err
 		return err
 	}
 
+	st = storage.NewStorage(ec)
+	err = st.Finish(ctx, mylrn, stageAfterRestart)
+	if err != nil {
+		return err
+	}
+	for {
+		log.Info("waiting for all servers to restart vault", nil)
+		finished, err := st.GetFinished(ctx, stageAfterRestart)
+		if err != nil {
+			return err
+		}
+		if len(finished) == len(lrns) {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(500 * time.Millisecond):
+		}
+	}
+
 	if isLeader {
-		st = storage.NewStorage(ec)
 		ver, err := neco.GetDebianVersion(neco.NecoPackageName)
 		if err != nil {
 			return err

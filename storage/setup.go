@@ -7,17 +7,16 @@ import (
 	"github.com/coreos/etcd/clientv3"
 )
 
-// Finish stores finish flag for a bootserver to storage
-func (s Storage) Finish(ctx context.Context, lrn int) error {
-	_, err := s.etcd.Put(ctx, keyFinish(lrn), "")
+// Finish stores the finished stage number for a bootserver to storage
+func (s Storage) Finish(ctx context.Context, lrn int, stage int) error {
+	_, err := s.etcd.Put(ctx, keyFinish(lrn), strconv.Itoa(stage))
 	return err
 }
 
-// GetFinished returns list of bootservers that completed setup
-func (s Storage) GetFinished(ctx context.Context) ([]int, error) {
+// GetFinished returns a list of bootservers that completed specified stage of setup
+func (s Storage) GetFinished(ctx context.Context, stage int) ([]int, error) {
 	resp, err := s.etcd.Get(ctx, KeyFinishPrefix,
 		clientv3.WithPrefix(),
-		clientv3.WithKeysOnly(),
 		clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend),
 	)
 	if err != nil {
@@ -26,13 +25,20 @@ func (s Storage) GetFinished(ctx context.Context) ([]int, error) {
 	if resp.Count == 0 {
 		return nil, nil
 	}
-	lrns := make([]int, resp.Count)
-	for i, kv := range resp.Kvs {
+	var lrns []int
+	for _, kv := range resp.Kvs {
+		current, err := strconv.Atoi(string(kv.Value))
+		if err != nil {
+			return nil, err
+		}
+		if current != stage {
+			continue
+		}
 		lrn, err := strconv.Atoi(string(kv.Key[len(KeyFinishPrefix):]))
 		if err != nil {
 			return nil, err
 		}
-		lrns[i] = lrn
+		lrns = append(lrns, lrn)
 	}
 	return lrns, nil
 }

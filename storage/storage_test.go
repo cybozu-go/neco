@@ -228,7 +228,7 @@ func testFinish(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	lrns, err := st.GetFinished(ctx)
+	lrns, err := st.GetFinished(ctx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,16 +236,29 @@ func testFinish(t *testing.T) {
 		t.Error("lrns should be empty", lrns)
 	}
 
-	err = st.Finish(ctx, 0)
+	err = st.Finish(ctx, 0, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = st.Finish(ctx, 1)
+	err = st.Finish(ctx, 1, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	lrns, err = st.GetFinished(ctx)
+	lrns, err = st.GetFinished(ctx, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(lrns, []int{1}) {
+		t.Error("unexpected lrns", lrns)
+	}
+
+	err = st.Finish(ctx, 0, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	lrns, err = st.GetFinished(ctx, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
