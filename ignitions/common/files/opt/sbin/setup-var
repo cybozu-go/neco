@@ -7,13 +7,14 @@ MOUNTDEV=/dev/disk/by-label/var
 prepare_lv() {
     vgchange -a ay
     sleep 1
-    lvchange -a ay
-    sleep 1
 
     if ! vgs $VG >/dev/null 2>&1; then
         vgcreate $VG $PVS -y
         sync
     fi
+
+    lvchange $VG -a ay
+    sleep 1
 
     if ! lvs $VG/$LV >/dev/null 2>&1; then
         lvcreate -y -n $LV -L $SIZE $VG
@@ -39,12 +40,13 @@ sleep 1
 
 if [ ! -L "${MOUNTDEV}" ]; then
     mkfs.ext4 -L var "${DEV}"
+    sleep 1
 fi
 
 # wait for /var mount
 while true; do
-    dev=$(awk '{ if( $2 == "/var" ) { print $1 } }' /proc/mounts)
-    if [ "$dev" = $DEV ]; then
+    dev=$(awk '{ if( $2 == "/var" ) { print "ok" } }' /proc/mounts)
+    if [ "$dev" = ok ]; then
         exit 0
     fi
     sleep 1
