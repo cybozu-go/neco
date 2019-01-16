@@ -5,7 +5,6 @@ chmod a+x /opt/sbin/sabakan-cryptsetup
 
 mkdir -p /etc/systemd/system/sabakan-cryptsetup.service.d/
 if /usr/bin/systemd-detect-virt -v >/dev/null; then
-    lsblk --json 
     cat >/etc/systemd/system/sabakan-cryptsetup.service.d/10-env.conf <<EOF
 [Service]
 Environment='DISK_NAME_PATTERN=virtio-pci-*'
