@@ -16,7 +16,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "3.5.27-1-3"},
 	},
 	Debs: []DebianPackage{
-		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.5"},
+		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.7"},
 	},
 	CoreOS: CoreOSImage{Channel: "stable", Version: "1967.3.0"},
 }

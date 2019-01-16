@@ -123,9 +123,7 @@ var (
 
 	EtcdpasswdCertFile = filepath.Join(EtcdpasswdDir, "etcd.crt")
 	EtcdpasswdKeyFile  = filepath.Join(EtcdpasswdDir, "etcd.key")
-	// TODO release latest etcdpasswd
-	// EtcdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
-	EtcdpasswdConfFile = "/etc/etcdpasswd.yml"
+	EtcdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
 	EtcdpasswdDropIn   = "/etc/systemd/system/ep-agent.service.d/10-check-certificate.conf"
 
 	SabakanCertFile = filepath.Join(SabakanDir, "etcd.crt")
