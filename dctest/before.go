@@ -2,7 +2,6 @@ package dctest
 
 import (
 	"fmt"
-	"testing"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -10,15 +9,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestDCtest(t *testing.T) {
-	if len(sshKeyFile) == 0 {
-		t.Skip("no SSH_PRIVKEY envvar")
-	}
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Data Center test")
-}
-
-var _ = BeforeSuite(func() {
+// RunBeforeSuite is for Ginkgo BeforeSuite.
+func RunBeforeSuite() {
 	fmt.Println("Preparing...")
 
 	SetDefaultEventuallyPollingInterval(time.Second)
@@ -47,4 +39,4 @@ var _ = BeforeSuite(func() {
 	}).Should(Succeed())
 
 	fmt.Println("Begin tests...")
-})
+}

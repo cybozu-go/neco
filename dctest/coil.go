@@ -10,7 +10,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func testCoil() {
+// TestCoil tests Coil
+func TestCoil() {
 	It("should be deployed successfully", func() {
 		By("preparing etcd user and certificates")
 		execSafeAt(boot0, "ckecli", "etcd", "user-add", "coil", "/coil/")

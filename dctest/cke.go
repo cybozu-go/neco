@@ -28,7 +28,8 @@ type serfMemberContainer struct {
 	Members []serfMember `json:"members"`
 }
 
-func testCKE() {
+// TestCKE tests CKE
+func TestCKE() {
 	It("should generates cluster.yml automatically", func() {
 		vaultToken := getVaultToken()
 

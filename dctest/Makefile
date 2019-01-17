@@ -10,11 +10,12 @@ K8S_CTRLPLANE1 = 10.69.0.196
 K8S_CTRLPLANE2 = 10.69.1.132
 PLACEMAT = /usr/bin/placemat
 GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo --failFast -v
+SUITE = ./functions
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
 MENU = menu.yml
 
-export BOOT0 BOOT1 BOOT2 BOOT3 PLACEMAT GINKGO
+export BOOT0 BOOT1 BOOT2 BOOT3 PLACEMAT GINKGO SUITE
 
 CUSTOM_UBUNTU = cybozu-ubuntu-18.04-server-cloudimg-amd64.img
 CUSTOM_UBUNTU_API_URL = https://api.github.com/repos/cybozu/neco-ubuntu/releases/latest
@@ -27,11 +28,10 @@ OPERATION_SSH_DIR = $(OUTPUT)/operation-ssh
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
 OLDVER = 0.0.1
 NEWVER = 0.0.2
-TAGS = new
 SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config \
 	$(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb \
 	$(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb
-SSH_PRIVKEY = ./dctest_key
+SSH_PRIVKEY = $(realpath ./dctest_key)
 
 export SSH_PRIVKEY
 
@@ -59,7 +59,7 @@ $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb: $(OPERATION_SSH_DIR)
 	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR))
 
 $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb: $(OPERATION_SSH_DIR)
-	cd ..; make deb VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=$(TAGS)
+	cd ..; make deb VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=new
 
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):
@@ -81,7 +81,7 @@ placemat: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
 test-light:
 	placemat_pid=$$(echo $$(pgrep placemat) | tr " " ",") ; \
 	operation_pid=$$(pgrep -P $$placemat_pid -f operation) ; \
-	sudo -E nsenter -t $$operation_pid -n sh -c "export PATH=$$PATH; $(GINKGO) -focus=\"${TARGET}\""
+	sudo -E nsenter -t $$operation_pid -n sh -c "export PATH=$$PATH; $(GINKGO) $(SUITE) -focus=\"${TARGET}\""
 
 clean:
 	rm -rf $(OUTPUT)
