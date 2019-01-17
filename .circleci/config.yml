@@ -96,34 +96,49 @@ jobs:
       - run: git checkout release
       - run: git merge --no-commit master
       - run: cp /tmp/workspace/artifacts_release.go .
-      - run: if [ $(git status -s) = "" ]; then exit 0; fi
+      - run: 
+          name: Check diff
+          command: |
+            diffs=$(git status -s)
+            if [ "$diffs" = "" ]; then exit 0; fi
+            touch .diff
+            printf "%s\n" "$diffs"
       - run:
           name: Store Service Account
           command: |
+            if [ ! -f .diff ]; then exit 0; fi
             echo $GCLOUD_SERVICE_ACCOUNT > account.json
             gcloud auth activate-service-account --key-file=account.json
       - run:
           name: Store secrets
           command: |
+            if [ ! -f .diff ]; then exit 0; fi
             echo "$QUAY_PASSWORD" > secrets
       - run:
           name: Watch console on boot-0
           command: |
+            if [ ! -f .diff ]; then exit 0; fi
             ./bin/watch_boot0
           background: true
       - run:
           name: Watch neco-worker logs
           command: |
+            if [ ! -f .diff ]; then exit 0; fi
             ./bin/watch_neco_worker
           background: true
       - run:
           command: |
+            if [ ! -f .diff ]; then exit 0; fi
             ./bin/run-dctest-release.sh
           no_output_timeout: 20m
       - add_ssh_keys:
           fingerprints:
             - "9a:0c:d9:d4:93:14:60:ad:45:9d:fb:c0:77:65:58:70"
-      - run: ./bin/commit-push.sh
+      - run:
+          name: Commit and push to GitHub
+          command: |
+            if [ ! -f .diff ]; then exit 0; fi
+            ./bin/commit-push.sh
 
 workflows:
   version: 2
