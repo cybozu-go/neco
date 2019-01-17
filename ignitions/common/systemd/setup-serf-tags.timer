@@ -1,12 +1,10 @@
 [Unit]
-Description=Set serf tags
-PartOf=setup-serf-tags.service
+Description=Set serf tags periodically
 Requires=serf.service
 After=serf.service
 
 [Timer]
 OnCalendar=*-*-* *:*:0/20
-Persistent=true
 
 [Install]
 WantedBy=multi-user.target
