@@ -40,10 +40,12 @@ export GOPATH
 PATH=/usr/local/go/bin:\$GOPATH/bin:\$PATH
 export PATH
 
-cd /home/cybozu/${CIRCLE_PROJECT_REPONAME}
+mkdir -p \$GOPATH/src/github.com/cybozu-go/neco
+cd \$GOPATH/src/github.com/cybozu-go/neco
+tar xzf /home/cybozu/neco.tgz
 
 cd dctest
-cp /home/cybozu/${CIRCLE_PROJECT_REPONAME}/secrets .
+cp ../secrets .
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
 export GO111MODULE=on
 make setup
@@ -51,5 +53,7 @@ exec make MENU=highcpu-menu.yml TAGS=release test
 EOF
 chmod +x run.sh
 
-$GCLOUD compute scp --zone=${ZONE} --recurse . cybozu@${INSTANCE_NAME}:${CIRCLE_PROJECT_REPONAME}
-$GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo /home/cybozu/${CIRCLE_PROJECT_REPONAME}/run.sh'
+tar czf /tmp/neco.tgz .
+$GCLOUD compute scp --zone=${ZONE} /tmp/neco.tgz cybozu@${INSTANCE_NAME}:
+$GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
+$GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo /home/cybozu/run.sh'
