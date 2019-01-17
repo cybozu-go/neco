@@ -155,4 +155,17 @@ workflows:
       - update-release:
           requires:
             - generate-artifacts
-
+  master:
+    jobs:
+      - generate-artifacts:
+          filters:
+            branches:
+              only:
+                - master
+      - update-release:
+          requires:
+            - generate-artifacts
+          filters:
+            branches:
+              only:
+                - master
