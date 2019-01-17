@@ -88,6 +88,11 @@ jobs:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
+      - run:
+          name: Configure GIT
+          command: |
+            git config --global user.email "neco@cybozu.com"
+            git config --global user.name "cybozu-neco"
       - run: git checkout release
       - run: git merge master
       - run: cp /tmp/workspace/artifacts_release.go .

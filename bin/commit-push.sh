@@ -1,8 +1,5 @@
 #!/bin/sh -e
 
-git config --global user.email "neco@cybozu.com"
-git config --global user.name "cybozu-neco"
-
 CI_REMOTE_REPOSITORY="git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 
 git add -u
