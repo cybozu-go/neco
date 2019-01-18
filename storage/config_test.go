@@ -21,21 +21,21 @@ func testEnvConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if env != neco.NoneEnv {
+		t.Error(`env != neco.NoneEnv`, env)
+	}
+
+	err = st.PutEnvConfig(ctx, neco.StagingEnv)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	env, err = st.GetEnvConfig(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if env != neco.StagingEnv {
-		t.Error(`env != neco.StagingEnv`, env)
-	}
-
-	err = st.PutEnvConfig(ctx, "http://squid.example.com:3128")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	proxy, err := st.GetEnvConfig(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if proxy != "http://squid.example.com:3128" {
-		t.Error(`proxy != "http://squid.example.com:3128"`, proxy)
+		t.Error(`env != neco.StagingEnv"`, env)
 	}
 }
 

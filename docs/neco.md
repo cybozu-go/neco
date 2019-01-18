@@ -125,10 +125,12 @@ These configurations are stored in etcd database.
 
 ### `env`
 
-Specify the cluster environment.  The default is `staging`.
+Specify the cluster environment.
 Possible values are: `staging` and `prod`.
 
 `staging` environment will be updated with pre-releases of `neco` package.
+
+Update never happens until this config is set.
 
 ### `slack`
 

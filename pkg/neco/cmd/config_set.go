@@ -22,7 +22,7 @@ var configSetCmd = &cobra.Command{
 	Long: `Store a configuration value to etcd.
 
 Possible keys are:
-    env                   - "staging" or "prod".  Default is "staging".
+    env                   - "staging" or "prod".
     slack                 - Slack WebHook URL.
     proxy                 - HTTP proxy server URL to access Internet.
     quay-username         - Username to authenticate to quay.io from QUAY_USER.  This does not take VALUE.
