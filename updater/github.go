@@ -20,7 +20,7 @@ type ReleaseClient struct {
 	http  *http.Client
 }
 
-// GetLatestReleaseTag returns latest tag in GitHub Releases of neco repository
+// GetLatestReleaseTag returns latest published release tag in GitHub Releases of neco repository
 func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
 	client := neco.NewGitHubClient(c.http)
 	release, resp, err := client.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
@@ -46,8 +46,8 @@ func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) 
 	return *release.TagName, nil
 }
 
-// GetLatestPreReleaseTag returns latest pre-released tag in GitHub Releases of neco repository
-func (c ReleaseClient) GetLatestPreReleaseTag(ctx context.Context) (string, error) {
+// GetLatestPublishedTag returns latest published release/pre-release tag in GitHub Releases of neco repository
+func (c ReleaseClient) GetLatestPublishedTag(ctx context.Context) (string, error) {
 	client := neco.NewGitHubClient(c.http)
 
 	opt := &github.ListOptions{
@@ -68,7 +68,7 @@ func (c ReleaseClient) GetLatestPreReleaseTag(ctx context.Context) (string, erro
 	}
 	versions := make([]*version.Version, 0, len(releases))
 	for _, r := range releases {
-		if r.TagName == nil || !r.GetPrerelease() {
+		if r.TagName == nil || r.GetDraft() {
 			continue
 		}
 		s := *r.TagName

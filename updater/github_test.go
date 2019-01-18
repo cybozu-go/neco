@@ -16,11 +16,11 @@ func testGetLatestReleaseTag(t *testing.T) {
 	t.Logf("version = %s", ver)
 }
 
-func testGetLatestPreReleaseTag(t *testing.T) {
+func testGetLatestPublishedTag(t *testing.T) {
 	t.Skip()
 
 	c := ReleaseClient{owner: "kubernetes", repo: "kubernetes"}
-	ver, err := c.GetLatestPreReleaseTag(context.Background())
+	ver, err := c.GetLatestPublishedTag(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,5 +32,5 @@ func testGetLatestPreReleaseTag(t *testing.T) {
 
 func TestGitHub(t *testing.T) {
 	t.Run("GetLatestReleaseTag", testGetLatestReleaseTag)
-	t.Run("GetLatestPreReleaseTag", testGetLatestPreReleaseTag)
+	t.Run("GetLatestPublishedTag", testGetLatestPublishedTag)
 }

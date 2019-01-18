@@ -51,7 +51,7 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 			return "0.0.2", nil
 		}
 	case neco.StagingEnv:
-		c.check = github.GetLatestPreReleaseTag
+		c.check = github.GetLatestPublishedTag
 	case neco.ProdEnv:
 		c.check = github.GetLatestReleaseTag
 	default:
