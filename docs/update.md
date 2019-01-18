@@ -58,7 +58,7 @@ use the version number `2018.11.07-1` on a comparison of the tags.
 must select the environment by `neco config set env ENV` sub-command.
 If `production` is set, `neco-updater` downloads latest release excluding
 pre-release version.  Otherwise if `staging` is set, `neco-updater` downloads
-latest pre-release version.
+latest version from among releases and pre-releases.
 
 Implementation of update process
 --------------------------------
