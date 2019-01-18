@@ -22,19 +22,14 @@ var _ = BeforeSuite(dctest.RunBeforeSuite)
 
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
-var _ = Describe("Test Neco functions", func() {
+var _ = Describe("Test Neco bootstrap", func() {
 	Context("setup", dctest.TestSetup)
 	Context("initialize", dctest.TestInit)
 	Context("sabakan", dctest.TestSabakan)
 	// uploading contents to sabakan must be done after sabakan configuration.
-	Context("contents", func() {
-		dctest.UploadContents()
-		dctest.TestContents()
-	})
-	Context("upgrade", dctest.TestUpgrade)
-	Context("join/remove", dctest.TestJoinRemove)
+	Context("contents", dctest.UploadContents)
 	Context("cke", func() {
-		dctest.TestCKE("0.0.2")
+		dctest.TestCKE("0.0.1")
 	})
 	Context("coil", dctest.TestCoil)
 	Context("unbound", dctest.TestUnbound)

@@ -49,7 +49,7 @@ cp ../secrets .
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
 export GO111MODULE=on
 make setup
-exec make MENU=highcpu-menu.yml TAGS=release test
+exec make MENU=highcpu-menu.yml TAGS=release test-release
 EOF
 chmod +x run.sh
 

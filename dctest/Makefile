@@ -28,9 +28,10 @@ OPERATION_SSH_DIR = $(OUTPUT)/operation-ssh
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
 OLDVER = 0.0.1
 NEWVER = 0.0.2
-SABAKAN_CONTENTS = $(SABAKAN_DIR)/auto-config \
-	$(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb \
-	$(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb
+AUTOCONFIG = $(SABAKAN_DIR)/auto-config
+OLD_DEB = $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb
+NEW_DEB = $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb
+SABAKAN_CONTENTS = $(AUTOCONFIG) $(OLD_DEB) $(NEW_DEB)
 SSH_PRIVKEY = $(realpath ./dctest_key)
 
 export SSH_PRIVKEY
@@ -83,6 +84,12 @@ test-light:
 	operation_pid=$$(pgrep -P $$placemat_pid -f operation) ; \
 	sudo -E nsenter -t $$operation_pid -n sh -c "export PATH=$$PATH; $(GINKGO) $(SUITE) -focus=\"${TARGET}\""
 
+test-release: $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(OPERATION_SSH_DIR)
+	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=release
+	sudo rm -rf $(PLACEMAT_DATADIR)
+	sudo rm -rf $(VM_SHARED_DIR)
+	SUITE=bootstrap ./test.sh
+
 clean:
 	rm -rf $(OUTPUT)
 
@@ -96,4 +103,4 @@ setup:
 	GO111MODULE=off go get github.com/onsi/ginkgo/ginkgo
 	cd $(GOPATH)/src/github.com/cybozu-go/placemat-menu; GO111MODULE=on make
 
-.PHONY:	all test placemat test-light clean fullclean setup
+.PHONY:	all test placemat test-light test-release clean fullclean setup

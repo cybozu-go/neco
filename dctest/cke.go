@@ -29,7 +29,7 @@ type serfMemberContainer struct {
 }
 
 // TestCKE tests CKE
-func TestCKE() {
+func TestCKE(version string) {
 	It("should generates cluster.yml automatically", func() {
 		vaultToken := getVaultToken()
 
@@ -40,7 +40,7 @@ func TestCKE() {
 		execSafeAt(boot0, "neco", "ssh", "generate")
 
 		By("regenerating ignitions and registering machines")
-		execSafeAt(boot0, "sabactl", "ignitions", "delete", "worker", "0.0.2")
+		execSafeAt(boot0, "sabactl", "ignitions", "delete", "worker", version)
 		execSafeAt(boot0, "neco", "sabakan-upload", "--ignitions-only")
 		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
 
