@@ -12,7 +12,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func testJoinRemove() {
+// TestJoinRemove test boot server join/remove scenario
+func TestJoinRemove() {
 	var rootToken string
 	It("should get root token", func() {
 		stdout, _, err := execAt(boot0, "neco", "vault", "show-root-token")

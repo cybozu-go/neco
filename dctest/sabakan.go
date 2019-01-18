@@ -5,7 +5,8 @@ import (
 	// . "github.com/onsi/gomega"
 )
 
-func testSabakan() {
+// TestSabakan test sabakan
+func TestSabakan() {
 	It("should initialize sabakan", func() {
 		By("setting configrations")
 		execSafeAt(boot0, "sabactl", "ipam", "set", "-f", "/mnt/ipam.json")
