@@ -84,5 +84,11 @@ func TestSetup() {
 	It("should complete updates", func() {
 		By("Waiting for request to complete")
 		waitRequestComplete()
+
+		By("Installing sshd_config and sudoers")
+		for _, h := range []string{boot0, boot1, boot2} {
+			execSafeAt(h, "grep", "-q", "'^PasswordAuthentication.no$'", "/etc/ssh/sshd_config")
+			execSafeAt(h, "test", "-f", "/etc/sudoers.d/cybozu")
+		}
 	})
 }
