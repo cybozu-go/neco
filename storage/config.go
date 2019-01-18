@@ -23,7 +23,7 @@ func (s Storage) PutEnvConfig(ctx context.Context, env string) error {
 func (s Storage) GetEnvConfig(ctx context.Context) (string, error) {
 	env, err := s.get(ctx, KeyEnv)
 	if err == ErrNotFound {
-		return neco.StagingEnv, nil
+		return neco.NoneEnv, nil
 	}
 	return env, err
 }

@@ -42,6 +42,10 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 	}
 
 	switch env {
+	case neco.NoneEnv:
+		c.check = func(ctx context.Context) (string, error) {
+			return "", ErrNoReleases
+		}
 	case neco.TestEnv:
 		c.check = func(ctx context.Context) (string, error) {
 			return "0.0.2", nil
