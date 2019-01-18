@@ -9,7 +9,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func testInit() {
+// TestInit test initialization steps
+func TestInit() {
 	It("should success initialize etcdpasswd", func() {
 		// wait for vault leader election
 		time.Sleep(10 * time.Second)

@@ -10,8 +10,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// test container for "neco setup"
-func testSetup() {
+// TestSetup tests "neco setup"
+func TestSetup() {
 	It("should complete on all boot servers", func(done Done) {
 		env := well.NewEnvironment(context.Background())
 		env.Go(func(ctx context.Context) error {

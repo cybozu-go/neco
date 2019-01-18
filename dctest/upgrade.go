@@ -12,7 +12,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func testUpgrade() {
+// TestUpgrade test neco debian package upgrade scenario
+func TestUpgrade() {
 	It("should update neco package", func() {
 		By("Changing env for test")
 		_, _, err := execAt(boot0, "neco", "config", "set", "env", "test")

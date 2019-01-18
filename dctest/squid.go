@@ -9,7 +9,8 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-func testSquid() {
+// TestSquid test squid installation
+func TestSquid() {
 	It("should be deployed successfully", func() {
 		By("creating k8s resources")
 		execSafeAt(boot0, "sed", "-e", "s,%%SQUID_IMAGE%%,$(neco image squid),",
