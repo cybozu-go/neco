@@ -11,28 +11,58 @@ path "auth/*"
 # List, create, update, and delete auth methods
 path "sys/auth/*"
 {
-  capabilities = ["create", "read", "update", "delete", "sudo"]
+  capabilities = ["create", "update", "delete", "sudo"]
 }
 
-# List existing policies
-path "sys/policy"
+# List auth methods
+path "sys/auth"
 {
   capabilities = ["read"]
 }
 
-# Create and manage ACL policies broadly across Vault
+# Create and manage ACL policies via CLI
 path "sys/policy/*"
 {
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
 
-# Create and manage secret engines broadly across Vault.
+# Create and manage ACL policies via API
+path "sys/policies/acl/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# To list policies - Step 3
+path "sys/policy"
+{
+  capabilities = ["read"]
+}
+
+# To perform Step 4
+path "sys/capabilities"
+{
+  capabilities = ["create", "update"]
+}
+
+# To perform Step 4
+path "sys/capabilities-self"
+{
+  capabilities = ["create", "update"]
+}
+
+# List, create, update, and delete key/value secrets
+path "secret/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# Manage secret engines broadly across Vault
 path "sys/mounts/*"
 {
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
 
-# List existing secret engines.
+# List existing secret engines
 path "sys/mounts"
 {
   capabilities = ["read"]
