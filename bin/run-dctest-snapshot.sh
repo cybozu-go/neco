@@ -47,14 +47,16 @@ git checkout -qf ${CIRCLE_SHA1}
 cd dctest
 cp /home/cybozu/secrets .
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
+cp /home/cybozu/account.json .
+gcloud auth activate-service-account --key-file=account.json
 export GO111MODULE=on
 make setup
-make MENU=highcpu-menu.yml test
-exec make snapshot
+make MENU=highcpu-menu.yml snapshot
 
 EOF
 chmod +x run.sh
 
 $GCLOUD compute scp --zone=${ZONE} secrets cybozu@${INSTANCE_NAME}:
 $GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
+$GCLOUD compute scp --zone=${ZONE} account.json cybozu@${INSTANCE_NAME}:
 $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo /home/cybozu/run.sh'

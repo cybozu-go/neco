@@ -92,8 +92,8 @@ test-release: $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(OPERATION_SSH_DIR)
 	sudo rm -rf $(VM_SHARED_DIR)
 	SUITE=bootstrap ./test.sh
 
-snapshot:
-	./snapshot.sh
+snapshot: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
+	SUITE=bootstrap ./snapshot.sh
 
 restore: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
 	./restore.sh

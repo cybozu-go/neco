@@ -224,15 +224,6 @@ workflows:
       - update-release:
           requires:
             - generate-artifacts
-  nightly:
-    triggers:
-      - schedule:
-          cron: "0 1 * * 1-5"
-          filters:
-            branches:
-              only:
-                - release
-    jobs:
       - snapshot
   master:
     jobs:
