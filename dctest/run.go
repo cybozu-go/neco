@@ -116,6 +116,11 @@ func prepareSSHClients(addresses ...string) error {
 }
 
 func execAt(host string, args ...string) (stdout, stderr []byte, e error) {
+	return execAtWithInput(host, nil, args...)
+}
+
+// WARNING: `input` can contain secret data.  Never output `input` to console.
+func execAtWithInput(host string, input []byte, args ...string) (stdout, stderr []byte, e error) {
 	agent := sshClients[host]
 	err := agent.conn.SetDeadline(time.Now().Add(DefaultRunTimeout))
 	if err != nil {
@@ -129,31 +134,15 @@ func execAt(host string, args ...string) (stdout, stderr []byte, e error) {
 	}
 	defer sess.Close()
 
+	if input != nil {
+		sess.Stdin = bytes.NewReader(input)
+	}
 	outBuf := new(bytes.Buffer)
 	errBuf := new(bytes.Buffer)
 	sess.Stdout = outBuf
 	sess.Stderr = errBuf
 	err = sess.Run(strings.Join(args, " "))
 	return outBuf.Bytes(), errBuf.Bytes(), err
-}
-
-// WARNING: `input` can contain secret data.  Never output `input` to console.
-func execAtWithInput(host string, input []byte, args ...string) error {
-	agent := sshClients[host]
-	err := agent.conn.SetDeadline(time.Now().Add(DefaultRunTimeout))
-	if err != nil {
-		return err
-	}
-	defer agent.conn.SetDeadline(time.Time{})
-
-	sess, err := agent.client.NewSession()
-	if err != nil {
-		return err
-	}
-	defer sess.Close()
-
-	sess.Stdin = bytes.NewReader(input)
-	return sess.Run(strings.Join(args, " "))
 }
 
 func execSafeAt(host string, args ...string) []byte {
@@ -180,7 +169,8 @@ func waitRequestComplete() {
 }
 
 func getVaultToken() string {
-	stdout, stderr, err := execAt(boot0, "neco", "vault", "show-root-token")
+	stdout, stderr, err := execAtWithInput(boot0, []byte("cybozu"), "vault", "login",
+		"-token-only", "-method=userpass", "username=admin", "password=-")
 	Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
 	return string(bytes.TrimSpace(stdout))

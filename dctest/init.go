@@ -1,6 +1,7 @@
 package dctest
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -11,10 +12,22 @@ import (
 
 // TestInit test initialization steps
 func TestInit() {
-	It("should success initialize etcdpasswd", func() {
+	It("should create a Vault admin user", func() {
 		// wait for vault leader election
 		time.Sleep(10 * time.Second)
 
+		stdout, stderr, err := execAt(boot0, "neco", "vault", "show-root-token")
+		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+		token := string(bytes.TrimSpace(stdout))
+
+		execSafeAt(boot0, "env", "VAULT_TOKEN="+token, "vault", "auth", "enable",
+			"-default-lease-ttl=2h", "-max-lease-ttl=24h", "userpass")
+		execSafeAt(boot0, "env", "VAULT_TOKEN="+token, "vault", "write",
+			"auth/userpass/users/admin", "policies=admin,ca-admin", "password=cybozu")
+		execSafeAt(boot0, "env", "VAULT_TOKEN="+token, "vault", "token", "revoke", "-self")
+	})
+
+	It("should success initialize etcdpasswd", func() {
 		token := getVaultToken()
 
 		execSafeAt(boot0, "neco", "init", "etcdpasswd")

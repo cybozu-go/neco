@@ -1,7 +1,6 @@
 package dctest
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"time"
@@ -14,26 +13,20 @@ import (
 
 // TestJoinRemove test boot server join/remove scenario
 func TestJoinRemove() {
-	var rootToken string
-	It("should get root token", func() {
-		stdout, _, err := execAt(boot0, "neco", "vault", "show-root-token")
-		Expect(err).ShouldNot(HaveOccurred())
-		rootToken = string(bytes.TrimSpace(stdout))
-		Expect(rootToken).NotTo(BeEmpty())
-	})
-
 	It("copies root CA certificate from existing server", func() {
 		stdout, _, err := execAt(boot0, "cat", neco.ServerCAFile)
 		Expect(err).ShouldNot(HaveOccurred())
-		err = execAtWithInput(boot3, stdout, "sudo", "tee", neco.ServerCAFile)
+		_, _, err = execAtWithInput(boot3, stdout, "sudo", "tee", neco.ServerCAFile)
 		Expect(err).ShouldNot(HaveOccurred())
 		_, _, err = execAt(boot3, "sudo", "update-ca-certificates")
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
 	It("should add a new boot server", func() {
+		token := getVaultToken()
+
 		stdout, stderr, err := execAt(
-			boot3, "sudo", "env", "VAULT_TOKEN="+rootToken, "neco", "join", "0", "1", "2")
+			boot3, "sudo", "env", "VAULT_TOKEN="+token, "neco", "join", "0", "1", "2")
 		if err != nil {
 			log.Error("neco join failed", map[string]interface{}{
 				"host":   "boot-3",
@@ -94,7 +87,8 @@ func TestJoinRemove() {
 
 	It("should remove boot-3", func() {
 		By("Running neco leave 3")
-		execSafeAt(boot0, "sudo", "env", "VAULT_TOKEN="+rootToken, "neco", "leave", "3")
+		token := getVaultToken()
+		execSafeAt(boot0, "sudo", "env", "VAULT_TOKEN="+token, "neco", "leave", "3")
 
 		By("Waiting boot-3 gets removed from etcd")
 		Eventually(func() error {
