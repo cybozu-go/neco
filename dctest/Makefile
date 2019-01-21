@@ -9,13 +9,15 @@ K8S_CTRLPLANE0 = 10.69.0.4
 K8S_CTRLPLANE1 = 10.69.0.196
 K8S_CTRLPLANE2 = 10.69.1.132
 PLACEMAT = /usr/bin/placemat
+PMCTL = /usr/bin/pmctl
 GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo --failFast -v
 SUITE = ./functions
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
 MENU = menu.yml
+GCS_SNAPSHOT_BUCKET = gs://neco-public/snapshots
 
-export BOOT0 BOOT1 BOOT2 BOOT3 PLACEMAT GINKGO SUITE
+export BOOT0 BOOT1 BOOT2 BOOT3 PLACEMAT PMCTL GINKGO SUITE PLACEMAT_DATADIR GCS_SNAPSHOT_BUCKET
 
 CUSTOM_UBUNTU = cybozu-ubuntu-18.04-server-cloudimg-amd64.img
 CUSTOM_UBUNTU_API_URL = https://api.github.com/repos/cybozu/neco-ubuntu/releases/latest
@@ -89,6 +91,12 @@ test-release: $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(OPERATION_SSH_DIR)
 	sudo rm -rf $(PLACEMAT_DATADIR)
 	sudo rm -rf $(VM_SHARED_DIR)
 	SUITE=bootstrap ./test.sh
+
+snapshot:
+	./snapshot.sh
+
+restore: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
+	./restore.sh
 
 clean:
 	rm -rf $(OUTPUT)
