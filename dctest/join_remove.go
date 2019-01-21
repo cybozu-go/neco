@@ -25,7 +25,7 @@ func TestJoinRemove() {
 	It("copies root CA certificate from existing server", func() {
 		stdout, _, err := execAt(boot0, "cat", neco.ServerCAFile)
 		Expect(err).ShouldNot(HaveOccurred())
-		err = execAtWithInput(boot3, stdout, "sudo", "tee", neco.ServerCAFile)
+		_, _, err = execAtWithInput(boot3, stdout, "sudo", "tee", neco.ServerCAFile)
 		Expect(err).ShouldNot(HaveOccurred())
 		_, _, err = execAt(boot3, "sudo", "update-ca-certificates")
 		Expect(err).ShouldNot(HaveOccurred())
