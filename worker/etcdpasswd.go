@@ -12,6 +12,16 @@ import (
 )
 
 func (o *operator) UpdateEtcdpasswd(ctx context.Context, req *neco.UpdateRequest) error {
+	_, err := replaceFile("/etc/ssh/sshd_config", []byte(etcdpasswd.SshdConf), 0644)
+	if err != nil {
+		return err
+	}
+
+	err = etcdpasswd.InstallSudoers()
+	if err != nil {
+		return err
+	}
+
 	replaced, err := o.replaceEtcdpasswdFiles(ctx, req.Servers)
 	if err != nil {
 		return err
