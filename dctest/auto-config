@@ -13,7 +13,6 @@ EOF
 
 env http_proxy=$http_proxy apt-get update
 env http_proxy=$http_proxy apt-get install -y --no-install-recommends jq ca-certificates freeipmi-tools
-env http_proxy=$http_proxy apt-get -y dist-upgrade
 apt-get clean
 
 dpkg -i /mnt/neco_0.0.1_amd64.deb
