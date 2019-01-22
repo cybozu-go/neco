@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
@@ -22,8 +21,12 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.De
 		return err
 	}
 	var release *github.RepositoryRelease
-	for _, release = range releases {
-		if release.TagName != nil && *release.TagName == pkg.Release {
+	for _, r := range releases {
+		if r.TagName == nil {
+			continue
+		}
+		if *r.TagName == pkg.Release {
+			release = r
 			break
 		}
 	}
@@ -50,26 +53,24 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.De
 	if err != nil {
 		return err
 	}
-	defer func() {
-		f.Close()
-		os.Remove(f.Name())
-	}()
+	defer f.Close()
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
 		return err
 	}
 
-	command := []string{"sh", "-c", "dpkg -i " + f.Name() + "&& rm " + f.Name()}
+	command := []string{"sh", "-c", "dpkg -i " + f.Name() + " && rm " + f.Name()}
 	if background {
-		command = append([]string{"systemd-run", "-q", "--wait"}, command...)
+		command = append([]string{"systemd-run", "-q"}, command...)
 	}
 	return well.CommandContext(context.Background(), command[0], command[1:]...).Run()
 }
 
 func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage) error {
-	deb := fmt.Sprintf("/mnt/%s_%s_amd64.deb", pkg.Name, pkg.Release)
-	return well.CommandContext(context.Background(), "systemd-run", "-q", "--wait", "dpkg", "-i", deb).Run()
+	debVersion := pkg.Release[len("release-"):]
+	deb := fmt.Sprintf("/mnt/%s_%s_amd64.deb", pkg.Name, debVersion)
+	return well.CommandContext(context.Background(), "systemd-run", "-q", "dpkg", "-i", deb).Run()
 }
 
 func listGithubReleases(ctx context.Context, gh *github.Client, pkg *neco.DebianPackage) ([]*github.RepositoryRelease, error) {
