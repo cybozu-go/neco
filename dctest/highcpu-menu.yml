@@ -7,6 +7,7 @@ spec:
   core-spine: 10.0.2.0/31
   core-external: 10.0.3.0/24
   core-operation: 10.0.4.0/24
+  proxy: 10.0.49.3
   exposed:
     loadbalancer: 10.72.32.0/20
     bastion: 10.72.48.0/26
