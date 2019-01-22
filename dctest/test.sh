@@ -53,8 +53,8 @@ if [ "${SAVE_SNAPSHOT}" = "true" ]; then
 
     ${PMCTL} snapshot save latest
 
-    count=$(${PMCTL} snapshot list | jq '.[] | select(. | contains("latest"))' | wc -l)
-    if [ $count -ne 10 ]; then
+    count=$(${PMCTL} snapshot list | jq '.[] | select(. | contains("There is no snapshot available."))' | wc -l)
+    if [ $count -ne 0 ]; then
         echo "snapshots were not saved correctly"
         exit 1
     fi

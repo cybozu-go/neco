@@ -51,7 +51,7 @@ cp /home/cybozu/account.json .
 gcloud auth activate-service-account --key-file=account.json
 export GO111MODULE=on
 make setup
-exec make MENU=highcpu-menu.yml TAGS=release test-release
+exec make TAGS=release test-release
 EOF
 chmod +x run.sh
 
