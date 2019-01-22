@@ -22,5 +22,11 @@ for i in $(seq 10); do
   sleep 1
 done
 
+count=$(${PMCTL} snapshot list | jq '.[] | select(. | contains("latest"))' | wc -l)
+if [ $count -ne 10 ]; then
+    echo "snapshots 'latest' can not be found."
+    exit 1
+fi
+
 # load VMs
 ${PMCTL} snapshot load latest
