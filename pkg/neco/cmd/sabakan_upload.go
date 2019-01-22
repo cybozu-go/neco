@@ -28,7 +28,7 @@ func sabakanUpload(ctx context.Context, st storage.Storage) error {
 	}
 	localClient := ext.LocalHTTPClient()
 
-	// NOTE: hack to set http proxy to container/image
+	// NOTE: hack for github.com/containers/image to set HTTP proxy
 	proxy, err := st.GetProxyConfig(ctx)
 	if err != nil && err != storage.ErrNotFound {
 		return err
