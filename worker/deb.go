@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
@@ -21,8 +22,15 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.De
 		return err
 	}
 	var release *github.RepositoryRelease
-	for _, release = range releases {
-		if release.TagName != nil && *release.TagName == pkg.Release {
+	for _, r := range releases {
+		if r.TagName == nil {
+			continue
+		}
+		if !strings.HasPrefix(*r.TagName, "release-") {
+			continue
+		}
+		if *r.TagName == "release-"+pkg.Release {
+			release = r
 			break
 		}
 	}
