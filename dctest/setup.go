@@ -16,7 +16,7 @@ func TestSetup() {
 		env := well.NewEnvironment(context.Background())
 		env.Go(func(ctx context.Context) error {
 			stdout, stderr, err := execAt(
-				boot0, "sudo", "neco", "setup", "--no-revoke", "0", "1", "2")
+				boot0, "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-0",
@@ -29,7 +29,7 @@ func TestSetup() {
 		})
 		env.Go(func(ctx context.Context) error {
 			stdout, stderr, err := execAt(
-				boot1, "sudo", "neco", "setup", "--no-revoke", "0", "1", "2")
+				boot1, "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-1",
@@ -42,7 +42,7 @@ func TestSetup() {
 		})
 		env.Go(func(ctx context.Context) error {
 			stdout, stderr, err := execAt(
-				boot2, "sudo", "neco", "setup", "--no-revoke", "0", "1", "2")
+				boot2, "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-2",

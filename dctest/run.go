@@ -22,6 +22,8 @@ const (
 
 	// DefaultRunTimeout is the timeout value for Agent.Run().
 	DefaultRunTimeout = 10 * time.Minute
+
+	proxy = "http://10.0.49.3:3128"
 )
 
 var (
