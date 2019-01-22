@@ -46,7 +46,7 @@ func ProxyHTTPClient(ctx context.Context, st storage.Storage) (*http.Client, err
 // LocalHTTPClient returns a *http.Client to access intranet services.
 func LocalHTTPClient() *http.Client {
 	transport := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
+		Proxy: nil,
 		DialContext: (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,

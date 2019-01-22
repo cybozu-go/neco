@@ -2,14 +2,18 @@
 
 set -e
 
+http_proxy=http://10.0.49.3:3128/
+https_proxy=http://10.0.49.3:3128/
+
 cat > /etc/apt/sources.list <<EOF
 deb http://mirror.math.princeton.edu/pub/ubuntu bionic main restricted universe multiverse
 deb http://mirror.math.princeton.edu/pub/ubuntu bionic-updates main restricted universe multiverse
 deb http://mirror.math.princeton.edu/pub/ubuntu bionic-security main restricted universe multiverse
 EOF
 
-apt-get update
-apt-get install -y --no-install-recommends jq ca-certificates freeipmi-tools
+env http_proxy=$http_proxy apt-get update
+env http_proxy=$http_proxy apt-get install -y --no-install-recommends jq ca-certificates freeipmi-tools
+apt-get clean
 
 dpkg -i /mnt/neco_0.0.1_amd64.deb
 
