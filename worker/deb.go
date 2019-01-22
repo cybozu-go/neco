@@ -68,7 +68,8 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, pkg *neco.De
 }
 
 func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage) error {
-	deb := fmt.Sprintf("/mnt/%s_%s_amd64.deb", pkg.Name, pkg.Release)
+	debVersion := pkg.Release[len("release-"):]
+	deb := fmt.Sprintf("/mnt/%s_%s_amd64.deb", pkg.Name, debVersion)
 	return well.CommandContext(context.Background(), "systemd-run", "-q", "dpkg", "-i", deb).Run()
 }
 
