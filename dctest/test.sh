@@ -40,34 +40,5 @@ operation_pid=$(pgrep -P ${child_pid} -f operation)
 
 sudo -E nsenter -t ${operation_pid} -n sh -c "export PATH=$PATH; $GINKGO $SUITE"
 RET=$?
-if [ "$RET" -ne 0 ]; then
-  exit $RET
-fi
 
-if [ "${SAVE_SNAPSHOT}" = "true" ]; then
-    set -e
-
-    VOLUMES=$(gsutil ls -d ${GCS_SNAPSHOT_BUCKET}/volumes_*)
-    NOW=$(date "+%Y%m%d%H%M%S")
-    NODES=$(${PMCTL} node list)
-
-    ${PMCTL} snapshot save latest
-
-    count=$(${PMCTL} snapshot list | jq '.[] | select(. | contains("There is no snapshot available."))' | wc -l)
-    if [ $count -ne 0 ]; then
-        echo "snapshots were not saved correctly"
-        exit 1
-    fi
-    for node in ${NODES}; do
-        ${PMCTL} node action stop ${node}
-    done
-
-    gsutil -q cp -r ${PLACEMAT_DATADIR}/volumes ${GCS_SNAPSHOT_BUCKET}/volumes_${NOW}_temp
-    gsutil -q mv ${GCS_SNAPSHOT_BUCKET}/volumes_${NOW}_temp/* ${GCS_SNAPSHOT_BUCKET}/volumes_${NOW}
-    gsutil rm -r ${GCS_SNAPSHOT_BUCKET}/volumes_${NOW}_temp
-    for v in ${VOLUMES}; do
-        gsutil rm -r $v
-    done
-fi
-
-exit 0
+exit $RET
