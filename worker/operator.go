@@ -64,7 +64,7 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 		Name:       neco.NecoPackageName,
 		Repository: neco.GitHubRepoName,
 		Owner:      neco.GitHubRepoOwner,
-		Release:    req.Version,
+		Release:    "release-" + req.Version,
 	}
 
 	log.Info("update neco", map[string]interface{}{
