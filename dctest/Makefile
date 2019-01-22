@@ -90,10 +90,7 @@ test-release: $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(OPERATION_SSH_DIR)
 	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=release
 	sudo rm -rf $(PLACEMAT_DATADIR)
 	sudo rm -rf $(VM_SHARED_DIR)
-	SUITE=bootstrap ./test.sh
-
-snapshot: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
-	SUITE=bootstrap ./snapshot.sh
+	SUITE=bootstrap SAVE_SNAPSHOT=true ./test.sh
 
 restore: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
 	./restore.sh
