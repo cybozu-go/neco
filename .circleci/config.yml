@@ -141,7 +141,7 @@ jobs:
           command: |
             if [ ! -f .diff ]; then exit 0; fi
             ./bin/run-dctest-release.sh
-          no_output_timeout: 20m
+          no_output_timeout: 30m
       - add_ssh_keys:
           fingerprints:
             - "d7:2a:c8:5d:c4:32:7e:20:6f:bc:20:7c:ab:c4:24:88"
