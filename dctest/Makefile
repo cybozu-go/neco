@@ -76,8 +76,15 @@ test: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
 placemat: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
 	sudo rm -rf $(PLACEMAT_DATADIR)
 	sudo rm -rf $(VM_SHARED_DIR)
-	sudo -b $(PLACEMAT) -enable-virtfs output/cluster.yml
-	@echo 'Placemat is running.  To kill it, do "sudo pkill placemat".'
+	sudo systemd-run --unit=placemat.service $(PLACEMAT) -enable-virtfs $(realpath output/cluster.yml)
+	@echo 'Placemat is running.  To kill it, do "make stop".'
+
+stop:
+	sudo systemctl stop placemat.service
+	sudo systemctl disable placemat.service
+	sudo rm /run/systemd/transient/placemat.service
+	sudo systemctl daemon-reload
+	sudo systemctl reset-failed placemat.service
 
 test-light:
 	placemat_pid=$$(echo $$(pgrep placemat) | tr " " ",") ; \
