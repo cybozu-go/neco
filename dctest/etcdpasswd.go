@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/cybozu-go/log"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -38,11 +37,8 @@ func TestEtcdpasswd() {
 				if err != nil {
 					return err
 				}
-				_, stderr, err := doExec(agent, nil, "sudo", "ls")
+				_, _, err = doExec(agent, nil, "sudo", "ls")
 				if err != nil {
-					log.Error("failed to exec sudo ls", map[string]interface{}{
-						log.FnError: stderr,
-					})
 					return err
 				}
 			}
