@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 
 	"github.com/cybozu-go/log"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -15,25 +14,22 @@ func TestEtcdpasswd() {
 	It("should be possible to add user", func() {
 		By("initialize etcdpasswd")
 		user := "bob"
-		publicKey := "bob_key.pub"
-		privateKey := "bob_key"
-
 		execSafeAt(boot0, "etcdpasswd", "set", "start-uid", "2000")
 		execSafeAt(boot0, "etcdpasswd", "set", "start-gid", "2000")
 		execSafeAt(boot0, "etcdpasswd", "set", "default-group", "cybozu")
 		execSafeAt(boot0, "etcdpasswd", "set", "default-groups", "sudo,adm")
 		execSafeAt(boot0, "etcdpasswd", "user", "add", user)
 		execSafeAt(boot0, "etcdpasswd", "user", "get", user)
-		keyBytes, err := ioutil.ReadFile(publicKey)
+		keyBytes, err := ioutil.ReadFile(bobPublicKey)
 		Expect(err).ShouldNot(HaveOccurred())
-		publicKeyPath := filepath.Join("/tmp", publicKey)
+		publicKeyPath := filepath.Join("/tmp", filepath.Base(bobPublicKey))
 		_, _, err = execAtWithInput(boot0, keyBytes, "sudo", "tee", publicKeyPath)
 		Expect(err).ShouldNot(HaveOccurred())
-		execSafeAt(boot0, "etcdpasswd", "cert", "add", user, publicKey)
+		execSafeAt(boot0, "etcdpasswd", "cert", "add", user, publicKeyPath)
 		execSafeAt(boot0, "rm", publicKeyPath)
 
 		By("executing command with sudo at boot servers")
-		sshKey, err := parsePrivateKey(privateKey)
+		sshKey, err := parsePrivateKey(bobPrivateKey)
 		Expect(err).ShouldNot(HaveOccurred())
 		hosts := []string{boot0, boot1, boot2}
 		Eventually(func() error {
