@@ -39,4 +39,5 @@ var _ = Describe("Test Neco functions", func() {
 	Context("coil", dctest.TestCoil)
 	Context("unbound", dctest.TestUnbound)
 	Context("squid", dctest.TestSquid)
+	Context("etcdpasswd", dctest.TestEtcdpasswd)
 })

@@ -41,14 +41,14 @@ type sshAgent struct {
 	conn   net.Conn
 }
 
-func sshTo(address string, sshKey ssh.Signer) (*sshAgent, error) {
+func sshTo(address string, sshKey ssh.Signer, userName string) (*sshAgent, error) {
 	conn, err := agentDialer.Dial("tcp", address+":22")
 	if err != nil {
 		fmt.Printf("failed to dial: %s\n", address)
 		return nil, err
 	}
 	config := &ssh.ClientConfig{
-		User: "cybozu",
+		User: userName,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(sshKey),
 		},
@@ -77,8 +77,8 @@ func sshTo(address string, sshKey ssh.Signer) (*sshAgent, error) {
 	return &a, nil
 }
 
-func parsePrivateKey() (ssh.Signer, error) {
-	f, err := os.Open(os.Getenv("SSH_PRIVKEY"))
+func parsePrivateKey(keyPath string) (ssh.Signer, error) {
+	f, err := os.Open(keyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func parsePrivateKey() (ssh.Signer, error) {
 }
 
 func prepareSSHClients(addresses ...string) error {
-	sshKey, err := parsePrivateKey()
+	sshKey, err := parsePrivateKey(sshKeyFile)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func prepareSSHClients(addresses ...string) error {
 			return errors.New("timed out")
 		default:
 		}
-		agent, err := sshTo(a, sshKey)
+		agent, err := sshTo(a, sshKey, "cybozu")
 		if err != nil {
 			time.Sleep(time.Second)
 			goto RETRY
@@ -124,6 +124,10 @@ func execAt(host string, args ...string) (stdout, stderr []byte, e error) {
 // WARNING: `input` can contain secret data.  Never output `input` to console.
 func execAtWithInput(host string, input []byte, args ...string) (stdout, stderr []byte, e error) {
 	agent := sshClients[host]
+	return doExec(agent, input, args...)
+}
+
+func doExec(agent *sshAgent, input []byte, args ...string) ([]byte, []byte, error) {
 	err := agent.conn.SetDeadline(time.Now().Add(DefaultRunTimeout))
 	if err != nil {
 		return nil, nil, err
