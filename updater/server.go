@@ -131,7 +131,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			if err != nil {
 				return err
 			}
-			err = s.notifier.NotifyInfo(ctx, *ss.Request, "start updating the new release.")
+			err = s.notifier.NotifyInfo(ctx, req, "start updating the new release.")
 			if err != nil {
 				log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 			}
