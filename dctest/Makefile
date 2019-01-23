@@ -33,8 +33,10 @@ OLD_DEB = $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb
 NEW_DEB = $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb
 SABAKAN_CONTENTS = $(AUTOCONFIG) $(OLD_DEB) $(NEW_DEB)
 SSH_PRIVKEY = $(realpath ./dctest_key)
+BOB_PRIVKEY = $(realpath ./bob_key)
+BOB_PUBKEY = $(realpath ./bob_key.pub)
 
-export SSH_PRIVKEY
+export SSH_PRIVKEY BOB_PRIVKEY BOB_PUBKEY
 
 all: test lint
 

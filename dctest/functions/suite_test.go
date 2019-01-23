@@ -25,6 +25,7 @@ var _ = BeforeSuite(dctest.RunBeforeSuite)
 var _ = Describe("Test Neco functions", func() {
 	Context("setup", dctest.TestSetup)
 	Context("initialize", dctest.TestInit)
+	Context("etcdpasswd", dctest.TestEtcdpasswd)
 	Context("sabakan", dctest.TestSabakan)
 	// uploading contents to sabakan must be done after sabakan configuration.
 	Context("contents", func() {
