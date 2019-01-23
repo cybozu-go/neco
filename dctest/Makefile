@@ -87,9 +87,7 @@ stop:
 	sudo systemctl reset-failed placemat.service
 
 test-light:
-	placemat_pid=$$(echo $$(pgrep placemat) | tr " " ",") ; \
-	operation_pid=$$(pgrep -P $$placemat_pid -f operation) ; \
-	sudo -E nsenter -t $$operation_pid -n sh -c "export PATH=$$PATH; $(GINKGO) $(SUITE) -focus=\"${TARGET}\""
+	./test-light.sh "$(TAEGET)"
 
 test-release: $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(OPERATION_SSH_DIR)
 	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=release
