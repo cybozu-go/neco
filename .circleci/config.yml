@@ -80,7 +80,7 @@ jobs:
       - image: quay.io/cybozu/golang:1.11-bionic
       steps:
       - checkout
-      - run: go install ./pkg/generate-artifacts/
+      - run: go install -mod=vendor ./pkg/generate-artifacts/
       - run: generate-artifacts --release > artifacts_release.go
       - persist_to_workspace:
           root: .
