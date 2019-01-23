@@ -87,7 +87,7 @@ type DebianPackage struct {
 	// GitHub repository.
 	Repository string
 
-	// GitHub releases.
+	// GitHub releases (tag name).
 	Release string
 }
 
