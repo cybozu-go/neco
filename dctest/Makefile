@@ -105,8 +105,7 @@ fullclean: clean
 
 setup:
 	cd ../ && $(MAKE) setup
-	GO111MODULE=off go get -t -d ./... \
-		github.com/cybozu-go/placemat-menu
+	GO111MODULE=off	go get -d -u github.com/cybozu-go/placemat-menu
 	GO111MODULE=off go get github.com/onsi/ginkgo/ginkgo
 	cd $(GOPATH)/src/github.com/cybozu-go/placemat-menu; GO111MODULE=on make
 
