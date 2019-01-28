@@ -2,7 +2,7 @@
 
 if systemd-detect-virt -v >/dev/null; then
     # notify BMC address to placemat
-    echo {{ .BMC.IPv4 }} > /dev/virtio-ports/placemat
+    echo {{ .Spec.BMC.IPv4 }} > /dev/virtio-ports/placemat
     echo >&2 "Setup succeeded"
     exit 0
 fi
@@ -33,7 +33,7 @@ if test_scheduled_jobqueue; then
 fi
 
 rkt enter --app=omsa $uuid setup-hw \
-    --rac-name rack{{ .Rack }}-{{ .Role }}{{ .IndexInRack }}-idrac
+    --rac-name rack{{ .Spec.Rack }}-{{ .Spec.Role }}{{ .Spec.IndexInRack }}-idrac
 
 if test_scheduled_jobqueue; then
     echo >&2 "Setup succeeded, machine will reboot"

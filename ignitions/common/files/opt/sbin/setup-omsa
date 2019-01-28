@@ -3,5 +3,5 @@
 # setup config
 mkdir -p /etc/neco
 curl -sfSL -o /tmp/omsa.json {{ MyURL }}/api/v1/assets/omsa.json
-jq '. | .bmc_address = "{{ .BMC.IPv4 }}"' /tmp/omsa.json >/etc/neco/omsa.json
+jq '. | .bmc_address = "{{ .Spec.BMC.IPv4 }}"' /tmp/omsa.json >/etc/neco/omsa.json
 rm -f /tmp/omsa.json

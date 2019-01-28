@@ -1,1 +1,1 @@
-{{ .Rack }}
+{{ .Spec.Rack }}
