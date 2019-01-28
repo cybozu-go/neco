@@ -1,6 +1,6 @@
 package vault
 
-import "html/template"
+import "text/template"
 
 var confTmpl = template.Must(template.New("vault.hcl").
 	Parse(`# vault configuration file

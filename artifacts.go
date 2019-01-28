@@ -8,7 +8,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "cke", Repository: "quay.io/cybozu/cke", Tag: "0.27-1"},
 		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.3.9-4"},
 		{Name: "omsa", Repository: "quay.io/cybozu/omsa", Tag: "18.11.01-1"},
-		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "1.0.0-1"},
+		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "1.0.1-1"},
 		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.8.1-4"},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "0.11.0-4"},
 		{Name: "hyperkube", Repository: "quay.io/cybozu/hyperkube", Tag: "1.12.3-2"},
