@@ -11,8 +11,8 @@ deb http://mirror.math.princeton.edu/pub/ubuntu bionic-updates main restricted u
 deb http://mirror.math.princeton.edu/pub/ubuntu bionic-security main restricted universe multiverse
 EOF
 
-env http_proxy=$http_proxy apt-get update
-env http_proxy=$http_proxy apt-get install -y --no-install-recommends jq ca-certificates freeipmi-tools
+env http_proxy=$http_proxy apt-get update -o Acquire::Retries=5
+env http_proxy=$http_proxy apt-get install -o Acquire::Retries=5 -y --no-install-recommends jq ca-certificates freeipmi-tools
 apt-get clean
 
 dpkg -i /mnt/neco_0.0.1_amd64.deb
