@@ -89,7 +89,7 @@ stop:
 	sudo systemctl reset-failed placemat.service
 
 test-light:
-	./test-light.sh "$(TAEGET)"
+	./test-light.sh "$(TARGET)"
 
 test-release: $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(OPERATION_SSH_DIR)
 	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=release
