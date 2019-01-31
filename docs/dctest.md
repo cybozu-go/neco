@@ -4,6 +4,27 @@ Data Center Test(dctest)
 [dctest](dctest/) directory contains test suites to run integration
 tests in a virtual data center environment.
 
+Type of Test Suites
+-------------------
+
+There are two types of test suites.
+
+1. functions
+
+    This suite tests full set of functions of Neco.  Especially this includes
+    upgrading test and joining/removing node test.
+
+    Upgrading test uses `artifacts.go` as an initially-installed package,
+    and `artifacts_new.go` as an upgrade-object package.
+
+2. bootstrap
+
+    This suite tests initial setup of Neco.  This does not include
+    upgrading test nor joining/removing node test.
+
+Each test has an entry point of test as `<suite>/suite_test.go`.
+
+
 Synopsis
 --------
 
@@ -19,15 +40,24 @@ Synopsis
 
 * `make placemat`
 
-    Run `placemat` to start virtual machines. To stop placemat, please run `sudo pkill placemat`.
+    Run `placemat` in background by systemd-run to start virtual machines.
+
+* `make stop`
+
+    Stop `placemat`.
 
 * `make test-light`
 
-    Run dctest.
+    Run _functions_ dctest.
 
 * `make test`
 
-    Run equivalent to `make placemat` and `make test-light`.
+    Run `placemat` and do _functions_ dctest.  Stop `placemat` at the end.
+
+* `make test-release`
+
+    Run `placemat` and do _bootstrap_ dctest using `artifacts_release.go`
+    in the release branch.  Stop `placemat` at the end.
 
 Options
 -------
