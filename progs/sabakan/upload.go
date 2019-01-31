@@ -161,22 +161,12 @@ func uploadAssets(ctx context.Context, c *sabakan.Client, auth *DockerAuth) erro
 	}
 
 	// Upload other images
-	var fetches []neco.ContainerImage
-	images := neco.SabakanPublicImages
-	if auth != nil {
-		images = append(images, neco.SabakanPrivateImages...)
-	}
-	for _, name := range images {
+	env := well.NewEnvironment(ctx)
+	for _, name := range neco.SabakanImages {
 		img, err := neco.CurrentArtifacts.FindContainerImage(name)
 		if err != nil {
 			return err
 		}
-		fetches = append(fetches, img)
-	}
-
-	env := well.NewEnvironment(ctx)
-	for _, img := range fetches {
-		img := img
 		env.Go(func(ctx context.Context) error {
 			return UploadImageAssets(ctx, img, c, auth)
 		})
@@ -281,7 +271,11 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 		os.RemoveAll(copyRoot)
 	}()
 
-	err = exec.Command("cp", "-a", neco.IgnitionDirectory, copyRoot).Run()
+	_, err = st.GetQuayPassword(ctx)
+	if err != nil && err != storage.ErrNotFound {
+		return err
+	}
+	err = fillAssets(neco.IgnitionDirectory, copyRoot, err == nil)
 	if err != nil {
 		return err
 	}
@@ -370,6 +364,55 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 	return nil
 }
 
+func fillAssets(dest, src string, hasSecret bool) error {
+	var patterns []string
+	for _, img := range neco.CurrentArtifacts.Images {
+		patterns = append(patterns, "%%"+img.Name+"%img%%", neco.ImageAssetName(img))
+		patterns = append(patterns, "%%"+img.Name+"%aci%%", neco.ACIAssetName(img))
+		patterns = append(patterns, "%%"+img.Name+"%full%%", img.FullName(hasSecret))
+	}
+	for _, img := range neco.SystemContainers {
+		patterns = append(patterns, "%%"+img.Name+"%img%%", neco.ImageAssetName(img))
+		patterns = append(patterns, "%%"+img.Name+"%aci%%", neco.ACIAssetName(img))
+		patterns = append(patterns, "%%"+img.Name+"%full%%", img.FullName(hasSecret))
+	}
+	sabaImg, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
+	if err != nil {
+		return err
+	}
+	patterns = append(patterns, "%%cryptsetup%%", neco.CryptsetupAssetName(sabaImg))
+
+	repl := strings.NewReplacer(patterns...)
+
+	render := func(srcFile, destFile string) error {
+		data, err := ioutil.ReadFile(srcFile)
+		if err != nil {
+			return err
+		}
+
+		replaced := repl.Replace(string(data))
+		return ioutil.WriteFile(destFile, []byte(replaced), 0644)
+	}
+
+	return filepath.Walk(src, func(p string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+
+		rel, err := filepath.Rel(src, p)
+		if err != nil {
+			return err
+		}
+
+		target := filepath.Join(dest, rel)
+		if info.IsDir() {
+			return os.Mkdir(target, 0755)
+		}
+
+		return render(p, target)
+	})
+}
+
 func needIgnitionUpdate(ctx context.Context, c *sabakan.Client, role, id string, newer string) (bool, error) {
 	index, err := c.IgnitionsGet(ctx, role)
 	if err != nil {
@@ -436,7 +479,7 @@ func getCKEData() (map[string]string, error) {
 		}
 		nameUpper := strings.ToUpper(img.Name)
 		data[fmt.Sprintf("%s_FILE", nameUpper)] = neco.ImageAssetName(img)
-		data[fmt.Sprintf("%s_NAME", nameUpper)] = img.FullName()
+		data[fmt.Sprintf("%s_NAME", nameUpper)] = img.FullName(false)
 	}
 	err = sc.Err()
 	if err != nil {

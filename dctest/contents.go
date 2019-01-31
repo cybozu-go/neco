@@ -62,14 +62,7 @@ func TestContents() {
 		for _, image := range neco.SystemContainers {
 			Expect(assets).To(ContainElement(neco.ACIAssetName(image)))
 		}
-		images := neco.SabakanPublicImages
-		_, err = os.Stat("../secrets")
-		secretExists := err == nil
-
-		if secretExists {
-			images = append(images, neco.SabakanPrivateImages...)
-		}
-		for _, name := range images {
+		for _, name := range neco.SabakanImages {
 			image, err := neco.CurrentArtifacts.FindContainerImage(name)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(assets).To(ContainElement(neco.ImageAssetName(image)))

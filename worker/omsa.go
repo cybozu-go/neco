@@ -12,14 +12,6 @@ import (
 )
 
 func (o *operator) UpdateOMSA(ctx context.Context, req *neco.UpdateRequest) error {
-	needHandle, err := needToHandle("omsa")
-	if err != nil {
-		return err
-	}
-	if !needHandle {
-		return nil
-	}
-
 	need, err := o.needContainerImageUpdate(ctx, "omsa")
 	if err != nil {
 		return err
@@ -41,7 +33,7 @@ func (o *operator) UpdateOMSA(ctx context.Context, req *neco.UpdateRequest) erro
 	}
 
 	if need || replaced {
-		err = neco.RestartService(ctx, neco.OMSAService)
+		err = neco.RestartService(ctx, neco.SetupHWService)
 		if err != nil {
 			return err
 		}
@@ -58,9 +50,9 @@ func (o *operator) replaceOMSAFiles(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	err = os.MkdirAll(filepath.Dir(neco.ServiceFile(neco.OMSAService)), 0755)
+	err = os.MkdirAll(filepath.Dir(neco.ServiceFile(neco.SetupHWService)), 0755)
 	if err != nil {
 		return false, err
 	}
-	return replaceFile(neco.ServiceFile(neco.OMSAService), buf.Bytes(), 0644)
+	return replaceFile(neco.ServiceFile(neco.SetupHWService), buf.Bytes(), 0644)
 }
