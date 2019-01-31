@@ -1,6 +1,6 @@
 kind: Network
 spec:
-  ipam-config: ../etc/ipam.json
+  ipam-config: ipam.json
   asn-base: 64600
   internet: 10.0.0.0/24
   spine-tor: 10.0.1.0

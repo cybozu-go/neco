@@ -1,6 +1,6 @@
 package sabakan
 
-import "html/template"
+import "text/template"
 
 var serviceTmpl = template.Must(template.New("sabakan.service").Parse(`[Unit]
 Description=Sabakan container on rkt

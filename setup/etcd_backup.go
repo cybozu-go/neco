@@ -3,9 +3,9 @@ package setup
 import (
 	"bytes"
 	"context"
-	"html/template"
 	"io/ioutil"
 	"os"
+	"text/template"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"

@@ -1,6 +1,6 @@
 package serf
 
-import "html/template"
+import "text/template"
 
 type tags struct {
 	OsName    string `json:"os-name"`

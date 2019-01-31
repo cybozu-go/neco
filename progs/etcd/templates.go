@@ -1,6 +1,6 @@
 package etcd
 
-import "html/template"
+import "text/template"
 
 var confTmpl = template.Must(template.New("etcd.conf.yml").
 	Parse(`# This is the configuration file for the etcd server.

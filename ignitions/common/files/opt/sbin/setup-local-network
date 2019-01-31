@@ -16,7 +16,7 @@ LLDP=true
 EmitLLDP=nearest-bridge
 
 [Address]
-Address={{ index .IPv4 1 }}/26
+Address={{ index .Spec.IPv4 1 }}/26
 Scope=link
 EOF
 
@@ -29,7 +29,7 @@ LLDP=true
 EmitLLDP=nearest-bridge
 
 [Address]
-Address={{ index .IPv4 2 }}/26
+Address={{ index .Spec.IPv4 2 }}/26
 Scope=link
 EOF
 
