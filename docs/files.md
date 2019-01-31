@@ -26,12 +26,16 @@ TLS client certificates for etcd authentication for Neco tools.
 
 etcd configuration defined in [etcdutil][]
 
+### `sabakan_ipam.json`
+
+IPAM configuration for [sabakan][].
+
 `/usr/share/neco`
 -----------------
 
 This directory holds miscellaneous configuration files for applications installed by Neco.
 
-### `dhcp.json` and `ipam.json`
+### `dhcp.json`
 
 [sabakan][] configuration.
 
