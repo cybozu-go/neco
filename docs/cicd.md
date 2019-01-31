@@ -17,26 +17,26 @@ CI flow
 ### After `master` merge
 
 1. Run `generate-artifacts` to retrieve latest version of components, then generate `artifacts_release.go`.
-2. Checkout `master` branch then merge changes into `release` branch.
-3. Run [dctest][] but less test cases from regular dctest.
+2. Check out `master` branch then merge changes into `release` branch.
+3. Run [dctest][] but fewer test cases from regular dctest.
 4. If dctest is passed, [cybozu-neco][] pushes changes to `release` branch to remote branch in [github.com/cybozu-go/neco](https://github.com/cybozu-go/neco).
-5. Also, [cybozu-neco][] also applies and pushes a tag `test-YYYY.MM.DD-UNIQUE_ID` to remote.
+5. Also, [cybozu-neco][] also applies and pushes a tag `test-YYYY.MM.DD-UNIQUE_ID` to the remote.
 
-Regular test cases of dctest is also run in parallel.
+Regular test cases of dctest are also run in parallel.
 
 ### Nightly workflow
 
 Same workflow process but it works on `release` branch. This is run as stability aspects.
 
-### Are you ready to deploy for staging data center?
+### Are you ready to deploy for the staging data center?
 
 1. Choose a tag in [release page](https://github.com/cybozu-go/neco/releases) which starts with `test-` of what you want.
-2. Click `Edit tag`, then rename the tag name to `release-YYYY.MM.DD-UNIQUE_ID`. Note that date and UNIQUE_ID is same as before.
+2. Click `Edit tag`, then rename the tag name to `release-YYYY.MM.DD-UNIQUE_ID`. Note that date and UNIQUE_ID are same as before.
 3. Check `This is a pre-release`, then click `Publish release`.
 4. CI workflow builds a debian package `neco-YYYY.MM.DD-UNIQUE_ID.deb` and uploads it to GitHub Release.
 5. `neco-updater` on staging starts CD flow described below.
 
-### Are you ready to deploy for production data center?
+### Are you ready to deploy for production data centerthe ?
 
 1. Choose a pre-release tag in [release page](https://github.com/cybozu-go/neco/releases) which starts with `release-` of what you want.
 2. Uncheck `This is a pre-release`, then click `Publish release`.
@@ -55,11 +55,11 @@ Glossary
 
 - tag: `test-YYYY.MM.DD-UNIQUE_ID`
 
-    It is candidate release version which is passed [dctest].
+    It is a candidate release version which is passed [dctest].
 
 - tag: `release-YYYY.MM.DD-UNIQUE_ID`
 
-    It is already released version with `neco` debian package.
+    It is an already released version with `neco` Debian package.
 
     -  `neco-updater` on **staging** finds a new **pre-release** of them.
     -  `neco-updater` on **production** finds a new **release** of them.
