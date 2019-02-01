@@ -275,7 +275,7 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 	if err != nil && err != storage.ErrNotFound {
 		return err
 	}
-	err = fillAssets(neco.IgnitionDirectory, copyRoot, err == nil)
+	err = fillAssets(copyRoot, neco.IgnitionDirectory, err == nil)
 	if err != nil {
 		return err
 	}
@@ -405,6 +405,10 @@ func fillAssets(dest, src string, hasSecret bool) error {
 		}
 
 		target := filepath.Join(dest, rel)
+		_, err = os.Stat(target)
+		if err == nil {
+			return nil
+		}
 		if info.IsDir() {
 			return os.Mkdir(target, 0755)
 		}
