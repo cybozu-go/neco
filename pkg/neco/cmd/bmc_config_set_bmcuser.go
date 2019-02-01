@@ -6,7 +6,9 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
+	sabakan "github.com/cybozu-go/sabakan/client"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
@@ -14,7 +16,7 @@ import (
 var bmcConfigSetBMCUserCmd = &cobra.Command{
 	Use:   "bmc-user FILE",
 	Short: "store bmc-user.json contents",
-	Long:  `Store bmc-user.json contents.`,
+	Long:  `Store bmc-user.json contents, and upload it to sabakan`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
@@ -28,8 +30,20 @@ var bmcConfigSetBMCUserCmd = &cobra.Command{
 			log.ErrorExit(err)
 		}
 
+		localClient := ext.LocalHTTPClient()
+
 		well.Go(func(ctx context.Context) error {
-			return st.PutBMCBMCUser(ctx, string(data))
+			err := st.PutBMCBMCUser(ctx, string(data))
+			if err != nil {
+				return err
+			}
+
+			saba, err := sabakan.NewClient(neco.SabakanLocalEndpoint, localClient)
+			if err != nil {
+				return err
+			}
+			_, err = saba.AssetsUpload(ctx, "bmc-user.json", args[0], nil)
+			return err
 		})
 		well.Stop()
 		err = well.Wait()
