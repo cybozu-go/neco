@@ -8,26 +8,22 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/neco/progs/omsa"
+	"github.com/cybozu-go/neco/progs/setuphw"
 )
 
-func (o *operator) UpdateOMSA(ctx context.Context, req *neco.UpdateRequest) error {
-	need, err := o.needContainerImageUpdate(ctx, "omsa")
+func (o *operator) UpdateSetupHW(ctx context.Context, req *neco.UpdateRequest) error {
+	need, err := o.needContainerImageUpdate(ctx, "setup-hw")
 	if err != nil {
 		return err
 	}
 	if need {
-		err = omsa.InstallTools(ctx)
-		if err != nil {
-			return err
-		}
-		err = o.storage.RecordContainerTag(ctx, o.mylrn, "omsa")
+		err = o.storage.RecordContainerTag(ctx, o.mylrn, "setup-hw")
 		if err != nil {
 			return err
 		}
 	}
 
-	replaced, err := o.replaceOMSAFiles(ctx)
+	replaced, err := o.replaceSetupHWFiles(ctx)
 	if err != nil {
 		return err
 	}
@@ -37,16 +33,16 @@ func (o *operator) UpdateOMSA(ctx context.Context, req *neco.UpdateRequest) erro
 		if err != nil {
 			return err
 		}
-		log.Info("omsa: updated", nil)
+		log.Info("setup-hw: updated", nil)
 	}
 
 	return nil
 }
 
-func (o *operator) replaceOMSAFiles(ctx context.Context) (bool, error) {
+func (o *operator) replaceSetupHWFiles(ctx context.Context) (bool, error) {
 	buf := new(bytes.Buffer)
 
-	err := omsa.GenerateService(buf)
+	err := setuphw.GenerateService(buf)
 	if err != nil {
 		return false, err
 	}

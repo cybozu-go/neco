@@ -167,9 +167,9 @@ Updater updates container image and restart `sabakan` in any timing.
 
 If on failure, `neco recover` command removes also this key.
 
-### OMSA
+### setup-hw
 
-Updater updates container image and restart OMSA service in any timing.
+Updater updates container image and restart setup-hw service in any timing.
 
 ### Serf
 
