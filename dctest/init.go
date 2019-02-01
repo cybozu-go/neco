@@ -87,6 +87,7 @@ func TestInit() {
 	It("should success initialize cke", func() {
 		token := getVaultToken()
 
+		By("initializing etcd for CKE")
 		execSafeAt(boot0, "neco", "init", "cke")
 
 		for _, host := range []string{boot0, boot1, boot2} {
@@ -106,6 +107,9 @@ func TestInit() {
 
 			execSafeAt(host, "systemctl", "-q", "is-active", "cke.service")
 		}
+
+		By("initializing Vault for CKE")
+		execSafeAt(boot0, "env", "VAULT_TOKEN="+token, "ckecli", "vault", "init")
 	})
 
 	It("should success retrieve cke leader", func() {
@@ -113,17 +117,7 @@ func TestInit() {
 		Expect(stdout).To(ContainSubstring("boot-"))
 	})
 
-	It("should setup hardware", func() {
-		for _, host := range []string{boot0, boot1, boot2} {
-			stdout, stderr, err := execAt(host, "sudo", "setup-hw")
-			if err != nil {
-				log.Error("setup-hw", map[string]interface{}{
-					"host":   host,
-					"stdout": string(stdout),
-					"stderr": string(stderr),
-				})
-				Expect(err).NotTo(HaveOccurred())
-			}
-		}
+	It("should generate SSH key for worker nodes", func() {
+		execSafeAt(boot0, "neco", "ssh", "generate")
 	})
 }
