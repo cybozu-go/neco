@@ -385,13 +385,23 @@ func fillAssets(dest, src string, hasSecret bool) error {
 	repl := strings.NewReplacer(patterns...)
 
 	render := func(srcFile, destFile string) error {
-		data, err := ioutil.ReadFile(srcFile)
+		f, err := os.Open(srcFile)
 		if err != nil {
 			return err
 		}
+		defer f.Close()
 
+		data, err := ioutil.ReadAll(f)
+		if err != nil {
+			return err
+		}
 		replaced := repl.Replace(string(data))
-		return ioutil.WriteFile(destFile, []byte(replaced), 0644)
+
+		st, err := f.Stat()
+		if err != nil {
+			return err
+		}
+		return ioutil.WriteFile(destFile, []byte(replaced), st.Mode())
 	}
 
 	return filepath.Walk(src, func(p string, info os.FileInfo, walkErr error) error {
