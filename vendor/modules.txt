@@ -22,11 +22,11 @@ github.com/ajeddeloh/go-json
 github.com/containerd/continuity/pathdriver
 # github.com/containers/image v0.0.0-20181129122009-63a1cbdc5e65
 github.com/containers/image/docker
-github.com/containers/image/types
 github.com/containers/image/copy
 github.com/containers/image/docker/reference
 github.com/containers/image/signature
 github.com/containers/image/transports/alltransports
+github.com/containers/image/types
 github.com/containers/image/docker/policyconfiguration
 github.com/containers/image/image
 github.com/containers/image/manifest
@@ -103,10 +103,10 @@ github.com/coreos/go-semver/semver
 github.com/coreos/go-systemd/unit
 # github.com/coreos/ignition v0.30.0
 github.com/coreos/ignition/config/v2_3/types
+github.com/coreos/ignition/config/v2_3
 github.com/coreos/ignition/config/shared/errors
 github.com/coreos/ignition/config/shared/validations
 github.com/coreos/ignition/config/validate/report
-github.com/coreos/ignition/config/v2_3
 github.com/coreos/ignition/config/util
 github.com/coreos/ignition/config/v2_2
 github.com/coreos/ignition/config/v2_2/types
@@ -126,7 +126,7 @@ github.com/cybozu-go/etcdutil
 github.com/cybozu-go/log
 # github.com/cybozu-go/netutil v1.2.0
 github.com/cybozu-go/netutil
-# github.com/cybozu-go/sabakan v0.0.0-20181226060325-5b9df5cc6c5e
+# github.com/cybozu-go/sabakan v1.1.0
 github.com/cybozu-go/sabakan/client
 github.com/cybozu-go/sabakan
 # github.com/cybozu-go/well v1.8.1
@@ -180,9 +180,9 @@ github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
 # github.com/gogo/protobuf v1.1.1
-github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
+github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 github.com/golang/glog
@@ -386,13 +386,13 @@ golang.org/x/net/trace
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-golang.org/x/net/internal/timeseries
 golang.org/x/net/html/charset
+golang.org/x/net/internal/timeseries
+golang.org/x/net/html
 golang.org/x/net/proxy
 golang.org/x/net/context/ctxhttp
-golang.org/x/net/html
-golang.org/x/net/internal/socks
 golang.org/x/net/html/atom
+golang.org/x/net/internal/socks
 # golang.org/x/sys v0.0.0-20181128092732-4ed8d59d0b35
 golang.org/x/sys/unix
 golang.org/x/sys/windows

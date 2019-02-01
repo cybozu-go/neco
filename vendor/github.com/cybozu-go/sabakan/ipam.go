@@ -16,10 +16,12 @@ type IPAMConfig struct {
 	NodeRangeMask   uint   `json:"node-ipv4-range-mask"`
 	NodeIPPerNode   uint   `json:"node-ip-per-node"`
 	NodeIndexOffset uint   `json:"node-index-offset"`
-	BMCIPv4Pool     string `json:"bmc-ipv4-pool"`
-	BMCIPv4Offset   string `json:"bmc-ipv4-offset,omitempty"`
-	BMCRangeSize    uint   `json:"bmc-ipv4-range-size"`
-	BMCRangeMask    uint   `json:"bmc-ipv4-range-mask"`
+
+	BMCIPv4Pool      string `json:"bmc-ipv4-pool"`
+	BMCIPv4Offset    string `json:"bmc-ipv4-offset,omitempty"`
+	BMCRangeSize     uint   `json:"bmc-ipv4-range-size"`
+	BMCRangeMask     uint   `json:"bmc-ipv4-range-mask"`
+	BMCGatewayOffset uint   `json:"bmc-ipv4-gateway-offset"`
 }
 
 // Validate validates configurations
@@ -67,6 +69,9 @@ func (c *IPAMConfig) Validate() error {
 	if c.BMCRangeMask < 8 || 32 < c.BMCRangeMask {
 		return errors.New("invalid bmc-ipv4-range-mask")
 	}
+	if c.BMCGatewayOffset == 0 {
+		return errors.New("bmc-ipv4-gateway-offset must not be zero")
+	}
 
 	return nil
 }
@@ -109,6 +114,11 @@ func (c *IPAMConfig) GenerateIP(mc *Machine) {
 
 	bmcIPs := calc(c.BMCIPv4Pool, c.BMCIPv4Offset, c.BMCRangeSize, 1, lrn, idx)
 	mc.Spec.BMC.IPv4 = bmcIPs[0].String()
+	bmcMask := net.CIDRMask(int(c.BMCRangeMask), 32)
+	mc.Info.BMC.IPv4.Address = mc.Spec.BMC.IPv4
+	mc.Info.BMC.IPv4.Netmask = net.IP(bmcMask).String()
+	bmcGW := netutil.IntToIP4(netutil.IP4ToInt(bmcIPs[0].Mask(bmcMask)) + uint32(c.BMCGatewayOffset))
+	mc.Info.BMC.IPv4.Gateway = bmcGW.String()
 }
 
 // LeaseRange is a range of IP addresses for DHCP lease.

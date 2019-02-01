@@ -1,46 +1,25 @@
 #!/bin/sh
 
-if systemd-detect-virt -v >/dev/null; then
-    # notify BMC address to placemat
-    echo {{ .Spec.BMC.IPv4 }} > /dev/virtio-ports/placemat
-    echo >&2 "Setup succeeded"
-    exit 0
-fi
-
-test_scheduled_jobqueue() {
-    rkt enter --app=omsa $uuid idracadm7 jobqueue view | grep 'Status=Scheduled' >/dev/null
-}
-
-while true; do
-    uuid=$(rkt list --no-legend | awk '{if ($4 == "running" && $2 == "omsa") print $1}')
-    if [ "$uuid" != "" ]; then
+ok=false
+for i in $(seq 60); do
+    sleep 1
+    if docker exec setup-hw true; then
+        ok=true
         break
     fi
 done
 
-while true; do
-    if rkt enter --app=omsa $uuid idracadm7 get iDRAC.Info.Name 2>/dev/null | grep -q Name=iDRAC; then break; fi
-    echo "setup-hw: retrying..."
-    sleep 1
-done
-
-# Wait for omsa start-up to ensure successful connection.
-sleep 3
-
-if test_scheduled_jobqueue; then
-    echo >&2 "Current Jobs are queued"
-    exit 1
+if [ $ok = false ]; then
+    echo "setup-hw container is not getting ready"
+    exit 2
 fi
 
-rkt enter --app=omsa $uuid setup-hw \
-    --rac-name rack{{ .Spec.Rack }}-{{ .Spec.Role }}{{ .Spec.IndexInRack }}-idrac
+docker exec setup-hw setup-hw
+RET=$?
 
-if test_scheduled_jobqueue; then
-    echo >&2 "Setup succeeded, machine will reboot"
-    reboot
-    sleep Infinity
-    # Wait for progress of reboot.
-    # This blocks subsequent services which depend on setup-hw.
+if [ $RET -eq 10 ]; then
+    sudo reboot
+    exit 0
 fi
 
-echo >&2 "Setup succeeded"
+exit $RET

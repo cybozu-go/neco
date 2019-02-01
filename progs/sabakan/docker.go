@@ -33,7 +33,8 @@ func fetchDockerImageAsArchive(ctx context.Context, image neco.ContainerImage, a
 	}
 	defer policyContext.Destroy()
 
-	src, err := alltransports.ParseImageName("docker://" + image.FullName())
+	fullname := image.FullName(auth != nil)
+	src, err := alltransports.ParseImageName("docker://" + fullname)
 	if err != nil {
 		return err
 	}
@@ -76,14 +77,14 @@ func fetchDockerImageAsArchive(ctx context.Context, image neco.ContainerImage, a
 		func(err error) {
 			log.Warn("docker: failed to copy a container image to an archive", map[string]interface{}{
 				log.FnError: err,
-				"image":     image.FullName(),
+				"image":     fullname,
 				"archive":   archive,
 			})
 		},
 	)
 	if err == nil {
 		log.Info("docker: copied a container image", map[string]interface{}{
-			"image":   image.FullName(),
+			"image":   fullname,
 			"archive": archive,
 		})
 	}

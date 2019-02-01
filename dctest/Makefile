@@ -29,9 +29,10 @@ DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
 OLDVER = 0.0.1
 NEWVER = 0.0.2
 AUTOCONFIG = $(SABAKAN_DIR)/auto-config
+BMC_USER = $(SABAKAN_DIR)/bmc-user.json
 OLD_DEB = $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb
 NEW_DEB = $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb
-SABAKAN_CONTENTS = $(AUTOCONFIG) $(OLD_DEB) $(NEW_DEB)
+SABAKAN_CONTENTS = $(AUTOCONFIG) $(OLD_DEB) $(NEW_DEB) $(BMC_USER)
 SSH_PRIVKEY = $(realpath ./dctest_key)
 BOB_PRIVKEY = $(realpath ./bob_key)
 BOB_PUBKEY = $(realpath ./bob_key.pub)
@@ -63,6 +64,9 @@ $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb: $(OPERATION_SSH_DIR)
 
 $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb: $(OPERATION_SSH_DIR)
 	cd ..; make deb VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=new
+
+$(SABAKAN_DIR)/bmc-user.json: bmc-user.json $(DHCP_JSON)
+	cp $< $@
 
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):

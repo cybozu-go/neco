@@ -13,7 +13,24 @@ import (
 	"github.com/cybozu-go/well"
 )
 
-const retryCount = 3
+const (
+	retryCount = 3
+
+	dockerAuthFile = "/etc/rkt/auth.d/docker.json"
+)
+
+var hasRktAuthFile bool
+
+func init() {
+	_, err := os.Stat(dockerAuthFile)
+	switch {
+	case err == nil:
+		hasRktAuthFile = true
+	case os.IsNotExist(err):
+	default:
+		panic(err)
+	}
+}
 
 // RktImage represents rkt image information
 type RktImage struct {
@@ -27,7 +44,7 @@ func ContainerFullName(name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return img.FullName(), nil
+	return img.FullName(hasRktAuthFile), nil
 }
 
 // FetchContainer fetches a container image
@@ -107,7 +124,7 @@ func RunContainer(ctx context.Context, name string, binds []Bind, args []string)
 	for _, b := range binds {
 		rktArgs = append(rktArgs, b.Args()...)
 	}
-	rktArgs = append(rktArgs, img.FullName())
+	rktArgs = append(rktArgs, img.FullName(hasRktAuthFile))
 	rktArgs = append(rktArgs, args...)
 
 	cmd := well.CommandContext(ctx, "rkt", rktArgs...)
