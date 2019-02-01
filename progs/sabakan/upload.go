@@ -280,7 +280,7 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 		return err
 	}
 
-	ckeImagePath := filepath.Join(copyRoot, "ignitions", "common", "systemd", "cke-images.service")
+	ckeImagePath := filepath.Join(copyRoot, "common", "systemd", "cke-images.service")
 	data, err := ioutil.ReadFile(ckeImagePath)
 	if err != nil {
 		return err
@@ -312,7 +312,7 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 	switch err {
 	case storage.ErrNotFound:
 	case nil:
-		passwdPath := filepath.Join(copyRoot, "ignitions", "common", "passwd.yml")
+		passwdPath := filepath.Join(copyRoot, "common", "passwd.yml")
 		data, err := ioutil.ReadFile(passwdPath)
 		if err != nil {
 			return err
@@ -341,7 +341,7 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 	}
 
 	for _, role := range roles {
-		path := filepath.Join(copyRoot, "ignitions", "roles", role, "site.yml")
+		path := filepath.Join(copyRoot, "roles", role, "site.yml")
 
 		newer := new(bytes.Buffer)
 		err := sabakan.AssembleIgnitionTemplate(path, newer)

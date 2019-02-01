@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+// TestMachines tests machine control functions.
 func TestMachines() {
 	It("should register machines to sabakan", func() {
 		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
