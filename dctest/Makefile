@@ -32,7 +32,7 @@ AUTOCONFIG = $(SABAKAN_DIR)/auto-config
 BMC_USER = $(SABAKAN_DIR)/bmc-user.json
 OLD_DEB = $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb
 NEW_DEB = $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb
-SABAKAN_CONTENTS = $(AUTOCONFIG) $(OLD_DEB) $(NEW_DEB) $(BMC_USER)
+TEST_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(BMC_USER) $(OPERATION_SSH_DIR)
 SSH_PRIVKEY = $(realpath ./dctest_key)
 BOB_PRIVKEY = $(realpath ./bob_key)
 BOB_PUBKEY = $(realpath ./bob_key.pub)
@@ -56,17 +56,17 @@ $(OUTPUT)/$(CUSTOM_UBUNTU): $(CUSTOM_UBUNTU)
 $(DHCP_JSON):
 	$(GOPATH)/bin/placemat-menu -f $(MENU) -o $(OUTPUT)
 
-$(SABAKAN_DIR)/auto-config: auto-config $(DHCP_JSON)
+$(AUTOCONFIG): auto-config $(DHCP_JSON)
 	cp $< $@
 
-$(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb: $(OPERATION_SSH_DIR)
+$(BMC_USER): bmc-user.json $(DHCP_JSON)
+	cp $< $@
+
+$(OLD_DEB): $(OPERATION_SSH_DIR)
 	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR))
 
-$(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb: $(OPERATION_SSH_DIR)
+$(NEW_DEB): $(OPERATION_SSH_DIR)
 	cd ..; make deb VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=new
-
-$(SABAKAN_DIR)/bmc-user.json: bmc-user.json $(DHCP_JSON)
-	cp $< $@
 
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):
@@ -74,12 +74,12 @@ $(OPERATION_SSH_DIR):
 	cp dctest_key $(OPERATION_SSH_DIR)/boot_key
 
 # Targets
-test: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
+test: $(TEST_DEPS) $(OLD_DEB) $(NEW_DEB)
 	sudo rm -rf $(PLACEMAT_DATADIR)
 	sudo rm -rf $(VM_SHARED_DIR)
 	./test.sh
 
-placemat: $(OUTPUT)/$(CUSTOM_UBUNTU) $(SABAKAN_CONTENTS)
+placemat: $(TEST_DEPS) $(OLD_DEB) $(NEW_DEB)
 	sudo rm -rf $(PLACEMAT_DATADIR)
 	sudo rm -rf $(VM_SHARED_DIR)
 	sudo systemd-run --unit=placemat.service $(PLACEMAT) -enable-virtfs $(realpath output/cluster.yml)
@@ -95,7 +95,7 @@ stop:
 test-light:
 	./test-light.sh "$(TARGET)"
 
-test-release: $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(OPERATION_SSH_DIR)
+test-release: $(TEST_DEPS)
 	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=release
 	sudo rm -rf $(PLACEMAT_DATADIR)
 	sudo rm -rf $(VM_SHARED_DIR)
