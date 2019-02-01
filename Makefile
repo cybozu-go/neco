@@ -22,7 +22,7 @@ VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 BIN_PKGS = ./pkg/neco
-SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler ./pkg/setup-hw
+SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
 
 all:
 	@echo "Specify one of these targets:"
