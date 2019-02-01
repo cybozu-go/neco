@@ -2,20 +2,64 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
+	"github.com/cybozu-go/sabakan"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
 
+func getMyMachine(ctx context.Context) (*sabakan.Machine, error) {
+	data, err := ioutil.ReadFile("/sys/devices/virtual/dmi/id/product_serial")
+	if err != nil {
+		return nil, err
+	}
+	serial := strings.TrimSpace(string(data))
+	cmd := exec.CommandContext(ctx, "sabactl", "machines", "get", "--serial", serial)
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	var machines []*sabakan.Machine
+	err = json.Unmarshal(out, &machines)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(machines) != 1 {
+		return nil, errors.New("no machine entry in sabakan")
+	}
+
+	return machines[0], nil
+}
+
 func setupHW(ctx context.Context, st storage.Storage) error {
+	my, err := getMyMachine(ctx)
+	if err != nil {
+		return err
+	}
+
+	bmcAddr, err := os.OpenFile("/etc/neco/bmc-address.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer bmcAddr.Close()
+
+	err = json.NewEncoder(bmcAddr).Encode(my.Info.BMC)
+	if err != nil {
+		return err
+	}
+
 	bmcUser, err := st.GetBMCBMCUser(ctx)
 	if err != nil {
 		return err
