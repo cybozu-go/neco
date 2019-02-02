@@ -11,7 +11,7 @@ Features include:
 Synopsis
 --------
 
-### `neco config`
+### Configure `neco-worker` and `neco-updater`
 
 * `neco config set KEY VALUE`
 
@@ -24,12 +24,6 @@ Synopsis
 * `neco config get KEY`
 
     Show the current configuration for `KEY`.
-
-### `neco image`
-
-* `neco image NAME`
-
-    Show docker image URL of `NAME` (e.g. "etcd", "coil", "squid").
 
 ### Boot server setup
 
@@ -103,9 +97,10 @@ Synopsis
 
     Generates a new SSH key pair for sabakan controlled machines.
 
-    The generated public key is stored in etcd.
-    The generated private key is stored in Vault by using
-    `ckecli vault ssh-privkey`.
+    The generated public key is stored in etcd and will be automatically set for
+    users defined in ignition templates.
+
+    The generated private key is stored in Vault by using `ckecli vault ssh-privkey`.
 
     When `--dump` option is specified, the generated private key is also dumped
     to stdout.
@@ -133,7 +128,7 @@ Synopsis
 * `neco bmc config set KEY VALUE`
 
     Change the setting for `KEY` to `VALUE`.
-    Key and values are described in [another section](#config).
+    Keys and values are described below.
 
     - `bmc-user`: Register [`bmc-user.json`](https://github.com/cybozu-go/setup-hw/blob/master/README.md#etcnecobmc-userjson)
     - `ipmi-user`: Register IPMI username for power management.
@@ -147,9 +142,19 @@ Synopsis
 
     Invoke `setup-hw` command in setup-hw container. If needed, reboot the machine.
 
-* `neco bmc [start|stop|restart] BMC_IP`
+* `neco ipmipower [start|stop|restart|status] SERIAL_OR_IP`
 
-    Control server power of `BMC_IP`.
+    Control power of a machine having `SERIAL` or `IP` address.
+
+### Miscellaneous
+
+* `neco image NAME`
+
+    Show docker image URL of `NAME` (e.g. "etcd", "coil", "squid").
+
+* `neco completion`
+
+    Dump bash completion rules for `neco` command.
 
 <a name="config"></a>
 Configurations
