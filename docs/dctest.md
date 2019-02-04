@@ -19,7 +19,7 @@ There are two types of test suites.
 1. functions
 
     This suite tests a full set of functions of Neco.  Especially this includes
-    upgrading test and joining/removing node test.
+    upgrading test and joining/removing boot server node test.
 
     Upgrading test first installs Neco by downloading the latest-release deb
     package from github.com.  It then upgrades Neco with the generated deb
@@ -28,7 +28,7 @@ There are two types of test suites.
 2. bootstrap
 
     This suite tests initial setup of Neco.  This does not include
-    upgrading test nor joining/removing node test.
+    upgrading test nor joining/removing boot server node test.
 
     This suite installs Neco with the generated deb package.
 

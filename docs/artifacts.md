@@ -11,16 +11,19 @@ There are two artifacts files.
 
 - [artifacts.go](../artifacts.go)
 
-    For developers.  They can update this file anytime using `generate-artifacts`.
+    This file is for developers to define the set of artifacts to be tested.
+    Developers may update this file anytime by using `generate-artifacts`
+    or by editing manually.
 
 - [artifacts_release.go](../artifacts.go)
 
-    For CI.  The job updates this file using `generate-artifacts --release`.
+    This file is for CI.  The CI job updates this file by using
+    `generate-artifacts --release`.
 
     The developers are PROHIBITED to modify this file.  This is to prevent
     merge conflicts in CI flow.
 
-    This is managed only in the `release` branch.
+    This file exists only in the `release` branch.
 
 When generating neco binaries and the neco deb package, `artifacts.go` is used
 in default.  A CI job uses `artifacts_release.go` by specifying `TAGS=release`
