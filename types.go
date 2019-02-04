@@ -41,14 +41,17 @@ func (a ArtifactSet) FindDebianPackage(name string) (DebianPackage, error) {
 
 // ContainerImage represents a Docker container image.
 type ContainerImage struct {
-	// A unique name for this container image.
+	// Name is a unique name of this object.
 	Name string
 
 	// Repository is a docker repository name.
 	Repository string
 
-	// Image tag.
+	// Tag is the image tag.
 	Tag string
+
+	// Private indicates that there is a private version of this image.
+	Private bool
 }
 
 // ParseContainerImageName parses image name like "quay.io/cybozu/etcd:3.3.9-4"
@@ -65,15 +68,19 @@ func ParseContainerImageName(name string) (ContainerImage, error) {
 	}, nil
 }
 
-// FullName returns full container image name
-func (c ContainerImage) FullName() string {
+// FullName returns full container image name.
+// hasSecret should be true if the system has credentials to access private images.
+func (c ContainerImage) FullName(hasSecret bool) string {
+	if hasSecret && c.Private {
+		return fmt.Sprintf("%s-secret:%s", c.Repository, c.Tag)
+	}
 	return fmt.Sprintf("%s:%s", c.Repository, c.Tag)
 }
 
 // MarshalGo formats the struct in Go syntax.
 func (c ContainerImage) MarshalGo() string {
-	return fmt.Sprintf("{Name: %q, Repository: %q, Tag: %q}",
-		c.Name, c.Repository, c.Tag)
+	return fmt.Sprintf("{Name: %q, Repository: %q, Tag: %q, Private: %t}",
+		c.Name, c.Repository, c.Tag, c.Private)
 }
 
 // DebianPackage represents a Debian package hosted in GitHub releases.

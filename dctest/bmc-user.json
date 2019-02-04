@@ -1,0 +1,13 @@
+{
+    "root": {
+        "password": {
+            "raw": "raw password"
+        }
+    },
+    "power": {
+        "password": {
+            "hash": "hashed_secret",
+            "salt": "salt for hash"
+        }
+    }
+}

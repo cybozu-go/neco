@@ -21,7 +21,7 @@ var imageCmd = &cobra.Command{
 			log.ErrorExit(err)
 		}
 
-		fmt.Println(img.FullName())
+		fmt.Println(img.FullName(false))
 	},
 }
 

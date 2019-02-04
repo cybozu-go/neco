@@ -34,6 +34,7 @@ var _ = Describe("Test Neco functions", func() {
 	})
 	Context("upgrade", dctest.TestUpgrade)
 	Context("join/remove", dctest.TestJoinRemove)
+	Context("machines", dctest.TestMachines)
 	Context("cke", func() {
 		dctest.TestCKE("0.0.2")
 	})

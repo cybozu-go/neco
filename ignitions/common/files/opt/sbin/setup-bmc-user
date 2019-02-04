@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+mkdir -p /etc/neco
+curl -sfSL -o /etc/neco/bmc-user.json {{ MyURL }}/api/v1/assets/bmc-user.json

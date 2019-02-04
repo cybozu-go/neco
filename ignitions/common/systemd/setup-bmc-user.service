@@ -1,10 +1,9 @@
 [Unit]
-Description=Setup OMSA config
+Description=Download bmc-user.json
 Before=setup-network.service
 Wants=setup-network.service
-ConditionVirtualization=!kvm
 
 [Service]
 Type=oneshot
-ExecStart=/opt/sbin/setup-omsa
+ExecStart=/opt/sbin/setup-bmc-user
 RemainAfterExit=yes

@@ -11,10 +11,12 @@ Features include:
 Synopsis
 --------
 
+### Configure `neco-worker` and `neco-updater`
+
 * `neco config set KEY VALUE`
 
     Change the setting for `KEY` to `VALUE`.
-    Key and values are described in [the next section](#config).
+    Key and values are described in [another section](#config).
 
     Some special keys read their values from environment variables due to security concerns.
     In these cases, do not give `VALUE` in command line.
@@ -23,9 +25,24 @@ Synopsis
 
     Show the current configuration for `KEY`.
 
-* `neco image NAME`
+### Boot server setup
 
-    Show docker image URL of `NAME` (e.g. "etcd", "coil", "squid").
+* `neco setup [--no-revoke] [--proxy=PROXY] LRN [LRN ...]`
+
+    Install and setup etcd cluster as well as Vault using given boot servers.
+    `LRN` is the logical rack number of the boot server.  At least 3 LRNs
+    should be specified.
+
+    This command need to be invoked at once on all boot servers specified by LRN.
+
+    When `--no-revoke` option is specified, it does not revoke the initial
+    root token.  This is only for testing purpose.
+
+    When `--proxy` option is specified, it uses this proxy to download container
+    images. It also stores [`proxy` configuration](#configproxy) in the etcd database
+    after it starts etcd, in order to run neco-updater and
+    neco-worker with a proxy from the start.
+    **DO NOT** pass `http_proxy` and `https_proxy` environment variables to `neco`.
 
 * `neco init NAME`
 
@@ -41,6 +58,10 @@ Synopsis
     password to issue certificates.
 
     This command should be **executed on all boot servers**.
+
+* `neco status`
+
+    Show the status of the current update process.
 
 * `neco join LRN [LRN ...]`
 
@@ -70,37 +91,21 @@ Synopsis
     Upload sabakan contents using `artifacts.go`.  If uploaded versions are
     up to date, do nothing.
 
-* `neco setup [--no-revoke] [--proxy=PROXY] LRN [LRN ...]`
-
-    Install and setup etcd cluster as well as Vault using given boot servers.
-    `LRN` is the logical rack number of the boot server.  At least 3 LRNs
-    should be specified.
-
-    This command need to be invoked at once on all boot servers specified by LRN.
-
-    When `--no-revoke` option is specified, it does not revoke the initial
-    root token.  This is only for testing purpose.
-
-    When `--proxy` option is specified, it uses this proxy to download container 
-    images. It also stores [`proxy` configuration](#configproxy) in the etcd database 
-    after it starts etcd, in order to run neco-updater and
-    neco-worker with a proxy from the start.
-    **DO NOT** pass `http_proxy` and `https_proxy` environment variables to `neco`.
+### For worker nodes
 
 * `neco ssh generate [--dump]`
 
     Generates a new SSH key pair for sabakan controlled machines.
 
-    The generated public key is stored in etcd.
-    The generated private key is stored in Vault by using
-    `ckecli vault ssh-privkey`.
+    The generated public key is stored in etcd and will be automatically set for
+    users defined in ignition templates.
+
+    The generated private key is stored in Vault by using `ckecli vault ssh-privkey`.
 
     When `--dump` option is specified, the generated private key is also dumped
     to stdout.
 
-* `neco status`
-
-    Show the status of the current update process.
+### Vault related functions
 
 * `neco vault unseal`
 
@@ -117,6 +122,39 @@ Synopsis
 * `neco vault show-root-token`
 
     Show the initial root token, if not revoked during `neco setup`.
+
+### BMC management functions
+
+* `neco bmc config set KEY VALUE`
+
+    Change the setting for `KEY` to `VALUE`.
+    Keys and values are described below.
+
+    - `bmc-user`: Register [`bmc-user.json`](https://github.com/cybozu-go/setup-hw/blob/master/README.md#etcnecobmc-userjson)
+    - `ipmi-user`: Register IPMI username for power management.
+    - `ipmi-password`: Register IPMI password for power management.
+
+* `neco bmc config get KEY`
+
+    Get the `VALUE` for `KEY`.
+
+* `neco bmc setup-hw`
+
+    Invoke `setup-hw` command in setup-hw container. If needed, reboot the machine.
+
+* `neco ipmipower [start|stop|restart|status] SERIAL_OR_IP`
+
+    Control power of a machine having `SERIAL` or `IP` address.
+
+### Miscellaneous
+
+* `neco image NAME`
+
+    Show docker image URL of `NAME` (e.g. "etcd", "coil", "squid").
+
+* `neco completion`
+
+    Dump bash completion rules for `neco` command.
 
 <a name="config"></a>
 Configurations

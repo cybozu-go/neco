@@ -22,7 +22,7 @@ VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 BIN_PKGS = ./pkg/neco
-SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler ./pkg/setup-hw
+SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
 
 all:
 	@echo "Specify one of these targets:"
@@ -65,8 +65,7 @@ $(DEB):
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
 	mkdir -p $(SHAREDIR)
 	cp etc/* $(SHAREDIR)
-	go install -tags='$(GOTAGS)' ./pkg/fill-asset-name
-	fill-asset-name ignitions $(SHAREDIR)/ignitions
+	cp -a ignitions $(SHAREDIR)
 	mkdir -p $(DOCDIR)
 	cp README.md LICENSE $(DOCDIR)
 	chmod -R g-w $(WORKDIR)

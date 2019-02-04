@@ -144,3 +144,15 @@ Vault unseal key for unsealing automatically.
 
 Vault root token for automatic setup for [dctest](../dctest/).
 This key does not exist by default.
+
+## `<prefix>/bmc/bmc-user`
+
+`bmc-user.json` contents.
+
+## `<prefix>/bmc/ipmi-user`
+
+IPMI username for power management.
+
+## `<prefix>/bmc/ipmi-password`
+
+IPMI password for power management.

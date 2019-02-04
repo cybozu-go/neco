@@ -1,12 +1,24 @@
 [Unit]
-Description=Setup hardware
-Requires=omsa.service
-Wants=omsa.service
+Description=setup-hw container
+Requires=docker.socket
+After=docker.socket
 
 [Service]
-Type=oneshot
-ExecStart=/opt/sbin/setup-hw
-RemainAfterExit=yes
+Type=simple
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+TimeoutStartSec=0
+OOMScoreAdjust=-1000
+ExecStartPre=-/usr/bin/docker kill setup-hw
+ExecStartPre=-/usr/bin/docker rm setup-hw
+ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%setup-hw%img%% %%setup-hw%full%%
+ExecStart=/usr/bin/docker run \
+  --name setup-hw \
+  --net=host --privileged \
+  -v /dev:/dev \
+  -v /lib/modules:/lib/modules:ro \
+  -v /etc/neco:/etc/neco:ro \
+  %%setup-hw%full%%
 
 [Install]
 WantedBy=multi-user.target

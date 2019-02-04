@@ -1,4 +1,4 @@
-package omsa
+package setuphw
 
 import (
 	"bytes"
