@@ -31,10 +31,13 @@ Same workflow process but it works on `release` branch. This is run as stability
 ### Are you ready to deploy for the staging data center?
 
 1. Choose a tag in [release page](https://github.com/cybozu-go/neco/releases) which starts with `test-` of what you want.
-2. Click `Edit tag`, then rename the tag name to `release-YYYY.MM.DD-UNIQUE_ID`. Note that date and UNIQUE_ID are same as before.
-3. Check `This is a pre-release`, then click `Publish release`.
-4. CI workflow builds a debian package `neco-YYYY.MM.DD-UNIQUE_ID.deb` and uploads it to GitHub Release.
-5. `neco-updater` on staging starts CD flow described below.
+2. Create a new tag which has `release-` prefix. Note that date and UNIQUE_ID are same as before.
+    ```console
+    $ git tag release-YYYY.MM.DD-UNIQUE_ID test-YYYY.MM.DD-UNIQUE_ID
+    $ git push origin --tags
+    ```
+3. CI workflow builds a debian package `neco-YYYY.MM.DD-UNIQUE_ID.deb` and uploads it to GitHub Release.
+4. `neco-updater` on staging starts CD flow described below.
 
 ### Are you ready to deploy for production data centerthe ?
 
