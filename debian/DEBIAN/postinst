@@ -8,6 +8,8 @@ configure() {
         systemctl enable ${s}.service
         systemctl start ${s}.service
     done
+
+    /usr/bin/neco completion > /etc/bash_completion.d/neco
 }
 
 if test "$1" = "configure"; then
