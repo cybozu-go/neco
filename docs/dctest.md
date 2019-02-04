@@ -18,11 +18,12 @@ There are two types of test suites.
 
 1. functions
 
-    This suite tests full set of functions of Neco.  Especially this includes
+    This suite tests a full set of functions of Neco.  Especially this includes
     upgrading test and joining/removing node test.
 
-    Upgrading test installs Neco with the deb package of the latest release
-    in github.com at first, and then upgrades Neco to the generated deb package.
+    Upgrading test first installs Neco by downloading the latest-release deb
+    package from github.com.  It then upgrades Neco with the generated deb
+    package, which is versioned as `9999.99.99`.
 
 2. bootstrap
 
@@ -71,17 +72,16 @@ Options
 You can choose the type of test suite by specifying `SUITE` make variable.
 The default is to run `functions`.
 
-Because this choice affects setup of placemat, specify this for `make placemat`
-as well as for `make test`/`make test-light`.
+`make test` and `make test-light` accept this variable.
 
 ## `TAGS`
 
-You can choose the list of artifacts by specifying `TAGS` make variable.
-The default is "" to use `artifacts.go`.
-Specify "release" to use `artifacts_release.go`.
+You can choose the list of artifacts by specifying `TAGS` make variable,
+though non-default value is only for CI.
+The default is to use `artifacts.go`.
+Specify `TAGS=release` in the release branch to use `artifacts_release.go`.
 
-Because this choice affects setup of placemat, specify this for `make placemat`
-as well as for `make test`/`make test-light`.
+`make test` and `make test-light` accept this variable.
 
 ## `secrets` file
 
