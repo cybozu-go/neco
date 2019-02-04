@@ -1,0 +1,13 @@
+[Unit]
+Description=Run setup-hw tool
+Requires=setup-hw.service setup-bmc-user.service
+After=setup-hw.service setup-bmc-user.service
+Before=serf.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/setup-hw
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

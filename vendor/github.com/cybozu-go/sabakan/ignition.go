@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/url"
+	"text/template"
 
 	ignition "github.com/coreos/ignition/config/v2_3"
 	"github.com/vincent-petithory/dataurl"
@@ -23,9 +23,9 @@ type IgnitionInfo struct {
 
 // IgnitionParams represents parameters in ignition template
 type IgnitionParams struct {
-	MyURL       *url.URL
-	MachineSpec MachineSpec
-	Metadata    map[string]string
+	MyURL    *url.URL
+	Machine  *Machine
+	Metadata map[string]string
 }
 
 // ValidateIgnitionTemplate validates if the tmpl is a template for a valid ignition.
@@ -42,7 +42,7 @@ func ValidateIgnitionTemplate(tmpl string, metadata map[string]string, ipam *IPA
 	}
 
 	ipam.GenerateIP(mc)
-	ign, err := RenderIgnition(tmpl, &IgnitionParams{Metadata: metadata, MachineSpec: mc.Spec, MyURL: u})
+	ign, err := RenderIgnition(tmpl, &IgnitionParams{Metadata: metadata, Machine: mc, MyURL: u})
 	if err != nil {
 		return err
 	}
@@ -150,12 +150,22 @@ func renderString(name string, src string, params *IgnitionParams) (string, erro
 
 	var dst bytes.Buffer
 	t, err := template.New(name).
-		Funcs(template.FuncMap{"MyURL": getMyURL, "Metadata": getMetadata}).
+		Funcs(template.FuncMap{
+			"MyURL":    getMyURL,
+			"Metadata": getMetadata,
+			"json": func(i interface{}) (string, error) {
+				data, err := json.Marshal(i)
+				if err != nil {
+					return "", err
+				}
+				return string(data), nil
+			},
+		}).
 		Parse(src)
 	if err != nil {
 		return "", err
 	}
-	err = t.Execute(&dst, params.MachineSpec)
+	err = t.Execute(&dst, params.Machine)
 	if err != nil {
 		return "", err
 	}

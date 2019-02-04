@@ -22,7 +22,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
@@ -30,16 +29,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var params = struct {
-	quayUser     string
-	quayPassword string
-}{
-	quayUser: "cybozu+neco_readonly",
-}
-
 var rootCmd = &cobra.Command{
 	Use:   "generate-artifacts",
-	Short: "Generate artifacts.go with the latest release candicates",
+	Short: "Generate artifacts.go with the latest release candidates",
 	Long: `Generate artifacts.go source code.
 
 This command gathers the latest release candidates of tools used to
@@ -51,27 +43,10 @@ tag "release".  If not, the generated code will have tag "!release,!new".
 If --new is given, the generated source code will have a build
 tag "new".  If not, the generated code will have tag "!release,!new".
 `,
-	Args: func(cmd *cobra.Command, args []string) error {
-		user := os.Getenv("QUAY_USER")
-		if len(user) > 0 {
-			params.quayUser = user
-		}
-
-		passwd := os.Getenv("QUAY_PASSWORD")
-		if len(passwd) == 0 {
-			return errors.New("QUAY_PASSWORD envvar is not set")
-		}
-		params.quayPassword = passwd
-
-		return nil
-	},
-
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := generator.Config{
-			User:     params.quayUser,
-			Password: params.quayPassword,
-			Release:  *flagRelease,
-			New:      *flagNew,
+			Release: *flagRelease,
+			New:     *flagNew,
 		}
 		err := generator.Generate(context.Background(), cfg, os.Stdout)
 		if err != nil {

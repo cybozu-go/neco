@@ -14,21 +14,59 @@ Architecture
 CI flow
 -------
 
-CI is running as nightly job.
+### After `master` merge
 
-1. Checkout `master` branch then merge changes into `release` branch.
 1. Run `generate-artifacts` to retrieve latest version of components, then generate `artifacts_release.go`.
-1. Build neco binaries with `artifacts_release.go`.
-1. Run [dctest](../dctest/) with these binaries.
-1. If dctest is passed, push `release` branch to remote branch in [github.com/cybozu-go/neco](https://github.com/cybozu-go/neco).
-1. When above job pushes changes to `release` branch, build neco deb package, and release it to the GitHub Release as pre-release.
+2. Check out `master` branch then merge changes into `release` branch.
+3. Run [dctest][] but fewer test cases from regular dctest.
+4. If dctest is passed, [cybozu-neco][] pushes changes to `release` branch to remote branch in [github.com/cybozu-go/neco](https://github.com/cybozu-go/neco).
+5. Also, [cybozu-neco][] also applies and pushes a tag `test-YYYY.MM.DD-UNIQUE_ID` to the remote.
 
-When administrator confirms version of the pre-release, publish it to be deployed by CD flow.
+Regular test cases of dctest are also run in parallel.
+
+### Nightly workflow
+
+Same workflow process but it works on `release` branch. This is run as stability aspects.
+
+### Are you ready to deploy for the staging data center?
+
+1. Choose a tag in [release page](https://github.com/cybozu-go/neco/releases) which starts with `test-` of what you want.
+2. Click `Edit tag`, then rename the tag name to `release-YYYY.MM.DD-UNIQUE_ID`. Note that date and UNIQUE_ID are same as before.
+3. Check `This is a pre-release`, then click `Publish release`.
+4. CI workflow builds a debian package `neco-YYYY.MM.DD-UNIQUE_ID.deb` and uploads it to GitHub Release.
+5. `neco-updater` on staging starts CD flow described below.
+
+### Are you ready to deploy for production data centerthe ?
+
+1. Choose a pre-release tag in [release page](https://github.com/cybozu-go/neco/releases) which starts with `release-` of what you want.
+2. Uncheck `This is a pre-release`, then click `Publish release`.
+3. `neco-updater` on production starts CD flow described below.
 
 CD flow
 -------
 
-1. A back ground service `neco-updater` detect a new release of neco repository.
-1. If new release exists, `neco-updater` add information to the etcd key `<prefix>/current`.
-1. `neco-worker` to update `neco` package, then restart `neco-worker` service.
-1. `neco-worker` installs/updates container images, and sabakan contents.
+1. A service `neco-updater` detects a new release of GitHub Release on neco repository.
+2. If new release exists, `neco-updater` add information to the etcd key `<prefix>/current`.
+3. `neco-worker` to update `neco` package, then restart `neco-worker` service.
+4. `neco-worker` installs/updates container images, and sabakan contents.
+
+Glossary
+--------
+
+- tag: `test-YYYY.MM.DD-UNIQUE_ID`
+
+    It is a candidate release version which is passed [dctest].
+
+- tag: `release-YYYY.MM.DD-UNIQUE_ID`
+
+    It is an already released version with `neco` Debian package.
+
+    -  `neco-updater` on **staging** finds a new **pre-release** of them.
+    -  `neco-updater` on **production** finds a new **release** of them.
+
+- [cybozu-neco][] 🐈
+
+    A bot GitHub Account for handling CI jobs using GitHub.
+
+[dctest]: ../dctest/
+[cybozu-neco]: https://github.com/cybozu-neco

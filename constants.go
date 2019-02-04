@@ -4,17 +4,11 @@ import "path/filepath"
 
 const systemdDir = "/etc/systemd/system"
 
-// SabakanPublicImages is the list of container image names to be uploaded to sabakan.
-var SabakanPublicImages = []string{"serf", "coil", "squid"}
-
-// SabakanPrivateImages is the list of private container image names to be uploaded to sabakan.
-// TODO: Update this slice when the setup-hw container is created
-//var SabakanPrivateImages = []string{"omsa"}
-var SabakanPrivateImages []string
+// SabakanImages is the list of container image names to be uploaded to sabakan.
+var SabakanImages = []string{"setup-hw", "serf", "coil", "squid"}
 
 // RktImages is the list of container image names to be run as rkt containers.
-//var RktImages = []string{"cke", "etcd", "omsa", "sabakan", "serf", "vault", "hyperkube"}
-var RktImages = []string{"cke", "etcd", "sabakan", "serf", "vault", "hyperkube"}
+var RktImages = []string{"cke", "etcd", "setup-hw", "sabakan", "serf", "vault", "hyperkube"}
 
 // Neco params
 const (
@@ -59,9 +53,9 @@ const (
 	VaultPrefix = "/vault/"
 )
 
-// OMSA params
+// setup-hw params
 const (
-	OMSAService = "omsa"
+	SetupHWService = "setup-hw"
 )
 
 // Etcdpasswd params

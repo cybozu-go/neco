@@ -12,7 +12,6 @@ import (
 	"text/template"
 
 	"github.com/containers/image/docker"
-	"github.com/containers/image/types"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	version "github.com/hashicorp/go-version"
@@ -21,13 +20,17 @@ import (
 var quayRepos = []string{
 	"cke",
 	"etcd",
-	"omsa",
+	"setup-hw",
 	"sabakan",
 	"serf",
 	"vault",
 	"hyperkube", // to install kubectl on boot servers
 	"coil",
 	"squid",
+}
+
+var privateImages = map[string]bool{
+	"setup-hw": true,
 }
 
 var debRepos = []string{
@@ -64,12 +67,6 @@ func render(w io.Writer, release, new bool, images []*neco.ContainerImage, debs 
 
 // Config defines the parameters for Generate.
 type Config struct {
-	// quay.io robot user
-	User string
-
-	// quay.io robot password
-	Password string
-
 	// tag the generated source code as release or not
 	Release bool
 
@@ -81,7 +78,7 @@ type Config struct {
 func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 	images := make([]*neco.ContainerImage, len(quayRepos))
 	for i, name := range quayRepos {
-		img, err := getLatestImage(ctx, name, cfg)
+		img, err := getLatestImage(ctx, name)
 		if err != nil {
 			return err
 		}
@@ -108,19 +105,13 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 	return render(out, cfg.Release, cfg.New, images, debs, coreos)
 }
 
-func getLatestImage(ctx context.Context, name string, cfg Config) (*neco.ContainerImage, error) {
+func getLatestImage(ctx context.Context, name string) (*neco.ContainerImage, error) {
 	ref, err := docker.ParseReference("//quay.io/cybozu/" + name)
 	if err != nil {
 		return nil, err
 	}
 
-	sc := &types.SystemContext{
-		DockerAuthConfig: &types.DockerAuthConfig{
-			Username: cfg.User,
-			Password: cfg.Password,
-		},
-	}
-	tags, err := docker.GetRepositoryTags(ctx, sc, ref)
+	tags, err := docker.GetRepositoryTags(ctx, nil, ref)
 	if err != nil {
 		log.Error("failed to get the latest docker image tag", map[string]interface{}{
 			"repository": "quay.io/cybozu/" + name,
@@ -151,6 +142,7 @@ func getLatestImage(ctx context.Context, name string, cfg Config) (*neco.Contain
 		Name:       name,
 		Repository: "quay.io/cybozu/" + name,
 		Tag:        versions[0].Original(),
+		Private:    privateImages[name],
 	}, nil
 }
 

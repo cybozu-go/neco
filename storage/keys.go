@@ -32,6 +32,9 @@ const (
 	KeyContainersFormat    = "install/%d/containers/%s"
 	KeyDebsFormat          = "install/%d/debs/%s"
 	KeyInstallPrefix       = "install/"
+	KeyBMCBMCUser          = "bmc/bmc-user"
+	KeyBMCIPMIUser         = "bmc/ipmi-user"
+	KeyBMCIPMIPassword     = "bmc/ipmi-password"
 )
 
 func keyBootServer(lrn int) string {
