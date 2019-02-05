@@ -120,31 +120,31 @@ func (s Storage) PutReconfigureRequest(ctx context.Context, req neco.UpdateReque
 	return nil
 }
 
-// GetRequestWithRev returns UpdateRequest from storage with ModRevision.
+// GetRequestWithRev returns UpdateRequest from storage with ModRevision and Revision.
 // If there is no request, this returns ErrNotFound
-func (s Storage) GetRequestWithRev(ctx context.Context) (*neco.UpdateRequest, int64, error) {
+func (s Storage) GetRequestWithRev(ctx context.Context) (req *neco.UpdateRequest, modRev int64, rev int64, err error) {
 	resp, err := s.etcd.Get(ctx, KeyCurrent)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, 0, err
 	}
 
 	if resp.Count == 0 {
-		return nil, resp.Header.Revision, ErrNotFound
+		return nil, 0, resp.Header.Revision, ErrNotFound
 	}
 
-	req := new(neco.UpdateRequest)
+	req = new(neco.UpdateRequest)
 	err = json.Unmarshal(resp.Kvs[0].Value, req)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, 0, err
 	}
 
-	return req, resp.Kvs[0].ModRevision, nil
+	return req, resp.Kvs[0].ModRevision, resp.Header.Revision, nil
 }
 
 // GetRequest returns UpdateRequest from storage
 // If there is no request, this returns ErrNotFound
 func (s Storage) GetRequest(ctx context.Context) (*neco.UpdateRequest, error) {
-	req, _, err := s.GetRequestWithRev(ctx)
+	req, _, _, err := s.GetRequestWithRev(ctx)
 	return req, err
 }
 
@@ -224,7 +224,7 @@ func (s Storage) GetStatuses(ctx context.Context) (map[int]*neco.UpdateStatus, e
 // Then it removes status keys in a single transaction.
 func (s Storage) ClearStatus(ctx context.Context) error {
 RETRY:
-	req, rev, err := s.GetRequestWithRev(ctx)
+	req, modRev, _, err := s.GetRequestWithRev(ctx)
 	if err != nil {
 		return err
 	}
@@ -234,7 +234,7 @@ RETRY:
 	}
 
 	resp, err := s.etcd.Txn(ctx).
-		If(clientv3.Compare(clientv3.ModRevision(KeyCurrent), "=", rev)).
+		If(clientv3.Compare(clientv3.ModRevision(KeyCurrent), "=", modRev)).
 		Then(clientv3.OpDelete(KeyStatusPrefix, clientv3.WithPrefix())).
 		Commit()
 	if err != nil {

@@ -64,11 +64,11 @@ func (w *Worker) Run(ctx context.Context) error {
 		return err
 	}
 
-	req, rev, err := w.storage.GetRequestWithRev(ctx)
+	req, modRev, rev, err := w.storage.GetRequestWithRev(ctx)
 
 	for {
 		if err == storage.ErrNotFound {
-			req, rev, err = w.storage.WaitRequest(ctx, rev)
+			req, modRev, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
 		}
 		if err != nil {
@@ -76,12 +76,12 @@ func (w *Worker) Run(ctx context.Context) error {
 		}
 
 		if req.Stop {
-			req, rev, err = w.storage.WaitRequest(ctx, rev)
+			req, modRev, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
 		}
 
 		if !req.IsMember(w.mylrn) {
-			req, rev, err = w.storage.WaitRequest(ctx, rev)
+			req, modRev, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
 		}
 
@@ -104,12 +104,12 @@ func (w *Worker) Run(ctx context.Context) error {
 				}
 			}
 			log.Info("previous update was aborted", nil)
-			req, rev, err = w.storage.WaitRequest(ctx, rev)
+			req, modRev, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
 		}
 		if neco.UpdateCompleted(req.Version, req.Servers, stMap) {
 			log.Info("previous update was completed successfully", nil)
-			req, rev, err = w.storage.WaitRequest(ctx, rev)
+			req, modRev, rev, err = w.storage.WaitRequest(ctx, rev)
 			continue
 		}
 
@@ -117,7 +117,7 @@ func (w *Worker) Run(ctx context.Context) error {
 		log.Info("update starts", map[string]interface{}{
 			"version": req.Version,
 		})
-		err = w.update(ctx, rev)
+		err = w.update(ctx, modRev)
 		if err != nil {
 			return err
 		}
@@ -125,11 +125,11 @@ func (w *Worker) Run(ctx context.Context) error {
 		log.Info("update finished", map[string]interface{}{
 			"version": req.Version,
 		})
-		req, rev, err = w.storage.WaitRequest(ctx, rev)
+		req, modRev, rev, err = w.storage.WaitRequest(ctx, rev)
 	}
 }
 
-func (w *Worker) update(ctx context.Context, rev int64) error {
+func (w *Worker) update(ctx context.Context, modRev int64) error {
 	status := neco.UpdateStatus{
 		Version: w.req.Version,
 		Step:    1,
@@ -143,7 +143,7 @@ func (w *Worker) update(ctx context.Context, rev int64) error {
 	w.barrier = NewBarrier(w.req.Servers)
 
 	watcher := storage.NewStatusWatcher(w.handleCurrent, w.handleWorkerStatus, w.registerAbort)
-	return watcher.Watch(ctx, w.storage, rev)
+	return watcher.Watch(ctx, w.storage, modRev)
 }
 
 func (w *Worker) handleCurrent(ctx context.Context, req *neco.UpdateRequest) (bool, error) {
