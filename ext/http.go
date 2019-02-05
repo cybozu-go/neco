@@ -77,7 +77,7 @@ func ProxyHTTPClientWithGitHubToken(ctx context.Context, st storage.Storage) (*h
 	if err != nil {
 		return nil, err
 	}
-	if len(token) != 0 {
+	if len(token) == 0 {
 		return hc, nil
 	}
 
