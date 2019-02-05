@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"sort"
-	"strings"
 	"text/template"
 
 	"github.com/containers/image/docker"
@@ -120,19 +119,13 @@ func getLatestImage(ctx context.Context, name string) (*neco.ContainerImage, err
 		return nil, err
 	}
 
-	var filtered []string
-	for _, tag := range tags {
-		if !strings.Contains(tag, "-") {
-			continue
-		}
-		filtered = append(filtered, tag)
-	}
-	tags = filtered
-
 	versions := make([]*version.Version, 0, len(tags))
 	for _, tag := range tags {
 		v, err := version.NewVersion(tag)
 		if err != nil {
+			continue
+		}
+		if v.Prerelease() != "" {
 			continue
 		}
 		versions = append(versions, v)
