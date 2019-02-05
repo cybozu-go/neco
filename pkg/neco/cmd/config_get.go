@@ -24,7 +24,8 @@ Possible keys are:
     proxy                 - HTTP proxy server URL to access Internet.
     quay-username         - Username to authenticate to quay.io.
     check-update-interval - Polling interval for checking new neco release.
-    worker-timeout        - Timeout value to wait for workers.`,
+    worker-timeout        - Timeout value to wait for workers.
+    github-token          - GitHub OAuth2 access token for checking GitHub release.`,
 
 	Args: cobra.ExactArgs(1),
 	ValidArgs: []string{
@@ -34,6 +35,7 @@ Possible keys are:
 		"quay-username",
 		"check-update-interval",
 		"worker-timeout",
+		"github-token",
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
@@ -81,6 +83,12 @@ Possible keys are:
 					return err
 				}
 				fmt.Println(timeout.String())
+			case "github-token":
+				token, err := st.GetGitHubToken(ctx)
+				if err != nil {
+					return err
+				}
+				fmt.Println(token)
 			default:
 				return errors.New("unknown key: " + key)
 			}

@@ -53,6 +53,10 @@ jobs:
           command: |
             echo "$QUAY_PASSWORD" > secrets
       - run:
+          name: Store neco-updater-token
+          command: |
+            echo "$NECO_UPDATER_TOKEN" > neco-updater-token
+      - run:
           name: Watch console on boot-0
           command: |
             ./bin/watch_boot0
@@ -119,6 +123,10 @@ jobs:
           command: |
             if [ ! -f .diff ]; then exit 0; fi
             echo "$QUAY_PASSWORD" > secrets
+      - run:
+          name: Store neco-updater-token
+          command: |
+            echo "$NECO_UPDATER_TOKEN" > neco-updater-token
       - run:
           name: Watch console on boot-0
           command: |

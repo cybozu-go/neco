@@ -1,8 +1,11 @@
 package dctest
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -15,6 +18,24 @@ import (
 // TestUpgrade test neco debian package upgrade scenario
 func TestUpgrade() {
 	It("should update neco package", func() {
+		By("setting github-token if a token exists", func() {
+			data, err := ioutil.ReadFile("../neco-updater-token")
+			switch {
+			case err == nil:
+				By("setting github-token")
+
+				token := string(bytes.TrimSpace(data))
+				_, _, err = execAt(boot0, "neco", "config", "set", "github-token", token)
+				Expect(err).NotTo(HaveOccurred())
+				stdout, _, err := execAt(boot0, "neco", "config", "get", "github-token")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(stdout)).To(Equal(token))
+			case os.IsNotExist(err):
+			default:
+				Expect(err).NotTo(HaveOccurred())
+			}
+		})
+
 		By("Changing env for test")
 		_, _, err := execAt(boot0, "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred())

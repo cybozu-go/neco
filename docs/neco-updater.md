@@ -16,5 +16,6 @@ Option     | Default value          | Description
 
 `neco-updater` will notify status to webhook URL when update
 process is completed or stopped. This URL keeps on memory to prevent
-etcd connection refused.
+etcd connection refused. To prevent rate limits for GitHub, It recommends
+to set personal access token by `neco config set github-token TOKEN`.
 

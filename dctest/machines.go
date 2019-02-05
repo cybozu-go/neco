@@ -15,7 +15,11 @@ func TestMachines() {
 	It("should put BMC/IPMI settings", func() {
 		execSafeAt(boot0, "neco", "bmc", "config", "set", "bmc-user", "/mnt/bmc-user.json")
 		execSafeAt(boot0, "neco", "bmc", "config", "set", "ipmi-user", "cybozu")
+		ipmiUser := execSafeAt(boot0, "neco", "bmc", "config", "get", "ipmi-user")
+		Expect(string(ipmiUser)).To(Equal("cybozu"))
 		execSafeAt(boot0, "neco", "bmc", "config", "set", "ipmi-password", "cybozu")
+		ipmiPassword := execSafeAt(boot0, "neco", "bmc", "config", "get", "ipmi-password")
+		Expect(string(ipmiPassword)).To(Equal("cybozu"))
 	})
 
 	It("should setup boot server hardware", func() {

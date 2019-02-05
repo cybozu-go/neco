@@ -9,6 +9,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
+	"golang.org/x/oauth2"
 )
 
 // ReleaseChecker checks newer GitHub releases by polling
@@ -34,6 +35,17 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	token, err := c.storage.GetGitHubToken(ctx)
+	if err != nil {
+		return err
+	}
+	if len(token) != 0 {
+		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+		oc := oauth2.NewClient(ctx, ts)
+		ctx = context.WithValue(ctx, oc, hc)
+	}
+
 	github := &ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, hc}
 
 	env, err := c.storage.GetEnvConfig(ctx)

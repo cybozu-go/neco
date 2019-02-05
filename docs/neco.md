@@ -206,6 +206,11 @@ The value will be parsed by [`time.ParseDuration`][ParseDuration].
 
 The default value is `60m`.
 
+### `github-token`
+
+Set GitHub personal access token for checking GitHub release with authenticated user.
+It will be used by `neco-updater`.
+
 Use case
 --------
 
