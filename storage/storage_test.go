@@ -2,7 +2,9 @@ package storage
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/neco"
@@ -267,6 +269,35 @@ func testFinish(t *testing.T) {
 	}
 }
 
+func testGetRequestWithRev(t *testing.T) {
+	t.Parallel()
+
+	ec := test.NewEtcdClient(t)
+	defer ec.Close()
+	st := NewStorage(ec)
+	req := neco.UpdateRequest{Version: "1", Servers: []int{1}, Stop: true, StartedAt: time.Now()}
+	reqStr, err := json.Marshal(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = ec.Put(context.Background(), KeyCurrent, string(reqStr))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = ec.Put(context.Background(), "hoge", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, modRev, rev, err := st.GetRequestWithRev(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if modRev >= rev {
+		t.Error("modRev is not less than rev. modRev:", modRev, "rev:", rev)
+	}
+}
+
 func TestStorage(t *testing.T) {
 	t.Run("ContainerTag", testContainerTag)
 	t.Run("DebVersion", testDebVersion)
@@ -275,4 +306,5 @@ func TestStorage(t *testing.T) {
 	t.Run("ClearStatus", testClearStatus)
 	t.Run("Finish", testFinish)
 	t.Run("SabakanContentsStatus", testSabakanContentsStatus)
+	t.Run("GetRequestWithRev", testGetRequestWithRev)
 }
