@@ -161,6 +161,7 @@ require (
 	github.com/xeipuuv/gojsonschema v0.0.0-20181112162635-ac52e6811b56 // indirect
 	go.opencensus.io v0.18.0 // indirect
 	golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85
+	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	google.golang.org/api v0.0.0-20181203220731-00684f929d85 // indirect
 	google.golang.org/grpc v1.17.0 // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect

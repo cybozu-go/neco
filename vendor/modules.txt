@@ -387,12 +387,15 @@ golang.org/x/net/http/httpguts
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/html/charset
+golang.org/x/net/context/ctxhttp
 golang.org/x/net/internal/timeseries
 golang.org/x/net/html
 golang.org/x/net/proxy
-golang.org/x/net/context/ctxhttp
 golang.org/x/net/html/atom
 golang.org/x/net/internal/socks
+# golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
+golang.org/x/oauth2
+golang.org/x/oauth2/internal
 # golang.org/x/sys v0.0.0-20181128092732-4ed8d59d0b35
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -417,6 +420,14 @@ golang.org/x/text/runes
 golang.org/x/text/internal/tag
 # golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 golang.org/x/time/rate
+# google.golang.org/appengine v1.1.0
+google.golang.org/appengine/urlfetch
+google.golang.org/appengine/internal
+google.golang.org/appengine/internal/urlfetch
+google.golang.org/appengine/internal/base
+google.golang.org/appengine/internal/datastore
+google.golang.org/appengine/internal/log
+google.golang.org/appengine/internal/remote_api
 # google.golang.org/genproto v0.0.0-20181127195345-31ac5d88444a
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.17.0
