@@ -18,7 +18,7 @@ import (
 // TestUpgrade test neco debian package upgrade scenario
 func TestUpgrade() {
 	It("should update neco package", func() {
-		data, err := ioutil.ReadFile("../neco-updater-token")
+		data, err := ioutil.ReadFile("../github-token")
 		switch {
 		case err == nil:
 			By("setting github-token")

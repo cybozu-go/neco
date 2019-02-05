@@ -208,8 +208,8 @@ The default value is `60m`.
 
 ### `github-token`
 
-Set GitHub personal access token for checking GitHub release with authenticated user.
-It will be used by `neco-updater`.
+Set GitHub personal access token for using GitHub API with authenticated user.
+It will be used by `neco-updater` and `neco-worker`.
 
 Use case
 --------

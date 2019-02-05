@@ -8,6 +8,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/progs/etcdpasswd"
 )
 
@@ -37,7 +38,11 @@ func (o *operator) UpdateEtcdpasswd(ctx context.Context, req *neco.UpdateRequest
 		if err != nil {
 			return err
 		}
-		err = InstallDebianPackage(ctx, o.proxyClient, &deb, false)
+		hc, err := ext.ProxyHTTPClientWithGitHubToken(ctx, o.storage)
+		if err != nil {
+			return err
+		}
+		err = InstallDebianPackage(ctx, hc, &deb, false)
 		if err != nil {
 			return err
 		}

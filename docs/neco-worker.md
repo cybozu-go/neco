@@ -26,3 +26,6 @@ Updating programs
 When there is a new version of neco, it updates itself by installing
 the new debian package, then start automatic update process.
 
+It also checks latest GitHub release of debian package such as `etcdpasswd`.
+To prevent rate limits for GitHub, It is highly recommended that
+set personal access token by `neco config set github-token TOKEN`.
