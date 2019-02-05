@@ -83,7 +83,7 @@ func TestSetup() {
 
 	It("should complete updates", func() {
 		By("Waiting for request to complete")
-		waitRequestComplete()
+		waitRequestComplete("")
 
 		By("Installing sshd_config and sudoers")
 		for _, h := range []string{boot0, boot1, boot2} {

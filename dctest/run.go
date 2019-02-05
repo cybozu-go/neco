@@ -157,7 +157,9 @@ func execSafeAt(host string, args ...string) []byte {
 	return stdout
 }
 
-func waitRequestComplete() {
+// waitRequestComplete waits for the current request to be completed.
+// If check is not "", the contents is also checked against the output from "neco status".
+func waitRequestComplete(check string) {
 	// wait a moment for neco-updater to put a new request.
 	time.Sleep(time.Second * 2)
 
@@ -166,8 +168,12 @@ func waitRequestComplete() {
 		if err != nil {
 			return err
 		}
-		if !strings.Contains(string(stdout), "status: completed") {
-			return errors.New("request is not completed: " + string(stdout))
+		out := string(stdout)
+		if !strings.Contains(out, "status: completed") {
+			return errors.New("request is not completed: " + out)
+		}
+		if check != "" && !strings.Contains(out, check) {
+			return errors.New("request is not completed: " + out)
 		}
 		return nil
 
