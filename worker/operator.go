@@ -77,7 +77,11 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 	if env == neco.TestEnv {
 		return installLocalPackage(ctx, deb)
 	}
-	return InstallDebianPackage(ctx, o.proxyClient, deb, true)
+	hc, err := ext.ProxyHTTPClientWithGitHubToken(ctx, o.storage)
+	if err != nil {
+		return err
+	}
+	return InstallDebianPackage(ctx, hc, deb, true)
 }
 
 func (o *operator) FinalStep() int {
