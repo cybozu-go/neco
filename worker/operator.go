@@ -104,13 +104,13 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 8:
 		return o.UpdateSabakan(ctx, req)
 	case 9:
-		return o.UpdateSabakanContents(ctx, req)
-	case 10:
 		return o.StopCKE(ctx, req)
-	case 11:
+	case 10:
 		return o.UpdateCKE(ctx, req)
-	case 12:
+	case 11:
 		return o.UpdateCKEContents(ctx, req)
+	case 12:
+		return o.UpdateSabakanContents(ctx, req)
 	case 13:
 		// THIS MUST BE THE FINAL STEP!!!!!
 		// to synchronize before restarting etcd.
