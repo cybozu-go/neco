@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"errors"
+	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
@@ -15,6 +16,8 @@ import (
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
+
+var ipmiVersion string
 
 func lookupMachineBMCAddress(ctx context.Context, id string) (string, error) {
 	ip := net.ParseIP(id)
@@ -46,7 +49,7 @@ func lookupMachineBMCAddress(ctx context.Context, id string) (string, error) {
 	return machines[0].Spec.BMC.IPv4, nil
 }
 
-func ipmiPower(ctx context.Context, action, addr string) error {
+func ipmiPower(ctx context.Context, action, driver, addr string) error {
 	var opts []string
 	switch action {
 	case "start":
@@ -77,7 +80,7 @@ func ipmiPower(ctx context.Context, action, addr string) error {
 		return err
 	}
 
-	args := append(opts, "-u", username, "-p", password, "-h", addr)
+	args := append(opts, "-u", username, "-p", password, "-h", addr, "-D", driver)
 	cmd := exec.CommandContext(ctx, "ipmipower", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -102,13 +105,23 @@ var ipmiPowerCmd = &cobra.Command{
 	Args:      cobra.ExactArgs(2),
 	ValidArgs: []string{"start", "stop", "restart", "status"},
 	Run: func(cmd *cobra.Command, args []string) {
+		var driver string
+		switch ipmiVersion {
+		case "2.0", "2":
+			driver = "LAN_2_0"
+		case "1.5":
+			driver = "LAN"
+		default:
+			log.ErrorExit(errors.New("invalid IPMI version: " + ipmiVersion))
+		}
+
 		well.Go(func(ctx context.Context) error {
 			addr, err := lookupMachineBMCAddress(ctx, args[1])
 			if err != nil {
 				return err
 			}
 
-			return ipmiPower(ctx, args[0], addr)
+			return ipmiPower(ctx, args[0], driver, addr)
 		})
 		well.Stop()
 		err := well.Wait()
@@ -119,5 +132,12 @@ var ipmiPowerCmd = &cobra.Command{
 }
 
 func init() {
+	ver := "2.0"
+	data, _ := ioutil.ReadFile("/sys/devices/virtual/dmi/id/sys_vendor")
+	if string(data) == "QEMU" {
+		ver = "1.5"
+	}
+	ipmiPowerCmd.Flags().StringVar(&ipmiVersion, "ipmi-version", ver,
+		"IPMI protocol version.  Possible values are: 2.0, 2, 1.5")
 	rootCmd.AddCommand(ipmiPowerCmd)
 }
