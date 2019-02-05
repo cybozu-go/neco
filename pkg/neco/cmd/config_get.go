@@ -25,7 +25,7 @@ Possible keys are:
     quay-username         - Username to authenticate to quay.io.
     check-update-interval - Polling interval for checking new neco release.
     worker-timeout        - Timeout value to wait for workers.
-    github-token          - GitHub OAuth2 access token for checking GitHub release.`,
+    github-token          - GitHub personal access token for checking GitHub release.`,
 
 	Args: cobra.ExactArgs(1),
 	ValidArgs: []string{

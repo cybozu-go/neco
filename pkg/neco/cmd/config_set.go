@@ -29,7 +29,7 @@ Possible keys are:
     quay-password         - Password to authenticate to quay.io from QUAY_PASSWORD.  This does not take VALUE.
     check-update-interval - Polling interval for checking new neco release.
     worker-timeout        - Timeout value to wait for workers.
-    github-token          - GitHub OAuth2 access token for checking GitHub release.`,
+    github-token          - GitHub personal access token for checking GitHub release.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
