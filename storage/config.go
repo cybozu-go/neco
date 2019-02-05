@@ -121,14 +121,6 @@ func (s Storage) PutGitHubToken(ctx context.Context, token string) error {
 }
 
 // GetGitHubToken returns github-token from storage
-// If not found, this returns empty string.
 func (s Storage) GetGitHubToken(ctx context.Context) (string, error) {
-	token, err := s.get(ctx, KeyGitHubToken)
-	if err == ErrNotFound {
-		return "", nil
-	}
-	if err != nil {
-		return "", err
-	}
-	return token, nil
+	return s.get(ctx, KeyGitHubToken)
 }

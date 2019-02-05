@@ -74,11 +74,11 @@ func ProxyHTTPClientWithGitHubToken(ctx context.Context, st storage.Storage) (*h
 	}
 
 	token, err := st.GetGitHubToken(ctx)
+	if err == storage.ErrNotFound {
+		return hc, nil
+	}
 	if err != nil {
 		return nil, err
-	}
-	if len(token) == 0 {
-		return hc, nil
 	}
 
 	// Set personal access token
