@@ -29,7 +29,7 @@ type serfMemberContainer struct {
 }
 
 // TestCKE tests CKE
-func TestCKE(version string) {
+func TestCKE() {
 	It("should generates cluster.yml automatically", func() {
 		By("setting configurations")
 		execSafeAt(boot0, "ckecli", "constraints", "set", "control-plane-count", "3")

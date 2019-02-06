@@ -48,7 +48,7 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 		}
 	case neco.TestEnv:
 		c.check = func(ctx context.Context) (string, error) {
-			return "0.0.2", nil
+			return "9999.99.99", nil
 		}
 	case neco.StagingEnv:
 		c.check = github.GetLatestPublishedTag

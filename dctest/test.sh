@@ -1,30 +1,11 @@
 #!/bin/sh
 
-sudo -b sh -c "echo \$\$ >/tmp/placemat_pid$$; exec $PLACEMAT -loglevel error -enable-virtfs output/cluster.yml"
-sleep 1
-PLACEMAT_PID=$(cat /tmp/placemat_pid$$)
-echo "placemat PID: $PLACEMAT_PID"
+TARGET="$1"
 
-fin() {
-    if [ "$RET" -ne 0 ]; then
-        # do not kill placemat upon test failure to help debugging.
-        return
-    fi
-    sudo kill $PLACEMAT_PID
-    echo "waiting for placemat to terminate..."
-    while true; do
-        if [ -d /proc/$PLACEMAT_PID ]; then
-            sleep 1
-            continue
-        fi
-        break
-    done
-}
-trap fin INT TERM HUP 0
+PLACEMAT_PID=$(echo $(pgrep placemat) | tr " " ",")
 
 while true; do
-    child_pid=$(pgrep -P $PLACEMAT_PID)
-    operation_pid=$(pgrep -P ${child_pid} -f operation)
+    operation_pid=$(pgrep -P $PLACEMAT_PID -f operation)
     if sudo -E nsenter -t ${operation_pid} -n /bin/true 2>/dev/null; then break; fi
     if ! ps -p $PLACEMAT_PID > /dev/null; then
         echo "FAIL: placemat is no longer working."
@@ -36,9 +17,9 @@ done
 
 # obtain operation pod's pid again, because rkt's pid may change.
 sleep 3
-operation_pid=$(pgrep -P ${child_pid} -f operation)
+operation_pid=$(pgrep -P $PLACEMAT_PID -f operation)
 
-sudo -E nsenter -t ${operation_pid} -n sh -c "export PATH=$PATH; $GINKGO $SUITE"
+sudo -E nsenter -t ${operation_pid} -n sh -c "export PATH=$PATH; $GINKGO $SUITE_PACKAGE -focus=\"${TARGET}\""
 RET=$?
 
 exit $RET

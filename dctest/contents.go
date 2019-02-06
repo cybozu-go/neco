@@ -52,8 +52,7 @@ func TestContents() {
 		var ignInfo []*sabakan.IgnitionInfo
 		err = json.Unmarshal(output, &ignInfo)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(ignInfo).To(HaveLen(1))
-		Expect(ignInfo[0].ID).To(Equal(necoVersion))
+		Expect(ignInfo).To(ContainElement(WithTransform(func(ign *sabakan.IgnitionInfo) string { return ign.ID }, Equal(necoVersion))))
 
 		output = execSafeAt(boot0, "sabactl", "assets", "index")
 		var assets []string

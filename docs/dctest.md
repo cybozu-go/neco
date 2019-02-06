@@ -76,15 +76,19 @@ Options
 ### `SUITE`
 
 You can choose the type of test suite by specifying `SUITE` make variable.
-The default is to run `bootstrap`.
+The value can be `bootstrap` (default) or `functions`.
 
 `make test` accepts this variable.
+
+The value of `SUITE` is interpreted as a Go package name.  You can write
+a new test suite and specify its package name by `SUITE`.  As a side note,
+the forms of `./bootstrap` and `./functions` are more proper.
 
 ### `DATACENTER`
 
 You can choose the base of upgrading test by specifying `DATACENTER` make
 variable.
-There is no default; specify `production` or `staging` explicitly.
+The value can be `staging` (default) or `production`.
 
 This variable makes sense only when `SUITE=functions` is specified.
 

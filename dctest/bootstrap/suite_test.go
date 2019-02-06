@@ -30,9 +30,7 @@ var _ = Describe("Test Neco bootstrap", func() {
 	// uploading contents to sabakan must be done after sabakan configuration.
 	Context("contents", dctest.UploadContents)
 	Context("machines", dctest.TestMachines)
-	Context("cke", func() {
-		dctest.TestCKE("0.0.1")
-	})
+	Context("cke", dctest.TestCKE)
 	Context("coil", dctest.TestCoil)
 	Context("unbound", dctest.TestUnbound)
 	Context("squid", dctest.TestSquid)
