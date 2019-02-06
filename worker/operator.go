@@ -35,6 +35,7 @@ type operator struct {
 	mylrn       int
 	ec          *clientv3.Client
 	storage     storage.Storage
+	ghClient    *http.Client
 	proxyClient *http.Client
 	localClient *http.Client
 
@@ -49,11 +50,16 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 	if err != nil {
 		return nil, err
 	}
+	ghClient, err := ext.GitHubHTTPClient(ctx, st)
+	if err != nil {
+		return nil, err
+	}
 
 	return &operator{
 		mylrn:       mylrn,
 		ec:          ec,
 		storage:     st,
+		ghClient:    ghClient,
 		proxyClient: proxyClient,
 		localClient: localClient,
 	}, nil
@@ -77,11 +83,7 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 	if env == neco.TestEnv {
 		return installLocalPackage(ctx, deb)
 	}
-	ghc, err := ext.GitHubHTTPClient(ctx, o.storage)
-	if err != nil {
-		return err
-	}
-	return InstallDebianPackage(ctx, o.proxyClient, ghc, deb, true)
+	return InstallDebianPackage(ctx, o.proxyClient, o.ghClient, deb, true)
 }
 
 func (o *operator) FinalStep() int {
