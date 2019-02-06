@@ -6,6 +6,7 @@ After=neco.target docker.socket
 
 [Service]
 Type=oneshot
+RemainAfterExit=yes
 
 ExecStart=/opt/bin/load-image \
   {{ MyURL }}/api/v1/assets/%%ETCD_FILE%% %%ETCD_NAME%%

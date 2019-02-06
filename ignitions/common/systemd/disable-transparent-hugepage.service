@@ -6,6 +6,7 @@ AssertPathIsReadWrite=/sys/kernel/mm/transparent_hugepage/enabled
 
 [Service]
 Type=oneshot
+RemainAfterExit=yes
 ExecStart=/bin/sh -c 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'
 
 [Install]

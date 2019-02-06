@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -134,7 +135,7 @@ var ipmiPowerCmd = &cobra.Command{
 func init() {
 	ver := "2.0"
 	data, _ := ioutil.ReadFile("/sys/devices/virtual/dmi/id/sys_vendor")
-	if string(data) == "QEMU" {
+	if strings.TrimSpace(string(data)) == "QEMU" {
 		ver = "1.5"
 	}
 	ipmiPowerCmd.Flags().StringVar(&ipmiVersion, "ipmi-version", ver,
