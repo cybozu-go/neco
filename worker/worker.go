@@ -72,7 +72,7 @@ func (w *Worker) Run(ctx context.Context) error {
 
 	for {
 		if err == storage.ErrNotFound {
-			req, modRev, _, err = w.storage.WaitRequest(ctx, modRev)
+			req, modRev, err = w.storage.WaitRequest(ctx, modRev)
 			continue
 		}
 		if err != nil {
@@ -80,12 +80,12 @@ func (w *Worker) Run(ctx context.Context) error {
 		}
 
 		if req.Stop {
-			req, modRev, _, err = w.storage.WaitRequest(ctx, modRev)
+			req, modRev, err = w.storage.WaitRequest(ctx, modRev)
 			continue
 		}
 
 		if !req.IsMember(w.mylrn) {
-			req, modRev, _, err = w.storage.WaitRequest(ctx, modRev)
+			req, modRev, err = w.storage.WaitRequest(ctx, modRev)
 			continue
 		}
 
@@ -108,12 +108,12 @@ func (w *Worker) Run(ctx context.Context) error {
 				}
 			}
 			log.Info("previous update was aborted", nil)
-			req, modRev, _, err = w.storage.WaitRequest(ctx, modRev)
+			req, modRev, err = w.storage.WaitRequest(ctx, modRev)
 			continue
 		}
 		if neco.UpdateCompleted(req.Version, req.Servers, stMap) {
 			log.Info("previous update was completed successfully", nil)
-			req, modRev, _, err = w.storage.WaitRequest(ctx, modRev)
+			req, modRev, err = w.storage.WaitRequest(ctx, modRev)
 			continue
 		}
 
@@ -129,7 +129,7 @@ func (w *Worker) Run(ctx context.Context) error {
 		log.Info("update finished", map[string]interface{}{
 			"version": req.Version,
 		})
-		req, modRev, _, err = w.storage.WaitRequest(ctx, modRev)
+		req, modRev, err = w.storage.WaitRequest(ctx, modRev)
 	}
 }
 
