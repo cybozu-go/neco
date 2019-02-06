@@ -136,6 +136,10 @@ Polling interval for checking new neco release in nanoseconds.
 
 Timeout from workers in nanoseconds.
 
+## `<prefix>/config/github-token`
+
+GitHub personal access token.
+
 ## `<prefix>/vault-unseal-key`
 
 Vault unseal key for unsealing automatically.
