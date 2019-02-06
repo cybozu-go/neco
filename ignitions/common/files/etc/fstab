@@ -1,1 +1,3 @@
-LABEL=var /var ext4 x-systemd.device-timeout=300 0 0
+LABEL=containerd /var/lib/containerd ext4 x-systemd.device-timeout=300 0 0
+LABEL=docker     /var/lib/docker     ext4 x-systemd.device-timeout=300 0 0
+LABEL=rkt        /var/lib/rkt        ext4 x-systemd.device-timeout=300 0 0

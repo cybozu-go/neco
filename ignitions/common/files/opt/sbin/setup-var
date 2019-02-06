@@ -1,8 +1,24 @@
 #!/bin/sh -eu
 
 VG=vg1
-LV=var
-MOUNTDEV=/dev/disk/by-label/var
+LVLIST="containerd docker rkt"
+CONTAINERD_SIZE=10g
+DOCKER_SIZE=10g
+RKT_SIZE=10g
+
+lvsize() {
+    case $1 in
+    containerd)
+        echo $CONTAINERD_SIZE
+        ;;
+    docker)
+        echo $DOCKER_SIZE
+        ;;
+    rkt)
+        echo $RKT_SIZE
+        ;;
+    esac
+}
 
 prepare_lv() {
     vgchange -a ay
@@ -16,38 +32,46 @@ prepare_lv() {
     lvchange $VG -a ay
     sleep 1
 
-    if ! lvs $VG/$LV >/dev/null 2>&1; then
-        lvcreate -y -n $LV -L $SIZE $VG
+    for lv in $LVLIST; do
+        if ! lvs $VG/$lv >/dev/null 2>&1; then
+            lvcreate -y -n $lv -L $(lvsize $lv) $VG
+        fi
         sync
-    fi
+        sleep 1
+    done
 }
 
 if ls /dev/mapper/crypt-virtio-pci-* >/dev/null 2>&1; then
+    # for qemu
     PVS=$(ls /dev/mapper/crypt-virtio-pci-*)
-    SIZE=30g
     prepare_lv
-    DEV=/dev/$VG/$LV
 elif ls /dev/mapper/crypt-pci-*-nvme-1 >/dev/null 2>&1; then
+    # for compute node
     PVS=$(ls /dev/mapper/crypt-pci-*-nvme-1)
-    SIZE=1t
+    CONTAINERD_SIZE=1t
+    DOCKER_SIZE=50g
     prepare_lv
-    DEV=/dev/$VG/$LV
 else
-    DEV=$(ls /dev/mapper/crypt-pci-*-ata-1)
+    # for storage node
+    PVS=$(ls /dev/mapper/crypt-pci-*-ata-1)
+    CONTAINERD_SIZE=50g
+    DOCKER_SIZE=50g
+    prepare_lv
 fi
 
-sleep 1
+for label in $LVLIST; do
+    DEVICE=/dev/$VG/$label
+    while true; do
+        if [ -e $DEVICE ]; then
+            break
+        fi
+        echo "waiting for $DEVICE to appear..."
+        sleep 1
+    done
 
-if [ ! -L "${MOUNTDEV}" ]; then
-    mkfs.ext4 -L var "${DEV}"
-    sleep 1
-fi
-
-# wait for /var mount
-while true; do
-    dev=$(awk '{ if( $2 == "/var" ) { print "ok" } }' /proc/mounts)
-    if [ "$dev" = ok ]; then
-        exit 0
+    if [ $label != "$(lsblk -n -o LABEL $DEVICE)" ]; then
+        mkfs.ext4 -L $label $DEVICE
     fi
-    sleep 1
 done
+
+sync

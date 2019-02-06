@@ -51,6 +51,10 @@ systemd:
     mask: true
   - name: systemd-timesyncd.service
     mask: true
+  - name: rkt-metadata.service
+    mask: true
+  - name: rkt-metadata.socket
+    mask: true
   - name: chronyd.service
     enabled: true
   - name: serf.service
