@@ -16,6 +16,7 @@ ExecStartPre=-/usr/bin/docker rm serf
 ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%serf%img%% %%serf%full%%
 ExecStart=/usr/bin/docker run \
   --name serf \
+  --log-driver=journald \
   --read-only \
   --net=host \
   --mount type=bind,source=/etc/serf,target=/etc/serf,readonly \
