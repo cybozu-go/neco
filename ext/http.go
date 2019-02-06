@@ -65,9 +65,9 @@ func LocalHTTPClient() *http.Client {
 	}
 }
 
-// ProxyHTTPClientWithGitHubToken returns a *http.Client to access Internet with GitHub personal access token.
+// GitHubHTTPClient returns a *http.Client to access Internet with GitHub personal access token.
 // It returns *http.Client of ProxyHTTPClient() when token does not exist.
-func ProxyHTTPClientWithGitHubToken(ctx context.Context, st storage.Storage) (*http.Client, error) {
+func GitHubHTTPClient(ctx context.Context, st storage.Storage) (*http.Client, error) {
 	hc, err := ProxyHTTPClient(ctx, st)
 	if err != nil {
 		return nil, err
