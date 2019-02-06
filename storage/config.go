@@ -114,3 +114,13 @@ func (s Storage) GetWorkerTimeout(ctx context.Context) (time.Duration, error) {
 	}
 	return time.Duration(i), nil
 }
+
+// PutGitHubToken stores github-token config to storage.
+func (s Storage) PutGitHubToken(ctx context.Context, token string) error {
+	return s.put(ctx, KeyGitHubToken, token)
+}
+
+// GetGitHubToken returns github-token from storage
+func (s Storage) GetGitHubToken(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyGitHubToken)
+}

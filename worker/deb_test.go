@@ -16,7 +16,7 @@ func TestInstallDebianPackage(t *testing.T) {
 		Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.5",
 	}
 
-	err := InstallDebianPackage(context.Background(), http.DefaultClient, pkg, true)
+	err := InstallDebianPackage(context.Background(), http.DefaultClient, http.DefaultClient, pkg, true)
 	if err != nil {
 		t.Fatal(err)
 	}

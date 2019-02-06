@@ -46,6 +46,7 @@ git checkout -qf ${CIRCLE_SHA1}
 
 cd dctest
 cp /home/cybozu/secrets .
+cp /home/cybozu/github-token .
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
 export GO111MODULE=on
 make setup
@@ -54,5 +55,6 @@ EOF
 chmod +x run.sh
 
 $GCLOUD compute scp --zone=${ZONE} secrets cybozu@${INSTANCE_NAME}:
+$GCLOUD compute scp --zone=${ZONE} github-token cybozu@${INSTANCE_NAME}:
 $GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
 $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo /home/cybozu/run.sh'

@@ -28,7 +28,8 @@ Possible keys are:
     quay-username         - Username to authenticate to quay.io from QUAY_USER.  This does not take VALUE.
     quay-password         - Password to authenticate to quay.io from QUAY_PASSWORD.  This does not take VALUE.
     check-update-interval - Polling interval for checking new neco release.
-    worker-timeout        - Timeout value to wait for workers.`,
+    worker-timeout        - Timeout value to wait for workers.
+    github-token          - GitHub personal access token for checking GitHub release.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -54,6 +55,7 @@ Possible keys are:
 		"quay-password",
 		"check-update-interval",
 		"worker-timeout",
+		"github-token",
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
@@ -112,6 +114,9 @@ Possible keys are:
 					return err
 				}
 				return st.PutWorkerTimeout(ctx, duration)
+			case "github-token":
+				value = args[1]
+				return st.PutGitHubToken(ctx, value)
 			}
 			return errors.New("unknown key: " + key)
 		})
