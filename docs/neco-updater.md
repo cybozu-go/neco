@@ -19,5 +19,5 @@ process is completed or stopped. This URL keeps on memory to prevent
 etcd connection refused.
 
 It also periodically checks GitHub release of this repository.
-To prevent rate limits for GitHub, It is highly recommended that
+To prevent rate limits for GitHub, it is highly recommended that
 set personal access token by `neco config set github-token TOKEN`.
