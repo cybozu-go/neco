@@ -1,10 +1,9 @@
-// +build !no_compaction
-
 package worker
 
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -17,6 +16,9 @@ import (
 )
 
 func TestEtcdCompaction(t *testing.T) {
+	if os.Getenv("RUN_COMPACTION_TEST") == "" {
+		t.Skip("RUN_COMPACTION_TEST is not set")
+	}
 	ec := test.NewEtcdClient(t)
 	defer ec.Close()
 	req := neco.UpdateRequest{Version: "1", Servers: []int{1}, Stop: true, StartedAt: time.Now()}
