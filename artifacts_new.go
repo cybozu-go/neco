@@ -5,7 +5,7 @@ package neco
 
 var CurrentArtifacts = ArtifactSet{
 	Images: []ContainerImage{
-		{Name: "cke", Repository: "quay.io/cybozu/cke", Tag: "1.13.1.1", Private: false},
+		{Name: "cke", Repository: "quay.io/cybozu/cke", Tag: "1.13.2.1", Private: false},
 		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.3.11.1", Private: false},
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "20190201.1", Private: true},
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "1.1.0.1", Private: false},
