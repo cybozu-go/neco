@@ -167,6 +167,12 @@ Updater updates container image and restart `sabakan` in any timing.
 
 If on failure, `neco recover` command removes also this key.
 
+### CKE contents
+
+This process is the same as update of sabakan contents.
+
+CKE contents is container images obtained from `ckecli images`
+
 ### setup-hw
 
 Updater updates container image and restart setup-hw service in any timing.
