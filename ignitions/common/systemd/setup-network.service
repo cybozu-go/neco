@@ -1,9 +1,9 @@
 [Unit]
 Description=Setup network
 ConditionPathExists=!/etc/bird
-After=setup-var.service neco-dhcp-online.target
 Wants=neco-dhcp-online.target
-Requires=setup-var.service
+Requires=var-lib-rkt.mount
+After=var-lib-rkt.mount neco-dhcp-online.target
 
 [Service]
 Type=oneshot
