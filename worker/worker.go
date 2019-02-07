@@ -64,9 +64,6 @@ func (w *Worker) Run(ctx context.Context) error {
 		return err
 	}
 
-	// This may return compacted modRev.
-	// Use this request's revision as modRev because we now have the latest
-	// request and we are interested only in newer ones.
 	req, modRev, rev, err := w.storage.GetRequestWithRev(ctx)
 
 	for {
