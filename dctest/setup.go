@@ -76,6 +76,7 @@ func TestSetup() {
 		for _, h := range []string{boot0, boot1, boot2} {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
+			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", neco.EtcdService+".service")
 			execSafeAt(h, "systemctl", "-q", "is-active", neco.VaultService+".service")
 		}

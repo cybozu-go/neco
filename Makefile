@@ -23,6 +23,7 @@ DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
+NODE_EXPORTER_VERSION = 0.17.0
 
 all:
 	@echo "Specify one of these targets:"
@@ -62,7 +63,9 @@ $(DEB):
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
 	mkdir -p $(BINDIR)
 	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
-	mkdir -p $(SBINDIR)
+	mkdir -p $(SBINDIR)/node_exporter
+	curl -sSLf https://github.com/prometheus/node_exporter/releases/download/v$(NODE_EXPORTER_VERSION)/node_exporter-$(NODE_EXPORTER_VERSION).linux-amd64.tar.gz | \
+		tar zxf - --strip-components 1 -C $(SBINDIR)/node_exporter
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
 	mkdir -p $(SHAREDIR)
 	cp etc/* $(SHAREDIR)
