@@ -1,16 +1,17 @@
 [Unit]
 Description=setup-hw container
 Requires=docker.socket
-After=docker.socket
+Wants=neco.target
+After=docker.socket neco.target
 
 [Service]
 Type=simple
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
-TimeoutStartSec=0
+TimeoutStartSec=600s
 OOMScoreAdjust=-1000
-ExecStartPre=/bin/sh -c "/usr/bin/docker kill setup-hw || true"
-ExecStartPre=/bin/sh -c "/usr/bin/docker rm setup-hw || true"
+ExecStartPre=-/usr/bin/docker kill setup-hw
+ExecStartPre=-/usr/bin/docker rm setup-hw
 ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%setup-hw%img%% %%setup-hw%full%%
 ExecStart=/usr/bin/docker run \
   --name setup-hw \
