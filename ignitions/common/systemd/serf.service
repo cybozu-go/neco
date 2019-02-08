@@ -10,11 +10,13 @@ ConditionPathExists=/etc/serf/serf.json
 [Service]
 Type=simple
 Restart=always
+RestartForceExitStatus=SIGPIPE
 RestartSec=10s
-TimeoutStartSec=0
+TimeoutStartSec=600s
+OOMScoreAdjust=-1000
 ExecStartPre=/bin/systemctl is-active -q exec-setup-hw.service
-ExecStartPre=/bin/sh -c "/usr/bin/docker kill serf || true"
-ExecStartPre=/bin/sh -c "/usr/bin/docker rm serf || true"
+ExecStartPre=-/usr/bin/docker kill serf
+ExecStartPre=-/usr/bin/docker rm serf
 ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%serf%img%% %%serf%full%%
 ExecStart=/usr/bin/docker run \
   --name serf \

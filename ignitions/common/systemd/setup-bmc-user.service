@@ -1,7 +1,7 @@
 [Unit]
 Description=Download bmc-user.json
-Before=setup-network.service
-Wants=setup-network.service
+Wants=neco.target
+After=neco.target
 
 [Service]
 Type=oneshot
