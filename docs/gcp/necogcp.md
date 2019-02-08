@@ -8,14 +8,14 @@ Synopsis
 
 ### GCE instance management
 
-* `necogcp compute create [-u] [vmx-enabled|host-vm]`
+* `necogcp create [-u] [vmx-enabled|host-vm]`
 
     Create instance or instance image.
     If `vmx-enabled` is specified, it builds `vmx-enabled` image.
     If `host-vm` is specified, it launches `host-vm` instance using `vmx-enabled` image.
     `-u` option re-creates target image or instance.
 
-* `necogcp compute delete [vmx-enabled|host-vm]`
+* `necogcp delete [vmx-enabled|host-vm]`
 
     Delete instance or instance image.
     If `vmx-enabled` is specified, it deletes `vmx-enabled` image.

@@ -4,7 +4,7 @@ Behavior of the `neco-test` GCP project
 Overview
 --------
 
-![workflow](http://www.plantuml.com/plantuml/svg/ZP3DJiCm48JlVefHn84U70cEFg2YW2ea3XLlu6wsgL5YM_OQDMyFIdz4r29wzNmpuzbb5fka3Bso926XUk7OXn6hvrVO6B4D2PufQE4iM3Lhn1G-cQGw6JwAnoHkHWJPSKBdP5Ss9p1NgcGccndLn3cVnNhY7q6PM-iCjDPFk3-22nZSJMH7SN9IOYkiJECIzToy8VX9Fnc_XhrcRpSzjt23xNWUGM68HVWOWr-qClykDAZhloeUQhpRucc7u_Z3TdMDdbBcDreOD8SlpTzHilCTBa9k-gtMbpqmUAnnDfFDdDNvt5Sj1cjEBhIER3z2N3kYHBWjUE-ov5ejsRTbwBy1)
+![workflow](http://www.plantuml.com/plantuml/svg/ZP7BJiCm44Nt_eghY4MxY2jO6e6A0bIL45JyWUjCKuDZHtwWvky9xaDKBQBRyPbxnZFJ4AMFgJLCgkWyYaVgZEinUtY2x3giXfebvSf88M9MBT1vzq4g5lk6zsIH7vSzN5oJHwFZEYttO2XO2gHa81IPqtPmMaN30nENwWJAihp7Q0UE8N25aQhHg6uo56xHoaz2zVRwF9_TSJuvfF2-DQYpPin4fRqoLCtXR1RjSx_QJKbMBWtLqAriA1ioCXYWFCb8-4KnyU_71JZ_A_gQuqKcgzROxMIx4dQEpYd7gniBLDkHZkj8GTi69o4NJLkMfnu8t70Scd_E6DZX2cTR11RajQkragP7r7MFr46lG1iTOk1iIhPEhVa6)
 
 Test environment for [dctest][] and multi host test of other github Neco projects are provisioned by GCE.
 All resources are in neco-test GCP project. Instance name is called by CircleCI which is based on `vmx-enabled` instance image.

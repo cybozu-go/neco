@@ -9,7 +9,7 @@ Requirements
 Overview
 --------
 
-![workflow](http://www.plantuml.com/plantuml/svg/bT1DIiKm50NWULPnA0vqq80woq2U-CGLk82ONj92Va9pyz3TMwKDs1_X3NjFy-NadZBhaOjtGXkE8vfxYJCb5x_mzlmAdLAp90yIBoDf9bpyPqj1VpZgC7XjgVxpAF6U2NtCt5uyXZ3nmKnvoMJqb3GxPuNQNAhGja-udR_ke723G2PQatu6CBz5XFgdqqnivdyn4tqgJ30RHQY3noX8UILSaIDqQRiQpwOrBfQkaZdtrTkh8UMUf9PDhHEKF0IB3IJg-e-xdSaH4pGZ3BPdSQBG5U--0G00)
+![workflow](http://www.plantuml.com/plantuml/svg/ZP1DJWGX58JtdABISQ6BngWxJCmOntW23u3mGdVaXpGmqTjBbEb5_vXPlbVKzuewf2odN9nbKkKmeRlZE5AquHjlpw-GCNPdvPxZPIAP2IVtrPEN7vOqHYSDpMyUEDuJOGWfzoU7qLUyLrKlYPIiIhVXPM9rLA3ldt3TfXi8N45f61Llw_m89py9-jV2n3_16cUr_oDwKg4YeLPk9dP-8i3vnS1cteMrT8jrOnbbGz5GmSLIMIaDCs_hFETR975kPgcWfD4Rh41ixdm_sv4iLQJCyACPCZkGryNP7m00)
 
 Developer's development environment is deployed by GCE.
 The instance name is called `host-vm` which is based on `vmx-enabled` instance image.
@@ -48,20 +48,20 @@ make CONFIG=$HOME/.necogcp.yml deploy
 ### Create `vmx-enabled` instance image for your project
 
 ```console
-necogcp compute create vmx-enabled
+necogcp create vmx-enabled
 ```
 
-If you want to update your existing image, run `necogcp compute create -u vmx-enabled`.
+If you want to update your existing image, run `necogcp create -u vmx-enabled`.
 
 ### Use `host-vm` instance for your project
 
 Please create `vmx-enabled` image in advance with above step.
 
 ```console
-necogcp compute create host-vm
+necogcp create host-vm
 ```
 
-If you want to update your existing image, run `necogcp compute create -u host-vm`.
+If you want to update your existing image, run `necogcp create -u host-vm`.
 
 After login, please make sure vmx is enabled by `grep -cw vmx /proc/cpuinfo`.
 
