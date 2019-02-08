@@ -1,6 +1,7 @@
 [Unit]
 Description=Run setup-hw tool
-Requires=setup-hw.service setup-bmc-user.service
+Wants=setup-hw.service
+Requires=setup-bmc-user.service
 After=setup-hw.service setup-bmc-user.service
 
 [Service]
