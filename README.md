@@ -85,7 +85,7 @@ See [docs/dctest.md](docs/dctest.md)
 
 ### CI/CD
 
-CI/CD in **Neco** is running by CircleCI. It will release neco deb package after passing all requirements.
+CI/CD in **Neco** is running by CircleCI.
 Then `neco-updater` service is updated automatically.
 
 See [docs/cicd.md](docs/cicd.md)
@@ -107,7 +107,7 @@ $ go test -v -count=1 -race -mod=vendor ./...
 ### GCP suite
 
 [gcp](gcp/) directory contains utilities for provisioning the Google Compute Engine services for Neco project.
-Test suite, and other Neco github projects deploys GCE instance based on image created by this tool.
+Test suite, and other Neco github projects deploy GCE instance based on an image created by this tool.
 
 See [docs/gcp](docs/gcp/)
 
