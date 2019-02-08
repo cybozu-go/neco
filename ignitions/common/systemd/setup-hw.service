@@ -1,7 +1,8 @@
 [Unit]
 Description=setup-hw container
 Requires=docker.socket
-After=docker.socket
+Wants=neco.target
+After=docker.socket neco.target
 
 [Service]
 Type=simple
