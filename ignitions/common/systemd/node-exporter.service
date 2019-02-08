@@ -1,0 +1,13 @@
+[Unit]
+Description=Node exporter
+Wants=neco.target
+Requires=setup-node-exporter.service
+After=network-online.target setup-node-exporter.service
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/opt/sbin/node-exporter
+
+[Install]
+WantedBy=multi-user.target

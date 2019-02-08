@@ -1,0 +1,7 @@
+[Unit]
+Description=Setup node exporter
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/setup-node-exporter
+RemainAfterExit=yes

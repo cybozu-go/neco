@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+curl -sfSL -o /opt/sbin/node-exporter {{ MyURL }}/api/v1/assets/node-exporter
+chmod a+x /opt/sbin/node-exporter

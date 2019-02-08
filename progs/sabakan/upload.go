@@ -187,11 +187,22 @@ func uploadAssets(ctx context.Context, c *sabakan.Client, auth *DockerAuth) erro
 	if err != nil {
 		return err
 	}
+	if need {
+		_, err = c.AssetsUpload(ctx, name, neco.SabakanCryptsetupPath, nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Upload node-exporter
+	need, err = needAssetUpload(ctx, neco.NodeExporterAssetName, c)
+	if err != nil {
+		return err
+	}
 	if !need {
 		return nil
 	}
-
-	_, err = c.AssetsUpload(ctx, name, neco.SabakanCryptsetupPath, nil)
+	_, err = c.AssetsUpload(ctx, neco.NodeExporterAssetName, neco.NodeExporterPath, nil)
 	return err
 }
 

@@ -24,6 +24,7 @@ files:
   - /opt/sbin/setup-chronyd-conf
   - /opt/sbin/setup-hw
   - /opt/sbin/setup-local-network
+  - /opt/sbin/setup-node-exporter
   - /opt/sbin/setup-sabakan-cryptsetup
   - /opt/sbin/setup-serf-conf
   - /opt/sbin/setup-serf-tags
@@ -45,6 +46,9 @@ systemd:
   - name: sabakan-cryptsetup.service
     enabled: true
   - name: setup-sabakan-cryptsetup.service
+  - name: node-exporter.service
+    enabled: true
+  - name: setup-node-exporter.service
   - name: setup-var.service
     enabled: true
   - name: ntpd.service

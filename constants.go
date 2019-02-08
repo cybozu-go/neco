@@ -93,6 +93,12 @@ const (
 	CKEPrefix  = "/cke/"
 )
 
+// Node Exporter params
+const (
+	NodeExporterAssetName = "node-exporter"
+	NodeExporterPath      = "/usr/sbin/node_exporter/node_exporter"
+)
+
 // File locations
 var (
 	rackFile    = filepath.Join(NecoDir, "rack")
