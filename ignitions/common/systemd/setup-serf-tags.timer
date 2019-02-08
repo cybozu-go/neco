@@ -1,6 +1,6 @@
 [Unit]
 Description=Set serf tags periodically
-Requires=serf.service
+Wants=serf.service
 After=serf.service
 
 [Timer]

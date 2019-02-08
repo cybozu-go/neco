@@ -1,16 +1,20 @@
 [Unit]
 Description=Serf container on docker
-Wants=neco.target
-Requires=setup-serf.service docker.socket docker.service exec-setup-hw.service
-After=neco.target setup-serf.service docker.socket docker.service exec-setup-hw.service
+Wants=neco.target exec-setup-hw.service
+After=neco.target  exec-setup-hw.service
+Requires=setup-serf.service docker.socket
+After=setup-serf.service docker.socket
 After=cke-images.service coil-image.service squid-image.service
 ConditionPathExists=/etc/serf/serf.json
 
 [Service]
 Type=simple
 Restart=always
+RestartForceExitStatus=SIGPIPE
 RestartSec=10s
-TimeoutStartSec=0
+TimeoutStartSec=600s
+OOMScoreAdjust=-1000
+ExecStartPre=/bin/systemctl is-active -q exec-setup-hw.service
 ExecStartPre=-/usr/bin/docker kill serf
 ExecStartPre=-/usr/bin/docker rm serf
 ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%serf%img%% %%serf%full%%

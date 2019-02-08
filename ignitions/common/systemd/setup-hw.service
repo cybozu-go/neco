@@ -1,13 +1,14 @@
 [Unit]
 Description=setup-hw container
-Requires=docker.socket docker.service
-After=docker.socket docker.service
+Requires=docker.socket
+Wants=neco.target
+After=docker.socket neco.target
 
 [Service]
 Type=simple
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
-TimeoutStartSec=0
+TimeoutStartSec=600s
 OOMScoreAdjust=-1000
 ExecStartPre=-/usr/bin/docker kill setup-hw
 ExecStartPre=-/usr/bin/docker rm setup-hw
