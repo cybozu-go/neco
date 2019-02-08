@@ -14,25 +14,32 @@ described in [Artifacts](artifacts).
 Type of Test Suites
 -------------------
 
-There are two types of test suites.
+There are three types of test suites.
 
-1. functions
+1. bootstrap
 
-    This suite tests a full set of functions of Neco.  Especially this includes
-    upgrading test and joining/removing boot server node test.
+    This suite tests initial setup of Neco.  This does not include
+    upgrading test nor boot server node joining/leaving test.
+
+    This suite installs Neco with the generated deb package.
+
+2. upgrade
+
+    This suite tests initial setup and upgrade of Neco.
 
     Upgrading test first installs Neco by downloading a deb package from
     github.com.  It then upgrades Neco with the generated deb package,
     which is versioned as `9999.99.99`.
 
-2. bootstrap
+3. functions
 
-    This suite tests initial setup of Neco.  This does not include
-    upgrading test nor joining/removing boot server node test.
+    This suite tests a full set of functions of Neco in a single version,
+    i.e. this consists of initial setup of Neco and joining/leaving of
+    a boot server node.
 
     This suite installs Neco with the generated deb package.
 
-Each test has an entry point of test as `<suite>/suite_test.go`.
+Each test suite has an entry point of test as `<suite>/suite_test.go`.
 
 ### Base of upgrading test
 
@@ -76,13 +83,13 @@ Options
 ### `SUITE`
 
 You can choose the type of test suite by specifying `SUITE` make variable.
-The value can be `bootstrap` (default) or `functions`.
+The value can be `bootstrap` (default), `upgrade`, or `functions`.
 
 `make test` accepts this variable.
 
 The value of `SUITE` is interpreted as a Go package name.  You can write
 a new test suite and specify its package name by `SUITE`.  As a side note,
-the forms of `./bootstrap` and `./functions` are more proper.
+the forms of `./bootstrap`, `./upgrade`, and `./functions` are more proper.
 
 ### `DATACENTER`
 

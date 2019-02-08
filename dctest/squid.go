@@ -9,14 +9,20 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-// TestSquid test squid installation
-func TestSquid() {
+// TestSquidSetup test squid setup
+func TestSquidSetup() {
 	It("should be deployed successfully", func() {
 		By("creating k8s resources")
 		execSafeAt(boot0, "sed", "-e", "s,%%SQUID_IMAGE%%,$(neco image squid),",
 			"-e", "'s,cache_mem .*,cache_mem 200 MB,'",
 			"/usr/share/neco/squid.yml", "|", "kubectl", "create", "-f", "-")
+	})
+}
 
+// TestSquid test installed squid
+func TestSquid() {
+	It("should be available", func() {
+		By("checking squid Deployment")
 		Eventually(func() error {
 			stdout, _, err := execAt(boot0, "kubectl", "--namespace=internet-egress",
 				"get", "deployments/squid", "-o=json")

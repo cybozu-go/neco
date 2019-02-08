@@ -46,7 +46,7 @@ func RunBeforeSuite() {
 	Expect(err).NotTo(HaveOccurred())
 	defer f.Close()
 	remoteFilename := filepath.Join("/tmp", filepath.Base(baseDebFile))
-	for _, host := range []string{boot0, boot1, boot2} { // boot3 does not need base deb
+	for _, host := range []string{boot0, boot1, boot2, boot3} {
 		_, err := f.Seek(0, os.SEEK_SET)
 		Expect(err).NotTo(HaveOccurred())
 		_, _, err = execAtWithStream(host, f, "dd", "of="+remoteFilename)

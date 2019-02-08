@@ -28,10 +28,25 @@ var _ = Describe("Test Neco bootstrap", func() {
 	Context("etcdpasswd", dctest.TestEtcdpasswd)
 	Context("sabakan", dctest.TestSabakan)
 	// uploading contents to sabakan must be done after sabakan configuration.
-	Context("contents", dctest.UploadContents)
+	Context("contents", func() {
+		dctest.UploadContents()
+		dctest.TestContents()
+	})
 	Context("machines", dctest.TestMachines)
-	Context("cke", dctest.TestCKE)
-	Context("coil", dctest.TestCoil)
-	Context("unbound", dctest.TestUnbound)
-	Context("squid", dctest.TestSquid)
+	Context("cke", func() {
+		dctest.TestCKESetup()
+		dctest.TestCKE()
+	})
+	Context("coil", func() {
+		dctest.TestCoilSetup()
+		dctest.TestCoil()
+	})
+	Context("unbound", func() {
+		dctest.TestUnboundSetup()
+		dctest.TestUnbound()
+	})
+	Context("squid", func() {
+		dctest.TestSquidSetup()
+		dctest.TestSquid()
+	})
 })

@@ -37,7 +37,7 @@ BMC_USER = $(SABAKAN_DIR)/bmc-user.json
 DEBVER = 9999.99.99
 GENERATED_DEB = $(abspath $(OUTPUT)/neco_$(DEBVER)_amd64.deb)
 DOWNLOADED_DEB = $(abspath $(OUTPUT)/neco_release_amd64.deb)
-ifeq ($(notdir $(SUITE_PACKAGE)),functions)
+ifeq ($(notdir $(SUITE_PACKAGE)),upgrade)
   BASE_DEB = $(DOWNLOADED_DEB)
 else
   BASE_DEB = $(GENERATED_DEB)

@@ -24,12 +24,15 @@ func TestJoinRemove() {
 	})
 
 	It("should add a new boot server", func() {
-		remoteFilename := filepath.Join("/tmp", filepath.Base(generatedDebFile))
-		stdout, stderr, err := execAt(boot3, "sudo", "dpkg", "-i", remoteFilename)
-		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		if generatedDebFile != baseDebFile {
+			// install the same version of Neco as upgraded boot servers.
+			remoteFilename := filepath.Join("/tmp", filepath.Base(generatedDebFile))
+			stdout, stderr, err := execAt(boot3, "sudo", "dpkg", "-i", remoteFilename)
+			Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
 
 		token := getVaultToken()
-		stdout, stderr, err = execAt(
+		stdout, stderr, err := execAt(
 			boot3, "sudo", "env", "VAULT_TOKEN="+token, "neco", "join", "0", "1", "2")
 		if err != nil {
 			log.Error("neco join failed", map[string]interface{}{

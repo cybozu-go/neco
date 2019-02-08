@@ -9,12 +9,19 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-// TestUnbound test unbound installation
-func TestUnbound() {
+// TestUnboundSetup test unbound setup
+func TestUnboundSetup() {
 	It("should be deployed as internet-egress/unbound", func() {
 		execSafeAt(boot0,
 			"sed", "s,%%UNBOUND_IMAGE%%,$(ckecli images | grep quay.io/cybozu/unbound),",
 			"/usr/share/neco/unbound.yml", "|", "kubectl", "create", "-f", "-")
+	})
+}
+
+// TestUnbound test installed unbound
+func TestUnbound() {
+	It("should be available", func() {
+		By("checking unbound Deployment")
 		Eventually(func() error {
 			stdout, _, err := execAt(boot0, "kubectl", "--namespace=internet-egress",
 				"get", "deployments/unbound", "-o=json")
@@ -47,5 +54,8 @@ func TestUnbound() {
 				"getent", "hosts", "www.cybozu.com")
 			return err
 		}).Should(Succeed())
+
+		By("deleting a test pod")
+		execSafeAt(boot0, "kubectl", "delete", "pod", "test")
 	})
 }
