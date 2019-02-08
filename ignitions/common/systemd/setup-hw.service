@@ -1,7 +1,7 @@
 [Unit]
 Description=setup-hw container
-Requires=docker.socket docker.service
-After=docker.socket docker.service
+Requires=docker.socket
+After=docker.socket
 
 [Service]
 Type=simple
@@ -9,8 +9,8 @@ Restart=on-failure
 RestartForceExitStatus=SIGPIPE
 TimeoutStartSec=0
 OOMScoreAdjust=-1000
-ExecStartPre=-/usr/bin/docker kill setup-hw
-ExecStartPre=-/usr/bin/docker rm setup-hw
+ExecStartPre=/bin/sh -c "/usr/bin/docker kill setup-hw || true"
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm setup-hw || true"
 ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%setup-hw%img%% %%setup-hw%full%%
 ExecStart=/usr/bin/docker run \
   --name setup-hw \
