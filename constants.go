@@ -96,7 +96,7 @@ const (
 // Node Exporter params
 const (
 	NodeExporterAssetName = "node-exporter"
-	NodeExporterPath      = "/usr/sbin/node_exporter/node_exporter"
+	NodeExporterPath      = "/usr/sbin/node-exporter/node-exporter"
 )
 
 // File locations
