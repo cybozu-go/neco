@@ -26,6 +26,7 @@ const (
 	KeyEnv                 = "config/env"
 	KeyCheckUpdateInterval = "config/check-update-interval"
 	KeyWorkerTimeout       = "config/worker-timeout"
+	KeyGitHubToken         = "config/github-token"
 	KeyVaultUnsealKey      = "vault-unseal-key"
 	KeyVaultRootToken      = "vault-root-token"
 	KeyFinishPrefix        = "finish/"

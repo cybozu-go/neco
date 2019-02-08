@@ -1,8 +1,8 @@
 [Unit]
 Description=Serf container on docker
 Wants=neco.target
-Requires=setup-serf.service docker.socket
-After=neco.target setup-serf.service docker.socket
+Requires=setup-serf.service docker.socket docker.service exec-setup-hw.service
+After=neco.target setup-serf.service docker.socket docker.service exec-setup-hw.service
 After=cke-images.service coil-image.service squid-image.service
 ConditionPathExists=/etc/serf/serf.json
 
@@ -16,6 +16,7 @@ ExecStartPre=-/usr/bin/docker rm serf
 ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%serf%img%% %%serf%full%%
 ExecStart=/usr/bin/docker run \
   --name serf \
+  --log-driver=journald \
   --read-only \
   --net=host \
   --mount type=bind,source=/etc/serf,target=/etc/serf,readonly \

@@ -108,3 +108,8 @@ Specify `TAGS=release` in the release branch to use `artifacts_release.go`.
 `neco sabakan-upload` supports uploading private container images where are in quay.io.
 dctest runs `neco config set quay-username` and `neco config set quay-password` automatically when `secrets` file exists.
 To upload private container images for sabakan, put quay.io password in `dctest/secrets`.
+
+## `github-token` file
+
+`neco-updater` watches GitHub release without authentication by default. `neco-worker` also watches it to download debian packages.
+It would receive rate limits of the GitHub API. dctest runs `neco config set github-token` automatically when `github-token` file exists.

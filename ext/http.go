@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cybozu-go/neco/storage"
+	"golang.org/x/oauth2"
 )
 
 // ProxyHTTPClient returns a *http.Client to access Internet.
@@ -62,4 +63,28 @@ func LocalHTTPClient() *http.Client {
 		Transport: transport,
 		Timeout:   10 * time.Minute,
 	}
+}
+
+// GitHubHTTPClient returns a *http.Client to access Internet with GitHub personal access token.
+// It returns *http.Client of ProxyHTTPClient() when token does not exist.
+func GitHubHTTPClient(ctx context.Context, st storage.Storage) (*http.Client, error) {
+	hc, err := ProxyHTTPClient(ctx, st)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := st.GetGitHubToken(ctx)
+	if err == storage.ErrNotFound {
+		return hc, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// Set personal access token
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	// Add proxy http client to oauth2 generated http.Client
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, hc)
+	// Create access token and proxy configuration included *http.Client
+	return oauth2.NewClient(ctx, ts), nil
 }

@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"sort"
-	"strings"
 	"text/template"
 
 	"github.com/containers/image/docker"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	version "github.com/hashicorp/go-version"
+	"golang.org/x/oauth2"
 )
 
 var quayRepos = []string{
@@ -120,19 +121,13 @@ func getLatestImage(ctx context.Context, name string) (*neco.ContainerImage, err
 		return nil, err
 	}
 
-	var filtered []string
-	for _, tag := range tags {
-		if !strings.Contains(tag, "-") {
-			continue
-		}
-		filtered = append(filtered, tag)
-	}
-	tags = filtered
-
 	versions := make([]*version.Version, 0, len(tags))
 	for _, tag := range tags {
 		v, err := version.NewVersion(tag)
 		if err != nil {
+			continue
+		}
+		if v.Prerelease() != "" {
 			continue
 		}
 		versions = append(versions, v)
@@ -147,7 +142,14 @@ func getLatestImage(ctx context.Context, name string) (*neco.ContainerImage, err
 }
 
 func getLatestDeb(ctx context.Context, name string) (*neco.DebianPackage, error) {
-	client := neco.NewGitHubClient(nil)
+	var hc *http.Client
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: token},
+		)
+		hc = oauth2.NewClient(ctx, ts)
+	}
+	client := neco.NewGitHubClient(hc)
 	release, resp, err := client.Repositories.GetLatestRelease(ctx, "cybozu-go", name)
 	if err != nil {
 		if resp.StatusCode == http.StatusNotFound {

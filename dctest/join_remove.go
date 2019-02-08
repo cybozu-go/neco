@@ -54,7 +54,7 @@ func TestJoinRemove() {
 
 	It("should install programs", func() {
 		By("Waiting for request to complete")
-		waitRequestComplete()
+		waitRequestComplete("members: [0 1 2 3]")
 
 		By("Waiting for etcd to be restarted on boot-0")
 		time.Sleep(time.Second * 7)

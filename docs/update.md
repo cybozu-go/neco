@@ -156,16 +156,22 @@ Updater updates container image and restart `sabakan` in any timing.
 ### sabakan contents e.g. container images, OS images and ignitions
 
 1. Elect leader updater. Only a leader does procedure as follows.
-2. Check `<prefix>/worker/sabakan-content`.
+2. Check `<prefix>/contents/sabakan`.
 
     1. If `version` matches with current neco version and `success` is true, worker does nothing.
     2. If `version` matches and `success` is false, worker aborts the process.
     3. If `version` does not match or key does not exist, worker does procedure as follows.
 
 3. Check if each sabakan content can be updated. If so, download artifacts, then upload them to sabakan.
-4. Put `<prefix>/status/sabakan-content` with value.
+4. Put `<prefix>/contents/sabakan` with value.
 
 If on failure, `neco recover` command removes also this key.
+
+### CKE contents
+
+This process is the same as update of sabakan contents.
+
+CKE contents is container images obtained from `ckecli images`
 
 ### setup-hw
 

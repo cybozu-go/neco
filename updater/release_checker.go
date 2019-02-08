@@ -3,11 +3,11 @@ package updater
 import (
 	"context"
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 )
 
@@ -15,26 +15,24 @@ import (
 type ReleaseChecker struct {
 	storage   storage.Storage
 	leaderKey string
+	ghClient  *http.Client
 
 	check   func(context.Context) (string, error)
 	current string
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
-func NewReleaseChecker(st storage.Storage, leaderKey string) ReleaseChecker {
+func NewReleaseChecker(st storage.Storage, leaderKey string, ghc *http.Client) ReleaseChecker {
 	return ReleaseChecker{
 		storage:   st,
 		leaderKey: leaderKey,
+		ghClient:  ghc,
 	}
 }
 
 // Run periodically checks the new release of neco package at GitHub.
 func (c *ReleaseChecker) Run(ctx context.Context) error {
-	hc, err := ext.ProxyHTTPClient(ctx, c.storage)
-	if err != nil {
-		return err
-	}
-	github := &ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, hc}
+	github := &ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, c.ghClient}
 
 	env, err := c.storage.GetEnvConfig(ctx)
 	if err != nil {

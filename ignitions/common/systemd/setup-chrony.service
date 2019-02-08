@@ -1,10 +1,10 @@
 [Unit]
 Description=Setup chrony container
 ConditionPathExists=!/etc/chrony.conf
-After=setup-var.service
-Before=setup-network.service
 Wants=setup-network.service
-Requires=setup-var.service
+Requires=var-lib-rkt.mount
+Before=setup-network.service
+After=var-lib-rkt.mount
 
 [Service]
 Type=oneshot

@@ -15,7 +15,7 @@ var bmcConfigGetIPMIUserCmd = &cobra.Command{
 	Use:   "ipmi-user",
 	Short: "show the current IPMI username",
 	Long:  `show the current IPMI username.`,
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
 		if err != nil {

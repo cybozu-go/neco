@@ -35,6 +35,7 @@ type operator struct {
 	mylrn       int
 	ec          *clientv3.Client
 	storage     storage.Storage
+	ghClient    *http.Client
 	proxyClient *http.Client
 	localClient *http.Client
 
@@ -49,11 +50,16 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 	if err != nil {
 		return nil, err
 	}
+	ghClient, err := ext.GitHubHTTPClient(ctx, st)
+	if err != nil {
+		return nil, err
+	}
 
 	return &operator{
 		mylrn:       mylrn,
 		ec:          ec,
 		storage:     st,
+		ghClient:    ghClient,
 		proxyClient: proxyClient,
 		localClient: localClient,
 	}, nil
@@ -77,7 +83,7 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 	if env == neco.TestEnv {
 		return installLocalPackage(ctx, deb)
 	}
-	return InstallDebianPackage(ctx, o.proxyClient, deb, true)
+	return InstallDebianPackage(ctx, o.proxyClient, o.ghClient, deb, true)
 }
 
 func (o *operator) FinalStep() int {
@@ -104,13 +110,13 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 8:
 		return o.UpdateSabakan(ctx, req)
 	case 9:
-		return o.UpdateSabakanContents(ctx, req)
-	case 10:
 		return o.StopCKE(ctx, req)
-	case 11:
+	case 10:
 		return o.UpdateCKE(ctx, req)
-	case 12:
+	case 11:
 		return o.UpdateCKEContents(ctx, req)
+	case 12:
+		return o.UpdateSabakanContents(ctx, req)
 	case 13:
 		// THIS MUST BE THE FINAL STEP!!!!!
 		// to synchronize before restarting etcd.
