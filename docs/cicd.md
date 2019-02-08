@@ -39,7 +39,7 @@ Same workflow process but it works on `release` branch. This is run as stability
 3. CI workflow builds a debian package `neco-YYYY.MM.DD-UNIQUE_ID.deb` and uploads it to GitHub Release.
 4. `neco-updater` on staging starts CD flow described below.
 
-### Are you ready to deploy for production data centerthe ?
+### Are you ready to deploy for production data center?
 
 1. Choose a pre-release tag in [release page](https://github.com/cybozu-go/neco/releases) which starts with `release-` of what you want.
 2. Uncheck `This is a pre-release`, then click `Publish release`.
