@@ -9,7 +9,7 @@ var (
 	boot1            = os.Getenv("BOOT1")
 	boot2            = os.Getenv("BOOT2")
 	boot3            = os.Getenv("BOOT3")
-	debFile          = os.Getenv("DEB")
+	debVer           = os.Getenv("DEBVER")
 	generatedDebFile = os.Getenv("GENERATED_DEB")
 	baseDebFile      = os.Getenv("BASE_DEB")
 	sshKeyFile       = os.Getenv("SSH_PRIVKEY")

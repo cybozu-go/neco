@@ -38,6 +38,9 @@ func TestUpgrade() {
 		_, _, err = execAt(boot0, "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred())
 
+		By("Waiting for request to complete")
+		waitRequestComplete("version: " + debVer)
+
 		By("Wait for systemd unit files to be updated")
 		etcdContainerImage, err := neco.CurrentArtifacts.FindContainerImage("etcd")
 		Expect(err).ShouldNot(HaveOccurred())

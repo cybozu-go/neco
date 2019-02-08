@@ -50,7 +50,7 @@ SSH_PRIVKEY = $(realpath ./dctest_key)
 BOB_PRIVKEY = $(realpath ./bob_key)
 BOB_PUBKEY = $(realpath ./bob_key.pub)
 
-export GENERATED_DEB BASE_DEB SSH_PRIVKEY BOB_PRIVKEY BOB_PUBKEY
+export DEBVER GENERATED_DEB BASE_DEB SSH_PRIVKEY BOB_PRIVKEY BOB_PUBKEY
 
 all:
 	@echo "Specify one of these targets:"
