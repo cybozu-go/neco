@@ -14,8 +14,7 @@ export GOFLAGS
 PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev
 WORKDIR := $(CURDIR)/work
 CONTROL := $(WORKDIR)/DEBIAN/control
-DOCDIR := $(WORKDIR)/usr/share/doc/neco
-NODE_EXPORTER_DOCDIR := $(WORKDIR)/usr/share/doc/node_exporter
+DOCDIR := $(WORKDIR)/usr/share/doc
 BINDIR := $(WORKDIR)/usr/bin
 SBINDIR := $(WORKDIR)/usr/sbin
 SHAREDIR := $(WORKDIR)/usr/share/neco
@@ -25,7 +24,7 @@ DEB = neco_$(VERSION)_amd64.deb
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
 NODE_EXPORTER_VERSION = 0.17.0
-NODE_EXPORTER_PATH = $(GOPATH)/src/github.com/prometheus/node_exporter
+NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
 
 all:
 	@echo "Specify one of these targets:"
@@ -57,30 +56,23 @@ mod:
 	git add -f vendor
 	git add go.mod go.sum
 
-node_exporter:
-	GO111MODULE=off go get github.com/prometheus/node_exporter
-	cd $(NODE_EXPORTER_PATH) && \
-		git checkout v$(NODE_EXPORTER_VERSION) && \
-		make PREFIX=$(GOPATH)/src/github.com/cybozu-go/neco build
-
 deb: $(DEB)
 
-$(DEB): node_exporter
+$(DEB):
 	rm -rf $(WORKDIR)
 	cp -r debian $(WORKDIR)
+	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco $(DOCDIR)/node_exporter
+	curl -fsSL $(NODE_EXPORTER_URL) | tar -C $(WORKDIR)/src --strip-components=1 -xzf -
+	cd $(WORKDIR)/src; GO111MODULE=on make build
+	mv $(WORKDIR)/src/node_exporter $(SBINDIR)/
+	cd $(WORKDIR)/src; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/node_exporter/
+	rm -rf $(WORKDIR)/src
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
-	mkdir -p $(BINDIR)
 	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
-	mkdir -p $(SBINDIR)
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
-	mkdir -p $(NODE_EXPORTER_DOCDIR)
-	cp $(NODE_EXPORTER_PATH)/LICENSE $(NODE_EXPORTER_PATH)/NOTICE $(NODE_EXPORTER_DOCDIR)
-	mv $(GOPATH)/src/github.com/cybozu-go/neco/node_exporter $(SBINDIR)
-	mkdir -p $(SHAREDIR)
 	cp etc/* $(SHAREDIR)
 	cp -a ignitions $(SHAREDIR)
-	mkdir -p $(DOCDIR)
-	cp README.md LICENSE $(DOCDIR)
+	cp README.md LICENSE $(DOCDIR)/neco
 	chmod -R g-w $(WORKDIR)
 	$(FAKEROOT) dpkg-deb --build $(WORKDIR) $(DEST)
 	rm -rf $(WORKDIR)
