@@ -70,6 +70,7 @@ func TestContents() {
 		image, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(assets).To(ContainElement(neco.CryptsetupAssetName(image)))
+		Expect(assets).To(ContainElement(neco.NodeExporterAssetName))
 		for _, name := range []string{"hyperkube", "pause", "etcd", "coredns", "unbound"} {
 			Expect(assets).To(ContainElement(MatchRegexp("^cybozu-%s-.*\\.img$", name)))
 		}

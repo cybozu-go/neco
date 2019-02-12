@@ -61,10 +61,11 @@ func TestUpgrade() {
 			return nil
 		}).Should(Succeed())
 
-		By("Checking status of neco-updater and neco-worker")
+		By("Checking status of services enabled at postinst")
 		for _, h := range []string{boot0, boot1, boot2} {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
+			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
 		}
 
 		By("Checking new etcd is running")
