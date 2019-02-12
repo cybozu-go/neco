@@ -1,4 +1,11 @@
 #!/bin/sh -e
 
-curl -sfSL -o /opt/sbin/node-exporter {{ MyURL }}/api/v1/assets/node-exporter
+for i in $(seq 20); do
+    if curl -sfSL -o /opt/sbin/node-exporter {{ MyURL }}/api/v1/assets/node-exporter; then
+        break
+    fi
+    rm -f /opt/sbin/node-exporter
+    sleep 5
+done
+
 chmod a+x /opt/sbin/node-exporter
