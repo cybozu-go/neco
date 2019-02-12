@@ -44,6 +44,11 @@ func StopService(ctx context.Context, name string) error {
 	return well.CommandContext(ctx, "systemctl", "stop", name+".service").Run()
 }
 
+// DisableService disables the service.
+func DisableService(ctx context.Context, name string) error {
+	return well.CommandContext(ctx, "systemctl", "disable", name+".service").Run()
+}
+
 // IsActiveService returns true is the service is active.
 func IsActiveService(ctx context.Context, name string) (bool, error) {
 	output, err := well.CommandContext(ctx, "systemctl", "is-active", name+".service").Output()
