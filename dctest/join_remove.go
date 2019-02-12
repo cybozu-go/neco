@@ -46,6 +46,7 @@ func TestJoinRemove() {
 
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-updater.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-worker.service")
+		execSafeAt(boot3, "systemctl", "-q", "is-active", "node-exporter.service")
 	})
 
 	It("should install programs", func() {

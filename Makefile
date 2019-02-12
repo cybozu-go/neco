@@ -14,7 +14,7 @@ export GOFLAGS
 PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev
 WORKDIR := $(CURDIR)/work
 CONTROL := $(WORKDIR)/DEBIAN/control
-DOCDIR := $(WORKDIR)/usr/share/doc/neco
+DOCDIR := $(WORKDIR)/usr/share/doc
 BINDIR := $(WORKDIR)/usr/bin
 SBINDIR := $(WORKDIR)/usr/sbin
 SHAREDIR := $(WORKDIR)/usr/share/neco
@@ -23,6 +23,8 @@ DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
+NODE_EXPORTER_VERSION = 0.17.0
+NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
 
 all:
 	@echo "Specify one of these targets:"
@@ -59,16 +61,18 @@ deb: $(DEB)
 $(DEB):
 	rm -rf $(WORKDIR)
 	cp -r debian $(WORKDIR)
+	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco $(DOCDIR)/node_exporter
+	curl -fsSL $(NODE_EXPORTER_URL) | tar -C $(WORKDIR)/src --strip-components=1 -xzf -
+	cd $(WORKDIR)/src; GO111MODULE=on make build
+	mv $(WORKDIR)/src/node_exporter $(SBINDIR)/
+	cd $(WORKDIR)/src; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/node_exporter/
+	rm -rf $(WORKDIR)/src
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
-	mkdir -p $(BINDIR)
 	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
-	mkdir -p $(SBINDIR)
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
-	mkdir -p $(SHAREDIR)
 	cp etc/* $(SHAREDIR)
 	cp -a ignitions $(SHAREDIR)
-	mkdir -p $(DOCDIR)
-	cp README.md LICENSE $(DOCDIR)
+	cp README.md LICENSE $(DOCDIR)/neco
 	chmod -R g-w $(WORKDIR)
 	$(FAKEROOT) dpkg-deb --build $(WORKDIR) $(DEST)
 	rm -rf $(WORKDIR)

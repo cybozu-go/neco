@@ -1,0 +1,13 @@
+[Unit]
+Description=Node exporter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartForceExitStatus=SIGPIPE
+ExecStart=/usr/sbin/node_exporter
+
+[Install]
+WantedBy=multi-user.target
