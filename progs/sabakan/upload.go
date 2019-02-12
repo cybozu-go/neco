@@ -44,11 +44,14 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 	env.Go(func(ctx context.Context) error {
 		return uploadAssets(ctx, client, auth)
 	})
-	env.Go(func(ctx context.Context) error {
-		return uploadIgnitions(ctx, client, version, st)
-	})
 	env.Stop()
-	return env.Wait()
+	err = env.Wait()
+	if err != nil {
+		return err
+	}
+
+	// ignitions refers assets, so upload ignitions at the end
+	return uploadIgnitions(ctx, client, version, st)
 }
 
 // uploadOSImages uploads CoreOS images

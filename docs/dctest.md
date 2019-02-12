@@ -97,7 +97,7 @@ You can choose the base of upgrading test by specifying `DATACENTER` make
 variable.
 The value can be `staging` (default) or `production`.
 
-This variable makes sense only when `SUITE=functions` is specified.
+This variable makes sense only when `SUITE=./upgrade` is specified.
 
 `make test` accepts this variable.
 
