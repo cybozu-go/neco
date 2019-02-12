@@ -19,10 +19,10 @@ Fields are used for all scripts in neco-gcp.
 
 Fields in `shutdown` are configuration for GAE endpoint [`/shutdown`](api.md#shutdown).
 
-| Field                | Type     | Default   | Description                                |
-| -------------------- | -------- | --------- | ------------------------------------------ |
-| `delete`             | []string | `host-vm` | Target instances to be deleted by cron     |
-| `excluded-instances` | []string |           | Exclude instances to avoid shutdown/delete |
+| Field     | Type     | Default   | Description                                |
+| --------- | -------- | --------- | ------------------------------------------ |
+| `delete`  | []string | `host-vm` | Target instances to be deleted by cron     |
+| `exclude` | []string |           | Exclude instances to avoid shutdown/delete |
 
 #### `compute`
 

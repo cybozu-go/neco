@@ -6,7 +6,7 @@ app:
   shutdown:
     delete:
     - host-vm
-    excluded-instances:
+    exclude:
     - my-instance-1
     - my-instance-2
 compute:
