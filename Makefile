@@ -15,6 +15,7 @@ PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev
 WORKDIR := $(CURDIR)/work
 CONTROL := $(WORKDIR)/DEBIAN/control
 DOCDIR := $(WORKDIR)/usr/share/doc/neco
+NODE_EXPORTER_DOCDIR := $(WORKDIR)/usr/share/doc/node_exporter
 BINDIR := $(WORKDIR)/usr/bin
 SBINDIR := $(WORKDIR)/usr/sbin
 SHAREDIR := $(WORKDIR)/usr/share/neco
@@ -63,11 +64,12 @@ $(DEB):
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
 	mkdir -p $(BINDIR)
 	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
-	mkdir -p $(SBINDIR)/node-exporter
-	curl -sSLf https://github.com/prometheus/node_exporter/releases/download/v$(NODE_EXPORTER_VERSION)/node_exporter-$(NODE_EXPORTER_VERSION).linux-amd64.tar.gz | \
-		tar zxf - --strip-components 1 -C $(SBINDIR)/node-exporter
-	mv $(SBINDIR)/node-exporter/node_exporter $(SBINDIR)/node-exporter/node-exporter
+	mkdir -p $(SBINDIR)
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
+	mkdir -p $(NODE_EXPORTER_DOCDIR)
+	curl -sSLf https://github.com/prometheus/node_exporter/releases/download/v$(NODE_EXPORTER_VERSION)/node_exporter-$(NODE_EXPORTER_VERSION).linux-amd64.tar.gz | \
+		tar zxf - --strip-components 1 -C $(NODE_EXPORTER_DOCDIR)
+	mv $(NODE_EXPORTER_DOCDIR)/node_exporter $(SBINDIR)/
 	mkdir -p $(SHAREDIR)
 	cp etc/* $(SHAREDIR)
 	cp -a ignitions $(SHAREDIR)

@@ -194,7 +194,7 @@ func uploadAssets(ctx context.Context, c *sabakan.Client, auth *DockerAuth) erro
 		}
 	}
 
-	// Upload node-exporter
+	// Upload node exporter
 	need, err = needAssetUpload(ctx, neco.NodeExporterAssetName, c)
 	if err != nil {
 		return err

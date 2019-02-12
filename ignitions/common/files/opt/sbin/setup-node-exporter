@@ -1,11 +1,11 @@
 #!/bin/sh -e
 
 for i in $(seq 20); do
-    if curl -sfSL -o /opt/sbin/node-exporter {{ MyURL }}/api/v1/assets/node-exporter; then
+    rm -f /opt/sbin/node_exporter
+    if curl -sfSL -o /opt/sbin/node_exporter {{ MyURL }}/api/v1/assets/node_exporter; then
         break
     fi
-    rm -f /opt/sbin/node-exporter
     sleep 5
 done
 
-chmod a+x /opt/sbin/node-exporter
+chmod a+x /opt/sbin/node_exporter
