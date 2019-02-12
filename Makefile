@@ -25,6 +25,7 @@ DEB = neco_$(VERSION)_amd64.deb
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
 NODE_EXPORTER_VERSION = 0.17.0
+NODE_EXPORTER_PATH = $(GOPATH)/src/github.com/prometheus/node_exporter
 
 all:
 	@echo "Specify one of these targets:"
@@ -56,9 +57,15 @@ mod:
 	git add -f vendor
 	git add go.mod go.sum
 
+node_exporter:
+	GO111MODULE=off go get github.com/prometheus/node_exporter
+	cd $(NODE_EXPORTER_PATH) && \
+		git checkout v$(NODE_EXPORTER_VERSION) && \
+		make PREFIX=$(GOPATH)/src/github.com/cybozu-go/neco build
+
 deb: $(DEB)
 
-$(DEB):
+$(DEB): node_exporter
 	rm -rf $(WORKDIR)
 	cp -r debian $(WORKDIR)
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
@@ -67,9 +74,8 @@ $(DEB):
 	mkdir -p $(SBINDIR)
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
 	mkdir -p $(NODE_EXPORTER_DOCDIR)
-	curl -sSLf https://github.com/prometheus/node_exporter/releases/download/v$(NODE_EXPORTER_VERSION)/node_exporter-$(NODE_EXPORTER_VERSION).linux-amd64.tar.gz | \
-		tar zxf - --strip-components 1 -C $(NODE_EXPORTER_DOCDIR)
-	mv $(NODE_EXPORTER_DOCDIR)/node_exporter $(SBINDIR)/
+	cp $(NODE_EXPORTER_PATH)/LICENSE $(NODE_EXPORTER_PATH)/NOTICE $(NODE_EXPORTER_DOCDIR)
+	mv node_exporter $(SBINDIR)
 	mkdir -p $(SHAREDIR)
 	cp etc/* $(SHAREDIR)
 	cp -a ignitions $(SHAREDIR)

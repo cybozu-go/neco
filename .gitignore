@@ -20,3 +20,5 @@
 
 # ignore go.sum
 /go.sum
+
+node_exporter
