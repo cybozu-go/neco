@@ -90,7 +90,7 @@ jobs:
           root: .
           paths:
             - "artifacts_release.go"
-  update-release:
+  dctest-release-functions:
       docker:
       - image: google/cloud-sdk
       steps:
@@ -150,6 +150,28 @@ jobs:
             if [ ! -f .diff ]; then exit 0; fi
             ./bin/run-dctest-release.sh
           no_output_timeout: 20m
+  update-release:
+      docker:
+      - image: quay.io/cybozu/golang:1.11-bionic
+      steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Configure GIT
+          command: |
+            git config --global user.email "neco@cybozu.com"
+            git config --global user.name "cybozu-neco"
+      - run: git checkout release
+      - run: git merge --no-commit origin/master
+      - run: cp /tmp/workspace/artifacts_release.go .
+      - run:
+          name: Check diff
+          command: |
+            diffs=$(git status -s)
+            if [ "$diffs" = "" ]; then exit 0; fi
+            touch .diff
+            printf "%s\n" "$diffs"
       - add_ssh_keys:
           fingerprints:
             - "d7:2a:c8:5d:c4:32:7e:20:6f:bc:20:7c:ab:c4:24:88"
@@ -191,9 +213,12 @@ workflows:
                 - release
     jobs:
       - generate-artifacts
-      - update-release:
+      - dctest-release-functions:
           requires:
             - generate-artifacts
+      - update-release:
+          requires:
+            - dctest-release-functions
   master:
     jobs:
       - generate-artifacts:
@@ -201,9 +226,16 @@ workflows:
             branches:
               only:
                 - master
-      - update-release:
+      - dctest-release-functions:
           requires:
             - generate-artifacts
+          filters:
+            branches:
+              only:
+                - master
+      - update-release:
+          requires:
+            - dctest-release-functions
           filters:
             branches:
               only:
