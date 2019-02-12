@@ -75,7 +75,7 @@ $(DEB): node_exporter
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
 	mkdir -p $(NODE_EXPORTER_DOCDIR)
 	cp $(NODE_EXPORTER_PATH)/LICENSE $(NODE_EXPORTER_PATH)/NOTICE $(NODE_EXPORTER_DOCDIR)
-	mv node_exporter $(SBINDIR)
+	mv $(GOPATH)/src/github.com/cybozu-go/neco/node_exporter $(SBINDIR)
 	mkdir -p $(SHAREDIR)
 	cp etc/* $(SHAREDIR)
 	cp -a ignitions $(SHAREDIR)
