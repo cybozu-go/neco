@@ -7,4 +7,3 @@ MACHINE_TYPE=n1-highcpu-64
 DISK_TYPE=pd-ssd
 BOOT_DISK_SIZE=20GB
 GCLOUD="gcloud --quiet --account ${SERVICE_ACCOUNT} --project ${PROJECT}"
-ARCHIVE_SET=$1

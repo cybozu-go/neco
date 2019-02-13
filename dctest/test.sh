@@ -1,6 +1,7 @@
 #!/bin/sh
 
 TARGET="$1"
+TAGS="$2"
 
 PLACEMAT_PID=$(echo $(pgrep placemat) | tr " " ",")
 
@@ -19,4 +20,4 @@ done
 sleep 3
 operation_pid=$(pgrep -P $PLACEMAT_PID -f operation)
 
-sudo -E nsenter -t ${operation_pid} -n sh -c "export PATH=$PATH; $GINKGO $SUITE_PACKAGE -focus=\"${TARGET}\""
+sudo -E nsenter -t ${operation_pid} -n sh -c "export PATH=$PATH; $GINKGO $SUITE_PACKAGE -focus=\"${TARGET}\" -tags=\"${TAGS}\""

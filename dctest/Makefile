@@ -42,7 +42,9 @@ ifeq ($(notdir $(SUITE_PACKAGE)),upgrade)
 else
   BASE_DEB = $(GENERATED_DEB)
 endif
-### transient package
+### transient package; remove OLD_NEW_DEB after a "newer" version of Neco is released.
+### The "newer" version of Neco must reply "9999.99.99" in ReleaseChecker.Run(),
+### and must use "/tmp/..." in installLocalPackage().
 OLD_NEW_DEB = $(SABAKAN_DIR)/neco_0.0.2_amd64.deb
 PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(BMC_USER) $(OPERATION_SSH_DIR) $(OLD_NEW_DEB)
 TEST_DEPS = $(GENERATED_DEB) $(BASE_DEB)
@@ -93,10 +95,10 @@ $(DOWNLOADED_DEB):
 	cd ..; go install -mod=vendor ./pkg/download-neco-deb
 	download-neco-deb $(DATACENTER) > $@
 
-### always use empty TAGS because this target is used only for upgrade test suite
+### transient target
 $(OLD_NEW_DEB):
 	mkdir -p $(SABAKAN_DIR)
-	cd ..; $(MAKE) deb VERSION=0.0.2 DEST=$(abspath $(SABAKAN_DIR))
+	cd ..; $(MAKE) deb VERSION=0.0.2 DEST=$(abspath $(SABAKAN_DIR)) TAGS=$(TAGS)
 
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):
@@ -105,7 +107,7 @@ $(OPERATION_SSH_DIR):
 
 # Targets
 test: $(TEST_DEPS)
-	./test.sh "$(TARGET)"
+	./test.sh "$(TARGET)" "$(TAGS)"
 
 placemat: $(PLACEMAT_DEPS)
 	sudo rm -rf $(PLACEMAT_DATADIR)
