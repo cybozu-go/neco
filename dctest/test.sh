@@ -20,6 +20,3 @@ sleep 3
 operation_pid=$(pgrep -P $PLACEMAT_PID -f operation)
 
 sudo -E nsenter -t ${operation_pid} -n sh -c "export PATH=$PATH; $GINKGO $SUITE_PACKAGE -focus=\"${TARGET}\""
-RET=$?
-
-exit $RET
