@@ -4,24 +4,6 @@ import (
 	"fmt"
 )
 
-const (
-	assetDir    = "/assets"
-	aptConf     = "/etc/apt/apt.conf.d/20auto-upgrades"
-	aptConfData = `APT::Periodic::Update-Package-Lists "0";
-APT::Periodic::Unattended-Upgrade "0";
-`
-	registriesConf     = "/etc/containers/registries.conf"
-	registriesConfData = `[registries.search]
-registries = ['docker.io']
-
-[registries.insecure]
-registries = []
-
-[registries.block]
-registries = []
-`
-)
-
 // artifactSet represents a set of artifacts for GCP instance.
 type artifactSet struct {
 	goVersion           string

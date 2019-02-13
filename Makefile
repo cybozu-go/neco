@@ -21,12 +21,11 @@ SHAREDIR := $(WORKDIR)/usr/share/neco
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
-BIN_PKGS = ./pkg/neco
+BIN_PKGS = ./pkg/neco ./pkg/necogcp
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
-GCP_SOURCES := $(wildcard gcp/static/*/*)
-GCP_TARGET := gcp/statik/statik.go
 NODE_EXPORTER_VERSION = 0.17.0
 NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
+STATIK = gcp/statik/statik.go
 
 all:
 	@echo "Specify one of these targets:"
@@ -44,11 +43,11 @@ start-etcd:
 stop-etcd:
 	systemctl --user stop neco-etcd.service
 
-$(GCP_TARGET): $(GCP_SOURCES)
-	mkdir -p $(dir $(GCP_TARGET))
-	go generate ./...
+$(STATIK):
+	mkdir -p $(dir $(STATIK))
+	go generate ./pkg/necogcp/...
 
-test: $(GCP_TARGET)
+test: $(STATIK)
 	test -z "$$(gofmt -s -l . | grep -v '^vendor' | tee /dev/stderr)"
 	test -z "$$(golint $$(go list -tags='$(GOTAGS)' ./... | grep -v /vendor/) | grep -v '/dctest/.*: should not use dot imports' | tee /dev/stderr)"
 	go build -tags='$(GOTAGS)' ./...
@@ -64,7 +63,7 @@ mod:
 
 deb: $(DEB)
 
-$(DEB):
+$(DEB): $(STATIK)
 	rm -rf $(WORKDIR)
 	cp -r debian $(WORKDIR)
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco $(DOCDIR)/node_exporter
