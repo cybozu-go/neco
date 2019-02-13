@@ -1,9 +1,8 @@
 #!/bin/sh
 
-systemd_units_failed="$(systemctl list-units --state=failed)"
-if echo "${systemd_units_failed}" | grep "0 loaded units listed" >/dev/null; then
-    systemd_units_failed=""
-fi
+# list failed unit names
+# limit to 300 bytes because whole length of tags must be < 512 bytes.
+systemd_units_failed="$(systemctl list-units --state=failed --no-legend --plain --full | cut -d' ' -f1 | head --bytes=300)"
 
 docker exec -i serf serf tags \
        -set uptime="$(uptime -p)" \
