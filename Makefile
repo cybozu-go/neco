@@ -23,6 +23,8 @@ DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
+GCP_SOURCES := $(wildcard gcp/static/*/*)
+GCP_TARGET := gcp/statik/statik.go
 NODE_EXPORTER_VERSION = 0.17.0
 NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
 
@@ -42,7 +44,11 @@ start-etcd:
 stop-etcd:
 	systemctl --user stop neco-etcd.service
 
-test:
+$(GCP_TARGET): $(GCP_SOURCES)
+	mkdir -p $(dir $(GCP_TARGET))
+	go generate ./...
+
+test: $(GCP_TARGET)
 	test -z "$$(gofmt -s -l . | grep -v '^vendor' | tee /dev/stderr)"
 	test -z "$$(golint $$(go list -tags='$(GOTAGS)' ./... | grep -v /vendor/) | grep -v '/dctest/.*: should not use dot imports' | tee /dev/stderr)"
 	go build -tags='$(GOTAGS)' ./...
@@ -78,7 +84,7 @@ $(DEB):
 	rm -rf $(WORKDIR)
 
 setup:
-	GO111MODULE=off go get -u golang.org/x/lint/golint
+	GO111MODULE=off go get -u golang.org/x/lint/golint github.com/rakyll/statik
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
 

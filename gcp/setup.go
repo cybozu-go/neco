@@ -22,6 +22,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/well"
+	"github.com/rakyll/statik/fs"
 )
 
 const (
@@ -31,6 +32,14 @@ const (
 	localSSDDisk       = "/dev/disk/by-id/google-local-ssd-0"
 	localSSDFSType     = "ext4"
 	localSSDMountPoint = "/var/scratch"
+)
+
+var (
+	staticFiles = []string{
+		"/etc/bash_completion.d/rktutil",
+		"/etc/profile.d/go.sh",
+		"/usr/local/bin/podenter",
+	}
 )
 
 // SetupVMXEnabled setup vmx-enabled instance
@@ -359,12 +368,7 @@ func SetupHostVM(ctx context.Context) error {
 		return err
 	}
 
-	err = dumpHostVMFiles(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return dumpHostVMFiles(ctx)
 }
 
 func enableXForwarding() error {
@@ -544,5 +548,49 @@ func setupLocalSSD(ctx context.Context) error {
 }
 
 func dumpHostVMFiles(ctx context.Context) error {
+	statikFS, err := fs.New()
+	if err != nil {
+		return err
+	}
+
+	for _, file := range staticFiles {
+		err := copyStatic(statikFS, file)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+func copyStatic(fs http.FileSystem, fileName string) error {
+	src, err := fs.Open(fileName)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	fi, err := src.Stat()
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(filepath.Dir(fileName), 0755)
+	if err != nil {
+		return err
+	}
+
+	dst, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	err = dst.Chmod(fi.Mode())
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(dst, src)
+	return err
 }
