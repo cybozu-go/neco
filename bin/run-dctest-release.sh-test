@@ -8,6 +8,10 @@ INSTANCE_SUFFIX=$2
 INSTANCE_NAME=${INSTANCE_NAME}-${INSTANCE_SUFFIX}
 
 delete_instance() {
+  if [ $RET -ne 0 ]; then
+    # do not delete GCP instance upon test failure to help debugging.
+    return
+  fi
   $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} || true
 }
 
@@ -20,6 +24,7 @@ $GCLOUD compute instances create ${INSTANCE_NAME} \
   --boot-disk-size ${BOOT_DISK_SIZE} \
   --local-ssd interface=scsi
 
+RET=0
 trap delete_instance INT QUIT TERM 0
 
 # Run data center test
@@ -64,3 +69,6 @@ tar czf /tmp/neco.tgz .
 $GCLOUD compute scp --zone=${ZONE} /tmp/neco.tgz cybozu@${INSTANCE_NAME}:
 $GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
 $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo /home/cybozu/run.sh'
+RET=$?
+
+exit $RET
