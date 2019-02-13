@@ -85,3 +85,8 @@ func startUnit(ctx context.Context, name, unit string) error {
 func StopTimer(ctx context.Context, name string) error {
 	return well.CommandContext(ctx, "systemctl", "stop", name+".timer").Run()
 }
+
+// DisableTimer disables the timer.
+func DisableTimer(ctx context.Context, name string) error {
+	return well.CommandContext(ctx, "systemctl", "disable", name+".timer").Run()
+}

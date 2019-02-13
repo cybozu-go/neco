@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/well"
 )
 
 const (
@@ -46,25 +46,25 @@ func NewComputeClient(cfg *Config, instance string) *ComputeClient {
 }
 
 func (cc *ComputeClient) gCloudCompute() []string {
-	return []string{"echo", "gcloud", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute"}
+	return []string{"gcloud", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute"}
 }
 
 func (cc *ComputeClient) gCloudComputeInstances() []string {
-	return []string{"echo", "gcloud", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute", "instances"}
+	return []string{"gcloud", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute", "instances"}
 }
 
 func (cc *ComputeClient) gCloudComputeImages() []string {
-	return []string{"echo", "gcloud", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute", "images"}
+	return []string{"gcloud", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute", "images"}
 }
 
 func (cc *ComputeClient) gCloudComputeDisks() []string {
-	return []string{"echo", "gcloud", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute", "disks"}
+	return []string{"gcloud", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute", "disks"}
 }
 
 func (cc *ComputeClient) gCloudComputeSSH(command []string) []string {
-	return []string{"echo", "gcloud", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute", "ssh",
+	return []string{"gcloud", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute", "ssh",
 		fmt.Sprintf("%s@%s", cc.user, cc.instance),
-		fmt.Sprintf("--command=\"%s\"", strings.Join(command, " "))}
+		fmt.Sprintf("--command=%s", strings.Join(command, " "))}
 }
 
 // CreateVMXEnabledInstance creates vmx-enabled instance
@@ -77,7 +77,7 @@ func (cc *ComputeClient) CreateVMXEnabledInstance(ctx context.Context) error {
 		"--boot-disk-type", "pd-ssd",
 		"--boot-disk-size", cc.cfg.Compute.BootDiskSize,
 		"--machine-type", cc.cfg.Compute.MachineType)
-	c := exec.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -98,7 +98,7 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 	if cc.cfg.Compute.HostVM.Preemptible {
 		gcmd = append(gcmd, "--preemptible")
 	}
-	c := exec.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -113,7 +113,7 @@ func (cc *ComputeClient) CreateHomeDisk(ctx context.Context) error {
 	gcmdInfo := cc.gCloudComputeDisks()
 	gcmdInfo = append(gcmdInfo, "describe", "home", "--format", "json")
 	outBuf := new(bytes.Buffer)
-	c := exec.CommandContext(ctx, gcmdInfo[0], gcmdInfo[1:]...)
+	c := well.CommandContext(ctx, gcmdInfo[0], gcmdInfo[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = outBuf
 	c.Stderr = os.Stderr
@@ -126,7 +126,7 @@ func (cc *ComputeClient) CreateHomeDisk(ctx context.Context) error {
 	configSize := cc.cfg.Compute.HostVM.HomeDiskSize
 	gcmdCreate := cc.gCloudComputeDisks()
 	gcmdCreate = append(gcmdCreate, "create", "home", "--size", configSize)
-	c = exec.CommandContext(ctx, gcmdCreate[0], gcmdCreate[1:]...)
+	c = well.CommandContext(ctx, gcmdCreate[0], gcmdCreate[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -146,7 +146,7 @@ func (cc *ComputeClient) AttachHomeDisk(ctx context.Context) error {
 	if cc.cfg.Compute.HostVM.Preemptible {
 		gcmd = append(gcmd, "--preemptible")
 	}
-	c := exec.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -161,7 +161,7 @@ func (cc *ComputeClient) ResizeHomeDisk(ctx context.Context) error {
 	gcmdInfo := cc.gCloudComputeDisks()
 	gcmdInfo = append(gcmdInfo, "describe", "home", "--format", "json")
 	outBuf := new(bytes.Buffer)
-	c := exec.CommandContext(ctx, gcmdInfo[0], gcmdInfo[1:]...)
+	c := well.CommandContext(ctx, gcmdInfo[0], gcmdInfo[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = outBuf
 	c.Stderr = os.Stderr
@@ -188,7 +188,7 @@ func (cc *ComputeClient) ResizeHomeDisk(ctx context.Context) error {
 
 	gcmdResize := cc.gCloudComputeDisks()
 	gcmdResize = append(gcmdResize, "resize", "home", "--size", configSize)
-	c = exec.CommandContext(ctx, gcmdResize[0], gcmdResize[1:]...)
+	c = well.CommandContext(ctx, gcmdResize[0], gcmdResize[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -199,7 +199,7 @@ func (cc *ComputeClient) ResizeHomeDisk(ctx context.Context) error {
 func (cc *ComputeClient) DeleteInstance(ctx context.Context) error {
 	gcmd := cc.gCloudComputeInstances()
 	gcmd = append(gcmd, "delete", cc.instance, "--zone", cc.cfg.Common.Zone, "--quiet")
-	c := exec.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -209,7 +209,7 @@ func (cc *ComputeClient) DeleteInstance(ctx context.Context) error {
 // WaitInstance waits given instance until online
 func (cc *ComputeClient) WaitInstance(ctx context.Context) error {
 	gcmd := cc.gCloudComputeSSH([]string{"date"})
-	c := exec.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -233,7 +233,7 @@ func (cc *ComputeClient) StopInstance(ctx context.Context) error {
 	gcmd = append(gcmd, "stop", cc.instance,
 		"--zone", cc.cfg.Common.Zone,
 		"--quiet")
-	c := exec.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -248,7 +248,7 @@ func (cc *ComputeClient) CreateVMXEnabledImage(ctx context.Context) error {
 		"--source-disk-zone", cc.cfg.Common.Zone,
 		"--licenses", imageLicense,
 		"--quiet")
-	c := exec.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -259,7 +259,7 @@ func (cc *ComputeClient) CreateVMXEnabledImage(ctx context.Context) error {
 func (cc *ComputeClient) DeleteVMXEnabledImage(ctx context.Context) error {
 	gcmd := cc.gCloudComputeImages()
 	gcmd = append(gcmd, "delete", cc.image, "--quiet")
-	c := exec.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -268,9 +268,9 @@ func (cc *ComputeClient) DeleteVMXEnabledImage(ctx context.Context) error {
 
 // Upload uploads a file to the instance through ssh
 func (cc *ComputeClient) Upload(ctx context.Context, file string) error {
-	gcmd := cc.gCloudComputeInstances()
+	gcmd := cc.gCloudCompute()
 	gcmd = append(gcmd, "scp", file, fmt.Sprintf("%s@%s:/tmp", cc.user, cc.instance))
-	c := exec.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -290,7 +290,7 @@ func (cc *ComputeClient) RunSetup(ctx context.Context, progFile, cfgFile string)
 	}
 
 	gcmd := cc.gCloudComputeSSH([]string{"sudo", "/tmp/" + filepath.Base(progFile), "--config", "/tmp/" + filepath.Base(cfgFile), "setup"})
-	c := exec.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr

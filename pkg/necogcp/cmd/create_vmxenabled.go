@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"context"
-	"path/filepath"
+	"os"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/gcp"
@@ -20,12 +20,9 @@ If vmx-enabled image already exists in the project, it is re-created.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cc := gcp.NewComputeClient(cfg, "vmx-enabled")
 		well.Go(func(ctx context.Context) error {
-			err := cc.DeleteInstance(ctx)
-			if err != nil {
-				return err
-			}
+			cc.DeleteInstance(ctx)
 
-			err = cc.CreateVMXEnabledInstance(ctx)
+			err := cc.CreateVMXEnabledInstance(ctx)
 			if err != nil {
 				return err
 			}
@@ -35,7 +32,7 @@ If vmx-enabled image already exists in the project, it is re-created.`,
 				return err
 			}
 
-			progFile, err := filepath.Abs(args[0])
+			progFile, err := os.Executable()
 			if err != nil {
 				return err
 			}
@@ -50,12 +47,14 @@ If vmx-enabled image already exists in the project, it is re-created.`,
 				return err
 			}
 
-			err = cc.DeleteVMXEnabledImage(ctx)
+			cc.DeleteVMXEnabledImage(ctx)
+
+			err = cc.CreateVMXEnabledImage(ctx)
 			if err != nil {
 				return err
 			}
 
-			err = cc.CreateVMXEnabledImage(ctx)
+			err = cc.DeleteInstance(ctx)
 			if err != nil {
 				return err
 			}

@@ -3,6 +3,7 @@ package gcp
 import (
 	"archive/tar"
 	"compress/bzip2"
+	"compress/gzip"
 	"context"
 	"io"
 	"io/ioutil"
@@ -28,7 +29,7 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 		return err
 	}
 
-	err = installPackages(ctx, option)
+	err = installAptPackages(ctx, option)
 	if err != nil {
 		return err
 	}
@@ -75,27 +76,27 @@ func configureApt(ctx context.Context) error {
 		return err
 	}
 
-	err = neco.StopService(ctx, "apt-daily-upgrade.timer")
+	err = neco.StopTimer(ctx, "apt-daily-upgrade")
 	if err != nil {
 		return err
 	}
-	err = neco.DisableService(ctx, "apt-daily-upgrade.timer")
+	err = neco.DisableTimer(ctx, "apt-daily-upgrade")
 	if err != nil {
 		return err
 	}
-	err = neco.StopService(ctx, "apt-daily-upgrade.service")
+	err = neco.StopService(ctx, "apt-daily-upgrade")
 	if err != nil {
 		return err
 	}
-	err = neco.StopService(ctx, "apt-daily.timer")
+	err = neco.StopTimer(ctx, "apt-daily")
 	if err != nil {
 		return err
 	}
-	err = neco.DisableService(ctx, "apt-daily.timer")
+	err = neco.DisableTimer(ctx, "apt-daily")
 	if err != nil {
 		return err
 	}
-	err = neco.StopService(ctx, "apt-daily.service")
+	err = neco.StopService(ctx, "apt-daily")
 	if err != nil {
 		return err
 	}
@@ -134,7 +135,7 @@ func configureProjectAtomic(ctx context.Context) error {
 	return well.CommandContext(ctx, "add-apt-repository", "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu xenial main").Run()
 }
 
-func installPackages(ctx context.Context, optionalPackages []string) error {
+func installAptPackages(ctx context.Context, optionalPackages []string) error {
 	err := apt(ctx, "update")
 	if err != nil {
 		return err
@@ -167,6 +168,7 @@ func installSeaBIOS(ctx context.Context, client *http.Client) error {
 
 	return nil
 }
+
 func installGo(ctx context.Context, client *http.Client) error {
 	resp, err := client.Get(artifacts.goURL())
 	if err != nil {
@@ -174,47 +176,48 @@ func installGo(ctx context.Context, client *http.Client) error {
 	}
 	defer resp.Body.Close()
 
-	return extract(resp.Body, "/usr/local/go")
+	return untargz(resp.Body, "/usr/local/go")
 }
 
-func extract(r io.Reader, dst string) error {
-	defer func() {
-		io.Copy(ioutil.Discard, r)
-	}()
-
-	tmpdir, err := ioutil.TempDir("", "_tmp")
+func untargz(r io.Reader, dst string) error {
+	gzr, err := gzip.NewReader(r)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if tmpdir == "" {
-			return
-		}
-		os.RemoveAll(tmpdir)
-	}()
+	defer gzr.Close()
 
-	tr := tar.NewReader(r)
+	tr := tar.NewReader(gzr)
 	for {
-		hdr, err := tr.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
+		header, err := tr.Next()
+
+		switch {
+		case err == io.EOF:
+			return nil
+		case err != nil:
 			return err
+		case header == nil:
+			continue
 		}
 
-		err = writeToFile(filepath.Join(tmpdir, hdr.Name), tr)
-		if err != nil {
-			return err
+		target := filepath.Join(dst, header.Name)
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if _, err := os.Stat(target); err != nil {
+				if err := os.MkdirAll(target, 0755); err != nil {
+					return err
+				}
+			}
+		case tar.TypeReg:
+			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(f, tr); err != nil {
+				return err
+			}
+			f.Close()
 		}
 	}
-
-	err = os.Rename(tmpdir, dst)
-	if err != nil {
-		return err
-	}
-	tmpdir = ""
-	return nil
 }
 
 func writeToFile(p string, r io.Reader) error {
@@ -238,7 +241,7 @@ func writeToFile(p string, r io.Reader) error {
 }
 
 func installDebianPackage(ctx context.Context, client *http.Client, url string) error {
-	resp, err := client.Get(artifacts.goURL())
+	resp, err := client.Get(url)
 	if err != nil {
 		return err
 	}
@@ -256,7 +259,7 @@ func installDebianPackage(ctx context.Context, client *http.Client, url string) 
 	}
 
 	command := []string{"sh", "-c", "dpkg -i " + f.Name() + " && rm " + f.Name()}
-	return well.CommandContext(context.Background(), command[0], command[1:]...).Run()
+	return well.CommandContext(ctx, command[0], command[1:]...).Run()
 }
 
 func setupPodman(ctx context.Context) error {
