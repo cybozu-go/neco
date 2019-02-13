@@ -43,8 +43,8 @@ Fields in `vmx-enabled` are configuration for `vmx-enabled` image.
 
 Fields in `host-vm` are configuration for `host-vm` instance.
 
-| Field            | Type   | Default | Description                                                                                       |
-| ---------------- | ------ | ------- | ------------------------------------------------------------------------------------------------- |
-| `home-disk`      | bool   | false   | Attach home disk to host-vm instance.                                                             |
-| `home-disk-size` | string |         | Home disk size.  If you change bigger size than current size, the existing home disk is expanded. |
-| `preemptible`    | bool   | false   | Enable [`preemptible`](https://cloud.google.com/compute/docs/instances/preemptible)               |
+| Field            | Type   | Default | Description                                                                                     |
+| ---------------- | ------ | ------- | ----------------------------------------------------------------------------------------------- |
+| `home-disk`      | bool   | false   | Attach home disk to host-vm instance.                                                           |
+| `home-disk-size` | string |         | Home disk size. If you change bigger size than current size, the existing home disk is expanded |
+| `preemptible`    | bool   | false   | Enable [`preemptible`](https://cloud.google.com/compute/docs/instances/preemptible)             |

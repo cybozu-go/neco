@@ -6,7 +6,7 @@ necogcp
 Synopsis
 --------
 
-### GCE instance management
+### GCE instance management on developer's project
 
 * `necogcp create [vmx-enabled|host-vm]`
 
@@ -20,6 +20,16 @@ Synopsis
     Delete instance or instance image.
     If `vmx-enabled` is specified, it deletes `vmx-enabled` image.
     If `host-vm` is specified, it deletes `host-vm` instance.
+
+### GCE instance management on neco-test project
+
+* `necogcp neco-test delete INSTANCE_NAME`
+
+    Delete manually given instance on the neco-test project.
+
+* `necogcp neco-test extend INSTANCE_NAME`
+
+    Extend 1 hours given instance on the neco-test project to prevent deleted by GAE app.
 
 ### Miscellaneous
 

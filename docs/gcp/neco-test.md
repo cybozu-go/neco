@@ -14,7 +14,7 @@ GAE app
 
 `/shutdown` for `neco-test` project does:
 
-- Delete instances which are created more than 1 hour ago.
+- Delete instances which are created more than 1 hour ago other than them which is extended by `necogcp neco-test extend`.
 - Set cron schedule to run above action every hour.
 
 Usage
