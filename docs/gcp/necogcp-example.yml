@@ -10,7 +10,7 @@ app:
     - my-instance-1
     - my-instance-2
 compute:
-  machine-type: n1-highmem-8
+  machine-type: n1-standard-16
   boot-disk-size: 20GB
   vmx-enabled:
     image: debian-9-stretch-v20180911
