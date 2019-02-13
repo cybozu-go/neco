@@ -24,7 +24,7 @@ commands:
       - run:
           name: Store github-token
           command: |
-            exit 0
+            if [ -f .skip ]; then exit 0; fi
             echo "$NECO_GITHUB_TOKEN" > github-token
       - run:
           name: Watch console on boot-0
@@ -63,8 +63,8 @@ jobs:
           command: |
             git config --global user.email "neco@cybozu.com"
             git config --global user.name "cybozu-neco"
-      - run: git checkout release
-      - run: git merge --no-commit origin/master
+#      - run: git checkout release
+#      - run: git merge --no-commit origin/master
       - run: cp /tmp/workspace/artifacts_release.go .
       - run: 
           name: Check diff
