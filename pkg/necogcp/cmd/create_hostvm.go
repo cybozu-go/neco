@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"path/filepath"
+	"os"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/gcp"
@@ -21,12 +21,9 @@ If host-vm instance already exists in the project, it is re-created.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cc := gcp.NewComputeClient(cfg, "host-vm")
 		well.Go(func(ctx context.Context) error {
-			err := cc.DeleteInstance(ctx)
-			if err != nil {
-				return err
-			}
+			cc.DeleteInstance(ctx)
 
-			err = cc.CreateHostVMInstance(ctx)
+			err := cc.CreateHostVMInstance(ctx)
 			if err != nil {
 				return err
 			}
@@ -51,16 +48,12 @@ If host-vm instance already exists in the project, it is re-created.`,
 				return err
 			}
 
-			progFile, err := filepath.Abs(args[0])
+			progFile, err := os.Executable()
 			if err != nil {
 				return err
 			}
 
-			err = cc.RunSetup(ctx, progFile, cfgFile)
-			if err != nil {
-				return err
-			}
-			return nil
+			return cc.RunSetup(ctx, progFile, cfgFile)
 		})
 		well.Stop()
 		err := well.Wait()

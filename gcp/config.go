@@ -37,10 +37,10 @@ type ShutdownConfig struct {
 
 // ComputeConfig is configuration for GCE
 type ComputeConfig struct {
-	MachineType  string           `yaml:"machine-type"`
-	BootDiskSize string           `yaml:"boot-disk-size"`
-	VMXEnabled   VMXEnabledConfig `yaml:"vmx-enabled"`
-	HostVM       HostVMConfig     `yaml:"host-vm"`
+	MachineType    string           `yaml:"machine-type"`
+	BootDiskSizeGB int              `yaml:"boot-disk-sizeGB"`
+	VMXEnabled     VMXEnabledConfig `yaml:"vmx-enabled"`
+	HostVM         HostVMConfig     `yaml:"host-vm"`
 }
 
 // VMXEnabledConfig is configuration for vmx-enabled image
@@ -52,9 +52,9 @@ type VMXEnabledConfig struct {
 
 // HostVMConfig is configuration for host-vm instance
 type HostVMConfig struct {
-	HomeDisk     bool   `yaml:"home-disk"`
-	HomeDiskSize string `yaml:"home-disk-size"`
-	Preemptible  bool   `yaml:"preemptible"`
+	HomeDisk       bool `yaml:"home-disk"`
+	HomeDiskSizeGB int  `yaml:"home-disk-sizeGB"`
+	Preemptible    bool `yaml:"preemptible"`
 }
 
 // NewConfig returns Config

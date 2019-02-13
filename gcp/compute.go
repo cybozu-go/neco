@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -35,13 +37,11 @@ func NewComputeClient(cfg *Config, instance string) *ComputeClient {
 		user = "cybozu"
 	}
 
-	image := fmt.Sprintf("%s-%s", cfg.Compute.VMXEnabled.Image, instance)
-
 	return &ComputeClient{
 		cfg:      cfg,
 		instance: instance,
 		user:     user,
-		image:    image,
+		image:    fmt.Sprintf("%s-vmx-enabled", cfg.Compute.VMXEnabled.Image),
 	}
 }
 
@@ -70,12 +70,13 @@ func (cc *ComputeClient) gCloudComputeSSH(command []string) []string {
 // CreateVMXEnabledInstance creates vmx-enabled instance
 func (cc *ComputeClient) CreateVMXEnabledInstance(ctx context.Context) error {
 	gcmd := cc.gCloudComputeInstances()
+	bootDiskSize := strconv.Itoa(cc.cfg.Compute.BootDiskSizeGB) + "GB"
 	gcmd = append(gcmd, "create", cc.instance,
 		"--zone", cc.cfg.Common.Zone,
 		"--image", cc.cfg.Compute.VMXEnabled.Image,
 		"--image-project", cc.cfg.Compute.VMXEnabled.ImageProject,
 		"--boot-disk-type", "pd-ssd",
-		"--boot-disk-size", cc.cfg.Compute.BootDiskSize,
+		"--boot-disk-size", bootDiskSize,
 		"--machine-type", cc.cfg.Compute.MachineType)
 	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
@@ -87,11 +88,12 @@ func (cc *ComputeClient) CreateVMXEnabledInstance(ctx context.Context) error {
 // CreateHostVMInstance creates host-vm instance
 func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 	gcmd := cc.gCloudComputeInstances()
+	bootDiskSize := strconv.Itoa(cc.cfg.Compute.BootDiskSizeGB) + "GB"
 	gcmd = append(gcmd, "create", cc.instance,
 		"--zone", cc.cfg.Common.Zone,
 		"--image", cc.image,
 		"--boot-disk-type", "pd-ssd",
-		"--boot-disk-size", cc.cfg.Compute.BootDiskSize,
+		"--boot-disk-size", bootDiskSize,
 		"--local-ssd", "interface=scsi",
 		"--machine-type", cc.cfg.Compute.MachineType,
 		"--scopes", "https://www.googleapis.com/auth/devstorage.read_write")
@@ -119,13 +121,13 @@ func (cc *ComputeClient) CreateHomeDisk(ctx context.Context) error {
 	c.Stderr = os.Stderr
 	err := c.Run()
 	if err == nil {
-		log.Info("gcp: home disk already exists", nil)
+		log.Info("home disk already exists", nil)
 		return nil
 	}
 
-	configSize := cc.cfg.Compute.HostVM.HomeDiskSize
+	configSize := strconv.Itoa(cc.cfg.Compute.HostVM.HomeDiskSizeGB) + "GB"
 	gcmdCreate := cc.gCloudComputeDisks()
-	gcmdCreate = append(gcmdCreate, "create", "home", "--size", configSize)
+	gcmdCreate = append(gcmdCreate, "create", "home", "--size", configSize, "--type", "pd-ssd")
 	c = well.CommandContext(ctx, gcmdCreate[0], gcmdCreate[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
@@ -171,23 +173,31 @@ func (cc *ComputeClient) ResizeHomeDisk(ctx context.Context) error {
 	}
 
 	var info map[string]interface{}
-	err = json.Unmarshal(outBuf.Bytes(), info)
+	err = json.Unmarshal(outBuf.Bytes(), &info)
 	if err != nil {
 		return err
 	}
 
-	currentSize := info["sizeGB"].(string)
-	configSize := cc.cfg.Compute.HostVM.HomeDiskSize
-	if currentSize != cc.cfg.Compute.HostVM.HomeDiskSize {
-		log.Error("gcp: current home disk size is smaller or same as size in configuration file", map[string]interface{}{
-			"currentSize": currentSize,
-			"configSize":  configSize,
+	currentSize, ok := info["sizeGb"].(string)
+	if !ok {
+		return errors.New("failed to convert sizeGb")
+	}
+	currentSizeInt, err := strconv.Atoi(currentSize)
+	if err != nil {
+		return err
+	}
+	configSize := strconv.Itoa(cc.cfg.Compute.HostVM.HomeDiskSizeGB) + "GB"
+	configSizeInt := cc.cfg.Compute.HostVM.HomeDiskSizeGB
+	if currentSizeInt >= configSizeInt {
+		log.Info("current home disk size is smaller or equal to the size in configuration file", map[string]interface{}{
+			"currentSize": currentSizeInt,
+			"configSize":  configSizeInt,
 		})
 		return nil
 	}
 
 	gcmdResize := cc.gCloudComputeDisks()
-	gcmdResize = append(gcmdResize, "resize", "home", "--size", configSize)
+	gcmdResize = append(gcmdResize, "resize", "home", "--size", configSize, "--quiet")
 	c = well.CommandContext(ctx, gcmdResize[0], gcmdResize[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
@@ -219,7 +229,7 @@ func (cc *ComputeClient) WaitInstance(ctx context.Context) error {
 			return c.Run()
 		},
 		func(err error) {
-			log.Error("gcp: failed to check online of the instance", map[string]interface{}{
+			log.Error("failed to check online of the instance", map[string]interface{}{
 				log.FnError: err,
 				"instance":  cc.instance,
 			})
