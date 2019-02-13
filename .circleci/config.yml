@@ -30,19 +30,19 @@ commands:
           name: Watch console on boot-0
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/watch_boot0
+            ./bin/watch_boot0-test <<parameters.instance_suffix>>
           background: true
       - run:
           name: Watch neco-updater logs
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/watch_service neco-updater
+            ./bin/watch_service-test neco-updater <<parameters.instance_suffix>>
           background: true
       - run:
           name: Watch neco-worker logs
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/watch_service neco-worker
+            ./bin/watch_service-test neco-worker <<parameters.instance_suffix>>
           background: true
       - run:
           command: |

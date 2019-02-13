@@ -93,7 +93,7 @@ $(DOWNLOADED_DEB):
 	cd ..; go install -mod=vendor ./pkg/download-neco-deb
 	download-neco-deb $(DATACENTER) > $@
 
-### always use empty TAGS because this target is used only for functions test suite
+### always use empty TAGS because this target is used only for upgrade test suite
 $(OLD_NEW_DEB):
 	mkdir -p $(SABAKAN_DIR)
 	cd ..; $(MAKE) deb VERSION=0.0.2 DEST=$(abspath $(SABAKAN_DIR))

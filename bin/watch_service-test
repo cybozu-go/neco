@@ -1,0 +1,38 @@
+#!/bin/sh -e
+
+INSTANCE_SUFFIX=$2
+
+. $(dirname $0)/env
+
+INSTANCE_NAME=${INSTANCE_NAME}-${INSTANCE_SUFFIX}
+
+test $# -eq 2
+service="$1"
+
+tail_once() {
+  host="$1"
+  $GCLOUD 2>/dev/null compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
+    sudo nsenter -n -t '$(sudo pmctl pod show operation | jq .pid)' ssh -F ssh_config \
+     ${host} journalctl -f -u ${service}.service
+}
+
+tail_forever() {
+  host="$1"
+
+  while true; do
+    tail_once $host || continue
+    sleep 3
+  done
+}
+
+chmod 600 ./dctest/dctest_key
+while ! $GCLOUD 2>/dev/null compute scp --zone=${ZONE} ./dctest/dctest_key ./dctest/ssh_config cybozu@${INSTANCE_NAME}:; do
+    sleep 1
+done
+
+tail_forever boot-0 | sed -e s/^/$(tput -Txterm setaf 1)/ &
+tail_forever boot-1 | sed -e s/^/$(tput -Txterm setaf 2)/ &
+tail_forever boot-2 | sed -e s/^/$(tput -Txterm setaf 3)/ &
+tail_forever boot-3 | sed -e s/^/$(tput -Txterm setaf 4)/ &
+
+wait
