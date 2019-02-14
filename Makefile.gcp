@@ -1,0 +1,46 @@
+ifeq ($(CONFIG),)
+$(error CONFIG is not set)
+endif
+
+NUM_VERSIONS = $(shell gcloud app versions list --format list | wc -l)
+PROJECT = $(shell gcloud config get-value core/project)
+
+ifeq ($(PROJECT), neco-test)
+	CRON_PATH = ./pkg/necogcp-app/cron-neco-test.yaml
+else
+	CRON_PATH = ./pkg/necogcp-app/cron.yaml
+endif
+
+all: deploy
+
+./.necogcp.yml: $(CONFIG)
+	rm -f $@
+	cp $< $@
+
+deploy: ./.necogcp.yml
+	gcloud app deploy \
+		--quiet \
+		--promote \
+		--stop-previous-version \
+		./pkg/necogcp-app/app.yaml \
+		$(CRON_PATH)
+
+destroy:
+	# delete old versions
+	if [ "$(NUM_VERSIONS)" -gt 1 ]; then \
+		gcloud app versions list \
+			--sort-by=LAST_DEPLOYED \
+			--limit $(shell expr $(NUM_VERSIONS) - 1) \
+			--format="value(version.id)" | \
+			xargs gcloud app versions delete --quiet; \
+	fi
+	# stop serving instances
+	gcloud app versions list \
+		--filter="SERVING_STATUS:SERVING" \
+		--format="value(version.id)" | \
+		xargs gcloud app versions stop --quiet
+
+clean:
+	rm -rf ./.necogcp.yml
+
+.PHONY:	all clean lib deploy destroy

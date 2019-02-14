@@ -2,7 +2,6 @@
 package main
 
 import (
-	"context"
 	"math/rand"
 	"net/http"
 	"os"
@@ -26,23 +25,26 @@ func main() {
 	// seed math/random
 	rand.Seed(time.Now().UnixNano())
 
-	well.Go(subMain)
+	err := subMain()
+	if err != nil {
+		log.ErrorExit(err)
+	}
 	well.Stop()
-	err := well.Wait()
+	err = well.Wait()
 	if !well.IsSignaled(err) && err != nil {
 		log.ErrorExit(err)
 	}
 }
 
-func subMain(ctx context.Context) error {
+func subMain() error {
 	cfg := gcp.NewConfig()
 	f, err := os.Open(cfgFile)
 	if err != nil {
-		log.ErrorExit(err)
+		return err
 	}
 	err = yaml.NewDecoder(f).Decode(cfg)
 	if err != nil {
-		log.ErrorExit(err)
+		return err
 	}
 	f.Close()
 
