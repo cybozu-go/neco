@@ -202,7 +202,12 @@ workflows:
   main:
     jobs:
       - build
-      - dctest
+      - dctest:
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
   release:
     jobs:
       - build_release:
@@ -238,6 +243,7 @@ workflows:
       - update-release:
           requires:
             - dctest-release-functions
+            - dctest-release-upgrade-staging
   master:
     jobs:
       - generate-artifacts:
@@ -262,6 +268,7 @@ workflows:
       - update-release:
           requires:
             - dctest-release-functions
+            - dctest-release-upgrade-staging
           filters:
             branches:
               only:

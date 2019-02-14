@@ -1,6 +1,7 @@
 package neco
 
 import (
+	"errors"
 	"os/exec"
 )
 
@@ -15,6 +16,9 @@ func GetDebianVersion(pkg string) (string, error) {
 		"dpkg-query", "--showformat=${Version}", "-W", pkg).Output()
 	if err != nil {
 		return "", err
+	}
+	if len(data) == 0 {
+		return "", errors.New("dpkg-query returned empty string")
 	}
 
 	return string(data), nil
