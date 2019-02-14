@@ -366,4 +366,7 @@ workflows:
     - dctest-release-functions-test:
         requires:
           - generate-artifacts
+    - dctest-release-upgrade-test:
+        requires:
+          - generate-artifacts
     - dctest-test
