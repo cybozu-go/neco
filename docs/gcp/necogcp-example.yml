@@ -1,0 +1,22 @@
+common:
+  project: YOUR_PROJECT
+  serviceaccount: YOUR_SERVICE_ACCOUNT
+  zone: asia-northeast1-c
+app:
+  shutdown:
+    delete:
+    - host-vm
+    exclude:
+    - my-instance-1
+    - my-instance-2
+compute:
+  machine-type: n1-standard-16
+  boot-disk-sizeGB: 20
+  vmx-enabled:
+    image: debian-9-stretch-v20180911
+    image-project: debian-cloud
+    optional-packages: []
+  host-vm:
+    home-disk: true
+    home-disk-sizeGB: 20
+    preemptible: false
