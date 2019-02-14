@@ -37,9 +37,9 @@ Shutdown all instances and delete target instances in `neco-gcp.yml`.
 - 500 Internal Server Error: other error.
 
 <a name="extend" />`POST /extend`
--------------------------------------
+---------------------------------
 
-Add extended time to the label on given instance. A user can specify the following URL queries.
+Extend 1 hour the given instance. A user can specify the following URL queries.
 
 | Query                 | Description                             |
 | --------------------- | --------------------------------------- |
@@ -54,7 +54,8 @@ Add extended time to the label on given instance. A user can specify the followi
 ```json
 {
   "extended": "neco-1234",
-  "time": "1550042854",
+  "time": 1550109818,
+  "availableUntil": "Thu Feb 14 11:03:17 UTC 2019",
   "status": 200
 }
 ```

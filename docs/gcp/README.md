@@ -41,8 +41,7 @@ First, download a credential to access your GCP account by following steps:
 You can skip this step if it's already deployed or is up to date.
 
 ```console
-cd gcp/app
-make CONFIG=$HOME/.necogcp.yml deploy
+make -f Makefile.gcp CONFIG=$HOME/.necogcp.yml deploy
 ```
 
 ### Create `vmx-enabled` instance image for your project
@@ -51,7 +50,7 @@ make CONFIG=$HOME/.necogcp.yml deploy
 necogcp create vmx-enabled
 ```
 
-If you want to update your existing image, run `necogcp create -u vmx-enabled`.
+If you want to update your existing image, re-run this command.
 
 ### Use `host-vm` instance for your project
 
@@ -61,9 +60,7 @@ Please create `vmx-enabled` image in advance with above step.
 necogcp create host-vm
 ```
 
-If you want to update your existing image, run `necogcp create -u host-vm`.
-
-After login, please make sure vmx is enabled by `grep -cw vmx /proc/cpuinfo`.
+If you want to update your existing image, re-run this command.
 
 **`host-vm` instance is deleted by GAE app every evening, You have to run above step every day.**
 
