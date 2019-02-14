@@ -7,6 +7,9 @@ commands:
         type: string
       suite:
         type: string
+      datacenter:
+        type: string
+        default: ""
       instance_suffix:
         type: string
     steps:
@@ -47,7 +50,7 @@ commands:
       - run:
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/<<parameters.script>>-test <<parameters.suite>> <<parameters.instance_suffix>>
+            ./bin/<<parameters.script>>-test <<parameters.instance_suffix>> <<parameters.suite>> <<parameters.datacenter>>
           no_output_timeout: 20m
 
 jobs:
@@ -66,7 +69,7 @@ jobs:
 #      - run: git checkout release
 #      - run: git merge --no-commit origin/master
       - run: cp /tmp/workspace/artifacts_release.go .
-      - run: 
+      - run:
           name: Check diff
           command: |
             diffs=$(git status -s)
@@ -75,6 +78,32 @@ jobs:
       - dctest-command:
           script: run-dctest-release.sh
           suite: ./functions
+          instance_suffix: release-functions
+  dctest-release-upgrade-test:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Configure GIT
+          command: |
+            git config --global user.email "neco@cybozu.com"
+            git config --global user.name "cybozu-neco"
+#      - run: git checkout release
+#      - run: git merge --no-commit origin/master
+      - run: cp /tmp/workspace/artifacts_release.go .
+      - run:
+          name: Check diff
+          command: |
+            diffs=$(git status -s)
+            if [ "$diffs" = "" ]; then touch .skip; exit 0; fi
+            printf "%s\n" "$diffs"
+      - dctest-command:
+          script: run-dctest-release.sh
+          suite: ./upgrade
+          datacenter: staging
           instance_suffix: release-functions
   dctest-test:
     docker:
@@ -191,7 +220,7 @@ jobs:
       - run: git checkout release
       - run: git merge --no-commit origin/master
       - run: cp /tmp/workspace/artifacts_release.go .
-      - run: 
+      - run:
           name: Check diff
           command: |
             diffs=$(git status -s)

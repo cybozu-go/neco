@@ -1,7 +1,8 @@
 #!/bin/sh -ex
 
-SUITE=$1
-INSTANCE_SUFFIX=$2
+INSTANCE_SUFFIX=$1
+SUITE=$2
+DATACENTER=$3
 
 . $(dirname $0)/env
 
@@ -61,7 +62,7 @@ export GO111MODULE=on
 make setup
 make placemat
 sleep 3
-exec make test MENU=highcpu-menu.yml TAGS=release SUITE=${SUITE}
+exec make test MENU=highcpu-menu.yml TAGS=release SUITE=${SUITE} DATACENTER=${DATACENTER}
 EOF
 chmod +x run.sh
 
