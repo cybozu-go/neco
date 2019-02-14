@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
 	"os"
@@ -16,7 +17,12 @@ import (
 
 const (
 	cfgFile    = ".necogcp.yml"
-	listenHTTP = "127.0.0.1:8080"
+	listenAddr = "0.0.0.0"
+)
+
+var (
+	// NOTE: listen port is randomly assigned, It has to get a port from PORT environment variable
+	listenPort = os.Getenv("PORT")
 )
 
 func main() {
@@ -51,7 +57,7 @@ func subMain() error {
 	server := app.NewServer(cfg)
 	s := &well.HTTPServer{
 		Server: &http.Server{
-			Addr:    listenHTTP,
+			Addr:    fmt.Sprintf("%s:%s", listenAddr, listenPort),
 			Handler: server,
 		},
 		ShutdownTimeout: 3 * time.Minute,
