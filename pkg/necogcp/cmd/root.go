@@ -72,8 +72,5 @@ func initConfig() {
 		viper.SetConfigType("yml")
 	}
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.ErrorExit(err)
-	}
+	viper.ReadInConfig()
 }

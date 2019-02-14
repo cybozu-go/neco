@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/well"
@@ -34,12 +35,7 @@ var (
 
 // SetupVMXEnabled setup vmx-enabled instance
 func SetupVMXEnabled(ctx context.Context, project string, option []string) error {
-	err := dumpStaticFiles()
-	if err != nil {
-		return err
-	}
-
-	err = configureApt(ctx)
+	err := configureApt(ctx)
 	if err != nil {
 		return err
 	}
@@ -77,6 +73,11 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 	}
 
 	err = setupPodman()
+	if err != nil {
+		return err
+	}
+
+	err = dumpStaticFiles()
 	if err != nil {
 		return err
 	}
@@ -130,54 +131,6 @@ func configureApt(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func dumpStaticFiles() error {
-	statikFS, err := fs.New()
-	if err != nil {
-		return err
-	}
-
-	for _, file := range staticFiles {
-		err := copyStatic(statikFS, file)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func copyStatic(fs http.FileSystem, fileName string) error {
-	src, err := fs.Open(fileName)
-	if err != nil {
-		return err
-	}
-	defer src.Close()
-
-	fi, err := src.Stat()
-	if err != nil {
-		return err
-	}
-
-	err = os.MkdirAll(filepath.Dir(fileName), 0755)
-	if err != nil {
-		return err
-	}
-
-	dst, err := os.Create(fileName)
-	if err != nil {
-		return err
-	}
-	defer dst.Close()
-
-	err = dst.Chmod(fi.Mode())
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(dst, src)
-	return err
 }
 
 func apt(ctx context.Context, args ...string) error {
@@ -283,26 +236,6 @@ func untargz(r io.Reader, dst string) error {
 	}
 }
 
-func writeToFile(p string, r io.Reader) error {
-	f, err := os.Create(p)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	err = f.Chmod(0644)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(f, r)
-	if err != nil {
-		return err
-	}
-
-	return f.Sync()
-}
-
 func installDebianPackage(ctx context.Context, client *http.Client, url string) error {
 	resp, err := client.Get(url)
 	if err != nil {
@@ -329,6 +262,99 @@ func setupPodman() error {
 	return os.Symlink("/usr/lib/cri-o-runc/sbin/runc", "/usr/local/sbin/runc")
 }
 
+func dumpStaticFiles() error {
+	statikFS, err := fs.New()
+	if err != nil {
+		return err
+	}
+
+	for _, file := range staticFiles {
+		err := copyStatic(statikFS, file)
+		if err != nil {
+			return err
+		}
+		log.Info("wrote", map[string]interface{}{
+			"file": file,
+		})
+	}
+
+	return nil
+}
+
+func copyStatic(fs http.FileSystem, fileName string) error {
+	src, err := fs.Open(fileName)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	fi, err := src.Stat()
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(filepath.Dir(fileName), 0755)
+	if err != nil {
+		return err
+	}
+
+	dst, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	err = dst.Chmod(fi.Mode())
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(dst, src)
+	return err
+}
+
+func downloadAssets(client *http.Client) error {
+	err := os.MkdirAll(assetDir, 0755)
+	if err != nil {
+		return err
+	}
+
+	// Download files
+	for _, url := range artifacts.assetURLs() {
+		err := downloadFile(client, url, assetDir)
+		if err != nil {
+			return err
+		}
+		log.Info("downloaded", map[string]interface{}{
+			"url": url,
+		})
+	}
+
+	// Decompress bzip2 archives
+	for _, bz2file := range artifacts.bz2Files() {
+		bz2, err := os.Open(filepath.Join(assetDir, bz2file))
+		if err != nil {
+			return err
+		}
+		defer func() {
+			bz2.Close()
+			os.Remove(bz2.Name())
+		}()
+		f := bzip2.NewReader(bz2)
+		extName := strings.TrimRight(bz2.Name(), ".bz2")
+		err = writeToFile(extName, f)
+		if err != nil {
+			return err
+		}
+		log.Info("decompressed", map[string]interface{}{
+			"from": bz2.Name(),
+			"to":   extName,
+		})
+	}
+
+	return nil
+}
+
 func downloadFile(client *http.Client, url, destDir string) error {
 	resp, err := client.Get(url)
 	if err != nil {
@@ -350,37 +376,22 @@ func downloadFile(client *http.Client, url, destDir string) error {
 	return f.Sync()
 }
 
-func downloadAssets(client *http.Client) error {
-	err := os.MkdirAll(assetDir, 0755)
+func writeToFile(p string, r io.Reader) error {
+	f, err := os.Create(p)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	err = f.Chmod(0644)
 	if err != nil {
 		return err
 	}
 
-	// Download files
-	for _, url := range artifacts.assetURLs() {
-		err := downloadFile(client, url, assetDir)
-		if err != nil {
-			return err
-		}
+	_, err = io.Copy(f, r)
+	if err != nil {
+		return err
 	}
 
-	// Decompress bzip2 archives
-	for _, file := range artifacts.bz2Files() {
-		bz2, err := os.Open(file)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			bz2.Close()
-			os.Remove(bz2.Name())
-		}()
-		f := bzip2.NewReader(bz2)
-		extName := filepath.Join(assetDir, strings.TrimRight(bz2.Name(), ".bz2"))
-		err = writeToFile(extName, f)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return f.Sync()
 }

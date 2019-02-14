@@ -66,66 +66,6 @@ func enableXForwarding() error {
 	return ioutil.WriteFile(destFile, replaced, st.Mode())
 }
 
-func formatHomeDisk(ctx context.Context) error {
-	err := well.CommandContext(ctx, "/sbin/mkfs", "-t", homeFSType, homeDisk).Run()
-	if err != nil {
-		return err
-	}
-
-	err = syscall.Mount(homeDisk, "/mnt", homeFSType, syscall.MS_RELATIME, "")
-	if err != nil {
-		return err
-	}
-
-	render := func(srcFile, destFile string) error {
-		f, err := os.Open(srcFile)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-
-		data, err := ioutil.ReadAll(f)
-		if err != nil {
-			return err
-		}
-
-		st, err := f.Stat()
-		if err != nil {
-			return err
-		}
-		return ioutil.WriteFile(destFile, []byte(data), st.Mode())
-	}
-
-	src := homeMountPoint
-	dest := "/mnt"
-	err = filepath.Walk(src, func(p string, info os.FileInfo, walkErr error) error {
-		if walkErr != nil {
-			return walkErr
-		}
-
-		rel, err := filepath.Rel(src, p)
-		if err != nil {
-			return err
-		}
-
-		target := filepath.Join(dest, rel)
-		_, err = os.Stat(target)
-		if err == nil {
-			return nil
-		}
-		if info.IsDir() {
-			return os.Mkdir(target, 0755)
-		}
-
-		return render(p, target)
-	})
-	if err != nil {
-		return err
-	}
-
-	return syscall.Unmount("/mnt", syscall.MNT_FORCE)
-}
-
 func mountHomeDisk(ctx context.Context) error {
 	f, err := os.OpenFile("/etc/fstab", os.O_RDWR, 0644)
 	if err != nil {
@@ -197,6 +137,66 @@ func mountHomeDisk(ctx context.Context) error {
 		return err
 	}
 	return neco.StartService(ctx, "ssh")
+}
+
+func formatHomeDisk(ctx context.Context) error {
+	err := well.CommandContext(ctx, "/sbin/mkfs", "-t", homeFSType, homeDisk).Run()
+	if err != nil {
+		return err
+	}
+
+	err = syscall.Mount(homeDisk, "/mnt", homeFSType, syscall.MS_RELATIME, "")
+	if err != nil {
+		return err
+	}
+
+	render := func(srcFile, destFile string) error {
+		f, err := os.Open(srcFile)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		data, err := ioutil.ReadAll(f)
+		if err != nil {
+			return err
+		}
+
+		st, err := f.Stat()
+		if err != nil {
+			return err
+		}
+		return ioutil.WriteFile(destFile, []byte(data), st.Mode())
+	}
+
+	src := homeMountPoint
+	dest := "/mnt"
+	err = filepath.Walk(src, func(p string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+
+		rel, err := filepath.Rel(src, p)
+		if err != nil {
+			return err
+		}
+
+		target := filepath.Join(dest, rel)
+		_, err = os.Stat(target)
+		if err == nil {
+			return nil
+		}
+		if info.IsDir() {
+			return os.Mkdir(target, 0755)
+		}
+
+		return render(p, target)
+	})
+	if err != nil {
+		return err
+	}
+
+	return syscall.Unmount("/mnt", syscall.MNT_FORCE)
 }
 
 func setupLocalSSD(ctx context.Context) error {
