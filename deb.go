@@ -5,10 +5,10 @@ import (
 )
 
 // GetDebianVersion returns debian package version.
-// If "neco" package is not installed, this returns ("", nil).
 func GetDebianVersion(pkg string) (string, error) {
-	if exec.Command("dpkg", "-s", pkg).Run() != nil {
-		return "", nil
+	err := exec.Command("dpkg", "-s", pkg).Run()
+	if err != nil {
+		return "", err
 	}
 
 	data, err := exec.Command(
