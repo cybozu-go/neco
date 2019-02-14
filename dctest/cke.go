@@ -28,8 +28,8 @@ type serfMemberContainer struct {
 	Members []serfMember `json:"members"`
 }
 
-// TestCKE tests CKE
-func TestCKE(version string) {
+// TestCKESetup tests CKE setup
+func TestCKESetup() {
 	It("should generates cluster.yml automatically", func() {
 		By("setting configurations")
 		execSafeAt(boot0, "ckecli", "constraints", "set", "control-plane-count", "3")
@@ -43,7 +43,10 @@ func TestCKE(version string) {
 			return err
 		}, 20*time.Minute).Should(Succeed())
 	})
+}
 
+// TestCKE tests CKE
+func TestCKE() {
 	It("all systemd units are active", func() {
 		By("getting systemd unit statuses by serf members")
 		Eventually(func() error {
@@ -77,7 +80,7 @@ func TestCKE(version string) {
 
 	It("wait for Kubernetes cluster to become ready", func() {
 		By("generating kubeconfig for cluster admin")
-		execSafeAt(boot0, "mkdir", ".kube")
+		execSafeAt(boot0, "mkdir", "-p", ".kube")
 		execSafeAt(boot0, "ckecli", "kubernetes", "issue", ">", ".kube/config")
 
 		By("waiting nodes")

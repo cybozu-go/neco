@@ -10,12 +10,18 @@ K8S_CTRLPLANE1 = 10.69.0.196
 K8S_CTRLPLANE2 = 10.69.1.132
 PLACEMAT = /usr/bin/placemat
 GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo --failFast -v
-SUITE = ./functions
+SUITE = ./bootstrap
+ifeq ($(findstring /,$(SUITE)),)
+  SUITE_PACKAGE = ./$(SUITE)
+else
+  SUITE_PACKAGE = $(SUITE)
+endif
+DATACENTER = staging
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
 MENU = menu.yml
 
-export BOOT0 BOOT1 BOOT2 BOOT3 PLACEMAT GINKGO SUITE
+export BOOT0 BOOT1 BOOT2 BOOT3 PLACEMAT GINKGO SUITE_PACKAGE
 
 CUSTOM_UBUNTU = cybozu-ubuntu-18.04-server-cloudimg-amd64.img
 CUSTOM_UBUNTU_API_URL = https://api.github.com/repos/cybozu/neco-ubuntu/releases/latest
@@ -26,20 +32,37 @@ OUTPUT = ./output
 SABAKAN_DIR = $(OUTPUT)/sabakan
 OPERATION_SSH_DIR = $(OUTPUT)/operation-ssh
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
-OLDVER = 0.0.1
-NEWVER = 0.0.2
 AUTOCONFIG = $(SABAKAN_DIR)/auto-config
 BMC_USER = $(SABAKAN_DIR)/bmc-user.json
-OLD_DEB = $(SABAKAN_DIR)/neco_$(OLDVER)_amd64.deb
-NEW_DEB = $(SABAKAN_DIR)/neco_$(NEWVER)_amd64.deb
-TEST_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(BMC_USER) $(OPERATION_SSH_DIR)
+DEBVER = 9999.99.99
+GENERATED_DEB = $(abspath $(OUTPUT)/neco_$(DEBVER)_amd64.deb)
+DOWNLOADED_DEB = $(abspath $(OUTPUT)/neco_release_amd64.deb)
+ifeq ($(notdir $(SUITE_PACKAGE)),upgrade)
+  BASE_DEB = $(DOWNLOADED_DEB)
+else
+  BASE_DEB = $(GENERATED_DEB)
+endif
+### transient package; remove OLD_NEW_DEB after a "newer" version of Neco is released.
+### The "newer" version of Neco must reply "9999.99.99" in ReleaseChecker.Run(),
+### and must use "/tmp/..." in installLocalPackage().
+OLD_NEW_DEB = $(SABAKAN_DIR)/neco_0.0.2_amd64.deb
+PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(BMC_USER) $(OPERATION_SSH_DIR) $(OLD_NEW_DEB)
+TEST_DEPS = $(GENERATED_DEB) $(BASE_DEB)
 SSH_PRIVKEY = $(realpath ./dctest_key)
 BOB_PRIVKEY = $(realpath ./bob_key)
 BOB_PUBKEY = $(realpath ./bob_key.pub)
 
-export SSH_PRIVKEY BOB_PRIVKEY BOB_PUBKEY
+export DEBVER GENERATED_DEB BASE_DEB SSH_PRIVKEY BOB_PRIVKEY BOB_PUBKEY
 
-all: test lint
+all:
+	@echo "Specify one of these targets:"
+	@echo
+	@echo "    placemat  - run VMs in placemat."
+	@echo "    stop      - stop placemat."
+	@echo "    test      - run test in placemat env."
+	@echo "    setup     - install dependencies."
+	@echo
+	@echo "'make test' accepts SUITE, DATACENTER, and TAGS."
 
 # CUSTOM_UBUNTU
 $(CUSTOM_UBUNTU):
@@ -62,11 +85,20 @@ $(AUTOCONFIG): auto-config $(DHCP_JSON)
 $(BMC_USER): bmc-user.json $(DHCP_JSON)
 	cp $< $@
 
-$(OLD_DEB): $(OPERATION_SSH_DIR)
-	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR))
+# Other contents
+$(GENERATED_DEB):
+	mkdir -p $(OUTPUT)
+	cd ..; $(MAKE) deb VERSION=$(DEBVER) DEST=$(abspath $(OUTPUT)) TAGS=$(TAGS)
 
-$(NEW_DEB): $(OPERATION_SSH_DIR)
-	cd ..; make deb VERSION=$(NEWVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=new
+$(DOWNLOADED_DEB):
+	mkdir -p $(OUTPUT)
+	cd ..; go install -mod=vendor ./pkg/download-neco-deb
+	download-neco-deb $(DATACENTER) > $@
+
+### transient target
+$(OLD_NEW_DEB):
+	mkdir -p $(SABAKAN_DIR)
+	cd ..; $(MAKE) deb VERSION=0.0.2 DEST=$(abspath $(SABAKAN_DIR)) TAGS=$(TAGS)
 
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):
@@ -74,15 +106,13 @@ $(OPERATION_SSH_DIR):
 	cp dctest_key $(OPERATION_SSH_DIR)/boot_key
 
 # Targets
-test: $(TEST_DEPS) $(OLD_DEB) $(NEW_DEB)
-	sudo rm -rf $(PLACEMAT_DATADIR)
-	sudo rm -rf $(VM_SHARED_DIR)
-	./test.sh
+test: $(TEST_DEPS)
+	./test.sh "$(TARGET)" "$(TAGS)"
 
-placemat: $(TEST_DEPS) $(OLD_DEB) $(NEW_DEB)
+placemat: $(PLACEMAT_DEPS)
 	sudo rm -rf $(PLACEMAT_DATADIR)
 	sudo rm -rf $(VM_SHARED_DIR)
-	sudo systemd-run --unit=placemat.service $(PLACEMAT) -enable-virtfs $(realpath output/cluster.yml)
+	sudo systemd-run --unit=placemat.service $(PLACEMAT) -enable-virtfs $(abspath output/cluster.yml)
 	@echo 'Placemat is running.  To kill it, do "make stop".'
 
 stop:
@@ -91,15 +121,6 @@ stop:
 	sudo rm /run/systemd/transient/placemat.service
 	sudo systemctl daemon-reload
 	sudo systemctl reset-failed placemat.service
-
-test-light:
-	./test-light.sh "$(TARGET)"
-
-test-release: $(TEST_DEPS)
-	cd ..; make deb VERSION=$(OLDVER) DEST=$(realpath $(SABAKAN_DIR)) TAGS=release
-	sudo rm -rf $(PLACEMAT_DATADIR)
-	sudo rm -rf $(VM_SHARED_DIR)
-	SUITE=bootstrap ./test.sh
 
 clean:
 	rm -rf $(OUTPUT)
@@ -111,6 +132,6 @@ setup:
 	cd ../ && $(MAKE) setup
 	GO111MODULE=off	go get -d -u github.com/cybozu-go/placemat-menu
 	GO111MODULE=off go get github.com/onsi/ginkgo/ginkgo
-	cd $(GOPATH)/src/github.com/cybozu-go/placemat-menu; GO111MODULE=on make
+	cd $(GOPATH)/src/github.com/cybozu-go/placemat-menu; GO111MODULE=on $(MAKE)
 
-.PHONY:	all test placemat test-light test-release clean fullclean setup
+.PHONY:	all test placemat stop clean fullclean setup

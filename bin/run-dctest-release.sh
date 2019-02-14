@@ -1,8 +1,15 @@
 #!/bin/sh -ex
 
+SUITE=$1
+DATACENTER=$2
+
 . $(dirname $0)/env
 
 delete_instance() {
+  if [ $RET -ne 0 ]; then
+    # do not delete GCP instance upon test failure to help debugging.
+    return
+  fi
   $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} || true
 }
 
@@ -15,6 +22,7 @@ $GCLOUD compute instances create ${INSTANCE_NAME} \
   --boot-disk-size ${BOOT_DISK_SIZE} \
   --local-ssd interface=scsi
 
+RET=0
 trap delete_instance INT QUIT TERM 0
 
 # Run data center test
@@ -49,11 +57,17 @@ cp ../secrets .
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
 export GO111MODULE=on
 make setup
-exec make MENU=highcpu-menu.yml TAGS=release test-release
+make placemat TAGS=release
+sleep 3
+exec make test MENU=highcpu-menu.yml TAGS=release SUITE=${SUITE} DATACENTER=${DATACENTER}
 EOF
 chmod +x run.sh
 
 tar czf /tmp/neco.tgz .
 $GCLOUD compute scp --zone=${ZONE} /tmp/neco.tgz cybozu@${INSTANCE_NAME}:
 $GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
+set +e
 $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo /home/cybozu/run.sh'
+RET=$?
+
+exit $RET

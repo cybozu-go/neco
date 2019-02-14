@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -118,16 +119,26 @@ func prepareSSHClients(addresses ...string) error {
 }
 
 func execAt(host string, args ...string) (stdout, stderr []byte, e error) {
-	return execAtWithInput(host, nil, args...)
+	return execAtWithStream(host, nil, args...)
 }
 
 // WARNING: `input` can contain secret data.  Never output `input` to console.
 func execAtWithInput(host string, input []byte, args ...string) (stdout, stderr []byte, e error) {
+	var r io.Reader
+	if input != nil {
+		r = bytes.NewReader(input)
+	}
+	return execAtWithStream(host, r, args...)
+}
+
+// WARNING: `input` can contain secret data.  Never output `input` to console.
+func execAtWithStream(host string, input io.Reader, args ...string) (stdout, stderr []byte, e error) {
 	agent := sshClients[host]
 	return doExec(agent, input, args...)
 }
 
-func doExec(agent *sshAgent, input []byte, args ...string) ([]byte, []byte, error) {
+// WARNING: `input` can contain secret data.  Never output `input` to console.
+func doExec(agent *sshAgent, input io.Reader, args ...string) ([]byte, []byte, error) {
 	err := agent.conn.SetDeadline(time.Now().Add(DefaultRunTimeout))
 	if err != nil {
 		return nil, nil, err
@@ -141,7 +152,7 @@ func doExec(agent *sshAgent, input []byte, args ...string) ([]byte, []byte, erro
 	defer sess.Close()
 
 	if input != nil {
-		sess.Stdin = bytes.NewReader(input)
+		sess.Stdin = input
 	}
 	outBuf := new(bytes.Buffer)
 	errBuf := new(bytes.Buffer)

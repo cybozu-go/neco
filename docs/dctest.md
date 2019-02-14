@@ -1,8 +1,56 @@
-Data Center Test(dctest)
-========================
+Data Center Test (dctest)
+=========================
 
 [dctest](dctest/) directory contains test suites to run integration
 tests in a virtual data center environment.
+
+Generating deb Package
+----------------------
+
+Dctest uses a generated deb package to install Neco.
+Details of artifacts definition used in generating the deb package are
+described in [Artifacts](artifacts).
+
+Type of Test Suites
+-------------------
+
+There are three types of test suites.
+
+1. bootstrap
+
+    This suite tests initial setup of Neco.  This does not include
+    upgrading test nor boot server node joining/leaving test.
+
+    This suite installs Neco with the generated deb package.
+
+2. upgrade
+
+    This suite tests initial setup and upgrade of Neco.
+
+    Upgrading test first installs Neco by downloading a deb package from
+    github.com.  It then upgrades Neco with the generated deb package,
+    which is versioned as `9999.99.99`.
+
+3. functions
+
+    This suite tests a full set of functions of Neco in a single version,
+    i.e. this consists of initial setup of Neco and joining/leaving of
+    a boot server node.
+
+    This suite installs Neco with the generated deb package.
+
+Each test suite has an entry point of test as `<suite>/suite_test.go`.
+
+### Base of upgrading test
+
+As described above, upgrading test first installs Neco with an uploaded deb
+package.  This is to reproduce a real-world deployed data center environment
+as the base of upgrade.
+
+There are two types of data center environments to be reproduced: `production`
+and `staging`.  Upgrading test decides which version of a deb package to use
+by the data center environment with the same logic as
+[automatic update](update#tag-name-and-release-flow).
 
 Synopsis
 --------
@@ -19,20 +67,50 @@ Synopsis
 
 * `make placemat`
 
-    Run `placemat` to start virtual machines. To stop placemat, please run `sudo pkill placemat`.
+    Run `placemat` in background by systemd-run to start virtual machines.
 
-* `make test-light`
+* `make stop`
 
-    Run dctest.
+    Stop `placemat`.
 
 * `make test`
 
-    Run equivalent to `make placemat` and `make test-light`.
+    Run dctest on a running `placemat`.  This does not contol `placemat` by itself.
 
 Options
 -------
 
-## `secrets` file
+### `SUITE`
+
+You can choose the type of test suite by specifying `SUITE` make variable.
+The value can be `bootstrap` (default), `upgrade`, or `functions`.
+
+`make test` accepts this variable.
+
+The value of `SUITE` is interpreted as a Go package name.  You can write
+a new test suite and specify its package name by `SUITE`.  As a side note,
+the forms of `./bootstrap`, `./upgrade`, and `./functions` are more proper.
+
+### `DATACENTER`
+
+You can choose the base of upgrading test by specifying `DATACENTER` make
+variable.
+The value can be `staging` (default) or `production`.
+
+This variable makes sense only when `SUITE=./upgrade` is specified.
+
+`make test` accepts this variable.
+
+### `TAGS`
+
+You can choose the list of artifacts by specifying `TAGS` make variable,
+though non-default value is only for CI.
+The default is to use `artifacts.go`.
+Specify `TAGS=release` in the release branch to use `artifacts_release.go`.
+
+`make test` accepts this variable.
+
+### `secrets` file
 
 `neco sabakan-upload` supports uploading private container images where are in quay.io.
 dctest runs `neco config set quay-username` and `neco config set quay-password` automatically when `secrets` file exists.

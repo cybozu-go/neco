@@ -3,6 +3,7 @@ package dctest
 import (
 	"encoding/json"
 	"errors"
+	"path/filepath"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -23,8 +24,14 @@ func TestJoinRemove() {
 	})
 
 	It("should add a new boot server", func() {
-		token := getVaultToken()
+		if generatedDebFile != baseDebFile {
+			// install the same version of Neco as upgraded boot servers.
+			remoteFilename := filepath.Join("/tmp", filepath.Base(generatedDebFile))
+			stdout, stderr, err := execAt(boot3, "sudo", "dpkg", "-i", remoteFilename)
+			Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
 
+		token := getVaultToken()
 		stdout, stderr, err := execAt(
 			boot3, "sudo", "env", "VAULT_TOKEN="+token, "neco", "join", "0", "1", "2")
 		if err != nil {

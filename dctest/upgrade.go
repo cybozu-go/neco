@@ -38,13 +38,20 @@ func TestUpgrade() {
 		_, _, err = execAt(boot0, "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred())
 
+		By("Waiting for request to complete")
+		waitRequestComplete("version: " + debVer)
+
 		By("Wait for systemd unit files to be updated")
+		etcdContainerImage, err := neco.CurrentArtifacts.FindContainerImage("etcd")
+		Expect(err).ShouldNot(HaveOccurred())
+		vaultContainerImage, err := neco.CurrentArtifacts.FindContainerImage("vault")
+		Expect(err).ShouldNot(HaveOccurred())
 		artifacts := []struct {
-			service  string
-			imageTag string
+			service string
+			image   neco.ContainerImage
 		}{
-			{neco.EtcdService, "quay.io/cybozu/etcd:3.3.10-1"},
-			{neco.VaultService, "quay.io/cybozu/vault:1.0.0-1"},
+			{neco.EtcdService, etcdContainerImage},
+			{neco.VaultService, vaultContainerImage},
 		}
 		Eventually(func() error {
 			for _, art := range artifacts {
@@ -53,7 +60,7 @@ func TestUpgrade() {
 					if err != nil {
 						return err
 					}
-					if !strings.Contains(string(stdout), art.imageTag) {
+					if !strings.Contains(string(stdout), art.image.FullName(false)) {
 						return fmt.Errorf("%s is not updated: %s", art.service, string(stdout))
 					}
 				}
@@ -69,7 +76,7 @@ func TestUpgrade() {
 		}
 
 		By("Checking new etcd is running")
-		hasNewEtcd := regexp.MustCompile(`etcd\s+quay.io/cybozu/etcd:3.3.10-1\s+running`)
+		hasNewEtcd := regexp.MustCompile(`etcd\s+` + etcdContainerImage.FullName(false) + `\s+running`)
 		Eventually(func() error {
 			for _, h := range []string{boot0, boot1, boot2} {
 				stdout, _, err := execAt(h, "sudo", "rkt", "list")
