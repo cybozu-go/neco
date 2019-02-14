@@ -17,7 +17,7 @@ import (
 
 const (
 	cfgFile    = ".necogcp.yml"
-	listenAddr = "0.0.0.0"
+	listenAddr = "127.0.0.1"
 )
 
 var (
