@@ -301,7 +301,7 @@ func (cc *ComputeClient) RunSetup(ctx context.Context, progFile, cfgFile string)
 		return err
 	}
 
-	gcmd := cc.gCloudComputeSSH([]string{"sudo", "/tmp/" + filepath.Base(progFile), "--config", "/tmp/" + filepath.Base(cfgFile), "setup"})
+	gcmd := cc.gCloudComputeSSH([]string{"sudo", "/tmp/" + filepath.Base(progFile), "--config", "/tmp/" + filepath.Base(cfgFile), "setup-instance"})
 	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout

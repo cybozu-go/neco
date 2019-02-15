@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// setupCmd is setup command for instances.
-var setupCmd = &cobra.Command{
-	Use:   "setup",
+// setupInstanceCmd is setup command for instances.
+var setupInstanceCmd = &cobra.Command{
+	Use:   "setup-instance",
 	Short: "setup instance",
 	Long: `setup instance.
 
@@ -42,5 +42,5 @@ Please run this command on vmx-enabled or host-vm instance.`,
 }
 
 func init() {
-	rootCmd.AddCommand(setupCmd)
+	rootCmd.AddCommand(setupInstanceCmd)
 }

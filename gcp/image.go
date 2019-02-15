@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// CreateVMXEnabledImage creates vmx-enabled image
 func CreateVMXEnabledImage(ctx context.Context, cc *ComputeClient, cfgFile string) error {
 	cc.DeleteInstance(ctx)
 
