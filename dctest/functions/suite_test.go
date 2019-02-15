@@ -18,7 +18,10 @@ func TestDCtest(t *testing.T) {
 	RunSpecs(t, "Data Center test")
 }
 
-var _ = BeforeSuite(dctest.RunBeforeSuite)
+var _ = BeforeSuite(func() {
+	dctest.RunBeforeSuite()
+	dctest.RunBeforeSuiteInstall()
+})
 
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.

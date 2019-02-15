@@ -21,7 +21,12 @@ There are three types of test suites.
     This suite tests initial setup of Neco.  This does not include
     upgrading test nor boot server node joining/leaving test.
 
-    This suite installs Neco with the generated deb package.
+    This suite installs Neco with the generated deb package if `DATACENTER`
+    is not specified.
+
+    If `DATACENTER` is specified, this test suite is invoked to prepare the base
+    of upgrading test.  The Neco deb package used for `DATACENTER`, staging or
+    production, is downloaded from GitHub releases.
 
 2. upgrade
 
@@ -96,11 +101,12 @@ the forms of `./bootstrap`, `./upgrade`, and `./functions` are more proper.
 
 ### `DATACENTER`
 
-You can choose the base of upgrading test by specifying `DATACENTER` make
+When building the base of upgrading test with `SUITE=./bootstrap`,
+you can choose reproduced environment by specifying `DATACENTER` make
 variable.
-The value can be `staging` (default) or `production`.
+The value can be `staging` or `production`.
 
-This variable makes sense only when `SUITE=./upgrade` is specified.
+This variable makes sense only when `SUITE=./bootstrap` is specified.
 
 `make test` accepts this variable.
 
