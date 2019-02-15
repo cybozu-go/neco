@@ -77,7 +77,7 @@ sleep 3
 make test MENU=highcpu-menu.yml TAGS=release SUITE=${SUITE} DATACENTER=${DATACENTER}
 RET=\$?
 if [ -n "${DATACENTER}" ]; then
-  rm artifacts_release.go
+  rm ../artifacts_release.go
   git checkout \$COMMIT
 fi
 exit \$RET
