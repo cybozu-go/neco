@@ -395,7 +395,7 @@ golang.org/x/net/html
 golang.org/x/net/proxy
 golang.org/x/net/html/atom
 golang.org/x/net/internal/socks
-# golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
+# golang.org/x/oauth2 v0.0.0-20181203162652-d668ce993890
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
 # golang.org/x/sys v0.0.0-20181128092732-4ed8d59d0b35
@@ -422,7 +422,12 @@ golang.org/x/text/runes
 golang.org/x/text/internal/tag
 # golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 golang.org/x/time/rate
-# google.golang.org/appengine v1.1.0
+# google.golang.org/api v0.1.0
+google.golang.org/api/compute/v1
+google.golang.org/api/gensupport
+google.golang.org/api/googleapi
+google.golang.org/api/googleapi/internal/uritemplates
+# google.golang.org/appengine v1.3.0
 google.golang.org/appengine
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/app_identity
