@@ -24,11 +24,3 @@ func (s Server) HandleShutdown(w http.ResponseWriter, r *http.Request) {
 		Deleted: []string{"bbb"},
 	}, http.StatusOK)
 }
-
-func (s Server) HandleExtend(w http.ResponseWriter, r *http.Request) {
-	RenderJSON(w, ExtendStatus{
-		Extended:       []string{"aaa"},
-		Time:           111,
-		AvailableUntil: "today",
-	}, http.StatusOK)
-}

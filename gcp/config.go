@@ -3,9 +3,13 @@ package gcp
 const (
 	// DefaultDeleteInstance is default instnace name to be deleted by GAE app
 	DefaultDeleteInstance = "host-vm"
+	// DefaultBootDiskSizeGB is default instance boot disk size
+	DefaultBootDiskSizeGB = 20
 	// DefaultHomeDisk is default value for attaching home disk image in host-vm
 	DefaultHomeDisk = false
-	// DefaultPreemptible is default value for enabling preemptible.
+	// DefaultHomeDiskSizeGB is default home disk size
+	DefaultHomeDiskSizeGB = 20
+	// DefaultPreemptible is default value for enabling preemptible
 	// https://cloud.google.com/compute/docs/instances/preemptible
 	DefaultPreemptible = false
 )
@@ -68,9 +72,11 @@ func NewConfig() *Config {
 			},
 		},
 		Compute: ComputeConfig{
+			BootDiskSizeGB: DefaultBootDiskSizeGB,
 			HostVM: HostVMConfig{
-				HomeDisk:    DefaultHomeDisk,
-				Preemptible: DefaultPreemptible,
+				HomeDisk:       DefaultHomeDisk,
+				HomeDiskSizeGB: DefaultHomeDiskSizeGB,
+				Preemptible:    DefaultPreemptible,
 			},
 		},
 	}

@@ -35,7 +35,6 @@ func main() {
 
 	server := app.NewServer(cfg)
 	http.HandleFunc("/shutdown", server.HandleShutdown)
-	http.HandleFunc("/extend", server.HandleExtend)
 
 	appengine.Main()
 }

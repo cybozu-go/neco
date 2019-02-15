@@ -32,7 +32,7 @@ Fields are common configuration for GCE provisioning.
 | Field              | Type   | Default | Description                |
 | ------------------ | ------ | ------- | -------------------------- |
 | `machine-type`     | string |         | Instance machine type      |
-| `boot-disk-sizeGB` | int    |         | Root filesystem size in GB |
+| `boot-disk-sizeGB` | int    | `20`    | Root filesystem size in GB |
 
 Fields in `vmx-enabled` are configuration for `vmx-enabled` image.
 
@@ -47,5 +47,5 @@ Fields in `host-vm` are configuration for `host-vm` instance.
 | Field              | Type | Default | Description                                                                                                                                                              |
 | ------------------ | ---- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `home-disk`        | bool | false   | Attach home disk to host-vm instance                                                                                                                                     |
-| `home-disk-sizeGB` | int  |         | Home disk size in GB. If you change bigger size than current size, the existing home disk is expanded. If it's expanded, please run `resize2fs` to expand the filesystem |
+| `home-disk-sizeGB` | int  | `20`    | Home disk size in GB. If you change bigger size than current size, the existing home disk is expanded. If it's expanded, please run `resize2fs` to expand the filesystem |
 | `preemptible`      | bool | false   | Enable [`preemptible`](https://cloud.google.com/compute/docs/instances/preemptible)                                                                                      |
