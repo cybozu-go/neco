@@ -59,7 +59,7 @@ if [ -n "${DATACENTER}" ]; then
   git add -u
   git commit -m 'update artifacts'
   COMMIT=\$(git log -1 --format=%H)
-  go install -mod=vendor ./pkg/find-installed-release
+  env GO111MODULE=on go install -mod=vendor ./pkg/find-installed-release
   git checkout \$(find-installed-release)
 fi
 
