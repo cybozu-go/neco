@@ -11,7 +11,7 @@ import (
 	"github.com/cybozu-go/neco/gcp"
 	"github.com/cybozu-go/neco/gcp/app"
 	"google.golang.org/appengine"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -35,6 +35,10 @@ func main() {
 		log.ErrorExit(err)
 	}
 	f.Close()
+
+	if cfg.Common.Project == "neco-test" {
+		cfg = gcp.NecoTestConfig()
+	}
 
 	server, err := app.NewServer(cfg)
 	if err != nil {

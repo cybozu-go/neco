@@ -20,12 +20,30 @@ GAE app
 Usage
 -----
 
-### Configuration file for neco-test project
+### Edit Configuration file for neco-test
 
-See [neco-test.yml](../../gcp/neco-test.yml)
+Edit [config.go](../../gcp/config.go)
 
-### Deploy GAE app and `vmx-enabled` image
+### Update `vmx-enabled` installed packages for neco-test
 
-CircleCI updates them automatically.
+Edit [artifacts.go](../../gcp/artifacts.go)
+
+### Deploy GAE app
+
+```console
+make -f Makefile.gcp PROJECT=neco-test deploy
+```
+
+### Create or Update `vmx-enabled` image for neco-test
+
+```console
+necogcp neco-test create-image
+```
+
+### Extend 1 hour from now to prevent auto deletion
+
+```console
+necogcp neco-test extend INSTANCE_NAME
+```
 
 [dctest]: https://github.com/cybozu-go/neco/tree/master/dctest

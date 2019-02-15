@@ -22,8 +22,8 @@ GAE app
 
 GAE app on your GCP project does:
 
-- Stop all instances at night.
-- Delete `host-vm` instance and given instances at night.
+- Stop given instances at night.
+- Delete `host-vm` instance and other all instances at night.
 
 Usage
 -----
@@ -38,31 +38,32 @@ First, download a credential to access your GCP account by following steps:
 
 ### Deploy GAE app for your project
 
-You can skip this step if it's already deployed or is up to date.
+You can skip this step if the GAE app is up to date.
 
 ```console
-make -f Makefile.gcp CONFIG=$HOME/.necogcp.yml deploy
+make -f Makefile.gcp deploy
 ```
 
 ### Create `vmx-enabled` instance image for your project
 
 ```console
-necogcp create vmx-enabled
+necogcp create-image
 ```
 
 If you want to update your existing image, re-run this command.
 
 ### Use `host-vm` instance for your project
 
+**`host-vm` instance is deleted by GAE app every evening, You have to run above step every day.**
+
 Please create `vmx-enabled` image in advance with above step.
 
 ```console
-necogcp create host-vm
+necogcp create-instance
 ```
 
 If you want to update your existing image, re-run this command.
 
-**`host-vm` instance is deleted by GAE app every evening, You have to run above step every day.**
 
 For `neco-test` GCP project
 ---------------------------

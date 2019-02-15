@@ -1,34 +1,42 @@
-ifeq ($(CONFIG),)
-$(error CONFIG is not set)
-endif
-
-NUM_VERSIONS = $(shell gcloud app versions list --format list | wc -l)
+ifeq ($(PROJECT),)
 PROJECT = $(shell gcloud config get-value core/project)
-
-ifeq ($(PROJECT), neco-test)
-	CRON_PATH = ./pkg/necogcp-app/cron-neco-test.yaml
-else
-	CRON_PATH = ./pkg/necogcp-app/cron.yaml
 endif
 
-all: deploy
+ifeq ($(PROJECT),neco-test)
+	CRON_PATH = $(CURDIR)/pkg/necogcp-app/cron-neco-test.yaml
+else
+	CRON_PATH = $(CURDIR)/pkg/necogcp-app/cron.yaml
+endif
 
-./.necogcp.yml: $(CONFIG)
+NUM_VERSIONS = $(shell gcloud app versions list --project $(PROJECT) --format list | wc -l)
+
+all:
+	@echo "Specify one of these targets:"
+	@echo
+	@echo "    deploy                      - Deploy GAE app on your project"
+	@echo "    destroy                     - Destroy all version of GAE app on your project"
+	@echo "    PROJECT=neco-test deploy    - Deploy GAE app on neco-test"
+	@echo "    PROJECT=neco-test destroy   - Destroy all version of GAE app on neco-test"
+
+
+./.necogcp.yml: $(HOME)/.necogcp.yml
 	rm -f $@
 	cp $< $@
 
 deploy: ./.necogcp.yml
 	gcloud app deploy \
+		--project $(PROJECT) \
 		--quiet \
 		--promote \
 		--stop-previous-version \
-		./pkg/necogcp-app/app.yaml \
+		$(CURDIR)/pkg/necogcp-app/app.yaml \
 		$(CRON_PATH)
 
 destroy:
 	# delete old versions
 	if [ "$(NUM_VERSIONS)" -gt 1 ]; then \
 		gcloud app versions list \
+			--project $(PROJECT) \
 			--sort-by=LAST_DEPLOYED \
 			--limit $(shell expr $(NUM_VERSIONS) - 1) \
 			--format="value(version.id)" | \
@@ -36,6 +44,7 @@ destroy:
 	fi
 	# stop serving instances
 	gcloud app versions list \
+		--project $(PROJECT) \
 		--filter="SERVING_STATUS:SERVING" \
 		--format="value(version.id)" | \
 		xargs gcloud app versions stop --quiet
