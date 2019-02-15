@@ -1,46 +1,60 @@
 package app
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/gcp"
+	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
+)
+
+const (
+	metadataKeyExtended = "extended"
 )
 
 // Server is the API Server of GAE app
 type Server struct {
-	cfg *gcp.Config
+	client *http.Client
+	cfg    *gcp.Config
 }
 
 // NewServer creates a new Server
-func NewServer(cfg *gcp.Config) *Server {
-	return &Server{
-		cfg: cfg,
+func NewServer(cfg *gcp.Config) (*Server, error) {
+	client, err := google.DefaultClient(context.Background(), "https://www.googleapis.com/auth/compute")
+	if err != nil {
+		return nil, err
 	}
+
+	return &Server{
+		client: client,
+		cfg:    cfg,
+	}, nil
 }
 
 // HandleShutdown handles REST API /shutdown
 func (s Server) HandleShutdown(w http.ResponseWriter, r *http.Request) {
-	if s.cfg.Common.Project == "neco-test" {
-		s.shutdownForNecoTest(w, r)
+	gaeHeader := r.Header.Get("X-Appengine-Cron")
+	if len(gaeHeader) == 0 {
+		RenderError(r.Context(), w, APIErrForbidden)
 		return
 	}
-	s.shutdown(w, r)
-}
 
-func (s Server) shutdownForNecoTest(w http.ResponseWriter, r *http.Request) {
-	return
+	s.shutdown(w, r)
 }
 
 func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 	project := s.cfg.Common.Project
 	zone := s.cfg.Common.Zone
 	exclude := s.cfg.App.Shutdown.Exclude
-	delete := s.cfg.App.Shutdown.Delete
+	stop := s.cfg.App.Shutdown.Stop
 	status := ShutdownStatus{}
+	now := time.Now().UTC()
+	expiration := s.cfg.App.Shutdown.Expiration
 
-	service, err := compute.New(&http.Client{})
+	service, err := compute.New(s.client)
 	if err != nil {
 		RenderError(r.Context(), w, InternalServerError(err))
 		return
@@ -56,7 +70,24 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if contain(instance.Name, delete) {
+		extendedAt, err := getExtendedAt(instance)
+		if err != nil {
+			RenderError(r.Context(), w, InternalServerError(err))
+			return
+		}
+		elapsed := now.Sub(extendedAt)
+		if elapsed.Seconds() < expiration.Seconds() {
+			continue
+		}
+
+		if contain(instance.Name, stop) {
+			_, err := service.Instances.Stop(project, zone, instance.Name).Do()
+			if err != nil {
+				RenderError(r.Context(), w, InternalServerError(err))
+				continue
+			}
+			status.Stopped = append(status.Stopped, instance.Name)
+		} else {
 			_, err := service.Instances.Delete(project, zone, instance.Name).Do()
 			if err != nil {
 				RenderError(r.Context(), w, InternalServerError(err))
@@ -64,13 +95,6 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 			}
 			status.Deleted = append(status.Deleted, instance.Name)
 		}
-
-		_, err := service.Instances.Stop(project, zone, instance.Name).Do()
-		if err != nil {
-			RenderError(r.Context(), w, InternalServerError(err))
-			continue
-		}
-		status.Stopped = append(status.Stopped, instance.Name)
 	}
 
 	log.Info("shutdown instances", map[string]interface{}{
@@ -87,4 +111,13 @@ func contain(name string, items []string) bool {
 		}
 	}
 	return false
+}
+
+func getExtendedAt(instance *compute.Instance) (time.Time, error) {
+	for _, metadata := range instance.Metadata.Items {
+		if metadata.Key == metadataKeyExtended {
+			return time.Parse(time.RFC3339, *metadata.Value)
+		}
+	}
+	return time.Parse(time.RFC3339, instance.CreationTimestamp)
 }

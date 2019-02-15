@@ -4,8 +4,7 @@ common:
   zone: asia-northeast1-c
 app:
   shutdown:
-    delete:
-    - host-vm
+    stop: []
     exclude:
     - my-instance-1
     - my-instance-2

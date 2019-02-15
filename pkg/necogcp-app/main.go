@@ -33,7 +33,10 @@ func main() {
 	}
 	f.Close()
 
-	server := app.NewServer(cfg)
+	server, err := app.NewServer(cfg)
+	if err != nil {
+		log.ErrorExit(err)
+	}
 	http.HandleFunc("/shutdown", server.HandleShutdown)
 
 	appengine.Main()

@@ -1,8 +1,10 @@
 package gcp
 
+import "time"
+
 const (
-	// DefaultDeleteInstance is default instnace name to be deleted by GAE app
-	DefaultDeleteInstance = "host-vm"
+	// DefaultExpiration is default expiration time
+	DefaultExpiration = "0s"
 	// DefaultBootDiskSizeGB is default instance boot disk size
 	DefaultBootDiskSizeGB = 20
 	// DefaultHomeDisk is default value for attaching home disk image in host-vm
@@ -35,8 +37,9 @@ type AppConfig struct {
 
 // ShutdownConfig is automatic shutdown configuration
 type ShutdownConfig struct {
-	Delete  []string `yaml:"delete"`
-	Exclude []string `yaml:"exclude"`
+	Stop       []string      `yaml:"stop"`
+	Exclude    []string      `yaml:"exclude"`
+	Expiration time.Duration `yaml:"expiration"`
 }
 
 // ComputeConfig is configuration for GCE
@@ -62,13 +65,16 @@ type HostVMConfig struct {
 }
 
 // NewConfig returns Config
-func NewConfig() *Config {
+func NewConfig() (*Config, error) {
+	expiration, err := time.ParseDuration(DefaultExpiration)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Config{
 		App: AppConfig{
 			Shutdown: ShutdownConfig{
-				Delete: []string{
-					DefaultDeleteInstance,
-				},
+				Expiration: expiration,
 			},
 		},
 		Compute: ComputeConfig{
@@ -79,5 +85,5 @@ func NewConfig() *Config {
 				Preemptible:    DefaultPreemptible,
 			},
 		},
-	}
+	}, nil
 }

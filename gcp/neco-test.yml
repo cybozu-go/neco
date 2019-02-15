@@ -4,17 +4,12 @@ common:
   zone: asia-northeast1-c
 app:
   shutdown:
-    delete:
-    - host-vm
-    excluded-instances:
-    - my-instance-1
-    - my-instance-2
+    exclude:
+    - neco-ops
 compute:
   machine-type: n1-highmem-8
-  boot-disk-size: 20GB
+  boot-disk-sizeGB: 20
   vmx-enabled:
     image: debian-9-stretch-v20180911
     image-project: debian-cloud
     optional-packages: []
-  host-vm:
-    preemptible: false
