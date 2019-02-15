@@ -27,7 +27,6 @@ var _ = BeforeSuite(func() {
 // Other tests and test containers must be listed in this.
 var _ = Describe("Test Neco upgrade", func() {
 	Context("upgrade", dctest.TestUpgrade)
-	Context("upgraded contents", dctest.TestContents)
 	Context("upgraded cke", dctest.TestCKE)
 	Context("upgraded coil", dctest.TestCoil)
 	Context("upgraded unbound", dctest.TestUnbound)

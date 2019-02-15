@@ -31,10 +31,7 @@ var _ = Describe("Test Neco bootstrap", func() {
 	Context("etcdpasswd", dctest.TestEtcdpasswd)
 	Context("sabakan", dctest.TestSabakan)
 	// uploading contents to sabakan must be done after sabakan configuration.
-	Context("contents", func() {
-		dctest.UploadContents()
-		dctest.TestContents()
-	})
+	Context("contents", dctest.UploadContents)
 	Context("machines", dctest.TestMachines)
 	Context("cke", func() {
 		dctest.TestCKESetup()
