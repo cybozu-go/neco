@@ -62,7 +62,7 @@ if [ -n "${DATACENTER}" ]; then
   env GO111MODULE=on go install -mod=vendor ./pkg/find-installed-release
   RELEASE=\$(find-installed-release ${DATACENTER})
   git checkout release-\$RELEASE
-  git checkout 0b7c2e0b6a68b404d3d52034e8e7aad35868b3ad
+  git checkout 763bdc28254ca71ab93279bb7aa7fbaaa4117c3b
 fi
 
 # Run dctest
