@@ -82,6 +82,9 @@ $(DEB): $(STATIK)
 	$(FAKEROOT) dpkg-deb --build $(WORKDIR) $(DEST)
 	rm -rf $(WORKDIR)
 
+necogcp: $(STATIK)
+	go install ./pkg/necogcp
+
 setup:
 	GO111MODULE=off go get -u golang.org/x/lint/golint github.com/rakyll/statik
 	$(SUDO) apt-get update
