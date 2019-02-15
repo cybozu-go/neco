@@ -60,7 +60,8 @@ if [ -n "${DATACENTER}" ]; then
   git commit -m 'update artifacts'
   COMMIT=\$(git log -1 --format=%H)
   env GO111MODULE=on go install -mod=vendor ./pkg/find-installed-release
-  git checkout \$(find-installed-release ${DATACENTER})
+  RELEASE=\$(find-installed-release ${DATACENTER})
+  git checkout release-\$RELEASE
 fi
 
 # Run dctest
