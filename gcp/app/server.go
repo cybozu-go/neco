@@ -11,10 +11,6 @@ import (
 	compute "google.golang.org/api/compute/v1"
 )
 
-const (
-	metadataKeyExtended = "extended"
-)
-
 // Server is the API Server of GAE app
 type Server struct {
 	client *http.Client
@@ -115,7 +111,7 @@ func contain(name string, items []string) bool {
 
 func getExtendedAt(instance *compute.Instance) (time.Time, error) {
 	for _, metadata := range instance.Metadata.Items {
-		if metadata.Key == metadataKeyExtended {
+		if metadata.Key == gcp.MetadataKeyExtended {
 			return time.Parse(time.RFC3339, *metadata.Value)
 		}
 	}

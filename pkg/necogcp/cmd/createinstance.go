@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/cybozu-go/log"
@@ -10,19 +11,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var createVMXEnabledCommand = &cobra.Command{
-	Use:   "vmx-enabled",
-	Short: "Create vmx-enabled image",
-	Long: `Create vmx-enabled image.
+var createInstanceCmd = &cobra.Command{
+	Use:   "create-instance",
+	Short: "Launch host-vm instance",
+	Long: `Launch host-vm instance using vmx-enabled image.
 
-If vmx-enabled image already exists in the project, it is re-created.`,
+If host-vm instance already exists in the project, it is re-created.`,
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		cc := gcp.NewComputeClient(cfg, "vmx-enabled")
+		cc := gcp.NewComputeClient(cfg, "host-vm")
 		well.Go(func(ctx context.Context) error {
 			cc.DeleteInstance(ctx)
 
-			err := cc.CreateVMXEnabledInstance(ctx)
+			err := cc.CreateHostVMInstance(ctx)
 			if err != nil {
 				return err
 			}
@@ -32,43 +33,37 @@ If vmx-enabled image already exists in the project, it is re-created.`,
 				return err
 			}
 
+			err = cc.CreateHomeDisk(ctx)
+			if err != nil {
+				return err
+			}
+
+			err = cc.ResizeHomeDisk(ctx)
+			if err != nil {
+				return err
+			}
+
+			err = cc.AttachHomeDisk(ctx)
+			if err != nil {
+				return err
+			}
+
 			progFile, err := os.Executable()
 			if err != nil {
 				return err
 			}
 
-			err = cc.RunSetup(ctx, progFile, cfgFile)
-			if err != nil {
-				return err
-			}
-
-			err = cc.StopInstance(ctx)
-			if err != nil {
-				return err
-			}
-
-			cc.DeleteVMXEnabledImage(ctx)
-
-			err = cc.CreateVMXEnabledImage(ctx)
-			if err != nil {
-				return err
-			}
-
-			err = cc.DeleteInstance(ctx)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return cc.RunSetup(ctx, progFile, cfgFile)
 		})
 		well.Stop()
 		err := well.Wait()
 		if err != nil {
 			log.ErrorExit(err)
 		}
+		fmt.Println("host-vm has been created! Ready to login")
 	},
 }
 
 func init() {
-	createCmd.AddCommand(createVMXEnabledCommand)
+	rootCmd.AddCommand(createInstanceCmd)
 }

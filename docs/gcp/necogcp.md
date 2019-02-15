@@ -8,28 +8,38 @@ Synopsis
 
 ### GCE instance management on developer's project
 
-* `necogcp create [vmx-enabled|host-vm]`
+* `necogcp create-image`
 
-    Create instance or instance image.
-    If `vmx-enabled` is specified, it builds `vmx-enabled` image.
-    If `host-vm` is specified, it launches `host-vm` instance using `vmx-enabled` image.
-    If target image or instance already exists, it is re-created.
+    It builds `vmx-enabled` image.
+    If `vmx-enabled` image already exists, it is re-created.
 
-* `necogcp delete [vmx-enabled|host-vm]`
+* `necogcp create-instance`
 
-    Delete instance or instance image.
-    If `vmx-enabled` is specified, it deletes `vmx-enabled` image.
-    If `host-vm` is specified, it deletes `host-vm` instance.
+    It launches `host-vm` instance using `vmx-enabled` image.
+    If `host-vm` instance already exists, it is re-created.
+    
+* `necogcp delete-image`
+
+    It deletes `vmx-enabled` image.
+
+* `necogcp delete-instance`
+
+    It deletes `host-vm` instance.
 
 ### GCE instance management on neco-test project
 
-* `necogcp neco-test delete INSTANCE_NAME`
+* `necogcp neco-test create-image`
 
-    Delete manually given instance on the neco-test project.
+    It builds `vmx-enabled` image on neco-test.
+    If `vmx-enabled` image already exists, it is re-created.
+
+* `necogcp neco-test delete-image`
+
+    It deletes `vmx-enabled` image on neco-test.
 
 * `necogcp neco-test extend INSTANCE_NAME`
 
-    Extend 1 hours given instance on the neco-test project to prevent deleted by GAE app.
+    It extends 1 hours given instance on the neco-test project to prevent deleted by GAE app.
 
 ### Miscellaneous
 

@@ -8,7 +8,7 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/gcp"
 	"github.com/cybozu-go/well"
-	"github.com/mitchellh/go-homedir"
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

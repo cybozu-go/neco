@@ -20,6 +20,8 @@ import (
 const (
 	retryCount   = 300
 	imageLicense = "https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx"
+	// MetadataKeyExtended is key for extended time in metadata
+	MetadataKeyExtended = "extended"
 )
 
 // ComputeClient is GCP compute client using "gcloud compute"
@@ -300,6 +302,18 @@ func (cc *ComputeClient) RunSetup(ctx context.Context, progFile, cfgFile string)
 	}
 
 	gcmd := cc.gCloudComputeSSH([]string{"sudo", "/tmp/" + filepath.Base(progFile), "--config", "/tmp/" + filepath.Base(cfgFile), "setup"})
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	return c.Run()
+}
+
+// ExtendInstance extends 1 hour from now for given instance to prevent auto deletion
+func (cc *ComputeClient) ExtendInstance(ctx context.Context) error {
+	gcmd := cc.gCloudComputeInstances()
+	gcmd = append(gcmd, "add-metadata", cc.instance,
+		"--metadata", MetadataKeyExtended+"="+time.Now().UTC().Add(1*time.Hour).Format(time.RFC3339))
 	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout

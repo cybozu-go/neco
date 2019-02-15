@@ -4,16 +4,18 @@ import "time"
 
 const (
 	// DefaultExpiration is default expiration time
-	DefaultExpiration = "0s"
+	defaultExpiration = "0s"
 	// DefaultBootDiskSizeGB is default instance boot disk size
-	DefaultBootDiskSizeGB = 20
+	defaultBootDiskSizeGB = 20
 	// DefaultHomeDisk is default value for attaching home disk image in host-vm
-	DefaultHomeDisk = false
+	defaultHomeDisk = false
 	// DefaultHomeDiskSizeGB is default home disk size
-	DefaultHomeDiskSizeGB = 20
+	defaultHomeDiskSizeGB = 20
 	// DefaultPreemptible is default value for enabling preemptible
 	// https://cloud.google.com/compute/docs/instances/preemptible
-	DefaultPreemptible = false
+	defaultPreemptible            = false
+	defaultVmxEnabledImage        = "debian-9-stretch-v20180911"
+	defaultVmxEnabledImageProject = "debian-cloud"
 )
 
 // Config is configuration for necogcp command and GAE app
@@ -66,7 +68,7 @@ type HostVMConfig struct {
 
 // NewConfig returns Config
 func NewConfig() (*Config, error) {
-	expiration, err := time.ParseDuration(DefaultExpiration)
+	expiration, err := time.ParseDuration(defaultExpiration)
 	if err != nil {
 		return nil, err
 	}
@@ -78,12 +80,44 @@ func NewConfig() (*Config, error) {
 			},
 		},
 		Compute: ComputeConfig{
-			BootDiskSizeGB: DefaultBootDiskSizeGB,
+			BootDiskSizeGB: defaultBootDiskSizeGB,
 			HostVM: HostVMConfig{
-				HomeDisk:       DefaultHomeDisk,
-				HomeDiskSizeGB: DefaultHomeDiskSizeGB,
-				Preemptible:    DefaultPreemptible,
+				HomeDisk:       defaultHomeDisk,
+				HomeDiskSizeGB: defaultHomeDiskSizeGB,
+				Preemptible:    defaultPreemptible,
 			},
 		},
 	}, nil
+}
+
+// NecoTestConfig returns configuration for neco-test
+func NecoTestConfig() *Config {
+	return &Config{
+		Common: CommonConfig{
+			Project:        "neco-test",
+			ServiceAccount: "neco-test@neco-test.iam.gserviceaccount.com",
+			Zone:           "asia-northeast1-c",
+		},
+		App: AppConfig{
+			Shutdown: ShutdownConfig{
+				Exclude: []string{
+					"neco-ops",
+				},
+				Expiration: 3600 * time.Second,
+			},
+		},
+		Compute: ComputeConfig{
+			MachineType:    "n1-highcpu-64",
+			BootDiskSizeGB: defaultBootDiskSizeGB,
+			HostVM: HostVMConfig{
+				HomeDisk:       defaultHomeDisk,
+				HomeDiskSizeGB: defaultHomeDiskSizeGB,
+				Preemptible:    defaultPreemptible,
+			},
+			VMXEnabled: VMXEnabledConfig{
+				Image:        defaultVmxEnabledImage,
+				ImageProject: defaultVmxEnabledImageProject,
+			},
+		},
+	}
 }

@@ -9,13 +9,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var deleteVMXEnabledCommand = &cobra.Command{
-	Use:   "vmx-enabled",
-	Short: "Delete vmx-enabled image",
-	Long:  `Delete vmx-enabled image.`,
+var necotestDeleteImageCmd = &cobra.Command{
+	Use:   "delete-image",
+	Short: "Delete vmx-enabled image on neco-test",
+	Long:  `Delete vmx-enabled image on neco-test.`,
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		cc := gcp.NewComputeClient(cfg, "vmx-enabled")
+		necotestCfg := gcp.NecoTestConfig()
+		necotestCfg.Common.ServiceAccount = cfg.Common.ServiceAccount
+		cc := gcp.NewComputeClient(necotestCfg, "vmx-enabled")
 		well.Go(func(ctx context.Context) error {
 			err := cc.DeleteVMXEnabledImage(ctx)
 			if err != nil {
@@ -32,5 +34,5 @@ var deleteVMXEnabledCommand = &cobra.Command{
 }
 
 func init() {
-	deleteCmd.AddCommand(deleteVMXEnabledCommand)
+	necotestCmd.AddCommand(necotestDeleteImageCmd)
 }

@@ -9,19 +9,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var deleteHostVMCommand = &cobra.Command{
-	Use:   "host-vm",
-	Short: "Delete host-vm instance",
-	Long:  `Delete host-vm instance manually.`,
+var deleteImageCmd = &cobra.Command{
+	Use:   "delete-image",
+	Short: "Delete vmx-enabled image",
+	Long:  `Delete vmx-enabled image.`,
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		cc := gcp.NewComputeClient(cfg, "host-vm")
+		cc := gcp.NewComputeClient(cfg, "vmx-enabled")
 		well.Go(func(ctx context.Context) error {
-			err := cc.DeleteInstance(ctx)
+			err := cc.DeleteVMXEnabledImage(ctx)
 			if err != nil {
 				return err
 			}
-
 			return nil
 		})
 		well.Stop()
@@ -33,5 +32,5 @@ var deleteHostVMCommand = &cobra.Command{
 }
 
 func init() {
-	deleteCmd.AddCommand(deleteHostVMCommand)
+	rootCmd.AddCommand(deleteImageCmd)
 }
