@@ -25,10 +25,11 @@ There are three types of test suites.
 
 2. upgrade
 
-    This suite tests initial setup and upgrade of Neco.
+    This suite tests upgrade of Neco. This suite is not self-contained. It depends on bootstrap.
 
-    Upgrading test first installs Neco by downloading a deb package from
-    github.com.  It then upgrades Neco with the generated deb package,
+    Before running upgrade test suite, bootstrap test with an old Neco package and old procedures must be executed.
+    This old package is downloaded from GitHub releases, and the old procedures get checked-out from git repository.
+    Upgrade test suite then upgrades Neco with the generated deb package,
     which is versioned as `9999.99.99`.
 
 3. functions
@@ -51,6 +52,8 @@ There are two types of data center environments to be reproduced: `production`
 and `staging`.  Upgrading test decides which version of a deb package to use
 by the data center environment with the same logic as
 [automatic update](update#tag-name-and-release-flow).
+
+The test environment must keep backward compatibility to run old Neco packages.
 
 Synopsis
 --------
