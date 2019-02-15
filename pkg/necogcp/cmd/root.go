@@ -33,7 +33,10 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
-		cfg = gcp.NewConfig()
+		cfg, err = gcp.NewConfig()
+		if err != nil {
+			return err
+		}
 
 		yamlTagOption := func(c *mapstructure.DecoderConfig) {
 			c.TagName = "yaml"

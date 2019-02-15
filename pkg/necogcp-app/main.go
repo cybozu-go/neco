@@ -22,7 +22,10 @@ func main() {
 	// seed math/random
 	rand.Seed(time.Now().UnixNano())
 
-	cfg := gcp.NewConfig()
+	cfg, err := gcp.NewConfig()
+	if err != nil {
+		log.ErrorExit(err)
+	}
 	f, err := os.Open(cfgFile)
 	if err != nil {
 		log.ErrorExit(err)
