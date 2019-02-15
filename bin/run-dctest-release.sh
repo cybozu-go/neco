@@ -63,6 +63,7 @@ if [ -n "${DATACENTER}" ]; then
   RELEASE=\$(find-installed-release ${DATACENTER})
   git checkout release-\$RELEASE
   git checkout 763bdc28254ca71ab93279bb7aa7fbaaa4117c3b
+  git show \${COMMIT}:artifacts_release.go > artifacts_release.go
 fi
 
 # Run dctest
@@ -76,6 +77,7 @@ sleep 3
 make test MENU=highcpu-menu.yml TAGS=release SUITE=${SUITE} DATACENTER=${DATACENTER}
 RET=\$?
 if [ -n "${DATACENTER}" ]; then
+  rm artifacts_release.go
   git checkout \$COMMIT
 fi
 exit \$RET
