@@ -13,9 +13,9 @@ NUM_VERSIONS = $(shell gcloud app versions list --project $(PROJECT) --format li
 all:
 	@echo "Specify one of these targets:"
 	@echo
-	@echo "    deploy                      - Deploy GAE app on your project"
+	@echo "    create                      - Deploy GAE app on your project"
 	@echo "    destroy                     - Destroy all version of GAE app on your project"
-	@echo "    PROJECT=neco-test deploy    - Deploy GAE app on neco-test"
+	@echo "    PROJECT=neco-test create    - Deploy GAE app on neco-test"
 	@echo "    PROJECT=neco-test destroy   - Destroy all version of GAE app on neco-test"
 
 
@@ -23,7 +23,7 @@ all:
 	rm -f $@
 	cp $< $@
 
-deploy: ./.necogcp.yml
+create: ./.necogcp.yml
 	gcloud app deploy \
 		--project $(PROJECT) \
 		--quiet \
@@ -52,4 +52,4 @@ destroy:
 clean:
 	rm -rf ./.necogcp.yml
 
-.PHONY:	all clean lib deploy destroy
+.PHONY:	all clean lib create destroy

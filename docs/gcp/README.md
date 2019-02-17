@@ -41,7 +41,7 @@ First, download a credential to access your GCP account by following steps:
 You can skip this step if the GAE app is up to date.
 
 ```console
-make -f Makefile.gcp deploy
+make -f Makefile.gcp create
 ```
 
 ### Create `vmx-enabled` instance image for your project
