@@ -278,12 +278,3 @@ workflows:
             branches:
               only:
                 - master
-  upgrade-test:
-    jobs:
-      - generate-artifacts
-      - dctest-release-functions:
-          requires:
-            - generate-artifacts
-      - dctest-release-upgrade-staging:
-          requires:
-            - generate-artifacts
