@@ -1,3 +1,5 @@
+# cloud.google.com/go v0.26.0
+cloud.google.com/go/compute/metadata
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
 # github.com/Microsoft/go-winio v0.0.0-20180501170546-ab35fc04b636
@@ -328,6 +330,8 @@ github.com/pkg/errors
 # github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7
 github.com/pquerna/ffjson/fflib/v1
 github.com/pquerna/ffjson/fflib/v1/internal
+# github.com/rakyll/statik v0.1.5
+github.com/rakyll/statik/fs
 # github.com/ryanuber/go-glob v0.0.0-20170128012129-256dc444b735
 github.com/ryanuber/go-glob
 # github.com/sirupsen/logrus v1.2.0
@@ -395,7 +399,10 @@ golang.org/x/net/html/atom
 golang.org/x/net/internal/socks
 # golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 golang.org/x/oauth2
+golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
+golang.org/x/oauth2/jws
+golang.org/x/oauth2/jwt
 # golang.org/x/sys v0.0.0-20181128092732-4ed8d59d0b35
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -420,15 +427,23 @@ golang.org/x/text/runes
 golang.org/x/text/internal/tag
 # golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 golang.org/x/time/rate
+# google.golang.org/api v0.0.0-20181203220731-00684f929d85
+google.golang.org/api/compute/v1
+google.golang.org/api/gensupport
+google.golang.org/api/googleapi
+google.golang.org/api/googleapi/internal/uritemplates
 # google.golang.org/appengine v1.1.0
-google.golang.org/appengine/urlfetch
+google.golang.org/appengine
 google.golang.org/appengine/internal
-google.golang.org/appengine/internal/urlfetch
+google.golang.org/appengine/internal/app_identity
+google.golang.org/appengine/internal/modules
+google.golang.org/appengine/urlfetch
 google.golang.org/appengine/internal/base
 google.golang.org/appengine/internal/datastore
 google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
-# google.golang.org/genproto v0.0.0-20181127195345-31ac5d88444a
+google.golang.org/appengine/internal/urlfetch
+# google.golang.org/genproto v0.0.0-20190201180003-4b09977fb922
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.17.0
 google.golang.org/grpc

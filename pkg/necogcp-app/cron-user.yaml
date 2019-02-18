@@ -1,0 +1,8 @@
+cron:
+  - description: stop instances
+    url: /shutdown
+    schedule: every day 21:00
+    timezone: Asia/Tokyo
+    retry_parameters:
+      min_backoff_seconds: 30
+      job_retry_limit: 5
