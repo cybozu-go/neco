@@ -43,11 +43,7 @@ else ifdef DATACENTER
 else
   DEB = $(GENERATED_DEB)
 endif
-### transient package; remove OLD_NEW_DEB after a "newer" version of Neco is released.
-### The "newer" version of Neco must reply "9999.99.99" in ReleaseChecker.Run(),
-### and must use "/tmp/..." in installLocalPackage().
-OLD_NEW_DEB = $(SABAKAN_DIR)/neco_0.0.2_amd64.deb
-PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(BMC_USER) $(OPERATION_SSH_DIR) $(OLD_NEW_DEB)
+PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(BMC_USER) $(OPERATION_SSH_DIR)
 TEST_DEPS = $(DEB)
 SSH_PRIVKEY = $(realpath ./dctest_key)
 BOB_PRIVKEY = $(realpath ./bob_key)
@@ -95,11 +91,6 @@ $(DOWNLOADED_DEB):
 	mkdir -p $(OUTPUT)
 	cd ..; go install -mod=vendor ./pkg/download-neco-deb
 	download-neco-deb $(DATACENTER) > $@
-
-### transient target
-$(OLD_NEW_DEB):
-	mkdir -p $(SABAKAN_DIR)
-	cd ..; $(MAKE) deb VERSION=0.0.2 DEST=$(abspath $(SABAKAN_DIR)) TAGS=$(TAGS)
 
 # workaround for placemat-menu
 $(OPERATION_SSH_DIR):

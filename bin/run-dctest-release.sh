@@ -73,11 +73,9 @@ make setup
 make placemat TAGS=release
 sleep 3
 make test MENU=highcpu-menu.yml TAGS=release SUITE=${SUITE} DATACENTER=${DATACENTER}
-RET=\$?
 if [ -n "${DATACENTER}" ]; then
   git checkout \$COMMIT
 fi
-exit \$RET
 EOF
 chmod +x run.sh
 
