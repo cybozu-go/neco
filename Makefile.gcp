@@ -21,14 +21,16 @@ all:
 
 
 ./.necogcp.yml: $(HOME)/.necogcp.yml
-	rm -f $@
-	cp $< $@
+	if [ "$(PROJECT)" != "neco-test" ]; then \
+		rm -f $@; \
+		cp $< $@; \
+	fi
 
 $(CRON_YAML): $(CRON_BASE)
 	rm -f $@
 	cp $< $@
 
-create: ./.necogcp.yml $(CRON_YAML)
+create: clean ./.necogcp.yml $(CRON_YAML)
 	gcloud app deploy \
 		--project $(PROJECT) \
 		--quiet \

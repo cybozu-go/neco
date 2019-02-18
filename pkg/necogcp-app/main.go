@@ -18,26 +18,32 @@ const (
 	cfgFile = ".necogcp.yml"
 )
 
+func loadConfig() (*gcp.Config, error) {
+	cfg, err := gcp.NewConfig()
+	if err != nil {
+		return nil, err
+	}
+	f, err := os.Open(cfgFile)
+	if err != nil {
+		// If cfgFile does not exist, use neco-test config
+		return gcp.NecoTestConfig(), nil
+	}
+	defer f.Close()
+	err = yaml.NewDecoder(f).Decode(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
 func main() {
 	// seed math/random
 	rand.Seed(time.Now().UnixNano())
 
-	cfg, err := gcp.NewConfig()
+	cfg, err := loadConfig()
 	if err != nil {
 		log.ErrorExit(err)
-	}
-	f, err := os.Open(cfgFile)
-	if err != nil {
-		log.ErrorExit(err)
-	}
-	err = yaml.NewDecoder(f).Decode(cfg)
-	if err != nil {
-		log.ErrorExit(err)
-	}
-	f.Close()
-
-	if cfg.Common.Project == "neco-test" {
-		cfg = gcp.NecoTestConfig()
 	}
 
 	server, err := app.NewServer(cfg)
