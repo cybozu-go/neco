@@ -21,14 +21,20 @@ There are three types of test suites.
     This suite tests initial setup of Neco.  This does not include
     upgrading test nor boot server node joining/leaving test.
 
-    This suite installs Neco with the generated deb package.
+    This suite installs Neco with the generated deb package if `DATACENTER`
+    is not specified.
+
+    If `DATACENTER` is specified, this test suite is invoked to prepare the base
+    of upgrading test.  The Neco deb package used for `DATACENTER`, staging or
+    production, is downloaded from GitHub releases.
 
 2. upgrade
 
-    This suite tests initial setup and upgrade of Neco.
+    This suite tests upgrade of Neco. This suite is not self-contained. It depends on bootstrap.
 
-    Upgrading test first installs Neco by downloading a deb package from
-    github.com.  It then upgrades Neco with the generated deb package,
+    Before running upgrade test suite, bootstrap test with an old Neco package and old procedures must be executed.
+    This old package is downloaded from GitHub releases, and the old procedures get checked-out from git repository.
+    Upgrade test suite then upgrades Neco with the generated deb package,
     which is versioned as `9999.99.99`.
 
 3. functions
@@ -51,6 +57,8 @@ There are two types of data center environments to be reproduced: `production`
 and `staging`.  Upgrading test decides which version of a deb package to use
 by the data center environment with the same logic as
 [automatic update](update#tag-name-and-release-flow).
+
+The test environment must keep backward compatibility to run old Neco packages.
 
 Synopsis
 --------
@@ -93,11 +101,12 @@ the forms of `./bootstrap`, `./upgrade`, and `./functions` are more proper.
 
 ### `DATACENTER`
 
-You can choose the base of upgrading test by specifying `DATACENTER` make
+When building the base of upgrading test with `SUITE=./bootstrap`,
+you can choose reproduced environment by specifying `DATACENTER` make
 variable.
-The value can be `staging` (default) or `production`.
+The value can be `staging` or `production`.
 
-This variable makes sense only when `SUITE=./upgrade` is specified.
+This variable makes sense only when `SUITE=./bootstrap` is specified.
 
 `make test` accepts this variable.
 

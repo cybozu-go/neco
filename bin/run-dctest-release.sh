@@ -10,6 +10,10 @@ delete_instance() {
     # do not delete GCP instance upon test failure to help debugging.
     return
   fi
+  if [ -n "${DATACENTER}" ]; then
+    # do not delete GCP instance because it is used by subsequent upgrading test.
+    return
+  fi
   $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} || true
 }
 
@@ -42,16 +46,25 @@ mkdir -p /var/scratch
 mount -t ext4 /dev/disk/by-id/google-local-ssd-0 /var/scratch
 chmod 1777 /var/scratch
 
-# Run dctest
 GOPATH=\$HOME/go
 export GOPATH
 PATH=/usr/local/go/bin:\$GOPATH/bin:\$PATH
 export PATH
 
+# Prepare neco repository
 mkdir -p \$GOPATH/src/github.com/cybozu-go/neco
 cd \$GOPATH/src/github.com/cybozu-go/neco
 tar xzf /home/cybozu/neco.tgz
+if [ -n "${DATACENTER}" ]; then
+  git add -u
+  git commit -m 'update artifacts'
+  COMMIT=\$(git log -1 --format=%H)
+  env GO111MODULE=on go install -mod=vendor ./pkg/find-installed-release
+  RELEASE=\$(find-installed-release ${DATACENTER})
+  git checkout release-\$RELEASE
+fi
 
+# Run dctest
 cd dctest
 cp ../secrets .
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
@@ -59,7 +72,10 @@ export GO111MODULE=on
 make setup
 make placemat TAGS=release
 sleep 3
-exec make test MENU=highcpu-menu.yml TAGS=release SUITE=${SUITE} DATACENTER=${DATACENTER}
+make test MENU=highcpu-menu.yml TAGS=release SUITE=${SUITE} DATACENTER=${DATACENTER}
+if [ -n "${DATACENTER}" ]; then
+  git checkout \$COMMIT
+fi
 EOF
 chmod +x run.sh
 

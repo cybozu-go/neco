@@ -160,8 +160,13 @@ jobs:
             printf "%s\n" "$diffs"
       - dctest-command:
           script: run-dctest-release.sh
-          suite: ./upgrade
+          suite: ./bootstrap
           datacenter: staging
+      - run:
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/run-dctest-upgrade.sh
+          no_output_timeout: 20m
   update-release:
       docker:
       - image: quay.io/cybozu/golang:1.11-bionic
