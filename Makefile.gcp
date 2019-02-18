@@ -3,12 +3,13 @@ PROJECT = $(shell gcloud config get-value core/project)
 endif
 
 ifeq ($(PROJECT),neco-test)
-	CRON_PATH = $(CURDIR)/pkg/necogcp-app/cron-neco-test.yaml
+	CRON_BASE = $(CURDIR)/pkg/necogcp-app/cron-neco-test.yaml
 else
-	CRON_PATH = $(CURDIR)/pkg/necogcp-app/cron.yaml
+	CRON_BASE = $(CURDIR)/pkg/necogcp-app/cron-user.yaml
 endif
 
 NUM_VERSIONS = $(shell gcloud app versions list --project $(PROJECT) --format list | wc -l)
+CRON_YAML = $(CURDIR)/pkg/necogcp-app/cron.yaml
 
 all:
 	@echo "Specify one of these targets:"
@@ -23,14 +24,18 @@ all:
 	rm -f $@
 	cp $< $@
 
-create: ./.necogcp.yml
+$(CRON_YAML): $(CRON_BASE)
+	rm -f $@
+	cp $< $@
+
+create: ./.necogcp.yml $(CRON_YAML)
 	gcloud app deploy \
 		--project $(PROJECT) \
 		--quiet \
 		--promote \
 		--stop-previous-version \
 		$(CURDIR)/pkg/necogcp-app/app.yaml \
-		$(CRON_PATH)
+		$(CRON_YAML)
 
 destroy:
 	# delete old versions
@@ -50,6 +55,6 @@ destroy:
 		xargs gcloud app versions stop --quiet
 
 clean:
-	rm -rf ./.necogcp.yml
+	rm -f ./.necogcp.yml $(CRON_YAML)
 
 .PHONY:	all clean lib create destroy
