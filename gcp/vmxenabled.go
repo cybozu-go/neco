@@ -192,7 +192,7 @@ func installGo(client *http.Client) error {
 	}
 	defer resp.Body.Close()
 
-	return untargz(resp.Body, "/usr/local/go")
+	return untargz(resp.Body, "/usr/local")
 }
 
 func untargz(r io.Reader, dst string) error {
