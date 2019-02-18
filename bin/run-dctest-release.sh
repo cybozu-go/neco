@@ -62,7 +62,6 @@ if [ -n "${DATACENTER}" ]; then
   env GO111MODULE=on go install -mod=vendor ./pkg/find-installed-release
   RELEASE=\$(find-installed-release ${DATACENTER})
   git checkout release-\$RELEASE
-  git show \${COMMIT}:artifacts_release.go > artifacts_release.go
 fi
 
 # Run dctest
@@ -76,7 +75,6 @@ sleep 3
 make test MENU=highcpu-menu.yml TAGS=release SUITE=${SUITE} DATACENTER=${DATACENTER}
 RET=\$?
 if [ -n "${DATACENTER}" ]; then
-  rm ../artifacts_release.go
   git checkout \$COMMIT
 fi
 exit \$RET
