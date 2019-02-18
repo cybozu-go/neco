@@ -3,9 +3,10 @@ package serf
 import "text/template"
 
 type tags struct {
-	OsName    string `json:"os-name"`
-	OsVersion string `json:"os-version"`
-	Serial    string `json:"serial"`
+	OsName     string `json:"os-name"`
+	OsVersion  string `json:"os-version"`
+	Serial     string `json:"serial"`
+	BootServer bool   `json:"boot-server"`
 }
 
 type serfConfig struct {
