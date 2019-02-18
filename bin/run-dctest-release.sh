@@ -62,7 +62,6 @@ if [ -n "${DATACENTER}" ]; then
   env GO111MODULE=on go install -mod=vendor ./pkg/find-installed-release
   RELEASE=\$(find-installed-release ${DATACENTER})
   git checkout release-\$RELEASE
-  git checkout 763bdc28254ca71ab93279bb7aa7fbaaa4117c3b
   git show \${COMMIT}:artifacts_release.go > artifacts_release.go
 fi
 
