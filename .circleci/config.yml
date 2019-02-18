@@ -118,8 +118,8 @@ jobs:
       - image: google/cloud-sdk
       steps:
       - checkout
-      - attach_workspace:
-          at: /tmp/workspace
+      # - attach_workspace:
+      #     at: /tmp/workspace
       - run:
           name: Configure GIT
           command: |
@@ -127,7 +127,7 @@ jobs:
             git config --global user.name "cybozu-neco"
       - run: git checkout release
       - run: git merge --no-commit origin/master
-      - run: cp /tmp/workspace/artifacts_release.go .
+      # - run: cp /tmp/workspace/artifacts_release.go .
       - run:
           name: Check diff
           command: |
@@ -251,14 +251,14 @@ workflows:
             - dctest-release-upgrade-staging
   master:
     jobs:
-      - generate-artifacts:
-          filters:
-            branches:
-              only:
-                - master
+      # - generate-artifacts:
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
       - dctest-release-functions:
-          requires:
-            - generate-artifacts
+          # requires:
+          #   - generate-artifacts
           filters:
             branches:
               only:
