@@ -263,17 +263,17 @@ workflows:
             branches:
               only:
                 - master
-      - dctest-release-upgrade-staging:
-          requires:
-            - generate-artifacts
-          filters:
-            branches:
-              only:
-                - master
+      # - dctest-release-upgrade-staging:
+      #     requires:
+      #       - generate-artifacts
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
       - update-release:
           requires:
             - dctest-release-functions
-            - dctest-release-upgrade-staging
+            # - dctest-release-upgrade-staging
           filters:
             branches:
               only:
