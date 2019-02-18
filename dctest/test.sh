@@ -6,8 +6,14 @@ TAGS="$2"
 PLACEMAT_PID=$(echo $(pgrep placemat) | tr " " ",")
 
 while true; do
-    operation_pid=$(pgrep -P $PLACEMAT_PID -f operation)
-    if sudo -E nsenter -t ${operation_pid} -n /bin/true 2>/dev/null; then break; fi
+    #if pmctl pod show operation >/dev/null 2>&1; then break; fi
+    ### temporary fix; "pmctl pod show operation" succeeds with pid == 0 if placemat is not running
+    if pmctl pod show operation >/dev/null 2>&1; then
+        if [ $(pmctl pod show operation | jq .pid) -ne 0 ]; then
+            break
+        fi
+    fi
+    ### end of temporary fix
     if ! ps -p $PLACEMAT_PID > /dev/null; then
         echo "FAIL: placemat is no longer working."
         exit 1;
@@ -16,8 +22,4 @@ while true; do
     sleep 1
 done
 
-# obtain operation pod's pid again, because rkt's pid may change.
-sleep 3
-operation_pid=$(pgrep -P $PLACEMAT_PID -f operation)
-
-sudo -E nsenter -t ${operation_pid} -n sh -c "export PATH=$PATH; $GINKGO -focus=\"${TARGET}\" -tags=\"${TAGS}\" $SUITE_PACKAGE"
+sudo -E nsenter -t $(pmctl pod show operation | jq .pid) -n sh -c "export PATH=$PATH; $GINKGO -focus=\"${TARGET}\" -tags=\"${TAGS}\" $SUITE_PACKAGE"
