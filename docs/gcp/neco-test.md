@@ -31,7 +31,7 @@ Edit [artifacts.go](../../gcp/artifacts.go)
 ### Deploy GAE app
 
 ```console
-make -f Makefile.gcp PROJECT=neco-test deploy
+make -f Makefile.gcp PROJECT=neco-test create
 ```
 
 ### Create or Update `vmx-enabled` image for neco-test

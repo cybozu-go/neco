@@ -18,5 +18,5 @@ See [config.md](config.md)
 CronJob
 -------
 
-If you want to change shutdown schedule, please edit [../../pkg/necogcp-app/cron.yaml](../../pkg/necogcp-app/cron.yaml)
+If you want to change shutdown schedule, please edit [../../pkg/necogcp-app/cron-user.yaml](../../pkg/necogcp-app/cron-user.yaml)
 then run `make -f Makefile.gcp create`.

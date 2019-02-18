@@ -59,4 +59,4 @@ destroy:
 clean:
 	rm -f ./.necogcp.yml $(CRON_YAML)
 
-.PHONY:	all clean lib create destroy
+.PHONY:	all clean create destroy
