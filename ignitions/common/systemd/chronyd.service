@@ -1,7 +1,8 @@
 [Unit]
 Description=Chrony container
-Wants=neco.target setup-chrony.service tune-rt-runtime.service
-After=neco.target setup-chrony.service tune-rt-runtime.service
+Requires=var-lib-rkt.mount
+Wants=neco.target tune-rt-runtime.service
+After=neco.target var-lib-rkt.mount tune-rt-runtime.service
 Conflicts=systemd-timesyncd.service ntpd.service
 
 [Service]
@@ -14,6 +15,8 @@ Restart=on-failure
 RestartForceExitStatus=SIGPIPE
 OOMScoreAdjust=-1000
 LimitMEMLOCK=infinity
+ExecStartPre=/usr/bin/rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/%%chrony%aci%%
+ExecStartPre=/opt/sbin/setup-chronyd-conf
 ExecStart=/usr/bin/rkt run \
   --insecure-options=seccomp,image \
   --volume etc,kind=host,source=/etc/chrony.conf,readOnly=true \

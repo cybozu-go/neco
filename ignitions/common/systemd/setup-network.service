@@ -1,6 +1,5 @@
 [Unit]
 Description=Setup network
-ConditionPathExists=!/etc/bird
 Requires=var-lib-rkt.mount
 After=var-lib-rkt.mount
 
