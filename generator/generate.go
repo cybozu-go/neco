@@ -43,7 +43,7 @@ var templ = template.Must(template.New("").Parse(artifactSetTemplate))
 
 const coreOSFeed = "https://coreos.com/releases/releases-stable.json"
 
-func render(w io.Writer, release, new bool, images []*neco.ContainerImage, debs []*neco.DebianPackage, coreos *neco.CoreOSImage) error {
+func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*neco.DebianPackage, coreos *neco.CoreOSImage) error {
 	var data struct {
 		Tag    string
 		Images []*neco.ContainerImage
@@ -52,11 +52,9 @@ func render(w io.Writer, release, new bool, images []*neco.ContainerImage, debs 
 	}
 
 	if release {
-		data.Tag = "release,!new"
-	} else if new {
-		data.Tag = "!release,new"
+		data.Tag = "release"
 	} else {
-		data.Tag = "!release,!new"
+		data.Tag = "!release"
 	}
 
 	data.Images = images
@@ -70,16 +68,13 @@ func render(w io.Writer, release, new bool, images []*neco.ContainerImage, debs 
 type Config struct {
 	// tag the generated source code as release or not
 	Release bool
-
-	// tag the generated source code as new or not
-	New bool
 }
 
 // Generate generates new artifasts.go contents and writes it to out.
 func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 	images := make([]*neco.ContainerImage, len(quayRepos))
 	for i, name := range quayRepos {
-		img, err := getLatestImage(ctx, name)
+		img, err := getLatestImage(ctx, name, cfg.Release)
 		if err != nil {
 			return err
 		}
@@ -103,10 +98,10 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 		return err
 	}
 
-	return render(out, cfg.Release, cfg.New, images, debs, coreos)
+	return render(out, cfg.Release, images, debs, coreos)
 }
 
-func getLatestImage(ctx context.Context, name string) (*neco.ContainerImage, error) {
+func getLatestImage(ctx context.Context, name string, release bool) (*neco.ContainerImage, error) {
 	ref, err := docker.ParseReference("//quay.io/cybozu/" + name)
 	if err != nil {
 		return nil, err
@@ -120,7 +115,6 @@ func getLatestImage(ctx context.Context, name string) (*neco.ContainerImage, err
 		})
 		return nil, err
 	}
-
 	versions := make([]*version.Version, 0, len(tags))
 	for _, tag := range tags {
 		v, err := version.NewVersion(tag)
@@ -132,6 +126,22 @@ func getLatestImage(ctx context.Context, name string) (*neco.ContainerImage, err
 		}
 		versions = append(versions, v)
 	}
+
+	if release {
+		current, err := neco.CurrentArtifacts.FindContainerImage(name)
+		if err != nil {
+			return nil, err
+		}
+		major := current.MajorVersion()
+		filteredVersions := make([]*version.Version, 0, len(versions))
+		for _, ver := range versions {
+			if ver.Segments()[0] == major {
+				filteredVersions = append(filteredVersions, ver)
+			}
+		}
+		versions = filteredVersions
+	}
+
 	sort.Sort(sort.Reverse(version.Collection(versions)))
 	return &neco.ContainerImage{
 		Name:       name,

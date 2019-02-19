@@ -18,34 +18,12 @@ import (
 func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *http.Client, pkg *neco.DebianPackage, background bool) error {
 	gh := neco.NewGitHubClient(ghClient)
 
-	releases, err := listGithubReleases(ctx, gh, pkg)
+	downloadURL, err := GetGithubDownloadURL(ctx, gh, pkg)
 	if err != nil {
 		return err
 	}
-	var release *github.RepositoryRelease
-	for _, r := range releases {
-		if r.TagName == nil {
-			continue
-		}
-		if *r.TagName == pkg.Release {
-			release = r
-			break
-		}
-	}
-	if release == nil {
-		return fmt.Errorf("no such release: %s@%s", pkg.Repository, pkg.Release)
-	}
 
-	if len(release.Assets) != 1 {
-		return fmt.Errorf("no asset in release: %s@%s", pkg.Repository, pkg.Release)
-	}
-
-	asset := release.Assets[0]
-	if asset.BrowserDownloadURL == nil {
-		return fmt.Errorf("asset browser-download-url is empty: %s@%s", pkg.Repository, pkg.Release)
-	}
-
-	resp, err := client.Get(*asset.BrowserDownloadURL)
+	resp, err := client.Get(downloadURL)
 	if err != nil {
 		return err
 	}
@@ -71,8 +49,40 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *ht
 
 func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage) error {
 	debVersion := pkg.Release[len("release-"):]
-	deb := fmt.Sprintf("/mnt/%s_%s_amd64.deb", pkg.Name, debVersion)
+	deb := fmt.Sprintf("/tmp/%s_%s_amd64.deb", pkg.Name, debVersion)
 	return well.CommandContext(context.Background(), "systemd-run", "-q", "dpkg", "-i", deb).Run()
+}
+
+// GetGithubDownloadURL returns URL of specified Debian package hosted in GitHub releases.
+func GetGithubDownloadURL(ctx context.Context, gh *github.Client, pkg *neco.DebianPackage) (string, error) {
+	releases, err := listGithubReleases(ctx, gh, pkg)
+	if err != nil {
+		return "", err
+	}
+	var release *github.RepositoryRelease
+	for _, r := range releases {
+		if r.TagName == nil {
+			continue
+		}
+		if *r.TagName == pkg.Release {
+			release = r
+			break
+		}
+	}
+	if release == nil {
+		return "", fmt.Errorf("no such release: %s@%s", pkg.Repository, pkg.Release)
+	}
+
+	if len(release.Assets) != 1 {
+		return "", fmt.Errorf("no asset in release: %s@%s", pkg.Repository, pkg.Release)
+	}
+
+	asset := release.Assets[0]
+	if asset.BrowserDownloadURL == nil {
+		return "", fmt.Errorf("asset browser-download-url is empty: %s@%s", pkg.Repository, pkg.Release)
+	}
+
+	return *asset.BrowserDownloadURL, nil
 }
 
 func listGithubReleases(ctx context.Context, gh *github.Client, pkg *neco.DebianPackage) ([]*github.RepositoryRelease, error) {

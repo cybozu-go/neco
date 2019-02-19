@@ -26,13 +26,10 @@ func main() {
 	if err != nil {
 		log.ErrorExit(err)
 	}
-	if len(version) > 0 {
-		log.Info("neco package version", map[string]interface{}{
-			"version": version,
-		})
-	} else {
-		log.Warn("no neco package", nil)
-	}
+	log.Info("neco package version", map[string]interface{}{
+		"version": version,
+	})
+
 	mylrn, err := neco.MyLRN()
 	if err != nil {
 		log.ErrorExit(err)

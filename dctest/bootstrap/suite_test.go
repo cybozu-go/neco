@@ -18,7 +18,10 @@ func TestDCtest(t *testing.T) {
 	RunSpecs(t, "Data Center test")
 }
 
-var _ = BeforeSuite(dctest.RunBeforeSuite)
+var _ = BeforeSuite(func() {
+	dctest.RunBeforeSuite()
+	dctest.RunBeforeSuiteInstall()
+})
 
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
@@ -31,9 +34,19 @@ var _ = Describe("Test Neco bootstrap", func() {
 	Context("contents", dctest.UploadContents)
 	Context("machines", dctest.TestMachines)
 	Context("cke", func() {
-		dctest.TestCKE("0.0.1")
+		dctest.TestCKESetup()
+		dctest.TestCKE()
 	})
-	Context("coil", dctest.TestCoil)
-	Context("unbound", dctest.TestUnbound)
-	Context("squid", dctest.TestSquid)
+	Context("coil", func() {
+		dctest.TestCoilSetup()
+		dctest.TestCoil()
+	})
+	Context("unbound", func() {
+		dctest.TestUnboundSetup()
+		dctest.TestUnbound()
+	})
+	Context("squid", func() {
+		dctest.TestSquidSetup()
+		dctest.TestSquid()
+	})
 })

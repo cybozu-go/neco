@@ -21,10 +21,11 @@ SHAREDIR := $(WORKDIR)/usr/share/neco
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
-BIN_PKGS = ./pkg/neco
+BIN_PKGS = ./pkg/neco ./pkg/necogcp
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
 NODE_EXPORTER_VERSION = 0.17.0
 NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
+STATIK = gcp/statik/statik.go
 
 all:
 	@echo "Specify one of these targets:"
@@ -42,7 +43,11 @@ start-etcd:
 stop-etcd:
 	systemctl --user stop neco-etcd.service
 
-test:
+$(STATIK):
+	mkdir -p $(dir $(STATIK))
+	go generate ./pkg/necogcp/...
+
+test: $(STATIK)
 	test -z "$$(gofmt -s -l . | grep -v '^vendor' | tee /dev/stderr)"
 	test -z "$$(golint $$(go list -tags='$(GOTAGS)' ./... | grep -v /vendor/) | grep -v '/dctest/.*: should not use dot imports' | tee /dev/stderr)"
 	go build -tags='$(GOTAGS)' ./...
@@ -58,7 +63,7 @@ mod:
 
 deb: $(DEB)
 
-$(DEB):
+$(DEB): $(STATIK)
 	rm -rf $(WORKDIR)
 	cp -r debian $(WORKDIR)
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco $(DOCDIR)/node_exporter
@@ -77,12 +82,15 @@ $(DEB):
 	$(FAKEROOT) dpkg-deb --build $(WORKDIR) $(DEST)
 	rm -rf $(WORKDIR)
 
+necogcp: $(STATIK)
+	go install ./pkg/necogcp
+
 setup:
-	GO111MODULE=off go get -u golang.org/x/lint/golint
+	GO111MODULE=off go get -u golang.org/x/lint/golint github.com/rakyll/statik
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
 
 clean:
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB)
 
-.PHONY:	all start-etcd stop-etcd test mod deb setup clean
+.PHONY:	all start-etcd stop-etcd test mod deb necogcp setup clean

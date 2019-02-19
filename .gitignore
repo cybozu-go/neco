@@ -13,6 +13,7 @@
 .#*
 \#*#
 .vscode
+.DS_Store
 
 # Debian package
 /work
@@ -20,3 +21,7 @@
 
 # ignore go.sum
 /go.sum
+
+# ignore gcp files
+/.necogcp.yml
+pkg/necogcp-app/cron.yaml

@@ -8,24 +8,38 @@ Synopsis
 
 ### GCE instance management on developer's project
 
-* `necogcp create [vmx-enabled|host-vm]`
+* `necogcp create-image`
 
-    Create instance or instance image.
-    If `vmx-enabled` is specified, it builds `vmx-enabled` image.
-    If `host-vm` is specified, it launches `host-vm` instance using `vmx-enabled` image.
-    If target image or instance already exists, it is re-created.
+    Build `vmx-enabled` image.
+    If `vmx-enabled` image already exists, it is re-created.
 
-* `necogcp delete [vmx-enabled|host-vm]`
+* `necogcp create-instance`
 
-    Delete instance or instance image.
-    If `vmx-enabled` is specified, it deletes `vmx-enabled` image.
-    If `host-vm` is specified, it deletes `host-vm` instance.
+    Launch `host-vm` instance using `vmx-enabled` image.
+    If `host-vm` instance already exists, it is re-created.
+
+* `necogcp delete-image`
+
+    Delete `vmx-enabled` image.
+
+* `necogcp delete-instance`
+
+    Delete `host-vm` instance.
+
+* `necogcp setup-instance`
+
+    Setup `host-vm` or `vmx-enabled` instance. It can run on only them.
 
 ### GCE instance management on neco-test project
 
-* `necogcp neco-test delete INSTANCE_NAME`
+* `necogcp neco-test create-image`
 
-    Delete manually given instance on the neco-test project.
+    Build `vmx-enabled` image on neco-test.
+    If `vmx-enabled` image already exists, it is re-created.
+
+* `necogcp neco-test delete-image`
+
+    Delete `vmx-enabled` image on neco-test.
 
 * `necogcp neco-test extend INSTANCE_NAME`
 

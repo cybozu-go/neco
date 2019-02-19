@@ -54,7 +54,7 @@ For example, a tag name `release-2018.11.07-1` consist of prefix `release-` and
 version number `2018.11.07-1`.  `neco-updater` ignores prefix `release-` and
 use the version number `2018.11.07-1` on a comparison of the tags.
 
-`neco-update` switches downloading version by data-center environment.  User
+`neco-updater` switches downloading version by data-center environment.  User
 must select the environment by `neco config set env ENV` sub-command.
 If `production` is set, `neco-updater` downloads latest release excluding
 pre-release version.  Otherwise if `staging` is set, `neco-updater` downloads

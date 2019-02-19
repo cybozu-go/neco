@@ -2,6 +2,8 @@ package dctest
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -25,7 +27,10 @@ func RunBeforeSuite() {
 	}
 
 	log.DefaultLogger().SetOutput(GinkgoWriter)
+}
 
+// RunBeforeSuiteInstall is for Ginkgo BeforeSuite, especially in bootstrap/functions test suites.
+func RunBeforeSuiteInstall() {
 	// waiting for auto-config
 	fmt.Println("waiting for auto-config has completed")
 	Eventually(func() error {
@@ -37,6 +42,38 @@ func RunBeforeSuite() {
 		}
 		return nil
 	}).Should(Succeed())
+
+	// copy and install Neco deb package
+	fmt.Println("installing Neco")
+	f, err := os.Open(debFile)
+	Expect(err).NotTo(HaveOccurred())
+	defer f.Close()
+	remoteFilename := filepath.Join("/tmp", filepath.Base(debFile))
+	for _, host := range []string{boot0, boot1, boot2, boot3} {
+		_, err := f.Seek(0, os.SEEK_SET)
+		Expect(err).NotTo(HaveOccurred())
+		_, _, err = execAtWithStream(host, f, "dd", "of="+remoteFilename)
+		Expect(err).NotTo(HaveOccurred())
+		stdout, stderr, err := execAt(host, "sudo", "dpkg", "-i", remoteFilename)
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+	}
+
+	fmt.Println("Begin tests...")
+}
+
+// RunBeforeSuiteCopy is for Ginkgo BeforeSuite, especially in upgrade test suite.
+func RunBeforeSuiteCopy() {
+	fmt.Println("distributing new neco package")
+	f, err := os.Open(debFile)
+	Expect(err).NotTo(HaveOccurred())
+	defer f.Close()
+	remoteFilename := filepath.Join("/tmp", filepath.Base(debFile))
+	for _, host := range []string{boot0, boot1, boot2, boot3} {
+		_, err := f.Seek(0, os.SEEK_SET)
+		Expect(err).NotTo(HaveOccurred())
+		_, _, err = execAtWithStream(host, f, "dd", "of="+remoteFilename)
+		Expect(err).NotTo(HaveOccurred())
+	}
 
 	fmt.Println("Begin tests...")
 }

@@ -1,0 +1,40 @@
+_podenter_uuid() {
+  sudo rkt list --format=json | jq -r 'if (. == null) then [] else map(select(.state == "running" and .apps[].user_labels.name == "'"$1"'" and .apps[].name == "'"$2"'")) end | map(.name) | unique | .[]'
+}
+_podenter_hostnames() {
+  sudo rkt list --format=json | jq -r 'if (. == null) then [] else map(select(.state == "running" and .apps[].user_labels.name != null)) end | map(.apps[].user_labels.name) | unique | .[]'
+}
+
+_podenter_appnames() {
+  sudo rkt list --format=json | jq -r 'if (. == null) then [] else map(select(.state == "running" and .apps[].user_labels.name == "'"$1"'")) end | map(.apps[].name) | unique | .[]'
+}
+
+_podenter_commands() {
+  sudo rkt enter --app=$2 $(_podenter_uuid $1 $2) bash -c "compgen -c -- $3"
+}
+
+_podenter_files() {
+  sudo rkt enter --app=$2 $(_podenter_uuid $1 $2) bash -c "compgen -o default -- $3"
+}
+
+_podenter() {
+  local cur prev cword
+  _get_comp_words_by_ref -n : cur prev cword
+
+  if [[ "${cword}" -eq 1 ]]; then
+    COMPREPLY=( $(compgen -W "$(_podenter_hostnames)" -- "${cur}") )
+    return
+  fi
+  if [[ "${cword}" -eq 2 ]]; then
+    COMPREPLY=( $(compgen -W "$(_podenter_appnames ${prev})" -- "${cur}") )
+    return
+  fi
+  if [[ "${cword}" -eq 3 ]]; then
+    COMPREPLY=( $(compgen -W "$(_podenter_commands ${COMP_WORDS[1]} ${COMP_WORDS[2]} ${cur})") )
+    return
+  fi
+
+  COMPREPLY=( $(compgen -W "$(_podenter_files ${COMP_WORDS[1]} ${COMP_WORDS[2]} ${cur})") )
+}
+
+complete -F _podenter podenter

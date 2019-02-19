@@ -20,6 +20,11 @@ type ReleaseClient struct {
 	http  *http.Client
 }
 
+// NewReleaseClient returns ReleaseClient
+func NewReleaseClient(owner, repo string, http *http.Client) *ReleaseClient {
+	return &ReleaseClient{owner, repo, http}
+}
+
 // GetLatestReleaseTag returns latest published release tag in GitHub Releases of neco repository
 func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
 	client := neco.NewGitHubClient(c.http)

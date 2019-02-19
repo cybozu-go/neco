@@ -2,12 +2,9 @@ package dctest
 
 import (
 	"bytes"
-	"encoding/json"
 	"io/ioutil"
 	"os"
 
-	"github.com/cybozu-go/neco"
-	sabakan "github.com/cybozu-go/sabakan/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -34,45 +31,5 @@ func UploadContents() {
 
 		By("uploading sabakan contents")
 		execSafeAt(boot0, "neco", "sabakan-upload")
-	})
-}
-
-// TestContents tests uploaded contents
-func TestContents() {
-	It("should check uploaded contents", func() {
-		output := execSafeAt(boot0, "sabactl", "images", "index")
-		index := new(sabakan.ImageIndex)
-		err := json.Unmarshal(output, index)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(index.Find(neco.CurrentArtifacts.CoreOS.Version)).NotTo(BeNil())
-
-		output = execSafeAt(boot0, "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
-		necoVersion := string(output)
-		output = execSafeAt(boot0, "sabactl", "ignitions", "get", "worker")
-		var ignInfo []*sabakan.IgnitionInfo
-		err = json.Unmarshal(output, &ignInfo)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(ignInfo).To(HaveLen(1))
-		Expect(ignInfo[0].ID).To(Equal(necoVersion))
-
-		output = execSafeAt(boot0, "sabactl", "assets", "index")
-		var assets []string
-		err = json.Unmarshal(output, &assets)
-		Expect(err).NotTo(HaveOccurred())
-		for _, image := range neco.SystemContainers {
-			Expect(assets).To(ContainElement(neco.ACIAssetName(image)))
-		}
-		for _, name := range neco.SabakanImages {
-			image, err := neco.CurrentArtifacts.FindContainerImage(name)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(assets).To(ContainElement(neco.ImageAssetName(image)))
-		}
-		image, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
-		Expect(err).NotTo(HaveOccurred())
-		Expect(assets).To(ContainElement(neco.CryptsetupAssetName(image)))
-		Expect(assets).To(ContainElement(neco.NodeExporterAssetName))
-		for _, name := range []string{"hyperkube", "pause", "etcd", "coredns", "unbound"} {
-			Expect(assets).To(ContainElement(MatchRegexp("^cybozu-%s-.*\\.img$", name)))
-		}
 	})
 }
