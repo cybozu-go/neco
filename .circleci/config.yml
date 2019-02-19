@@ -172,8 +172,8 @@ jobs:
       - image: quay.io/cybozu/golang:1.11-bionic
       steps:
       - checkout
-      - attach_workspace:
-          at: /tmp/workspace
+#      - attach_workspace:
+#          at: /tmp/workspace
       - run:
           name: Configure GIT
           command: |
@@ -181,7 +181,7 @@ jobs:
             git config --global user.name "cybozu-neco"
       - run: git checkout release
       - run: git merge --no-commit origin/master
-      - run: cp /tmp/workspace/artifacts_release.go .
+#      - run: cp /tmp/workspace/artifacts_release.go .
       - run:
           name: Check diff
           command: |
