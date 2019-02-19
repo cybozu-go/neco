@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"path"
 	"strings"
+
+	"github.com/hashicorp/go-version"
 )
 
 // ArtifactSet represents a set of artifacts.
@@ -81,6 +83,12 @@ func (c ContainerImage) FullName(hasSecret bool) string {
 func (c ContainerImage) MarshalGo() string {
 	return fmt.Sprintf("{Name: %q, Repository: %q, Tag: %q, Private: %t}",
 		c.Name, c.Repository, c.Tag, c.Private)
+}
+
+// MajorVersion returns major version of this image.
+func (c ContainerImage) MajorVersion() int {
+	ver := version.Must(version.NewVersion(c.Tag))
+	return ver.Segments()[0]
 }
 
 // DebianPackage represents a Debian package hosted in GitHub releases.
