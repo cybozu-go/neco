@@ -13,6 +13,7 @@
 .#*
 \#*#
 .vscode
+.DS_Store
 
 # Debian package
 /work
