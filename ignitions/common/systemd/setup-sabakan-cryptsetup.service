@@ -1,7 +1,7 @@
 [Unit]
 Description=Setup sabakan-cryptsetup
-Wants=neco-dhcp-online.target
-After=neco-dhcp-online.target
+Wants=network-online.target
+After=network-online.target
 DefaultDependencies=no
 
 [Service]

@@ -1,7 +1,7 @@
 [Unit]
 Description=Chrony container
-Wants=network-online.target setup-chrony.service tune-rt-runtime.service
-After=network-online.target setup-chrony.service tune-rt-runtime.service
+Wants=neco.target setup-chrony.service tune-rt-runtime.service
+After=neco.target setup-chrony.service tune-rt-runtime.service
 Conflicts=systemd-timesyncd.service ntpd.service
 
 [Service]

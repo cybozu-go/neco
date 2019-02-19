@@ -1,5 +1,7 @@
 [Unit]
 Description=Setup node exporter
+Wants=neco.target
+After=neco.target
 
 [Service]
 Type=oneshot

@@ -1,8 +1,7 @@
 [Unit]
 Description=Node exporter
-Wants=network-online.target
 Requires=setup-node-exporter.service
-After=network-online.target setup-node-exporter.service
+After=setup-node-exporter.service
 
 [Service]
 Type=simple

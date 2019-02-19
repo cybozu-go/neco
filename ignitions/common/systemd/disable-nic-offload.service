@@ -1,0 +1,14 @@
+[Unit]
+Description=Disable network device offload
+After=neco-wait-dhcp-online.service
+Before=network-online.target
+ConditionVirtualization=!kvm
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ethtool -K eno1 tx off rx off
+ExecStart=/usr/sbin/ethtool -K eno2 tx off rx off
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
