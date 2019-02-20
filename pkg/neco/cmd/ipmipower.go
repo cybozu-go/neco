@@ -13,7 +13,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
-	sabakan "github.com/cybozu-go/sabakan/client"
+	sabakan "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )

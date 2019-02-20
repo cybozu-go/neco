@@ -1,16 +1,12 @@
 [Unit]
 Description=Setup network
-ConditionPathExists=!/etc/bird
-Wants=neco-dhcp-online.target
 Requires=var-lib-rkt.mount
-After=var-lib-rkt.mount neco-dhcp-online.target
+After=var-lib-rkt.mount
 
 [Service]
 Type=oneshot
 # This "fetch" must be separated from "run" because "fetch" uses the DHCP-configured network.
 # "setup-local-network" reconfigures network, and "run" starts bird to manage the reconfigured network.
-ExecStartPre=/usr/bin/rkt fetch --insecure-options=image \
-  {{ MyURL }}/api/v1/assets/%%bird%aci%%
-ExecStartPre=/opt/sbin/setup-local-network
-ExecStart=/opt/sbin/setup-bird-conf
+ExecStart=/usr/bin/rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/%%bird%aci%%
+ExecStart=/opt/sbin/setup-local-network
 RemainAfterExit=yes

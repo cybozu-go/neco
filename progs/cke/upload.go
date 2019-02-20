@@ -9,7 +9,7 @@ import (
 
 	"github.com/cybozu-go/neco"
 	saba "github.com/cybozu-go/neco/progs/sabakan"
-	sabakan "github.com/cybozu-go/sabakan/client"
+	sabakan "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/cybozu-go/well"
 )
 

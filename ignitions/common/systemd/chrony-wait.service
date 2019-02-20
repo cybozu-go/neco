@@ -3,7 +3,6 @@ Description=Wait for chrony to synchronize system clock
 After=chronyd.service
 Requires=chronyd.service
 Before=time-sync.target
-Wants=time-sync.target
 
 [Service]
 Type=oneshot

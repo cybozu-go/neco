@@ -1,0 +1,9 @@
+[Match]
+Name=eth0 eno1
+
+[Network]
+DHCP=yes
+
+[DHCP]
+UseMTU=true
+UseDomains=true
