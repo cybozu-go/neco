@@ -1,0 +1,9 @@
+[Match]
+Name=eth1 eno2
+
+[Network]
+DHCP=yes
+
+[DHCP]
+UseMTU=true
+UseDomains=true

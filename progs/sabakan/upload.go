@@ -19,7 +19,7 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
-	sabakan "github.com/cybozu-go/sabakan/client"
+	sabakan "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/cybozu-go/well"
 	"github.com/ghodss/yaml"
 )
@@ -357,20 +357,19 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 	for _, role := range roles {
 		path := filepath.Join(copyRoot, "roles", role, "site.yml")
 
-		newer := new(bytes.Buffer)
-		err := sabakan.AssembleIgnitionTemplate(path, newer)
+		tmpl, err := sabakan.BuildIgnitionTemplate(path, nil)
 		if err != nil {
 			return err
 		}
 
-		need, err := needIgnitionUpdate(ctx, c, role, id, newer.String())
+		need, err := needIgnitionUpdate(ctx, c, role, id)
 		if err != nil {
 			return err
 		}
 		if !need {
 			continue
 		}
-		err = c.IgnitionsSet(ctx, role, id, newer, nil)
+		err = c.IgnitionsSet(ctx, role, id, tmpl)
 		if err != nil {
 			return err
 		}
@@ -441,26 +440,18 @@ func fillAssets(dest, src string, hasSecret bool) error {
 	})
 }
 
-func needIgnitionUpdate(ctx context.Context, c *sabakan.Client, role, id string, newer string) (bool, error) {
-	index, err := c.IgnitionsGet(ctx, role)
-	if err != nil {
-		if sabakan.IsNotFound(err) {
-			return true, nil
-		}
-		return false, err
-	}
-
-	latest := index[len(index)-1].ID
-	if latest == id {
-		return false, nil
-	}
-
-	current := new(bytes.Buffer)
-	err = c.IgnitionsCat(ctx, role, latest, current)
+func needIgnitionUpdate(ctx context.Context, c *sabakan.Client, role, id string) (bool, error) {
+	ids, err := c.IgnitionsListIDs(ctx, role)
 	if err != nil {
 		return false, err
 	}
-	return current.String() != newer, nil
+
+	if len(ids) == 0 {
+		return true, nil
+	}
+
+	latest := ids[len(ids)-1]
+	return latest != id, nil
 }
 
 func getInstalledRoles() ([]string, error) {
