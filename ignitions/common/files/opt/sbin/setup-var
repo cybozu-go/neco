@@ -25,6 +25,10 @@ lvsize() {
 }
 
 prepare_lv() {
+    # When lvmetad is used, PVs are not scaned by vgchange.
+    # We need to scan PVs manually and send infomation to lvmetad. 
+    pvscan --cache -a ay
+
     vgchange -a ay
     sleep 1
 

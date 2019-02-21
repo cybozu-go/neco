@@ -25,7 +25,6 @@ files:
   - /opt/sbin/setup-hw
   - /opt/sbin/setup-local-network
   - /opt/sbin/setup-node-exporter
-  - /opt/sbin/setup-sabakan-cryptsetup
   - /opt/sbin/setup-serf-conf
   - /opt/sbin/setup-serf-tags
   - /opt/sbin/setup-var
@@ -51,7 +50,6 @@ systemd:
     enabled: true
   - name: disable-nic-offload.service
     enabled: true
-  - name: setup-sabakan-cryptsetup.service
   - name: sabakan-cryptsetup.service
     enabled: true
   - name: setup-var.service
