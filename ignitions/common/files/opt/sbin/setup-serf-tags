@@ -6,4 +6,5 @@ systemd_units_failed="$(systemctl list-units --state=failed --no-legend --plain 
 
 docker exec -i serf serf tags \
        -set uptime="$(uptime -p)" \
+       -set version="$(cat /etc/neco/version)" \
        -set systemd-units-failed="${systemd_units_failed}"
