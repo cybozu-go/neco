@@ -9,17 +9,17 @@ Type=oneshot
 RemainAfterExit=yes
 
 ExecStart=/opt/bin/load-image \
-  {{ MyURL }}/api/v1/assets/%%ETCD_FILE%% %%ETCD_NAME%%
+  {{ MyURL }}/api/v1/assets/{{ Metadata "cke:etcd.img" }}      {{ Metadata "cke:etcd.ref" }}
 ExecStart=/opt/bin/load-image \
-  {{ MyURL }}/api/v1/assets/%%TOOLS_FILE%% %%TOOLS_NAME%%
+  {{ MyURL }}/api/v1/assets/{{ Metadata "cke:cke-tools.img" }} {{ Metadata "cke:cke-tools.ref" }}
 ExecStart=/opt/bin/load-image \
-  {{ MyURL }}/api/v1/assets/%%HYPERKUBE_FILE%% %%HYPERKUBE_NAME%%
+  {{ MyURL }}/api/v1/assets/{{ Metadata "cke:hyperkube.img" }} {{ Metadata "cke:hyperkube.ref" }}
 ExecStart=/opt/bin/load-image \
-  {{ MyURL }}/api/v1/assets/%%PAUSE_FILE%% %%PAUSE_NAME%%
+  {{ MyURL }}/api/v1/assets/{{ Metadata "cke:pause.img" }}     {{ Metadata "cke:pause.ref" }}
 ExecStart=/opt/bin/load-image \
-  {{ MyURL }}/api/v1/assets/%%COREDNS_FILE%% %%COREDNS_NAME%%
+  {{ MyURL }}/api/v1/assets/{{ Metadata "cke:coredns.img" }}   {{ Metadata "cke:coredns.ref" }}
 ExecStart=/opt/bin/load-image \
-  {{ MyURL }}/api/v1/assets/%%UNBOUND_FILE%% %%UNBOUND_NAME%%
+  {{ MyURL }}/api/v1/assets/{{ Metadata "cke:unbound.img" }}   {{ Metadata "cke:unbound.ref" }}
 
 [Install]
 WantedBy=multi-user.target

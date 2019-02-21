@@ -7,7 +7,7 @@ DefaultDependencies=no
 [Service]
 Type=oneshot
 Environment=SABAKAN_URL={{ MyURL }}
-ExecStart=/usr/bin/curl -sfSL -o /opt/sbin/sabakan-cryptsetup {{ MyURL }}/api/v1/assets/%%cryptsetup%%
+ExecStart=/usr/bin/curl -sfSL -o /opt/sbin/sabakan-cryptsetup {{ MyURL }}/api/v1/assets/{{ Metadata "cryptsetup.bin" }}
 ExecStart=/bin/chmod a+x /opt/sbin/sabakan-cryptsetup
 # Patterns indicates Virtual Disk, BOSS, NVMe SSD, HDD in this order.
 ExecStart=/opt/sbin/sabakan-cryptsetup 'virtio-pci-*' 'pci-*-ata-1' 'pci-*-nvme-1' 'pci-*-sas-*-phy*-lun-0'

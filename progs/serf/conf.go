@@ -23,9 +23,10 @@ func GenerateConf(w io.Writer, lrns []int, osName, osVersion, serial string) err
 
 	data := serfConfig{
 		Tags: tags{
-			OsName:    osName,
-			OsVersion: osVersion,
-			Serial:    serial,
+			OsName:     osName,
+			OsVersion:  osVersion,
+			Serial:     serial,
+			BootServer: "true",
 		},
 		Interface:         "node0",
 		EventHandlers:     []string{"member-join,member-failed,member-leave=" + neco.SerfHandler},

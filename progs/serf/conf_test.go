@@ -21,9 +21,10 @@ func TestGenerateConf(t *testing.T) {
 	}
 	expected := serfConfig{
 		Tags: tags{
-			OsName:    osName,
-			OsVersion: osVer,
-			Serial:    serial,
+			OsName:     osName,
+			OsVersion:  osVer,
+			Serial:     serial,
+			BootServer: "true",
 		},
 		Interface:         "node0",
 		EventHandlers:     []string{"member-join,member-failed,member-leave=" + neco.SerfHandler},

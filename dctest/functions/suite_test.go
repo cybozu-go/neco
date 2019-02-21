@@ -30,9 +30,8 @@ var _ = Describe("Test Neco functions", func() {
 	Context("initialize", dctest.TestInit)
 	Context("etcdpasswd", dctest.TestEtcdpasswd)
 	Context("sabakan", dctest.TestSabakan)
-	// uploading contents to sabakan must be done after sabakan configuration.
-	Context("contents", dctest.UploadContents)
 	Context("machines", dctest.TestMachines)
+	Context("contents", dctest.UploadContents)
 	Context("cke", func() {
 		dctest.TestCKESetup()
 		dctest.TestCKE()

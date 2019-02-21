@@ -6,9 +6,9 @@ http_proxy=http://10.0.49.3:3128/
 https_proxy=http://10.0.49.3:3128/
 
 cat > /etc/apt/sources.list <<EOF
-deb http://mirror.math.princeton.edu/pub/ubuntu bionic main restricted universe multiverse
-deb http://mirror.math.princeton.edu/pub/ubuntu bionic-updates main restricted universe multiverse
-deb http://mirror.math.princeton.edu/pub/ubuntu bionic-security main restricted universe multiverse
+deb http://linux.yz.yamagata-u.ac.jp/ubuntu/ bionic main restricted universe multiverse
+deb http://linux.yz.yamagata-u.ac.jp/ubuntu/ bionic-updates main restricted universe multiverse
+deb http://linux.yz.yamagata-u.ac.jp/ubuntu/ bionic-security main restricted universe multiverse
 EOF
 
 env http_proxy=$http_proxy apt-get update -o Acquire::Retries=5
