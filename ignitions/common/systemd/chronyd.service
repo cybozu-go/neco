@@ -16,7 +16,6 @@ RestartForceExitStatus=SIGPIPE
 OOMScoreAdjust=-1000
 LimitMEMLOCK=infinity
 ExecStartPre=/usr/bin/rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/{{ Metadata "chrony.aci" }}
-ExecStartPre=/opt/sbin/setup-chronyd-conf
 ExecStart=/usr/bin/rkt run \
   --insecure-options=seccomp,image \
   --volume etc,kind=host,source=/etc/chrony.conf,readOnly=true \

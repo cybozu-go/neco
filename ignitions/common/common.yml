@@ -1,6 +1,7 @@
 passwd: passwd.yml
 files:
   - /etc/bird/bird.conf
+  - /etc/chrony.conf
   - /etc/fstab
   - /etc/hostname
   - /etc/modprobe.d/conntrack-hashsize.conf
@@ -21,7 +22,6 @@ files:
   - /opt/sbin/chrony-wait
   - /opt/sbin/neco-wait-dhcp-online
   - /opt/sbin/setup-bmc-user
-  - /opt/sbin/setup-chronyd-conf
   - /opt/sbin/setup-hw
   - /opt/sbin/setup-local-network
   - /opt/sbin/setup-node-exporter

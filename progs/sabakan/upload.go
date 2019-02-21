@@ -5,12 +5,14 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -309,6 +311,27 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 	default:
 		return err
 	}
+
+	// set boot server addresses in metadata
+	req, err := st.GetRequest(ctx)
+	if err != nil {
+		return err
+	}
+	bootServers := make([]string, len(req.Servers))
+	for i, lrn := range req.Servers {
+		mcs, err := c.MachinesGet(ctx, map[string]string{
+			"rack": strconv.Itoa(lrn),
+			"role": "boot",
+		})
+		if err != nil {
+			return err
+		}
+		if len(mcs) != 1 {
+			return fmt.Errorf("boot server in rack %d not found", lrn)
+		}
+		bootServers[i] = mcs[0].Spec.IPv4[0]
+	}
+	metadata["boot_servers"] = bootServers
 
 	for _, role := range roles {
 		path := filepath.Join(neco.IgnitionDirectory, "roles", role, "site.yml")
