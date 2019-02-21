@@ -324,7 +324,7 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 			"role": "boot",
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to find boot server in rack %d: %v", lrn, err)
 		}
 		if len(mcs) != 1 {
 			return fmt.Errorf("boot server in rack %d not found", lrn)
