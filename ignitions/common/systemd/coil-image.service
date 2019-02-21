@@ -7,7 +7,7 @@ After=neco.target docker.socket
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%coil%img%% %%coil%full%%
+ExecStart=/opt/bin/load-image {{ MyURL }}/api/v1/assets/{{ Metadata "coil.img" }} {{ Metadata "coil.ref" }}
 
 [Install]
 WantedBy=multi-user.target

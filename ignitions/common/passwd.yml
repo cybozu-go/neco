@@ -3,3 +3,5 @@ users:
     groups:
       - sudo
       - docker
+    sshAuthorizedKeys:
+      - '{{ Metadata "authorized_key" }}'

@@ -12,7 +12,7 @@ TimeoutStartSec=600s
 OOMScoreAdjust=-1000
 ExecStartPre=-/usr/bin/docker kill setup-hw
 ExecStartPre=-/usr/bin/docker rm setup-hw
-ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%setup-hw%img%% %%setup-hw%full%%
+ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/{{ Metadata "setup-hw.img" }} {{ Metadata "setup-hw.ref" }}
 ExecStart=/usr/bin/docker run \
   --name setup-hw \
   --log-driver=journald \
@@ -20,7 +20,7 @@ ExecStart=/usr/bin/docker run \
   -v /dev:/dev \
   -v /lib/modules:/lib/modules:ro \
   -v /etc/neco:/etc/neco:ro \
-  %%setup-hw%full%%
+  {{ Metadata "setup-hw.ref" }}
 
 [Install]
 WantedBy=multi-user.target

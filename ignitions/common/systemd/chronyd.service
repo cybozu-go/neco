@@ -15,15 +15,14 @@ Restart=on-failure
 RestartForceExitStatus=SIGPIPE
 OOMScoreAdjust=-1000
 LimitMEMLOCK=infinity
-ExecStartPre=/usr/bin/rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/%%chrony%aci%%
-ExecStartPre=/opt/sbin/setup-chronyd-conf
+ExecStartPre=/usr/bin/rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/{{ Metadata "chrony.aci" }}
 ExecStart=/usr/bin/rkt run \
   --insecure-options=seccomp,image \
   --volume etc,kind=host,source=/etc/chrony.conf,readOnly=true \
   --volume run,kind=empty,readOnly=false,mode=0700 \
   --volume volume-var-lib-chrony,kind=empty,readOnly=false,mode=0755 \
   --net=host \
-  %%chrony%full%% \
+  {{ Metadata "chrony.ref" }} \
     --name chrony --user-label name=chrony \
     --readonly-rootfs=true \
     --caps-retain=CAP_NET_BIND_SERVICE,CAP_SYS_TIME,CAP_SYS_NICE \
