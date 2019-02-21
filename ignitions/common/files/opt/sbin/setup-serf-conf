@@ -12,7 +12,8 @@ cat >/etc/serf/serf.json <<EOF
     "tags": {
         "os-name": "${os_name}",
         "os-version": "${os_version}",
-        "serial": "${serial}"
+        "serial": "${serial}",
+        "boot-server": "false"
     },
     "interface": "node0",
     "reconnect_interval": "30s",
