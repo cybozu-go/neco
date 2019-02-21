@@ -17,7 +17,7 @@ ExecStart=/usr/bin/rkt run \
   --volume run,kind=empty,readOnly=false \
   --volume etc,kind=host,source=/etc/bird,readOnly=true \
   --net=host \
-  %%bird%full%% \
+  {{ Metadata "bird.ref" }} \
     --readonly-rootfs=true \
     --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_NET_RAW \
     --name bird \

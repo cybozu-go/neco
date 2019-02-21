@@ -17,7 +17,7 @@ OOMScoreAdjust=-1000
 ExecStartPre=/bin/systemctl is-active -q exec-setup-hw.service
 ExecStartPre=-/usr/bin/docker kill serf
 ExecStartPre=-/usr/bin/docker rm serf
-ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/%%serf%img%% %%serf%full%%
+ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/{{ Metadata "serf.img"}} {{ Metadata "serf.ref" }}
 ExecStart=/usr/bin/docker run \
   --name serf \
   --log-driver=journald \
@@ -25,7 +25,7 @@ ExecStart=/usr/bin/docker run \
   --net=host \
   --mount type=bind,source=/etc/serf,target=/etc/serf,readonly \
   --hostname %H \
-  %%serf%full%% \
+  {{ Metadata "serf.ref" }} \
     agent -config-file /etc/serf/serf.json
 
 [Install]
