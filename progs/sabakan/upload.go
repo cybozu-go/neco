@@ -333,6 +333,8 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 	}
 	metadata["boot_servers"] = bootServers
 
+	metadata["version"] = req.Version
+
 	for _, role := range roles {
 		path := filepath.Join(neco.IgnitionDirectory, "roles", role, "site.yml")
 

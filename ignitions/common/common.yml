@@ -8,6 +8,7 @@ files:
   - /etc/modules-load.d/cybozu.conf
   - /etc/neco/bmc-address.json
   - /etc/neco/rack
+  - /etc/neco/version
   - /etc/sysctl.d/60-cybozu.conf
   - /etc/systemd/resolved.conf
   - /etc/systemd/system.conf.d/50-cybozu.conf
