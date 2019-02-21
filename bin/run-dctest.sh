@@ -14,7 +14,7 @@ delete_instance() {
 }
 
 # Create GCE instance
-$GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} || true
+$GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} --quiet || true
 $GCLOUD compute instances create ${INSTANCE_NAME} \
   --zone ${ZONE} \
   --machine-type ${MACHINE_TYPE} \
