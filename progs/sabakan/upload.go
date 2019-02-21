@@ -5,23 +5,19 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
-	ignition "github.com/coreos/ignition/config/v2_3/types"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	sabakan "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/cybozu-go/well"
-	"github.com/ghodss/yaml"
 )
 
 const (
@@ -277,47 +273,30 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 		return err
 	}
 
-	copyRoot, err := ioutil.TempDir("", "")
-	if err != nil {
-		return err
-	}
-	defer func() {
-		os.RemoveAll(copyRoot)
-	}()
-
 	_, err = st.GetQuayPassword(ctx)
 	if err != nil && err != storage.ErrNotFound {
 		return err
 	}
-	err = fillAssets(copyRoot, neco.IgnitionDirectory, err == nil)
-	if err != nil {
-		return err
-	}
+	hasSecret := err == nil
 
-	ckeImagePath := filepath.Join(copyRoot, "common", "systemd", "cke-images.service")
-	data, err := ioutil.ReadFile(ckeImagePath)
+	metadata := make(map[string]interface{})
+	for _, img := range neco.CurrentArtifacts.Images {
+		metadata[img.Name+".img"] = neco.ImageAssetName(img)
+		metadata[img.Name+".aci"] = neco.ACIAssetName(img)
+		metadata[img.Name+".ref"] = img.FullName(hasSecret)
+	}
+	for _, img := range neco.SystemContainers {
+		metadata[img.Name+".img"] = neco.ImageAssetName(img)
+		metadata[img.Name+".aci"] = neco.ACIAssetName(img)
+		metadata[img.Name+".ref"] = img.FullName(hasSecret)
+	}
+	sabaImg, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
 	if err != nil {
 		return err
 	}
+	metadata["cryptsetup.bin"] = neco.CryptsetupAssetName(sabaImg)
 
-	ckeData, err := getCKEData()
-	if err != nil {
-		return err
-	}
-	replacer := strings.NewReplacer(
-		"%%ETCD_FILE%%", ckeData["ETCD_FILE"],
-		"%%ETCD_NAME%%", ckeData["ETCD_NAME"],
-		"%%TOOLS_FILE%%", ckeData["CKE-TOOLS_FILE"],
-		"%%TOOLS_NAME%%", ckeData["CKE-TOOLS_NAME"],
-		"%%HYPERKUBE_FILE%%", ckeData["HYPERKUBE_FILE"],
-		"%%HYPERKUBE_NAME%%", ckeData["HYPERKUBE_NAME"],
-		"%%PAUSE_FILE%%", ckeData["PAUSE_FILE"],
-		"%%PAUSE_NAME%%", ckeData["PAUSE_NAME"],
-		"%%COREDNS_FILE%%", ckeData["COREDNS_FILE"],
-		"%%COREDNS_NAME%%", ckeData["COREDNS_NAME"],
-		"%%UNBOUND_FILE%%", ckeData["UNBOUND_FILE"],
-		"%%UNBOUND_NAME%%", ckeData["UNBOUND_NAME"])
-	err = ioutil.WriteFile(ckeImagePath, []byte(replacer.Replace(string(data))), 0644)
+	err = setCKEMetadata(metadata)
 	if err != nil {
 		return err
 	}
@@ -326,38 +305,15 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 	switch err {
 	case storage.ErrNotFound:
 	case nil:
-		passwdPath := filepath.Join(copyRoot, "common", "passwd.yml")
-		data, err := ioutil.ReadFile(passwdPath)
-		if err != nil {
-			return err
-		}
-		passwd := new(ignition.Passwd)
-		err = yaml.Unmarshal(data, passwd)
-		if err != nil {
-			return err
-		}
-
-		key := ignition.SSHAuthorizedKey(pubkey)
-		for i := range passwd.Users {
-			passwd.Users[i].SSHAuthorizedKeys = append(passwd.Users[i].SSHAuthorizedKeys, key)
-		}
-
-		data, err = yaml.Marshal(passwd)
-		if err != nil {
-			return err
-		}
-		err = ioutil.WriteFile(passwdPath, data, 0644)
-		if err != nil {
-			return err
-		}
+		metadata["authorized_key"] = pubkey
 	default:
 		return err
 	}
 
 	for _, role := range roles {
-		path := filepath.Join(copyRoot, "roles", role, "site.yml")
+		path := filepath.Join(neco.IgnitionDirectory, "roles", role, "site.yml")
 
-		tmpl, err := sabakan.BuildIgnitionTemplate(path, nil)
+		tmpl, err := sabakan.BuildIgnitionTemplate(path, metadata)
 		if err != nil {
 			return err
 		}
@@ -375,69 +331,6 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 		}
 	}
 	return nil
-}
-
-func fillAssets(dest, src string, hasSecret bool) error {
-	var patterns []string
-	for _, img := range neco.CurrentArtifacts.Images {
-		patterns = append(patterns, "%%"+img.Name+"%img%%", neco.ImageAssetName(img))
-		patterns = append(patterns, "%%"+img.Name+"%aci%%", neco.ACIAssetName(img))
-		patterns = append(patterns, "%%"+img.Name+"%full%%", img.FullName(hasSecret))
-	}
-	for _, img := range neco.SystemContainers {
-		patterns = append(patterns, "%%"+img.Name+"%img%%", neco.ImageAssetName(img))
-		patterns = append(patterns, "%%"+img.Name+"%aci%%", neco.ACIAssetName(img))
-		patterns = append(patterns, "%%"+img.Name+"%full%%", img.FullName(hasSecret))
-	}
-	sabaImg, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
-	if err != nil {
-		return err
-	}
-	patterns = append(patterns, "%%cryptsetup%%", neco.CryptsetupAssetName(sabaImg))
-
-	repl := strings.NewReplacer(patterns...)
-
-	render := func(srcFile, destFile string) error {
-		f, err := os.Open(srcFile)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-
-		data, err := ioutil.ReadAll(f)
-		if err != nil {
-			return err
-		}
-		replaced := repl.Replace(string(data))
-
-		st, err := f.Stat()
-		if err != nil {
-			return err
-		}
-		return ioutil.WriteFile(destFile, []byte(replaced), st.Mode())
-	}
-
-	return filepath.Walk(src, func(p string, info os.FileInfo, walkErr error) error {
-		if walkErr != nil {
-			return walkErr
-		}
-
-		rel, err := filepath.Rel(src, p)
-		if err != nil {
-			return err
-		}
-
-		target := filepath.Join(dest, rel)
-		_, err = os.Stat(target)
-		if err == nil {
-			return nil
-		}
-		if info.IsDir() {
-			return os.Mkdir(target, 0755)
-		}
-
-		return render(p, target)
-	})
 }
 
 func needIgnitionUpdate(ctx context.Context, c *sabakan.Client, role, id string) (bool, error) {
@@ -483,27 +376,20 @@ func downloadFile(ctx context.Context, p *http.Client, url string, w io.Writer) 
 	return io.Copy(w, resp.Body)
 }
 
-func getCKEData() (map[string]string, error) {
+func setCKEMetadata(metadata map[string]interface{}) error {
 	output, err := exec.Command(neco.CKECLIBin, "images").Output()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	data := make(map[string]string)
 	sc := bufio.NewScanner(bytes.NewReader(output))
 	for sc.Scan() {
 		img, err := neco.ParseContainerImageName(sc.Text())
 		if err != nil {
-			return nil, err
+			return err
 		}
-		nameUpper := strings.ToUpper(img.Name)
-		data[fmt.Sprintf("%s_FILE", nameUpper)] = neco.ImageAssetName(img)
-		data[fmt.Sprintf("%s_NAME", nameUpper)] = img.FullName(false)
+		metadata["cke:"+img.Name+".img"] = neco.ImageAssetName(img)
+		metadata["cke:"+img.Name+".ref"] = img.FullName(false)
 	}
-	err = sc.Err()
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return sc.Err()
 }
