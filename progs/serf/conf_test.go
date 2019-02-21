@@ -24,7 +24,7 @@ func TestGenerateConf(t *testing.T) {
 			OsName:     osName,
 			OsVersion:  osVer,
 			Serial:     serial,
-			BootServer: true,
+			BootServer: "true",
 		},
 		Interface:         "node0",
 		EventHandlers:     []string{"member-join,member-failed,member-leave=" + neco.SerfHandler},

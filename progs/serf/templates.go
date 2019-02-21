@@ -6,7 +6,7 @@ type tags struct {
 	OsName     string `json:"os-name"`
 	OsVersion  string `json:"os-version"`
 	Serial     string `json:"serial"`
-	BootServer bool   `json:"boot-server"`
+	BootServer string `json:"boot-server"`
 }
 
 type serfConfig struct {

@@ -13,7 +13,7 @@ cat >/etc/serf/serf.json <<EOF
         "os-name": "${os_name}",
         "os-version": "${os_version}",
         "serial": "${serial}",
-        "boot-server": false
+        "boot-server": "false"
     },
     "interface": "node0",
     "reconnect_interval": "30s",
