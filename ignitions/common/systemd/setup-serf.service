@@ -1,8 +1,8 @@
 [Unit]
 Description=Setup serf container
 ConditionPathExists=!/etc/serf/serf.json
-Wants=neco.target
-After=neco.target
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=oneshot
