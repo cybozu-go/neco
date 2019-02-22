@@ -1,7 +1,7 @@
 [Unit]
 Description=Serf container on docker
-Wants=neco.target exec-setup-hw.service
-After=neco.target  exec-setup-hw.service
+Wants=network-online.target exec-setup-hw.service
+After=network-online.target  exec-setup-hw.service
 Requires=setup-serf.service docker.socket
 After=setup-serf.service docker.socket
 After=cke-images.service coil-image.service squid-image.service

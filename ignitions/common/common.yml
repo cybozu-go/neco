@@ -61,7 +61,6 @@ systemd:
     enabled: true
   - name: bird-wait.service
     enabled: true
-  - name: neco.target
   - name: setup-node-exporter.service
   - name: node-exporter.service
     enabled: true

@@ -1,8 +1,8 @@
 [Unit]
 Description=Chrony container
 Requires=var-lib-rkt.mount
-Wants=neco.target tune-rt-runtime.service
-After=neco.target var-lib-rkt.mount tune-rt-runtime.service
+Wants=network-online.target tune-rt-runtime.service
+After=network-online.target var-lib-rkt.mount tune-rt-runtime.service
 Conflicts=systemd-timesyncd.service ntpd.service
 
 [Service]

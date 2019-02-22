@@ -2,13 +2,12 @@
 Description=Wait for BIRD to receive routes
 After=bird.service
 Requires=bird.service
-Before=neco.target
-Wants=neco.target
+Before=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=oneshot
 ExecStart=/opt/sbin/bird-wait
-ExecStartPost=/usr/sbin/sysctl -w net.ipv4.conf.all.rp_filter=1
 RemainAfterExit=yes
 
 [Install]

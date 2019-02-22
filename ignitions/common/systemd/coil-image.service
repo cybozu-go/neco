@@ -1,8 +1,8 @@
 [Unit]
 Description=Load coil container image
-Wants=neco.target
+Wants=network-online.target
 Requires=docker.socket
-After=neco.target docker.socket
+After=network-online.target docker.socket
 
 [Service]
 Type=oneshot
