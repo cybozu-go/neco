@@ -74,8 +74,6 @@ const (
 	SabakanPrefix        = "/sabakan/"
 	SabakanDataDir       = "/var/lib/sabakan"
 	SabakanLocalEndpoint = "http://127.0.0.1:10080"
-
-	SabakanCryptsetupPath = "/usr/local/bin/sabakan-cryptsetup"
 )
 
 // Serf params

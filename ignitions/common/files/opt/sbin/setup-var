@@ -49,20 +49,29 @@ prepare_lv() {
     done
 }
 
-if ls /dev/mapper/crypt-virtio-pci-* >/dev/null 2>&1; then
+find_boss() {
+    sdlist=$(cd /sys/block; ls -d sd*)
+    for sd in $sdlist; do
+        if grep -q DELLBOSS /sys/block/$sd/device/model; then
+            echo /dev/mapper/crypt-$sd
+        fi
+    done
+}
+
+if ls /dev/mapper/crypt-vd* >/dev/null 2>&1; then
     # for qemu
-    PVS=$(ls /dev/mapper/crypt-virtio-pci-*)
+    PVS=$(ls /dev/mapper/crypt-vd*)
     prepare_lv
-elif ls /dev/mapper/crypt-pci-*-nvme-1 >/dev/null 2>&1; then
+elif ls /dev/mapper/crypt-nvme* >/dev/null 2>&1; then
     # for compute node
-    PVS=$(ls /dev/mapper/crypt-pci-*-nvme-1)
+    PVS=$(ls /dev/mapper/crypt-nvme*)
     CONTAINERD_SIZE=1t
     DOCKER_SIZE=50g
     KUBELET_SIZE=100g
     prepare_lv
 else
     # for storage node
-    PVS=$(ls /dev/mapper/crypt-pci-*-ata-1)
+    PVS=$(find_boss)
     CONTAINERD_SIZE=50g
     DOCKER_SIZE=50g
     prepare_lv
