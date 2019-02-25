@@ -178,25 +178,8 @@ func uploadAssets(ctx context.Context, c *sabakan.Client, auth *DockerAuth) erro
 		return err
 	}
 
-	// Upload sabakan-cryptsetup with version name
-	img, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
-	if err != nil {
-		return err
-	}
-	name := neco.CryptsetupAssetName(img)
-	need, err := needAssetUpload(ctx, name, c)
-	if err != nil {
-		return err
-	}
-	if need {
-		_, err = c.AssetsUpload(ctx, name, neco.SabakanCryptsetupPath, nil)
-		if err != nil {
-			return err
-		}
-	}
-
 	// Upload node exporter
-	need, err = needAssetUpload(ctx, neco.NodeExporterAssetName, c)
+	need, err := needAssetUpload(ctx, neco.NodeExporterAssetName, c)
 	if err != nil {
 		return err
 	}
@@ -292,11 +275,6 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 		metadata[img.Name+".aci"] = neco.ACIAssetName(img)
 		metadata[img.Name+".ref"] = img.FullName(hasSecret)
 	}
-	sabaImg, err := neco.CurrentArtifacts.FindContainerImage("sabakan")
-	if err != nil {
-		return err
-	}
-	metadata["cryptsetup.bin"] = neco.CryptsetupAssetName(sabaImg)
 
 	err = setCKEMetadata(metadata)
 	if err != nil {
