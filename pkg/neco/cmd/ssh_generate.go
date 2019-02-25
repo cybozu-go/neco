@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 
 	"github.com/cybozu-go/log"
@@ -19,7 +20,10 @@ import (
 
 const rsaBits = 2048
 
-var sshGenerateDumpPrivateKey bool
+var (
+	sshGenerateDumpPrivateKey bool
+	sshGenerateForce          bool
+)
 
 func makeSSHKeyPair() (pubkey, privkey []byte, err error) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, rsaBits)
@@ -66,6 +70,14 @@ The generated private key is stored in Vault by using
 
 		well.Go(func(ctx context.Context) error {
 			st := storage.NewStorage(etcd)
+			_, err := st.GetSSHPubkey(ctx)
+
+			if err != nil && err != storage.ErrNotFound {
+				return err
+			}
+			if err == nil && !sshGenerateForce {
+				return errors.New("SSH key already exists")
+			}
 			if err := st.PutSSHPubkey(ctx, string(pubkey)); err != nil {
 				return err
 			}
@@ -91,5 +103,6 @@ The generated private key is stored in Vault by using
 
 func init() {
 	sshGenerateCmd.Flags().BoolVar(&sshGenerateDumpPrivateKey, "dump", false, "dump generated private key to stdout")
+	sshGenerateCmd.Flags().BoolVar(&sshGenerateForce, "force", false, "overwrite existing key pair")
 	sshCmd.AddCommand(sshGenerateCmd)
 }
