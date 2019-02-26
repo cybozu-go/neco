@@ -17,12 +17,12 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "git-neco",
 	Short: "git extension for Neco project",
-	Long: `Add "git neco" subcommand for Neco project.
+	Long: `"git neco" subcommand for Neco project.
 
 This command read configurations to access GitHub and kintone from
 YAML file at $HOME/.git-neco.yml or environment variables using viper.
 
-To test configurations, run "git neco check".`,
+First time user should run "git neco config" to configure git-neco.`,
 
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		err := well.LogConfig{}.Apply()

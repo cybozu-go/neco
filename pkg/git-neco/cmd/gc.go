@@ -22,8 +22,8 @@ func gcFilterBranch(branches []string) (ret []string) {
 
 var gcCmd = &cobra.Command{
 	Use:   "gc",
-	Short: "remove merged branches in origin",
-	Long:  `Remove merged branches from the origin repository.`,
+	Short: "remove merged remote branches",
+	Long:  `Remove merged remote branches from the origin repository.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := sanityCheck(); err != nil {
 			return err

@@ -1,35 +1,27 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
 var devCmd = &cobra.Command{
-	Use:   "dev",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "dev BRANCH_NAME",
+	Short: "create a feature branch from the latest origin/master",
+	Long:  `Create a feature branch from the latest origin/master.`,
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := sanityCheck(); err != nil {
+			return err
+		}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("dev called")
+		if err := git("fetch", "origin"); err != nil {
+			return err
+		}
+
+		return git("checkout", "--no-track", "-b", args[0], "origin/master")
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(devCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// devCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// devCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
