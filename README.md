@@ -111,6 +111,10 @@ Test suite, and other Neco github projects deploy GCE instance based on an image
 
 See [docs/gcp](docs/gcp/)
 
+### `git-neco`
+
+`git-neco` is a git extension utility to help Neco developers.
+
 Documentation
 -------------
 
