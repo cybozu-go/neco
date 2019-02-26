@@ -46,18 +46,25 @@ func checkUncommittedFiles() (bool, error) {
 
 func firstUnmerged() (hash string, summary string, body string, err error) {
 	var data []byte
-	data, err = gitOutput("log", "HEAD", "--not", "origin/master", "--format=%H%n%s%n%b", "--reverse")
+	data, err = gitOutput("log", "HEAD", "--not", "origin/master", "--format=%H", "--reverse")
 	if err != nil {
 		return
 	}
-
-	fields := strings.Split(string(data), "\n")
-	if len(fields) < 3 {
+	commits := strings.Fields(string(data))
+	if len(commits) == 0 {
 		err = errors.New("no commits to be pushed")
 		return
 	}
 
-	return fields[0], fields[1], fields[2], nil
+	hash = commits[0]
+
+	data, err = gitOutput("show", "--format=%%s%n%b", "-s", hash)
+	if err != nil {
+		return
+	}
+
+	fields := strings.SplitN(string(data), "\n", 2)
+	return hash, fields[0], strings.TrimSpace(fields[1]), nil
 }
 
 // GitHubRepo represents a repository hosted on GitHub.
