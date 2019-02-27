@@ -27,6 +27,7 @@ all:
 	@echo "    stop-etcd   - stop etcd."
 	@echo "    test        - run single host tests."
 	@echo "    mod         - update and vendor Go modules."
+	@echo "    deb         - build Debian package."
 	@echo "    setup       - install dependencies."
 
 start-etcd:
@@ -57,7 +58,7 @@ deb: $(DEB)
 
 $(DEB):
 	make -f Makefile.tools SUDO=$(SUDO)
-	cp -r debian $(WORKDIR)
+	cp -r debian/* $(WORKDIR)
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
 	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
@@ -66,7 +67,7 @@ $(DEB):
 	cp -a ignitions $(SHAREDIR)
 	cp README.md LICENSE $(DOCDIR)/neco
 	chmod -R g-w $(WORKDIR)
-	$(FAKEROOT) dpkg-deb --build $(WORKDIR)/deb $(DEST)
+	$(FAKEROOT) dpkg-deb --build $(WORKDIR) $(DEST)
 
 necogcp: $(STATIK)
 	go install ./pkg/necogcp
