@@ -1,0 +1,70 @@
+include Makefile.common
+
+
+### for containerd
+CONTAINERD_VERSION = 1.2.4
+PROTOC_VERSION = 3.6.1
+PROTOC = /usr/local/bin/protoc
+CONTAINERD_PACKAGES := libseccomp-dev
+
+### for node_exporter
+NODE_EXPORTER_VERSION = 0.17.0
+NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
+
+### for crictl
+CRITOOLS_VERSION = 1.13.0
+
+### for argocd
+ARGOCD_VERSION = 0.11.1
+
+all: node_exporter containerd crictl
+
+node_exporter:
+	mkdir -p $(WORKDIR)/$@
+	mkdir -p $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
+	curl -fsSL $(NODE_EXPORTER_URL) | tar -C $(WORKDIR)/$@ --strip-components=1 -xzf -
+	cd $(WORKDIR)/$@; GO111MODULE=on make build
+	cp $(WORKDIR)/$@/node_exporter $(SBINDIR)/
+	ln -s /usr/sbin/node_exporter $(LIBEXECDIR)/node_exporter
+	cd $(WORKDIR)/$@; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/$@/
+
+$(PROTOC):
+	curl -fsSL -o protoc.zip https://github.com/google/protobuf/releases/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-linux-x86_64.zip
+	$(SUDO) unzip -o protoc.zip -d /usr/local
+	rm -f protoc.zip
+
+containerd: $(PROTOC)
+	$(SUDO) apt-get update
+	$(SUDO) apt-get -y install --no-install-recommends $(CONTAINERD_PACKAGES)
+	rm -rf $(GOPATH)/src/github.com/containerd/containerd
+	mkdir -p $(GOPATH)/src/github.com/containerd/containerd $(LIBEXECDIR) $(DOCDIR)/$@/
+	curl -fsSL -o containerd.tar.gz https://github.com/containerd/containerd/archive/v${CONTAINERD_VERSION}.tar.gz
+	tar -x -z --strip-components 1 -f containerd.tar.gz -C $(GOPATH)/src/github.com/containerd/containerd
+	rm -f containerd.tar.gz
+	(cd $(GOPATH)/src/github.com/containerd/containerd; make VERSION=$(CONTAINERD_VERSION))
+	cp $(GOPATH)/src/github.com/containerd/containerd/bin/containerd $(LIBEXECDIR)
+	cp $(GOPATH)/src/github.com/containerd/containerd/bin/containerd-shim $(LIBEXECDIR)
+	cp $(GOPATH)/src/github.com/containerd/containerd/bin/ctr $(LIBEXECDIR)
+	cp $(GOPATH)/src/github.com/containerd/containerd/LICENSE $(DOCDIR)/$@/
+	cp $(GOPATH)/src/github.com/containerd/containerd/NOTICE $(DOCDIR)/$@/
+	cp $(GOPATH)/src/github.com/containerd/containerd/README.md $(DOCDIR)/$@/
+
+crictl:
+	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
+	curl -fsSL -o crictl.tar.gz https://github.com/kubernetes-sigs/cri-tools/releases/download/v$(CRITOOLS_VERSION)/crictl-v$(CRITOOLS_VERSION)-linux-amd64.tar.gz
+	tar zxvf crictl.tar.gz -C $(LIBEXECDIR)
+	rm -f crictl.tar.gz
+	curl -fsSL -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/LICENSE
+	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/README.md
+
+argocd:
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	curl -fsSL -o $(BINDIR)/argocd https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
+	chmod +x $(BINDIR)/argocd
+	curl -fsSL -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/LICENSE
+	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/README.md
+
+clean:
+	rm -rf $(WORKDIR)/node_exporter
+
+.PHONY:	all clean
