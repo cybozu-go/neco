@@ -71,10 +71,12 @@ $(DEB):
 necogcp: $(STATIK)
 	go install ./pkg/necogcp
 
-clean:
-	rm -rf $(ETCD_DIR) $(WORKDIR)
-
 setup:
 	GO111MODULE=off go get -u golang.org/x/lint/golint github.com/rakyll/statik
+	$(SUDO) apt-get update
+	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
+
+clean:
+	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB)
 
 .PHONY:	all start-etcd stop-etcd test mod deb necogcp setup clean
