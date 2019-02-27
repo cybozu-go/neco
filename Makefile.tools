@@ -18,7 +18,10 @@ CRITOOLS_VERSION = 1.13.0
 ### for argocd
 ARGOCD_VERSION = 0.11.1
 
-all: node_exporter containerd crictl
+### for kubectl
+K8S_VERSION = 1.13.2
+
+all: node_exporter containerd crictl kubectl
 
 node_exporter:
 	mkdir -p $(WORKDIR)/$@
@@ -66,6 +69,13 @@ argocd:
 	chmod +x $(BINDIR)/argocd
 	curl -fsSL -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/LICENSE
 	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/README.md
+
+kubectl:
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	curl -fsSL -o $(BINDIR)/kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
+	chmod +x $(BINDIR)/kubectl
+	curl -fsSL -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/LICENSE
+	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
 
 clean:
 	rm -rf $(WORKDIR)/node_exporter
