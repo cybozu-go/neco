@@ -5,6 +5,7 @@ include Makefile.common
 CONTAINERD_VERSION = 1.2.4
 PROTOC_VERSION = 3.6.1
 PROTOC = /usr/local/bin/protoc
+PROTOC_PACKAGES = unzip
 CONTAINERD_PACKAGES := libseccomp-dev
 
 ### for node_exporter
@@ -29,6 +30,8 @@ node_exporter:
 	cd $(WORKDIR)/$@; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/$@/
 
 $(PROTOC):
+	$(SUDO) apt-get update
+	$(SUDO) apt-get -y install --no-install-recommends $(PROTOC_PACKAGES)
 	curl -fsSL -o protoc.zip https://github.com/google/protobuf/releases/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-linux-x86_64.zip
 	$(SUDO) unzip -o protoc.zip -d /usr/local
 	rm -f protoc.zip

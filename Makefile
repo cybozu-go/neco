@@ -56,7 +56,7 @@ mod:
 deb: $(DEB)
 
 $(DEB):
-	make -f Makefile.tools
+	make -f Makefile.tools SUDO=$(SUDO)
 	cp -r debian $(WORKDIR)
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
