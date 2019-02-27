@@ -1,0 +1,15 @@
+[Unit]
+Description=Setup containerd for kubernetes
+Wants=data.mount
+After=data.mount
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/curl -sfSL -o /opt/sbin/containerd {{ MyURL }}/api/v1/containerd
+ExecStart=/usr/bin/curl -sfSL -o /opt/sbin/containerd-shim {{ MyURL }}/api/v1/containerd-shim
+ExecStart=/usr/bin/curl -sfSL -o /usr/bin/ctr {{ MyURL }}/api/v1/ctr
+ExecStart=/usr/bin/curl -sfSL -o /usr/bin/crictl {{ MyURL }}/api/v1/crictl
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

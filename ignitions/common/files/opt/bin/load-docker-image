@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 if [ $# -ne 2 ]; then
-    echo "Usage: load-image URL TAG"
+    echo "Usage: load-docker-image URL TAG"
     exit 1
 fi
 

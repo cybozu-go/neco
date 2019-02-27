@@ -17,7 +17,7 @@ OOMScoreAdjust=-1000
 ExecStartPre=/bin/systemctl is-active -q exec-setup-hw.service
 ExecStartPre=-/usr/bin/docker kill serf
 ExecStartPre=-/usr/bin/docker rm serf
-ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/{{ Metadata "serf.img"}} {{ Metadata "serf.ref" }}
+ExecStartPre=/opt/bin/load-docker-image {{ MyURL }}/api/v1/assets/{{ Metadata "serf.img"}} {{ Metadata "serf.ref" }}
 ExecStart=/usr/bin/docker run \
   --name serf \
   --log-driver=journald \

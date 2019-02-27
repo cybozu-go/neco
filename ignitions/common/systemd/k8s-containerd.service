@@ -1,0 +1,22 @@
+[Unit]
+Description=containerd container runtime for kubernetes
+ConditionPathExists=/etc/k8s-containerd/config.toml
+Wants=setup-k8s-containerd.service
+After=setup-k8s-containerd.service
+
+[Service]
+Delegate=yes
+KillMode=process
+Restart=always
+ExecStartPre=/usr/bin/mkdir -p /var/lib/k8s-containerd
+ExecStartPre=/usr/bin/mkdir -p /run/k8s-containerd
+ExecStart=/opt/sbin/containerd --config /etc/k8s-containerd/config.toml
+
+# (lack of) limits from the upstream docker service unit
+LimitNOFILE=1048576
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,4 @@
+runtime-endpoint: /var/run/k8s-containerd.sock
+image-endpoint: ""
+timeout: 0
+debug: false

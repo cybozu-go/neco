@@ -91,10 +91,9 @@ const (
 	CKEPrefix  = "/cke/"
 )
 
-// Node Exporter params
+// Assets path for worker node
 const (
-	NodeExporterAssetName = "node_exporter"
-	NodeExporterPath      = "/usr/sbin/node_exporter"
+	WorkerAssetsPath = "/usr/libexec/neco"
 )
 
 // File locations

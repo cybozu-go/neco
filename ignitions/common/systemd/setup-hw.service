@@ -12,7 +12,7 @@ TimeoutStartSec=600s
 OOMScoreAdjust=-1000
 ExecStartPre=-/usr/bin/docker kill setup-hw
 ExecStartPre=-/usr/bin/docker rm setup-hw
-ExecStartPre=/opt/bin/load-image {{ MyURL }}/api/v1/assets/{{ Metadata "setup-hw.img" }} {{ Metadata "setup-hw.ref" }}
+ExecStartPre=/opt/bin/load-docker-image {{ MyURL }}/api/v1/assets/{{ Metadata "setup-hw.img" }} {{ Metadata "setup-hw.ref" }}
 ExecStart=/usr/bin/docker run \
   --name setup-hw \
   --log-driver=journald \
