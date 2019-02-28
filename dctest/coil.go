@@ -79,7 +79,7 @@ func TestCoil() {
 }
 
 func checkCoilNodeDaemonSet() {
-	Eventually(func() error {
+	EventuallyWithOffset(1, func() error {
 		stdout, _, err := execAt(boot0, "kubectl", "--namespace=kube-system",
 			"get", "daemonsets/coil-node", "-o=json")
 		if err != nil {
@@ -100,9 +100,9 @@ func checkCoilNodeDaemonSet() {
 }
 
 func checkCoilControllersDeployment() {
-	Eventually(func() error {
+	EventuallyWithOffset(1, func() error {
 		stdout, _, err := execAt(boot0, "kubectl", "--namespace=kube-system",
-			"get", "deployement/coil-controllers", "-o=json")
+			"get", "deployment/coil-controllers", "-o=json")
 		if err != nil {
 			return err
 		}
