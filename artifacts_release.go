@@ -5,15 +5,15 @@ package neco
 
 var CurrentArtifacts = ArtifactSet{
 	Images: []ContainerImage{
-		{Name: "cke", Repository: "quay.io/cybozu/cke", Tag: "1.13.4.1", Private: false},
-		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.3.11.1", Private: false},
+		{Name: "cke", Repository: "quay.io/cybozu/cke", Tag: "1.13.4.2", Private: false},
+		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.3.12.1", Private: false},
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.0.0", Private: true},
-		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.1.0.1", Private: false},
-		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.8.1.5", Private: false},
-		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.0.0.1", Private: false},
+		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.1.0.2", Private: false},
+		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.8.1.6", Private: false},
+		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.0.3.1", Private: false},
 		{Name: "hyperkube", Repository: "quay.io/cybozu/hyperkube", Tag: "1.13.2.1", Private: false},
-		{Name: "coil", Repository: "quay.io/cybozu/coil", Tag: "1.0.1.1", Private: false},
-		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "3.5.27.1.3", Private: false},
+		{Name: "coil", Repository: "quay.io/cybozu/coil", Tag: "1.0.1.2", Private: false},
+		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "3.5.27.1.4", Private: false},
 	},
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.7"},

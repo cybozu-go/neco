@@ -31,8 +31,9 @@ func TestCoilSetup() {
 		execSafeAt(boot0, "sed", "s,%%COIL_IMAGE%%,$(neco image coil),",
 			"/usr/share/neco/coil-deploy.yml", "|", "kubectl", "create", "-f", "-")
 
-		By("waiting for coil-node DaemonSet")
+		By("waiting for coil-node DaemonSet and coil-controllers Deployement")
 		checkCoilNodeDaemonSet()
+		checkCoilControllersDeployment()
 
 		By("creating IP address pool")
 		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=k8s-app=coil-controllers", "-o=json")
@@ -56,8 +57,9 @@ func TestCoilSetup() {
 // TestCoil tests Coil
 func TestCoil() {
 	It("should be available", func() {
-		By("checking coil-node DaemonSet")
+		By("checking coil-node DaemonSet and coil-controllers Deployement")
 		checkCoilNodeDaemonSet()
+		checkCoilControllersDeployment()
 
 		By("listing pools")
 		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=k8s-app=coil-controllers", "-o=json")
@@ -77,7 +79,7 @@ func TestCoil() {
 }
 
 func checkCoilNodeDaemonSet() {
-	Eventually(func() error {
+	EventuallyWithOffset(1, func() error {
 		stdout, _, err := execAt(boot0, "kubectl", "--namespace=kube-system",
 			"get", "daemonsets/coil-node", "-o=json")
 		if err != nil {
@@ -92,6 +94,27 @@ func checkCoilNodeDaemonSet() {
 
 		if int(daemonset.Status.NumberReady) != 5 {
 			return errors.New("NumberReady is not 5")
+		}
+		return nil
+	}).Should(Succeed())
+}
+
+func checkCoilControllersDeployment() {
+	EventuallyWithOffset(1, func() error {
+		stdout, _, err := execAt(boot0, "kubectl", "--namespace=kube-system",
+			"get", "deployment/coil-controllers", "-o=json")
+		if err != nil {
+			return err
+		}
+
+		deployment := new(appsv1.Deployment)
+		err = json.Unmarshal(stdout, deployment)
+		if err != nil {
+			return err
+		}
+
+		if int(deployment.Status.AvailableReplicas) != 1 {
+			return errors.New("AvailableReplicas is not 1")
 		}
 		return nil
 	}).Should(Succeed())
