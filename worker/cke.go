@@ -35,22 +35,6 @@ func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error
 			return err
 		}
 	}
-
-	need, err = o.needContainerImageUpdate(ctx, "hyperkube")
-	if err != nil {
-		return err
-	}
-	if need {
-		err = cke.InstallToolsHyperKube(ctx)
-		if err != nil {
-			return err
-		}
-		err = o.storage.RecordContainerTag(ctx, o.mylrn, "hyperkube")
-		if err != nil {
-			return err
-		}
-	}
-
 	_, err = o.replaceCKEFiles(ctx, req.Servers)
 	if err != nil {
 		return err

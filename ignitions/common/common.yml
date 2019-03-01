@@ -30,6 +30,7 @@ files:
   - /opt/sbin/setup-hw
   - /opt/sbin/setup-local-network
   - /opt/sbin/setup-node-exporter
+  - /opt/sbin/setup-containerd
   - /opt/sbin/setup-serf-conf
   - /opt/sbin/setup-serf-tags
   - /opt/sbin/setup-var
