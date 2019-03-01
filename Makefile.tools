@@ -24,13 +24,14 @@ K8S_VERSION = 1.13.2
 all: node_exporter containerd crictl kubectl
 
 node_exporter:
-	rm -rf $(GOPATH)/src/github.com/prometheus/node_exporter
-	mkdir -p $(GOPATH)/src/github.com/prometheus/node_exporter $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
-	curl -fsSL $(NODE_EXPORTER_URL) | tar -C $(GOPATH)/src/github.com/prometheus/node_exporter --strip-components=1 -xzf -
-	cd $(GOPATH)/src/github.com/prometheus/node_exporter; GO111MODULE=on make build
-	cp $(GOPATH)/src/github.com/prometheus/node_exporter/node_exporter $(SBINDIR)/
+	rm -f $(LIBEXECDIR)/node_exporter
+	rm -rf $(BUILDDIR)/node_exporter
+	mkdir -p $(BUILDDIR)/node_exporter $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
+	curl -fsSL $(NODE_EXPORTER_URL) | tar -C $(BUILDDIR)/node_exporter --strip-components=1 -xzf -
+	cd $(BUILDDIR)/node_exporter; GO111MODULE=on make build
+	cp $(BUILDDIR)/node_exporter/node_exporter $(SBINDIR)/
 	ln -s /usr/sbin/node_exporter $(LIBEXECDIR)/node_exporter
-	cd $(GOPATH)/src/github.com/prometheus/node_exporter; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/$@/
+	cd $(BUILDDIR)/node_exporter; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/$@/
 
 $(PROTOC):
 	$(SUDO) apt-get update
@@ -78,6 +79,6 @@ kubectl:
 	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
 
 clean:
-	rm -rf $(WORKDIR)/node_exporter
+	rm -rf $(BUILDDIR)
 
 .PHONY:	all clean

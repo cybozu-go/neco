@@ -1,6 +1,7 @@
 SUDO = sudo
 
 WORKDIR := $(CURDIR)/work
+BUILDDIR := $(CURDIR)/build
 CONTROL := $(WORKDIR)/DEBIAN/control
 DOCDIR := $(WORKDIR)/usr/share/doc
 BINDIR := $(WORKDIR)/usr/bin
