@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 cat >/etc/systemd/network/01-eth0.network <<EOF
 [Match]
@@ -24,6 +24,20 @@ EmitLLDP=nearest-bridge
 [Address]
 Address={{ index .Spec.IPv4 2 }}/{{ (index .Info.Network.IPv4 2).MaskBits }}
 Scope=link
+EOF
+
+cat >/etc/systemd/network/10-node0.netdev <<EOF
+[NetDev]
+Name=node0
+Kind=dummy
+EOF
+
+cat >/etc/systemd/network/10-node0.network <<EOF
+[Match]
+Name=node0
+
+[Network]
+Address={{ index .Spec.IPv4 0 }}/32
 EOF
 
 systemctl restart systemd-networkd.service

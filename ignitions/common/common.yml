@@ -88,5 +88,3 @@ systemd:
 networkd:
   - 01-eth0.network
   - 01-eth1.network
-  - 10-node0.netdev
-  - 10-node0.network
