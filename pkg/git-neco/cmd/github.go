@@ -110,6 +110,82 @@ func (gh GitHubClient) Repository(ctx context.Context, repo GitHubRepo) (string,
 	return resp.Repository.ID, nil
 }
 
+// GetDraftPR returns a draft pull request in a repository for a branch.
+// If no pull request is found, this returns ("", nil).
+func (gh GitHubClient) GetDraftPR(ctx context.Context, repo GitHubRepo, branch string) (string, error) {
+	query := `query getDraftPR($owner: String!, $name: String!, $headRef: String!) {
+  repository(owner: $owner, name: $name) {
+    pullRequests(headRefName: $headRef, first: 100) {
+      nodes {
+        id,
+        isDraft,
+        state,
+      }
+    }
+  }
+}`
+	vars := map[string]interface{}{
+		"owner":   repo.Owner,
+		"name":    repo.Name,
+		"headRef": branch,
+	}
+
+	data, err := gh.request(ctx, query, vars)
+	if err != nil {
+		return "", err
+	}
+
+	var resp struct {
+		Repository struct {
+			PullRequests struct {
+				Nodes []struct {
+					ID      string `json:"id"`
+					IsDraft bool   `json:"isDraft"`
+					State   string `json:"state"`
+				} `json:"nodes"`
+			} `json:"pullRequests"`
+		} `json:"repository"`
+	}
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		return "", err
+	}
+
+	var id string
+	for _, pr := range resp.Repository.PullRequests.Nodes {
+		if !pr.IsDraft {
+			continue
+		}
+		if pr.State != "OPEN" {
+			continue
+		}
+		id = pr.ID
+		break
+	}
+	return id, nil
+}
+
+// MarkDraftReadyForReview marks a draft pull request ready for review.
+func (gh GitHubClient) MarkDraftReadyForReview(ctx context.Context, id string) error {
+	query := `mutation mark($input: MarkPullRequestReadyForReviewInput!) {
+  markPullRequestReadyForReview(input: $input) {
+    clientMutationId
+  }
+}`
+
+	input := struct {
+		ID string `json:"pullRequestId"`
+	}{
+		ID: id,
+	}
+	vars := map[string]interface{}{
+		"input": input,
+	}
+
+	_, err := gh.request(ctx, query, vars)
+	return err
+}
+
 type pullRequestInput struct {
 	RepositoryID string `json:"repositoryId"`
 	BaseRefName  string `json:"baseRefName"`
@@ -126,8 +202,8 @@ func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, 
 	query := `mutation createPR($input: CreatePullRequestInput!) {
   createPullRequest(input: $input) {
     pullRequest {
-		permalink
-	}
+      permalink
+    }
   }
 }`
 	input := pullRequestInput{
