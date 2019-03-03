@@ -1,0 +1,6 @@
+#cloud-config
+hostname: {{.Name}}
+runcmd:
+- ["/extras/setup/setup-neco-network", "{{.Rack.Index}}"]
+network:
+  config: disabled

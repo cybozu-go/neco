@@ -15,6 +15,7 @@ require (
 	github.com/SAP/go-hdb v0.13.1 // indirect
 	github.com/SermoDigital/jose v0.9.1 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20181203113445-8c8880c89d00 // indirect
+	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/araddon/gou v0.0.0-20180803232539-d7d8174cb8b3 // indirect
 	github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
@@ -37,6 +38,8 @@ require (
 	github.com/cybozu-go/etcdutil v1.3.1
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
+	github.com/cybozu-go/placemat v1.3.2
+	github.com/cybozu-go/placemat-menu v0.0.0-20190204000132-83663e579117
 	github.com/cybozu-go/sabakan/v2 v2.0.1
 	github.com/cybozu-go/well v1.8.1
 	github.com/dancannon/gorethink v4.0.0+incompatible // indirect
@@ -50,7 +53,6 @@ require (
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/duosecurity/duo_api_golang v0.0.0-20181024123116-92fea9203dbc // indirect
 	github.com/elazarl/go-bindata-assetfs v1.0.0 // indirect
-	github.com/fatih/color v1.7.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180613152042-8306686428a5 // indirect
 	github.com/gammazero/deque v0.0.0-20180920172122-f6adf94963e4 // indirect
@@ -70,8 +72,6 @@ require (
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/gorhill/cronexpr v0.0.0-20180427100037-88b0669f7d75 // indirect
-	github.com/gorilla/context v1.1.1 // indirect
-	github.com/gorilla/mux v1.6.2 // indirect
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
 	github.com/hashicorp/consul v1.4.0 // indirect
 	github.com/hashicorp/go-gcp-common v0.0.0-20180425173946-763e39302965 // indirect
@@ -112,8 +112,6 @@ require (
 	github.com/kintone/go-kintone v0.1.1
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mattbaird/elastigo v0.0.0-20170123220020-2fe47fd29e4b // indirect
-	github.com/mattn/go-colorable v0.0.9 // indirect
-	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mattn/go-runewidth v0.0.0-20170201023540-14207d285c6c // indirect
 	github.com/mattn/go-shellwords v1.0.3 // indirect
 	github.com/michaelklishin/rabbit-hole v1.4.0 // indirect
@@ -181,7 +179,7 @@ require (
 	gopkg.in/yaml.v2 v2.2.1
 	gotest.tools v2.2.0+incompatible // indirect
 	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
-	k8s.io/apimachinery v0.0.0-20181128191346-49ce2735e507 // indirect
+	k8s.io/apimachinery v0.0.0-20181128191346-49ce2735e507
 	k8s.io/client-go v0.0.0-20170217214107-bcde30fb7eae // indirect
 	layeh.com/radius v0.0.0-20181129000116-83b1b1c7637c // indirect
 )
