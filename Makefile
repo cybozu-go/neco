@@ -59,7 +59,7 @@ mod:
 	go mod tidy
 	go mod vendor
 	git add -f vendor
-	git add go.mod go.sum
+	git add go.mod
 
 deb: $(DEB)
 
