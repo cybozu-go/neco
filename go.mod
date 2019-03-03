@@ -39,7 +39,6 @@ require (
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
 	github.com/cybozu-go/placemat v1.3.2
-	github.com/cybozu-go/placemat-menu v0.0.0-20190204000132-83663e579117
 	github.com/cybozu-go/sabakan/v2 v2.0.1
 	github.com/cybozu-go/well v1.8.1
 	github.com/dancannon/gorethink v4.0.0+incompatible // indirect
@@ -110,6 +109,7 @@ require (
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/keybase/go-crypto v0.0.0-20181127160227-255a5089e85a // indirect
 	github.com/kintone/go-kintone v0.1.1
+	github.com/kubernetes/apimachinery v0.0.0-20180925152725-5ae511e0ed34 // indirect
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mattbaird/elastigo v0.0.0-20170123220020-2fe47fd29e4b // indirect
 	github.com/mattn/go-runewidth v0.0.0-20170201023540-14207d285c6c // indirect
