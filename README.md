@@ -77,9 +77,8 @@ See [docs/generate-artifacts.md](docs/generate-artifacts.md)
 [dctest](dctest/) directory contains test suites to run integration
 tests in a virtual data center environment.
 
-[Placemat][placemat] and [placemat-menu], products from Neco, are tools
-to create complex network topology and virtual servers using Linux
-networking stacks, [rkt][], and [QEMU][].
+[Placemat][placemat] is a tool to create arbitrarily complex network topology
+and virtual servers using Linux networking stacks, [rkt][], and [QEMU][].
 
 See [docs/dctest.md](docs/dctest.md)
 
@@ -135,6 +134,5 @@ Documentation
 [BFD]: https://en.wikipedia.org/wiki/Bidirectional_Forwarding_Detection
 [ECMP]: https://en.wikipedia.org/wiki/Equal-cost_multi-path_routing
 [placemat]: https://github.com/cybozu-go/placemat
-[placemat-menu]: https://github.com/cybozu-go/placemat-menu
 [rkt]: https://coreos.com/rkt/
 [QEMU]: https://www.qemu.org/
