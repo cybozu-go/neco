@@ -25,7 +25,7 @@ export PATH
 # Run dctest
 cd \$GOPATH/src/github.com/cybozu-go/neco/dctest
 export GO111MODULE=on
-exec make test MENU=highcpu-menu.yml TAGS=release SUITE=upgrade
+exec make test TAGS=release SUITE=upgrade
 EOF
 chmod +x run.sh
 
