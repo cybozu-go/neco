@@ -38,7 +38,7 @@ require (
 	github.com/cybozu-go/etcdutil v1.3.1
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
-	github.com/cybozu-go/placemat v1.3.2
+	github.com/cybozu-go/placemat v1.3.3
 	github.com/cybozu-go/sabakan/v2 v2.0.1
 	github.com/cybozu-go/well v1.8.1
 	github.com/dancannon/gorethink v4.0.0+incompatible // indirect
@@ -109,7 +109,6 @@ require (
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/keybase/go-crypto v0.0.0-20181127160227-255a5089e85a // indirect
 	github.com/kintone/go-kintone v0.1.1
-	github.com/kubernetes/apimachinery v0.0.0-20180925152725-5ae511e0ed34 // indirect
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mattbaird/elastigo v0.0.0-20170123220020-2fe47fd29e4b // indirect
 	github.com/mattn/go-runewidth v0.0.0-20170201023540-14207d285c6c // indirect
@@ -179,7 +178,7 @@ require (
 	gopkg.in/yaml.v2 v2.2.1
 	gotest.tools v2.2.0+incompatible // indirect
 	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
-	k8s.io/apimachinery v0.0.0-20181128191346-49ce2735e507
+	k8s.io/apimachinery v0.0.0-20190301173222-2f7e9cae4418
 	k8s.io/client-go v0.0.0-20170217214107-bcde30fb7eae // indirect
 	layeh.com/radius v0.0.0-20181129000116-83b1b1c7637c // indirect
 )

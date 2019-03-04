@@ -115,7 +115,7 @@ github.com/cybozu-go/etcdutil
 github.com/cybozu-go/log
 # github.com/cybozu-go/netutil v1.2.0
 github.com/cybozu-go/netutil
-# github.com/cybozu-go/placemat v1.3.2
+# github.com/cybozu-go/placemat v1.3.3
 github.com/cybozu-go/placemat
 github.com/cybozu-go/placemat/web
 # github.com/cybozu-go/sabakan/v2 v2.0.1
@@ -178,8 +178,6 @@ github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
-# github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-github.com/golang/glog
 # github.com/golang/protobuf v1.2.0
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
@@ -254,8 +252,6 @@ github.com/inconshreveable/mousetrap
 github.com/kintone/go-kintone
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/kubernetes/apimachinery v0.0.0-20180925152725-5ae511e0ed34
-github.com/kubernetes/apimachinery/pkg/util/yaml
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
 # github.com/mattn/go-colorable v0.0.9
@@ -510,7 +506,7 @@ gopkg.in/yaml.v2
 # k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
 k8s.io/api/apps/v1
 k8s.io/api/core/v1
-# k8s.io/apimachinery v0.0.0-20181128191346-49ce2735e507
+# k8s.io/apimachinery v0.0.0-20190301173222-2f7e9cae4418
 k8s.io/apimachinery/pkg/util/yaml
 k8s.io/apimachinery/pkg/apis/meta/v1
 k8s.io/apimachinery/pkg/runtime
@@ -535,3 +531,7 @@ k8s.io/apimachinery/pkg/util/net
 k8s.io/apimachinery/pkg/util/validation/field
 # k8s.io/client-go v0.0.0-20170217214107-bcde30fb7eae
 k8s.io/client-go/util/homedir
+# k8s.io/klog v0.2.0
+k8s.io/klog
+# sigs.k8s.io/yaml v1.1.0
+sigs.k8s.io/yaml
