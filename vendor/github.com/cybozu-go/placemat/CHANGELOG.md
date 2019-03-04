@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.3] - 2019-03-04
+
+### Changed
+- use formal import path for k8s.io/apimachinery (#82).
+
 ## [1.3.2] - 2019-02-18
 
 ### Changed
@@ -47,7 +52,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Many things.  See git log.
 
-[Unreleased]: https://github.com/cybozu-go/placemat/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/cybozu-go/placemat/compare/v1.3.3...HEAD
+[1.3.3]: https://github.com/cybozu-go/placemat/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/cybozu-go/placemat/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/cybozu-go/placemat/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/cybozu-go/placemat/compare/v1.2.0...v1.3.0

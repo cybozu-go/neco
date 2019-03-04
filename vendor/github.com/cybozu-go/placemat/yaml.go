@@ -5,8 +5,8 @@ import (
 	"errors"
 	"io"
 
-	k8sYaml "github.com/kubernetes/apimachinery/pkg/util/yaml"
 	yaml "gopkg.in/yaml.v2"
+	k8sYaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
 type baseConfig struct {
