@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# eth0 -> internet
+# eth1 -> BMC
+iptables -t nat -A POSTROUTING -o eth0 -s 172.17.0.0/24 -j MASQUERADE
+iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE

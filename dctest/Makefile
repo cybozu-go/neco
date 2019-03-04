@@ -29,7 +29,6 @@ CUSTOM_UBUNTU_DISK_SIZE = 30G
 # non-configuration variables
 OUTPUT = ./output
 SABAKAN_DIR = $(OUTPUT)/sabakan
-OPERATION_SSH_DIR = $(OUTPUT)/operation-ssh
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
 AUTOCONFIG = $(SABAKAN_DIR)/auto-config
 BMC_USER = $(SABAKAN_DIR)/bmc-user.json
@@ -43,7 +42,7 @@ else ifdef DATACENTER
 else
   DEB = $(GENERATED_DEB)
 endif
-PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(BMC_USER) $(OPERATION_SSH_DIR)
+PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(BMC_USER)
 TEST_DEPS = $(DEB)
 SSH_PRIVKEY = $(realpath ./dctest_key)
 BOB_PRIVKEY = $(realpath ./bob_key)
@@ -74,6 +73,7 @@ $(OUTPUT)/$(CUSTOM_UBUNTU): $(CUSTOM_UBUNTU)
 
 # SABAKAN_CONTENTS
 $(DHCP_JSON):
+	cd ..; go install -mod=vendor ./pkg/placemat-menu
 	$(GOPATH)/bin/placemat-menu -f $(MENU) -o $(OUTPUT)
 
 $(AUTOCONFIG): auto-config $(DHCP_JSON)
@@ -91,11 +91,6 @@ $(DOWNLOADED_DEB):
 	mkdir -p $(OUTPUT)
 	cd ..; go install -mod=vendor ./pkg/download-neco-deb
 	download-neco-deb $(DATACENTER) > $@
-
-# workaround for placemat-menu
-$(OPERATION_SSH_DIR):
-	mkdir -p $(OPERATION_SSH_DIR)
-	cp dctest_key $(OPERATION_SSH_DIR)/boot_key
 
 # Targets
 test: $(TEST_DEPS)
@@ -122,8 +117,6 @@ fullclean: clean
 
 setup:
 	cd ../ && $(MAKE) setup
-	GO111MODULE=off	go get -d -u github.com/cybozu-go/placemat-menu
-	GO111MODULE=off go get github.com/onsi/ginkgo/ginkgo
-	cd $(GOPATH)/src/github.com/cybozu-go/placemat-menu; GO111MODULE=on $(MAKE)
+	go install -mod=vendor github.com/onsi/ginkgo/ginkgo
 
 .PHONY:	all test placemat stop clean fullclean setup
