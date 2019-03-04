@@ -45,7 +45,7 @@ func TestSquid() {
 
 	It("should serve for docker daemon", func() {
 		By("running nginx pods")
-		execSafeAt(boot0, "kubectl", "run", "nginx", "--image=nginx", "--replicas=2")
+		execSafeAt(boot0, "kubectl", "run", "nginx", "--image=docker.io/nginx:latest", "--replicas=2")
 
 		Eventually(func() error {
 			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/nginx", "-o=json")

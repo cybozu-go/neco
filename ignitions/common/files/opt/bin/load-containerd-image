@@ -1,0 +1,24 @@
+#!/bin/sh -e
+
+if [ $# -ne 2 ]; then
+    echo "Usage: load-container-image URL TAG"
+    exit 1
+fi
+
+img="$1"
+tag="$2"
+filename=/tmp/$(basename "$img")
+
+if /opt/bin/ctr --address=/var/run/k8s-containerd.sock --namespace k8s.io image inspect "$tag" >/dev/null 2>&1; then
+    exit 0
+fi
+
+for i in $(seq 20); do
+    if curl -sfSL -o "$filename" "$img"; then
+        break
+    fi
+    rm -f "$filename"
+    sleep 5
+done
+
+/opt/bin/ctr --address=/var/run/k8s-containerd.sock --namespace k8s.io images import "$filename"

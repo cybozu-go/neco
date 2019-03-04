@@ -1,7 +1,7 @@
 #!/bin/sh -eu
 
 VG=vg1
-LVLIST="containerd docker kubelet rkt"
+LVLIST="k8s-containerd docker kubelet rkt"
 CONTAINERD_SIZE=10g
 DOCKER_SIZE=10g
 KUBELET_SIZE=10g
@@ -9,7 +9,7 @@ RKT_SIZE=10g
 
 lvsize() {
     case $1 in
-    containerd)
+    k8s-containerd)
         echo $CONTAINERD_SIZE
         ;;
     docker)

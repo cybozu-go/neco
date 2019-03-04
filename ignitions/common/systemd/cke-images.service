@@ -2,23 +2,24 @@
 Description=Load container images for CKE
 Wants=network-online.target
 Requires=docker.socket
-After=network-online.target docker.socket
+After=network-online.target docker.socket wait-k8s-containerd-socket.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 
-ExecStart=/opt/bin/load-image \
+ExecStart=/opt/bin/load-docker-image \
   {{ MyURL }}/api/v1/assets/{{ Metadata "cke:etcd.img" }}      {{ Metadata "cke:etcd.ref" }}
-ExecStart=/opt/bin/load-image \
+ExecStart=/opt/bin/load-docker-image \
   {{ MyURL }}/api/v1/assets/{{ Metadata "cke:cke-tools.img" }} {{ Metadata "cke:cke-tools.ref" }}
-ExecStart=/opt/bin/load-image \
+ExecStart=/opt/bin/load-docker-image \
   {{ MyURL }}/api/v1/assets/{{ Metadata "cke:hyperkube.img" }} {{ Metadata "cke:hyperkube.ref" }}
-ExecStart=/opt/bin/load-image \
+
+ExecStart=/opt/bin/load-containerd-image \
   {{ MyURL }}/api/v1/assets/{{ Metadata "cke:pause.img" }}     {{ Metadata "cke:pause.ref" }}
-ExecStart=/opt/bin/load-image \
+ExecStart=/opt/bin/load-containerd-image \
   {{ MyURL }}/api/v1/assets/{{ Metadata "cke:coredns.img" }}   {{ Metadata "cke:coredns.ref" }}
-ExecStart=/opt/bin/load-image \
+ExecStart=/opt/bin/load-containerd-image \
   {{ MyURL }}/api/v1/assets/{{ Metadata "cke:unbound.img" }}   {{ Metadata "cke:unbound.ref" }}
 
 [Install]

@@ -10,7 +10,7 @@ import (
 
 // Default values
 const (
-	DefaultCheckUpdateInterval = 10 * time.Minute
+	DefaultCheckUpdateInterval = 1 * time.Minute
 	DefaultWorkerTimeout       = 60 * time.Minute
 )
 

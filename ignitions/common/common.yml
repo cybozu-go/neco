@@ -2,8 +2,10 @@ passwd: passwd.yml
 files:
   - /etc/bird/bird.conf
   - /etc/chrony.conf
+  - /etc/crictl.yaml
   - /etc/fstab
   - /etc/hostname
+  - /etc/k8s-containerd/config.toml
   - /etc/modprobe.d/conntrack-hashsize.conf
   - /etc/modules-load.d/cybozu.conf
   - /etc/neco/bmc-address.json
@@ -18,7 +20,9 @@ files:
   - /etc/systemd/system/docker.service.d/99-run-after-time-sync.conf
   - /etc/systemd/system/docker.socket.d/99-run-after-time-sync.conf
   - /opt/bin/podenter
-  - /opt/bin/load-image
+  - /opt/bin/load-docker-image
+  - /opt/bin/load-containerd-image
+  - /opt/bin/wait-k8s-containerd-socket
   - /opt/sbin/bird-wait
   - /opt/sbin/chrony-wait
   - /opt/sbin/neco-wait-dhcp-online
@@ -26,6 +30,7 @@ files:
   - /opt/sbin/setup-hw
   - /opt/sbin/setup-local-network
   - /opt/sbin/setup-node-exporter
+  - /opt/sbin/setup-containerd
   - /opt/sbin/setup-serf-conf
   - /opt/sbin/setup-serf-tags
   - /opt/sbin/setup-var
@@ -84,6 +89,12 @@ systemd:
     enabled: true
   - name: setup-serf-tags.service
   - name: setup-serf-tags.timer
+    enabled: true
+  - name: setup-k8s-containerd.service
+    enabled: true
+  - name: k8s-containerd.service
+    enabled: true
+  - name: wait-k8s-containerd-socket.service
     enabled: true
 networkd:
   - 01-eth0.network

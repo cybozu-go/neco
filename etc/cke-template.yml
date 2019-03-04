@@ -12,3 +12,11 @@ options:
     boot_taints:
       - key: coil.cybozu.com/bootstrap
         effect: NoSchedule
+    extra_binds:
+      - source: /var/lib/k8s-containerd
+        destination: /var/lib/k8s-containerd
+        read_only: false
+    container_runtime: remote
+    container_runtime_endpoint: unix:///var/run/k8s-containerd.sock
+    container_log_max_size: 10Mi
+    container_log_max_files: 10

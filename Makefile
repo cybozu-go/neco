@@ -1,6 +1,7 @@
 # Makefile for neco
 
-SUDO = sudo
+include Makefile.common
+
 FAKEROOT = fakeroot
 ETCD_DIR = /tmp/neco-etcd
 TAGS =
@@ -8,23 +9,15 @@ TAGS =
 ### for Go
 GOFLAGS = -mod=vendor
 GOTAGS = $(TAGS) containers_image_openpgp containers_image_ostree_stub
-export GOFLAGS
 
 ### for debian package
 PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev
-WORKDIR := $(CURDIR)/work
-CONTROL := $(WORKDIR)/DEBIAN/control
-DOCDIR := $(WORKDIR)/usr/share/doc
-BINDIR := $(WORKDIR)/usr/bin
-SBINDIR := $(WORKDIR)/usr/sbin
-SHAREDIR := $(WORKDIR)/usr/share/neco
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
-BIN_PKGS = ./pkg/neco ./pkg/necogcp
+BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
-NODE_EXPORTER_VERSION = 0.17.0
-NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
+
 STATIK = gcp/statik/statik.go
 
 all:
@@ -49,11 +42,11 @@ $(STATIK):
 
 test: $(STATIK)
 	test -z "$$(gofmt -s -l . | grep -v '^vendor\|^menu/assets.go' | tee /dev/stderr)"
-	test -z "$$(golint $$(go list -tags='$(GOTAGS)' ./... | grep -v /vendor/) | grep -v '/dctest/.*: should not use dot imports' | tee /dev/stderr)"
-	go build -tags='$(GOTAGS)' ./...
-	go test -tags='$(GOTAGS)' -race -v ./...
-	RUN_COMPACTION_TEST=yes go test -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
-	go vet -tags='$(GOTAGS)' ./...
+	test -z "$$(golint $$(go list $(GOFLAGS) -tags='$(GOTAGS)' ./... | grep -v /vendor/) | grep -v '/dctest/.*: should not use dot imports' | tee /dev/stderr)"
+	go build $(GOFLAGS) -tags='$(GOTAGS)' ./...
+	go test $(GOFLAGS) -tags='$(GOTAGS)' -race -v ./...
+	RUN_COMPACTION_TEST=yes go test $(GOFLAGS) -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
+	go vet $(GOFLAGS) -tags='$(GOTAGS)' ./...
 
 mod:
 	go mod tidy
@@ -63,15 +56,10 @@ mod:
 
 deb: $(DEB)
 
-$(DEB): $(STATIK)
-	rm -rf $(WORKDIR)
-	cp -r debian $(WORKDIR)
-	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco $(DOCDIR)/node_exporter
-	curl -fsSL $(NODE_EXPORTER_URL) | tar -C $(WORKDIR)/src --strip-components=1 -xzf -
-	cd $(WORKDIR)/src; GO111MODULE=on make build
-	mv $(WORKDIR)/src/node_exporter $(SBINDIR)/
-	cd $(WORKDIR)/src; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/node_exporter/
-	rm -rf $(WORKDIR)/src
+$(DEB):
+	make -f Makefile.tools SUDO=$(SUDO)
+	cp -r debian/* $(WORKDIR)
+	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
 	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
@@ -80,7 +68,6 @@ $(DEB): $(STATIK)
 	cp README.md LICENSE $(DOCDIR)/neco
 	chmod -R g-w $(WORKDIR)
 	$(FAKEROOT) dpkg-deb --build $(WORKDIR) $(DEST)
-	rm -rf $(WORKDIR)
 
 necogcp: $(STATIK)
 	go install ./pkg/necogcp

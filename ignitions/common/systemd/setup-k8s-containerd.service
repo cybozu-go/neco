@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup containerd for kubernetes
+Wants=data.mount
+After=data.mount
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/setup-containerd
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

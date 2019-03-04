@@ -1,0 +1,12 @@
+[Unit]
+Description=Wait for containerd socket
+Wants=k8s-containerd.service
+After=k8s-containerd.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/bin/wait-k8s-containerd-socket
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
