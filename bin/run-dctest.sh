@@ -59,9 +59,9 @@ cp /home/cybozu/github-token .
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
 export GO111MODULE=on
 make setup
-make placemat
+make placemat MENU=highcpu-menu.yml
 sleep 3
-exec make test MENU=highcpu-menu.yml SUITE=${SUITE} DATACENTER=${DATACENTER}
+exec make test SUITE=${SUITE} DATACENTER=${DATACENTER}
 EOF
 chmod +x run.sh
 
