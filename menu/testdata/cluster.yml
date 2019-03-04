@@ -1,0 +1,713 @@
+kind: Network
+name: internet
+type: external
+use-nat: true
+address: 10.0.0.1/24
+---
+kind: Network
+name: core-to-s1
+type: internal
+use-nat: false
+---
+kind: Network
+name: core-to-s2
+type: internal
+use-nat: false
+---
+kind: Network
+name: core-to-ext
+type: internal
+use-nat: false
+---
+kind: Network
+name: core-to-op
+type: internal
+use-nat: false
+---
+kind: Network
+name: core-node0
+type: internal
+use-nat: false
+---
+kind: Network
+name: bmc
+type: bmc
+use-nat: false
+address: 10.72.16.1/20
+---
+kind: Network
+name: s1-to-r0-1
+type: internal
+use-nat: false
+---
+kind: Network
+name: s1-to-r0-2
+type: internal
+use-nat: false
+---
+kind: Network
+name: s1-to-r1-1
+type: internal
+use-nat: false
+---
+kind: Network
+name: s1-to-r1-2
+type: internal
+use-nat: false
+---
+kind: Network
+name: s2-to-r0-1
+type: internal
+use-nat: false
+---
+kind: Network
+name: s2-to-r0-2
+type: internal
+use-nat: false
+---
+kind: Network
+name: s2-to-r1-1
+type: internal
+use-nat: false
+---
+kind: Network
+name: s2-to-r1-2
+type: internal
+use-nat: false
+---
+kind: Network
+name: r0-node1
+type: internal
+use-nat: false
+---
+kind: Network
+name: r0-node2
+type: internal
+use-nat: false
+---
+kind: Network
+name: r1-node1
+type: internal
+use-nat: false
+---
+kind: Network
+name: r1-node2
+type: internal
+use-nat: false
+---
+kind: Image
+name: ubuntu-cloud-image
+url: https://cloud-images.ubuntu.com/releases/16.04/release/ubuntu-16.04-server-cloudimg-amd64-disk1.img
+---
+kind: Image
+name: docker-image
+file: ./docker.img
+---
+kind: DataFolder
+name: core-data
+files:
+- name: bird.conf
+  file: bird_core.conf
+- name: squid.conf
+  file: squid.conf
+---
+kind: DataFolder
+name: spine1-data
+files:
+- name: bird.conf
+  file: bird_spine1.conf
+---
+kind: DataFolder
+name: spine2-data
+files:
+- name: bird.conf
+  file: bird_spine2.conf
+---
+kind: DataFolder
+name: rack0-tor1-data
+files:
+- name: bird.conf
+  file: bird_rack0-tor1.conf
+---
+kind: DataFolder
+name: rack0-tor2-data
+files:
+- name: bird.conf
+  file: bird_rack0-tor2.conf
+---
+kind: DataFolder
+name: rack1-tor1-data
+files:
+- name: bird.conf
+  file: bird_rack1-tor1.conf
+---
+kind: DataFolder
+name: rack1-tor2-data
+files:
+- name: bird.conf
+  file: bird_rack1-tor2.conf
+---
+kind: DataFolder
+name: sabakan-data
+dir: sabakan
+---
+kind: Node
+name: boot-0
+interfaces:
+- r0-node1
+- r0-node2
+volumes:
+- kind: image
+  name: root
+  image: ubuntu-cloud-image
+  copy-on-write: true
+- kind: localds
+  name: seed
+  user-data: seed_boot-0.yml
+  network-config: network.yml
+- kind: vvfat
+  name: sabakan
+  folder: sabakan-data
+cpu: 2
+memory: 2G
+smbios:
+  serial: fb8f2417d0b4db30050719c31ce02a2e8141bbd8
+---
+kind: Node
+name: rack0-cs1
+interfaces:
+- r0-node1
+- r0-node2
+volumes:
+- kind: raw
+  name: data1
+  size: 30G
+- kind: raw
+  name: data2
+  size: 30G
+- kind: image
+  name: extra0
+  image: docker-image
+  copy-on-write: true
+cpu: 2
+memory: 2G
+uefi: true
+smbios:
+  serial: ba49d9a971c5a0344edfda5c8116745ea16fa4dd
+---
+kind: Node
+name: rack0-cs2
+interfaces:
+- r0-node1
+- r0-node2
+volumes:
+- kind: raw
+  name: data1
+  size: 30G
+- kind: raw
+  name: data2
+  size: 30G
+- kind: image
+  name: extra0
+  image: docker-image
+  copy-on-write: true
+cpu: 2
+memory: 2G
+uefi: true
+smbios:
+  serial: e6abb04b4645a765faf91f97536ec64f9cecfb61
+---
+kind: Node
+name: boot-1
+interfaces:
+- r1-node1
+- r1-node2
+volumes:
+- kind: image
+  name: root
+  image: ubuntu-cloud-image
+  copy-on-write: true
+- kind: localds
+  name: seed
+  user-data: seed_boot-1.yml
+  network-config: network.yml
+- kind: vvfat
+  name: sabakan
+  folder: sabakan-data
+cpu: 2
+memory: 2G
+smbios:
+  serial: fa362303b7af8c4291773ab496aaca16726beaa3
+---
+kind: Node
+name: rack1-cs1
+interfaces:
+- r1-node1
+- r1-node2
+volumes:
+- kind: raw
+  name: data1
+  size: 30G
+- kind: raw
+  name: data2
+  size: 30G
+- kind: image
+  name: extra0
+  image: docker-image
+  copy-on-write: true
+cpu: 2
+memory: 2G
+uefi: true
+smbios:
+  serial: 4ae0771764376e0184274e24e0b18abd8fa5f285
+---
+kind: Node
+name: rack1-cs2
+interfaces:
+- r1-node1
+- r1-node2
+volumes:
+- kind: raw
+  name: data1
+  size: 30G
+- kind: raw
+  name: data2
+  size: 30G
+- kind: image
+  name: extra0
+  image: docker-image
+  copy-on-write: true
+cpu: 2
+memory: 2G
+uefi: true
+smbios:
+  serial: aec899fb87747909c95a2decaa4f25899f07516e
+---
+kind: Node
+name: rack1-ss1
+interfaces:
+- r1-node1
+- r1-node2
+volumes:
+- kind: raw
+  name: data1
+  size: 30G
+- kind: raw
+  name: data2
+  size: 30G
+- kind: image
+  name: extra0
+  image: docker-image
+  copy-on-write: true
+cpu: 1
+memory: 1G
+smbios:
+  serial: 1145129a085ecf521ab524028302a6b4a4e49a00
+---
+kind: Node
+name: rack1-ss2
+interfaces:
+- r1-node1
+- r1-node2
+volumes:
+- kind: raw
+  name: data1
+  size: 30G
+- kind: raw
+  name: data2
+  size: 30G
+- kind: image
+  name: extra0
+  image: docker-image
+  copy-on-write: true
+cpu: 1
+memory: 1G
+smbios:
+  serial: 628c8c360d0113de66db14a225affcb85fb2a27f
+---
+kind: Pod
+name: core
+init-scripts:
+- setup-iptables
+interfaces:
+- network: internet
+  addresses:
+  - 10.0.0.2/24
+- network: bmc
+  addresses:
+  - 10.72.16.2/20
+- network: core-node0
+  addresses:
+  - 10.0.49.3/32
+- network: core-to-s1
+  addresses:
+  - 10.0.2.0/31
+- network: core-to-s2
+  addresses:
+  - 10.0.2.2/31
+- network: core-to-ext
+  addresses:
+  - 10.0.3.1/24
+- network: core-to-op
+  addresses:
+  - 10.0.4.1/24
+volumes:
+- name: config
+  kind: host
+  folder: core-data
+  readonly: true
+- name: run
+  kind: empty
+  readonly: false
+- name: squid-log
+  kind: empty
+  readonly: false
+  mode: "0777"
+- name: squid-spool
+  kind: empty
+  readonly: false
+  mode: "0777"
+apps:
+- name: bird
+  image: docker://quay.io/cybozu/bird:2.0
+  readonly-rootfs: true
+  caps-retain:
+  - CAP_NET_ADMIN
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  mount:
+  - volume: config
+    target: /etc/bird
+  - volume: run
+    target: /run/bird
+- name: debug
+  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  readonly-rootfs: true
+- name: proxy
+  image: docker://quay.io/cybozu/squid:3.5
+  readonly-rootfs: false
+  mount:
+  - volume: config
+    target: /etc/squid
+  - volume: squid-log
+    target: /var/log/squid
+  - volume: squid-spool
+    target: /var/spool/squid
+---
+kind: Pod
+name: spine1
+interfaces:
+- network: core-to-s1
+  addresses:
+  - 10.0.2.1/31
+- network: s1-to-r0-1
+  addresses:
+  - 10.0.1.0/31
+- network: s1-to-r0-2
+  addresses:
+  - 10.0.1.2/31
+- network: s1-to-r1-1
+  addresses:
+  - 10.0.1.4/31
+- network: s1-to-r1-2
+  addresses:
+  - 10.0.1.6/31
+volumes:
+- name: config
+  kind: host
+  folder: spine1-data
+  readonly: true
+- name: run
+  kind: empty
+  readonly: false
+apps:
+- name: bird
+  image: docker://quay.io/cybozu/bird:2.0
+  readonly-rootfs: true
+  caps-retain:
+  - CAP_NET_ADMIN
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  mount:
+  - volume: config
+    target: /etc/bird
+  - volume: run
+    target: /run/bird
+- name: debug
+  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  readonly-rootfs: true
+---
+kind: Pod
+name: spine2
+interfaces:
+- network: core-to-s2
+  addresses:
+  - 10.0.2.3/31
+- network: s2-to-r0-1
+  addresses:
+  - 10.0.1.8/31
+- network: s2-to-r0-2
+  addresses:
+  - 10.0.1.10/31
+- network: s2-to-r1-1
+  addresses:
+  - 10.0.1.12/31
+- network: s2-to-r1-2
+  addresses:
+  - 10.0.1.14/31
+volumes:
+- name: config
+  kind: host
+  folder: spine2-data
+  readonly: true
+- name: run
+  kind: empty
+  readonly: false
+apps:
+- name: bird
+  image: docker://quay.io/cybozu/bird:2.0
+  readonly-rootfs: true
+  caps-retain:
+  - CAP_NET_ADMIN
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  mount:
+  - volume: config
+    target: /etc/bird
+  - volume: run
+    target: /run/bird
+- name: debug
+  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  readonly-rootfs: true
+---
+kind: Pod
+name: rack0-tor1
+interfaces:
+- network: s1-to-r0-1
+  addresses:
+  - 10.0.1.1/31
+- network: s2-to-r0-1
+  addresses:
+  - 10.0.1.9/31
+- network: r0-node1
+  addresses:
+  - 10.69.0.65/26
+volumes:
+- name: config
+  kind: host
+  folder: rack0-tor1-data
+  readonly: true
+- name: run
+  kind: empty
+  readonly: false
+apps:
+- name: bird
+  image: docker://quay.io/cybozu/bird:2.0
+  readonly-rootfs: true
+  caps-retain:
+  - CAP_NET_ADMIN
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  mount:
+  - volume: config
+    target: /etc/bird
+  - volume: run
+    target: /run/bird
+- name: debug
+  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  readonly-rootfs: true
+- name: dhcp-relay
+  image: docker://quay.io/cybozu/dnsmasq:2.79
+  readonly-rootfs: true
+  args:
+  - --keep-in-foreground
+  - --pid-file
+  - --log-facility=-
+  - --dhcp-relay
+  - 10.69.0.65,10.69.0.195
+  caps-retain:
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  - CAP_NET_BROADCAST
+---
+kind: Pod
+name: rack0-tor2
+interfaces:
+- network: s1-to-r0-2
+  addresses:
+  - 10.0.1.3/31
+- network: s2-to-r0-2
+  addresses:
+  - 10.0.1.11/31
+- network: r0-node2
+  addresses:
+  - 10.69.0.129/26
+volumes:
+- name: config
+  kind: host
+  folder: rack0-tor2-data
+  readonly: true
+- name: run
+  kind: empty
+  readonly: false
+apps:
+- name: bird
+  image: docker://quay.io/cybozu/bird:2.0
+  readonly-rootfs: true
+  caps-retain:
+  - CAP_NET_ADMIN
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  mount:
+  - volume: config
+    target: /etc/bird
+  - volume: run
+    target: /run/bird
+- name: debug
+  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  readonly-rootfs: true
+- name: dhcp-relay
+  image: docker://quay.io/cybozu/dnsmasq:2.79
+  readonly-rootfs: true
+  args:
+  - --keep-in-foreground
+  - --pid-file
+  - --log-facility=-
+  - --dhcp-relay
+  - 10.69.0.129,10.69.0.195
+  caps-retain:
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  - CAP_NET_BROADCAST
+---
+kind: Pod
+name: rack1-tor1
+interfaces:
+- network: s1-to-r1-1
+  addresses:
+  - 10.0.1.5/31
+- network: s2-to-r1-1
+  addresses:
+  - 10.0.1.13/31
+- network: r1-node1
+  addresses:
+  - 10.69.1.1/26
+volumes:
+- name: config
+  kind: host
+  folder: rack1-tor1-data
+  readonly: true
+- name: run
+  kind: empty
+  readonly: false
+apps:
+- name: bird
+  image: docker://quay.io/cybozu/bird:2.0
+  readonly-rootfs: true
+  caps-retain:
+  - CAP_NET_ADMIN
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  mount:
+  - volume: config
+    target: /etc/bird
+  - volume: run
+    target: /run/bird
+- name: debug
+  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  readonly-rootfs: true
+- name: dhcp-relay
+  image: docker://quay.io/cybozu/dnsmasq:2.79
+  readonly-rootfs: true
+  args:
+  - --keep-in-foreground
+  - --pid-file
+  - --log-facility=-
+  - --dhcp-relay
+  - 10.69.1.1,10.69.0.3
+  caps-retain:
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  - CAP_NET_BROADCAST
+---
+kind: Pod
+name: rack1-tor2
+interfaces:
+- network: s1-to-r1-2
+  addresses:
+  - 10.0.1.7/31
+- network: s2-to-r1-2
+  addresses:
+  - 10.0.1.15/31
+- network: r1-node2
+  addresses:
+  - 10.69.1.65/26
+volumes:
+- name: config
+  kind: host
+  folder: rack1-tor2-data
+  readonly: true
+- name: run
+  kind: empty
+  readonly: false
+apps:
+- name: bird
+  image: docker://quay.io/cybozu/bird:2.0
+  readonly-rootfs: true
+  caps-retain:
+  - CAP_NET_ADMIN
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  mount:
+  - volume: config
+    target: /etc/bird
+  - volume: run
+    target: /run/bird
+- name: debug
+  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  readonly-rootfs: true
+- name: dhcp-relay
+  image: docker://quay.io/cybozu/dnsmasq:2.79
+  readonly-rootfs: true
+  args:
+  - --keep-in-foreground
+  - --pid-file
+  - --log-facility=-
+  - --dhcp-relay
+  - 10.69.1.65,10.69.0.3
+  caps-retain:
+  - CAP_NET_BIND_SERVICE
+  - CAP_NET_RAW
+  - CAP_NET_BROADCAST
+---
+kind: Pod
+name: external
+init-scripts:
+- setup-default-gateway-external
+interfaces:
+- network: core-to-ext
+  addresses:
+  - 10.0.3.2/24
+apps:
+- name: ubuntu
+  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  readonly-rootfs: false
+  exec: /bin/sleep
+  args:
+  - infinity
+---
+kind: Pod
+name: operation
+init-scripts:
+- setup-default-gateway-operation
+interfaces:
+- network: core-to-op
+  addresses:
+  - 10.0.4.2/24
+apps:
+- name: ubuntu
+  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  readonly-rootfs: false
+  exec: /bin/sleep
+  args:
+  - infinity

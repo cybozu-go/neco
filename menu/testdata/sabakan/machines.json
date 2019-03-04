@@ -1,0 +1,154 @@
+[
+  {
+    "serial": "fb8f2417d0b4db30050719c31ce02a2e8141bbd8",
+    "labels": {
+      "datacenter": "dc1",
+      "product": "vm"
+    },
+    "rack": 0,
+    "index-in-rack": 0,
+    "role": "boot",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  },
+  {
+    "serial": "ba49d9a971c5a0344edfda5c8116745ea16fa4dd",
+    "labels": {
+      "datacenter": "dc1",
+      "product": "vm"
+    },
+    "rack": 0,
+    "index-in-rack": 0,
+    "role": "worker",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  },
+  {
+    "serial": "e6abb04b4645a765faf91f97536ec64f9cecfb61",
+    "labels": {
+      "datacenter": "dc1",
+      "product": "vm"
+    },
+    "rack": 0,
+    "index-in-rack": 0,
+    "role": "worker",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  },
+  {
+    "serial": "fa362303b7af8c4291773ab496aaca16726beaa3",
+    "labels": {
+      "datacenter": "dc1",
+      "product": "vm"
+    },
+    "rack": 1,
+    "index-in-rack": 0,
+    "role": "boot",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  },
+  {
+    "serial": "4ae0771764376e0184274e24e0b18abd8fa5f285",
+    "labels": {
+      "datacenter": "dc1",
+      "product": "vm"
+    },
+    "rack": 1,
+    "index-in-rack": 0,
+    "role": "worker",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  },
+  {
+    "serial": "aec899fb87747909c95a2decaa4f25899f07516e",
+    "labels": {
+      "datacenter": "dc1",
+      "product": "vm"
+    },
+    "rack": 1,
+    "index-in-rack": 0,
+    "role": "worker",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  },
+  {
+    "serial": "1145129a085ecf521ab524028302a6b4a4e49a00",
+    "labels": {
+      "datacenter": "dc1",
+      "product": "vm"
+    },
+    "rack": 1,
+    "index-in-rack": 0,
+    "role": "worker",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  },
+  {
+    "serial": "628c8c360d0113de66db14a225affcb85fb2a27f",
+    "labels": {
+      "datacenter": "dc1",
+      "product": "vm"
+    },
+    "rack": 1,
+    "index-in-rack": 0,
+    "role": "worker",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  }
+]

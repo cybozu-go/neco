@@ -1,0 +1,6 @@
+#cloud-config
+hostname: boot-0
+runcmd:
+- ["/extras/setup/setup-neco-network", "0"]
+network:
+  config: disabled
