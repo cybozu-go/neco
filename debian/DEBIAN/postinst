@@ -10,6 +10,7 @@ configure() {
     done
 
     /usr/bin/neco completion > /etc/bash_completion.d/neco
+    /usr/bin/kubectl completion bash > /etc/bash_completion.d/kubectl
 }
 
 if test "$1" = "configure"; then

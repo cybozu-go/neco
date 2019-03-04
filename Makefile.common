@@ -1,0 +1,10 @@
+SUDO = sudo
+
+WORKDIR := $(CURDIR)/work
+BUILDDIR := $(CURDIR)/build
+CONTROL := $(WORKDIR)/DEBIAN/control
+DOCDIR := $(WORKDIR)/usr/share/doc
+BINDIR := $(WORKDIR)/usr/bin
+SBINDIR := $(WORKDIR)/usr/sbin
+LIBEXECDIR := $(WORKDIR)/usr/libexec/neco
+SHAREDIR := $(WORKDIR)/usr/share/neco

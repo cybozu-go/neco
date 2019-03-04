@@ -1,0 +1,38 @@
+#!/bin/sh -e
+
+for i in $(seq 20); do
+    rm -f /opt/sbin/containerd
+    if curl -sfSL -o /opt/sbin/containerd {{ MyURL }}/api/v1/assets/containerd; then
+        break
+    fi
+    sleep 5
+done
+
+for i in $(seq 20); do
+    rm -f /opt/sbin/containerd-shim
+    if curl -sfSL -o /opt/sbin/containerd-shim {{ MyURL }}/api/v1/assets/containerd-shim; then
+        break
+    fi
+    sleep 5
+done
+
+for i in $(seq 20); do
+    rm -f /opt/bin/ctr
+    if curl -sfSL -o /opt/bin/ctr {{ MyURL }}/api/v1/assets/ctr; then
+        break
+    fi
+    sleep 5
+done
+
+for i in $(seq 20); do
+    rm -f /opt/bin/crictl
+    if curl -sfSL -o /opt/bin/crictl {{ MyURL }}/api/v1/assets/crictl; then
+        break
+    fi
+    sleep 5
+done
+
+chmod a+x /opt/sbin/containerd
+chmod a+x /opt/sbin/containerd-shim
+chmod a+x /opt/bin/ctr
+chmod a+x /opt/bin/crictl

@@ -1,0 +1,4 @@
+#!/bin/sh
+while ! test -S /var/run/k8s-containerd.sock; do
+  sleep 1
+done

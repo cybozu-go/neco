@@ -178,16 +178,22 @@ func uploadAssets(ctx context.Context, c *sabakan.Client, auth *DockerAuth) erro
 		return err
 	}
 
-	// Upload node exporter
-	need, err := needAssetUpload(ctx, neco.NodeExporterAssetName, c)
+	// Upload assets for worker node
+	files, err := ioutil.ReadDir(neco.WorkerAssetsPath)
 	if err != nil {
 		return err
 	}
-	if !need {
-		return nil
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		_, err = c.AssetsUpload(ctx, file.Name(), filepath.Join(neco.WorkerAssetsPath, file.Name()), nil)
+		if err != nil {
+			return err
+		}
 	}
-	_, err = c.AssetsUpload(ctx, neco.NodeExporterAssetName, neco.NodeExporterPath, nil)
-	return err
+
+	return nil
 }
 
 func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.Client) error {

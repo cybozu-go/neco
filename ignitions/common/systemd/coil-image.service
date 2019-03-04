@@ -2,12 +2,12 @@
 Description=Load coil container image
 Wants=network-online.target
 Requires=docker.socket
-After=network-online.target docker.socket
+After=network-online.target wait-k8s-containerd-socket.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/opt/bin/load-image {{ MyURL }}/api/v1/assets/{{ Metadata "coil.img" }} {{ Metadata "coil.ref" }}
+ExecStart=/opt/bin/load-containerd-image {{ MyURL }}/api/v1/assets/{{ Metadata "coil.img" }} {{ Metadata "coil.ref" }}
 
 [Install]
 WantedBy=multi-user.target

@@ -108,7 +108,7 @@ There are clear and strong reasons why the process is ordered this way.
     Currently, following directories are mounted to keep data on
     disks because the size of data in these directories are large.
 
-    - `/var/lib/containerd`
+    - `/var/lib/k8s-containerd`
     - `/var/lib/docker`
     - `/var/lib/kubelet`
     - `/var/lib/rkt`

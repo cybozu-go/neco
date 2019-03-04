@@ -25,7 +25,6 @@ var quayRepos = []string{
 	"sabakan",
 	"serf",
 	"vault",
-	"hyperkube", // to install kubectl on boot servers
 	"coil",
 	"squid",
 }
@@ -70,7 +69,7 @@ type Config struct {
 	Release bool
 }
 
-// Generate generates new artifasts.go contents and writes it to out.
+// Generate generates new artifacts.go contents and writes it to out.
 func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 	images := make([]*neco.ContainerImage, len(quayRepos))
 	for i, name := range quayRepos {

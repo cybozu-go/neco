@@ -62,7 +62,7 @@ jobs:
     - checkout
     - run: make SUDO="" setup
     - run: make test
-    - run: make deb FAKEROOT=
+    - run: make deb SUDO="" FAKEROOT=
   build_release:
     docker:
     - image: quay.io/cybozu/golang:1.11-bionic

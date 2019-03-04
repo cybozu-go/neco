@@ -85,7 +85,7 @@ $(BMC_USER): bmc-user.json $(DHCP_JSON)
 # Other contents
 $(GENERATED_DEB):
 	mkdir -p $(OUTPUT)
-	cd ..; $(MAKE) deb VERSION=$(DEBVER) DEST=$(abspath $(OUTPUT)) TAGS=$(TAGS)
+	cd ..; $(MAKE) clean; $(MAKE) deb VERSION=$(DEBVER) DEST=$(abspath $(OUTPUT)) TAGS=$(TAGS)
 
 $(DOWNLOADED_DEB):
 	mkdir -p $(OUTPUT)
