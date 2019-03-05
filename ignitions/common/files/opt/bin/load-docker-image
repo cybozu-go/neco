@@ -13,7 +13,7 @@ if docker image inspect "$tag" >/dev/null 2>&1; then
     exit 0
 fi
 
-for i in $(seq 20); do
+for i in $(seq 120); do
     if curl -sfSL -o "$filename" "$img"; then
         break
     fi

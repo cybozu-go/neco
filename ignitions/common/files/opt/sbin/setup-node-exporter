@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-for i in $(seq 20); do
+for i in $(seq 120); do
     rm -f /opt/sbin/node_exporter
     if curl -sfSL -o /opt/sbin/node_exporter {{ MyURL }}/api/v1/assets/node_exporter; then
         break
