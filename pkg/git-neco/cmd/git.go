@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -88,4 +89,25 @@ func CurrentRepo() (*GitHubRepo, error) {
 		Owner: parts[len(parts)-2],
 		Name:  strings.Split(parts[len(parts)-1], ".")[0],
 	}, nil
+}
+
+// GetEndpointInfo returns an endpoint and a token for the current git worktree.
+func GetEndpointInfo() (*url.URL, string, error) {
+	repo, err := CurrentRepo()
+	if err != nil {
+		return nil, "", err
+	}
+	endpoint, _ := url.Parse("https://api.github.com/graphql")
+	token := config.GithubToken
+	switch repo.Name {
+	case "wiki":
+		u, err := url.Parse(config.GheURL)
+		if err != nil {
+			return nil, "", err
+		}
+		u.Path = "/api/graphql"
+		endpoint = u
+		token = config.GheToken
+	}
+	return endpoint, token, nil
 }

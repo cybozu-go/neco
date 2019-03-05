@@ -122,7 +122,7 @@ type pullRequestInput struct {
 // CreatePullRequest creates a new pull request to merge head into base.
 // title must not be empty.
 // When succeeds, it returns a permalink to the new PR.
-func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, title, body string, draft bool) (string, error) {
+func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, title, body string) (string, error) {
 	query := `mutation createPR($input: CreatePullRequestInput!) {
   createPullRequest(input: $input) {
     pullRequest {
@@ -136,7 +136,7 @@ func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, 
 		HeadRefName:  head,
 		Title:        title,
 		Body:         body,
-		Draft:        draft,
+		Draft:        true,
 	}
 	vars := map[string]interface{}{
 		"input": input,
@@ -160,4 +160,80 @@ func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, 
 	}
 
 	return resp.CreatePullRequest.PullRequest.Permalink, nil
+}
+
+// GetDraftPullRequest returns .
+// When succeeds, it returns nil.
+func (gh GitHubClient) GetDraftPullRequest(ctx context.Context, owner, name, branch string) (string, error) {
+	query := `query getDraftPullRequest($name: String!, $owner: String!, $headRef: String!) {
+		repository(owner: $owner, name: $name) {
+			pullRequests(headRefName: $headRef, first:100){
+				nodes {
+					id,
+					isDraft,
+					state,
+				  }
+			}
+		}
+	}`
+
+	vars := map[string]interface{}{
+		"name":    name,
+		"owner":   owner,
+		"headRef": branch,
+	}
+
+	data, err := gh.request(ctx, query, vars)
+	if err != nil {
+		return "", err
+	}
+
+	var resp struct {
+		Repository struct {
+			PullRequests struct {
+				Nodes []struct {
+					ID      string `json:"id"`
+					IsDraft bool   `json:"isDraft"`
+					State   string `json:"state"`
+				} `json:"nodes"`
+			} `json:"pullRequests"`
+		} `json:"repository"`
+	}
+	err = json.Unmarshal(data, &resp)
+	var id string
+	for _, pr := range resp.Repository.PullRequests.Nodes {
+		if !pr.IsDraft {
+			continue
+		}
+		if pr.State != "OPEN" {
+			continue
+		}
+		id = pr.ID
+		break
+	}
+	return id, nil
+}
+
+// MarkReadyForReview changes the current branch status from `draft` to `ready for merge`.
+// When succeeds, it returns nil.
+func (gh GitHubClient) MarkReadyForReview(ctx context.Context, id string) error {
+	query := `mutation markReadyForReview($input: MarkPullRequestReadyForReviewInput!) {
+		markPullRequestReadyForReview(input: $input) {
+			clientMutationId
+		}
+	}`
+	input := struct {
+		ID string `json:"pullRequestId"`
+	}{
+		ID: id,
+	}
+	vars := map[string]interface{}{
+		"input": input,
+	}
+
+	_, err := gh.request(ctx, query, vars)
+	if err != nil {
+		return err
+	}
+	return nil
 }
