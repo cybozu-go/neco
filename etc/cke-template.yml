@@ -20,3 +20,5 @@ options:
     container_runtime_endpoint: unix:///var/run/k8s-containerd.sock
     container_log_max_size: 10Mi
     container_log_max_files: 10
+  etcd:
+    extra_args: ["--listen-metrics-urls=http://0.0.0.0:2381"]
