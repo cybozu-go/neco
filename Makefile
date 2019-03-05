@@ -9,6 +9,7 @@ TAGS =
 ### for Go
 GOFLAGS = -mod=vendor
 GOTAGS = $(TAGS) containers_image_openpgp containers_image_ostree_stub
+export GOFLAGS
 
 ### for debian package
 PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev
@@ -42,11 +43,11 @@ $(STATIK):
 
 test: $(STATIK)
 	test -z "$$(gofmt -s -l . | grep -v '^vendor\|^menu/assets.go' | tee /dev/stderr)"
-	test -z "$$(golint $$(go list $(GOFLAGS) -tags='$(GOTAGS)' ./... | grep -v /vendor/) | grep -v '/dctest/.*: should not use dot imports' | tee /dev/stderr)"
-	go build $(GOFLAGS) -tags='$(GOTAGS)' ./...
-	go test $(GOFLAGS) -tags='$(GOTAGS)' -race -v ./...
-	RUN_COMPACTION_TEST=yes go test $(GOFLAGS) -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
-	go vet $(GOFLAGS) -tags='$(GOTAGS)' ./...
+	test -z "$$(golint $$(go list -tags='$(GOTAGS)' ./... | grep -v /vendor/) | grep -v '/dctest/.*: should not use dot imports' | tee /dev/stderr)"
+	go build -tags='$(GOTAGS)' ./...
+	go test -tags='$(GOTAGS)' -race -v ./...
+	RUN_COMPACTION_TEST=yes go test -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
+	go vet -tags='$(GOTAGS)' ./...
 
 mod:
 	go mod tidy
