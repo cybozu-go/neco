@@ -99,6 +99,7 @@ func TestCKE() {
 			if len(nl.Items) != 5 {
 				return fmt.Errorf("too few nodes: %d", len(nl.Items))
 			}
+
 			return nil
 		}).Should(Succeed())
 
