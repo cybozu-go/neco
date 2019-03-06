@@ -43,6 +43,13 @@ You can skip this step if the GAE app is up to date.
 ```console
 make -f Makefile.gcp create
 ```
+### Install necogcp command
+
+necogcp command is used for creating a VM image, creating a VM instance, and so on.
+
+```console
+make necogcp
+```
 
 ### Create `vmx-enabled` instance image for your project
 
