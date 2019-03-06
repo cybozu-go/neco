@@ -116,7 +116,7 @@ func (cc *ComputeClient) CreateHomeDisk(ctx context.Context) error {
 	}
 	gcmdInfo := cc.gCloudComputeDisks()
 	gcmdInfo = append(gcmdInfo, "describe", "home",
-		"--zone",cc.cfg.Common.Zone,
+		"--zone", cc.cfg.Common.Zone,
 		"--format", "json")
 	outBuf := new(bytes.Buffer)
 	c := well.CommandContext(ctx, gcmdInfo[0], gcmdInfo[1:]...)
