@@ -39,9 +39,14 @@ func runReviewCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	pr, err := gc.GetDraftPR(ctx, *repo, br)
-	if err != nil {
-		return err
+	var pr string
+	if repo.Owner == "Neco" {
+		pr = ""
+	} else {
+		pr, err = gc.GetDraftPR(ctx, *repo, br)
+		if err != nil {
+			return err
+		}
 	}
 
 	if pr == "" {
