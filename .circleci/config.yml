@@ -77,7 +77,7 @@ jobs:
         name: Build deb package
         command: |
           VERSION=$(echo $CIRCLE_TAG | sed 's/^release-//')
-          make deb VERSION="$VERSION" TAGS=release FAKEROOT=
+          make deb SUDO="" VERSION="$VERSION" TAGS=release FAKEROOT=
     - persist_to_workspace:
         root: .
         paths:
