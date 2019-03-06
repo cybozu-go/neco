@@ -115,7 +115,9 @@ func (cc *ComputeClient) CreateHomeDisk(ctx context.Context) error {
 		return nil
 	}
 	gcmdInfo := cc.gCloudComputeDisks()
-	gcmdInfo = append(gcmdInfo, "describe", "home", "--format", "json")
+	gcmdInfo = append(gcmdInfo, "describe", "home",
+		"--zone",cc.cfg.Common.Zone,
+		"--format", "json")
 	outBuf := new(bytes.Buffer)
 	c := well.CommandContext(ctx, gcmdInfo[0], gcmdInfo[1:]...)
 	c.Stdin = os.Stdin
@@ -163,7 +165,9 @@ func (cc *ComputeClient) ResizeHomeDisk(ctx context.Context) error {
 		return nil
 	}
 	gcmdInfo := cc.gCloudComputeDisks()
-	gcmdInfo = append(gcmdInfo, "describe", "home", "--format", "json")
+	gcmdInfo = append(gcmdInfo, "describe", "home",
+		"--zone", cc.cfg.Common.Zone,
+		"--format", "json")
 	outBuf := new(bytes.Buffer)
 	c := well.CommandContext(ctx, gcmdInfo[0], gcmdInfo[1:]...)
 	c.Stdin = os.Stdin
