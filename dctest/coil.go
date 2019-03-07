@@ -3,6 +3,7 @@ package dctest
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -34,6 +35,35 @@ func TestCoilSetup() {
 		By("waiting for coil-node DaemonSet and coil-controllers Deployement")
 		checkCoilNodeDaemonSet()
 		checkCoilControllersDeployment()
+
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+			if err != nil {
+				return err
+			}
+
+			var nl corev1.NodeList
+			err = json.Unmarshal(stdout, &nl)
+			if err != nil {
+				return err
+			}
+
+		OUTER:
+			for _, n := range nl.Items {
+				for _, cond := range n.Status.Conditions {
+					if cond.Type != corev1.NodeReady {
+						continue
+					}
+					if cond.Status != corev1.ConditionTrue {
+						return fmt.Errorf("node %s is not ready", n.Name)
+					}
+					continue OUTER
+				}
+
+				return fmt.Errorf("node %s has no readiness status", n.Name)
+			}
+			return nil
+		}).Should(Succeed())
 
 		By("creating IP address pool")
 		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=k8s-app=coil-controllers", "-o=json")

@@ -99,22 +99,6 @@ func TestCKE() {
 			if len(nl.Items) != 5 {
 				return fmt.Errorf("too few nodes: %d", len(nl.Items))
 			}
-
-		OUTER:
-			for _, n := range nl.Items {
-				for _, cond := range n.Status.Conditions {
-					if cond.Type != corev1.NodeReady {
-						continue
-					}
-					if cond.Status != corev1.ConditionTrue {
-						return fmt.Errorf("node %s is not ready", n.Name)
-					}
-					continue OUTER
-				}
-
-				return fmt.Errorf("node %s has no readiness status", n.Name)
-			}
-
 			return nil
 		}).Should(Succeed())
 
