@@ -34,6 +34,10 @@ func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error
 		if err != nil {
 			return err
 		}
+		err = cke.InstallBashCompletion(ctx)
+		if err != nil {
+			return err
+		}
 	}
 	_, err = o.replaceCKEFiles(ctx, req.Servers)
 	if err != nil {
