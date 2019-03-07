@@ -201,6 +201,31 @@ jobs:
           command: |
             if [ -f .skip ]; then exit 0; fi
             ./bin/commit-push.sh
+  build_necogcp:
+    docker:
+      - image: quay.io/cybozu/golang:1.11-bionic
+    working_directory: /work
+    steps:
+      - checkout
+      - run: make SUDO="" setup
+      - run: make necogcp
+      - persist_to_workspace:
+          root: /go/bin
+          paths:
+            - necogcp
+  update-vmx-enabled-image:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - run:
+          name: Store Service Account
+          command: |
+            echo $GCLOUD_SERVICE_ACCOUNT > account.json
+            gcloud auth activate-service-account --key-file=account.json
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: /tmp/workspace/necogcp neco-test create-image
 
 workflows:
   version: 2
@@ -278,3 +303,16 @@ workflows:
             branches:
               only:
                 - master
+  weekly:
+    triggers:
+      - schedule:
+          cron: "0 15 * * 6"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build_necogcp
+      - update-vmx-enabled-image:
+          requires:
+            - build_necogcp
