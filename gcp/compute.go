@@ -316,6 +316,7 @@ func (cc *ComputeClient) RunSetup(ctx context.Context, progFile, cfgFile string)
 func (cc *ComputeClient) ExtendInstance(ctx context.Context) error {
 	gcmd := cc.gCloudComputeInstances()
 	gcmd = append(gcmd, "add-metadata", cc.instance,
+		"--zone", cc.cfg.Common.Zone,
 		"--metadata", MetadataKeyExtended+"="+time.Now().UTC().Add(1*time.Hour).Format(time.RFC3339))
 	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin

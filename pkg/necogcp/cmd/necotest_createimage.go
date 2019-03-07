@@ -25,13 +25,20 @@ var necotestCreateImageCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			defer os.Remove(f.Name())
+			defer func() {
+				f.Close()
+				os.Remove(f.Name())
+			}()
 
 			err = yaml.NewEncoder(f).Encode(necotestCfg)
 			if err != nil {
 				return err
 			}
-			f.Close()
+
+			err = f.Sync()
+			if err != nil {
+				return err
+			}
 
 			return gcp.CreateVMXEnabledImage(ctx, cc, f.Name())
 		})
