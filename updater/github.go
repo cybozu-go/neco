@@ -28,17 +28,14 @@ func NewReleaseClient(owner, repo string, http *http.Client) *ReleaseClient {
 // GetLatestReleaseTag returns latest published release tag in GitHub Releases of neco repository
 func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
 	client := neco.NewGitHubClient(c.http)
-	release, resp, err := client.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
+	release, _, err := client.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
 	if err != nil {
-		if resp.StatusCode == http.StatusNotFound {
-			return "", ErrNoReleases
-		}
-		log.Error("failed to get the latest GitHub release", map[string]interface{}{
+		log.Warn("failed to get the latest GitHub release", map[string]interface{}{
 			"owner":      c.owner,
 			"repository": c.repo,
 			log.FnError:  err,
 		})
-		return "", err
+		return "", ErrNoReleases
 	}
 	if release.TagName == nil {
 		log.Error("no tagged release", map[string]interface{}{
@@ -63,7 +60,12 @@ func (c ReleaseClient) GetLatestPublishedTag(ctx context.Context) (string, error
 	for {
 		rs, resp, err := client.Repositories.ListReleases(ctx, c.owner, c.repo, opt)
 		if err != nil {
-			return "", err
+			log.Warn("failed to list GitHub releases", map[string]interface{}{
+				"owner":      c.owner,
+				"repository": c.repo,
+				log.FnError:  err,
+			})
+			return "", ErrNoReleases
 		}
 		releases = append(releases, rs...)
 		if resp.NextPage == 0 {
