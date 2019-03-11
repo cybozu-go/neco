@@ -79,6 +79,7 @@ func TestInit() {
 			execSafeAt(host, "test", "-f", neco.SabakanConfFile)
 			execSafeAt(host, "test", "-f", neco.SabakanKeyFile)
 			execSafeAt(host, "test", "-f", neco.SabakanCertFile)
+			execSafeAt(host, "test", "-f", neco.SabactlBashCompletionFile)
 
 			execSafeAt(host, "systemctl", "-q", "is-active", "sabakan.service")
 		}
@@ -104,6 +105,7 @@ func TestInit() {
 			execSafeAt(host, "test", "-f", neco.CKEConfFile)
 			execSafeAt(host, "test", "-f", neco.CKEKeyFile)
 			execSafeAt(host, "test", "-f", neco.CKECertFile)
+			execSafeAt(host, "test", "-f", neco.CKECLIBashCompletionFile)
 
 			execSafeAt(host, "systemctl", "-q", "is-active", "cke.service")
 		}

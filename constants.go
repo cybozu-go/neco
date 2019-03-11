@@ -96,6 +96,11 @@ const (
 	WorkerAssetsPath = "/usr/libexec/neco"
 )
 
+// Bash completion
+const (
+	BashCompletionDir = "/etc/bash_completion.d"
+)
+
 // File locations
 var (
 	rackFile    = filepath.Join(NecoDir, "rack")
@@ -123,16 +128,19 @@ var (
 	EtcdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
 	EtcdpasswdDropIn   = "/etc/systemd/system/ep-agent.service.d/10-check-certificate.conf"
 
-	SabakanCertFile = filepath.Join(SabakanDir, "etcd.crt")
-	SabakanKeyFile  = filepath.Join(SabakanDir, "etcd.key")
-	SabakanConfFile = filepath.Join(SabakanDir, "config.yml")
+	SabakanCertFile           = filepath.Join(SabakanDir, "etcd.crt")
+	SabakanKeyFile            = filepath.Join(SabakanDir, "etcd.key")
+	SabakanConfFile           = filepath.Join(SabakanDir, "config.yml")
+	SabactlBin                = "/usr/local/bin/sabactl"
+	SabactlBashCompletionFile = filepath.Join(BashCompletionDir, "sabactl")
 
 	SerfConfFile = filepath.Join(SerfDir, "serf.json")
 
-	CKECertFile = filepath.Join(CKEDir, "etcd.crt")
-	CKEKeyFile  = filepath.Join(CKEDir, "etcd.key")
-	CKEConfFile = filepath.Join(CKEDir, "config.yml")
-	CKECLIBin   = "/usr/local/bin/ckecli"
+	CKECertFile              = filepath.Join(CKEDir, "etcd.crt")
+	CKEKeyFile               = filepath.Join(CKEDir, "etcd.key")
+	CKEConfFile              = filepath.Join(CKEDir, "config.yml")
+	CKECLIBin                = "/usr/local/bin/ckecli"
+	CKECLIBashCompletionFile = filepath.Join(BashCompletionDir, "ckecli")
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
