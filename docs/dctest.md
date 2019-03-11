@@ -45,6 +45,11 @@ There are three types of test suites.
 
     This suite installs Neco with the generated deb package.
 
+4. reboot
+
+    This suite tests disaster recovery scenario. It depends on bootstrap.
+    Before running reboot test suite, bootstrap test must be executed.
+
 Each test suite has an entry point of test as `<suite>/suite_test.go`.
 
 ### Base of upgrading test
@@ -91,13 +96,13 @@ Options
 ### `SUITE`
 
 You can choose the type of test suite by specifying `SUITE` make variable.
-The value can be `bootstrap` (default), `upgrade`, or `functions`.
+The value can be `bootstrap` (default), `upgrade`, `functions`, or `reboot`.
 
 `make test` accepts this variable.
 
 The value of `SUITE` is interpreted as a Go package name.  You can write
 a new test suite and specify its package name by `SUITE`.  As a side note,
-the forms of `./bootstrap`, `./upgrade`, and `./functions` are more proper.
+the forms of `./bootstrap`, `./upgrade`, `./functions`, and `./reboot` are more proper.
 
 ### `DATACENTER`
 
