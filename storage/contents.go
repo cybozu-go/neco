@@ -68,3 +68,23 @@ func (s Storage) GetCKEContentsStatus(ctx context.Context) (*neco.ContentsUpdate
 func (s Storage) PutCKEContentsStatus(ctx context.Context, st *neco.ContentsUpdateStatus, leaderKey string) error {
 	return s.putContentsUpdateStatus(ctx, KeyCKEContents, st, leaderKey)
 }
+
+// GetDHCPJSONContentsStatus returns update status of dhcp.json for sabakan.
+func (s Storage) GetDHCPJSONContentsStatus(ctx context.Context) (*neco.ContentsUpdateStatus, error) {
+	return s.getContentsUpdateStatus(ctx, KeyDHCPJSONContents)
+}
+
+// PutDHCPJSONContentsStatus puts update status of dhcp.json for sabakan, only if caller is the leader.
+func (s Storage) PutDHCPJSONContentsStatus(ctx context.Context, st *neco.ContentsUpdateStatus, leaderKey string) error {
+	return s.putContentsUpdateStatus(ctx, KeyDHCPJSONContents, st, leaderKey)
+}
+
+// GetCKETemplateContentsStatus returns update status of cke-template.yml.
+func (s Storage) GetCKETemplateContentsStatus(ctx context.Context) (*neco.ContentsUpdateStatus, error) {
+	return s.getContentsUpdateStatus(ctx, KeyCKETemplateContents)
+}
+
+// PutCKETemplateContentsStatus puts update status of cke-template.yml, only if caller is the leader.
+func (s Storage) PutCKETemplateContentsStatus(ctx context.Context, st *neco.ContentsUpdateStatus, leaderKey string) error {
+	return s.putContentsUpdateStatus(ctx, KeyCKETemplateContents, st, leaderKey)
+}

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -18,7 +19,8 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
-	sabakan "github.com/cybozu-go/sabakan/v2/client"
+	sabakan "github.com/cybozu-go/sabakan/v2"
+	sabac "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/cybozu-go/well"
 )
 
@@ -30,7 +32,7 @@ const retryCount = 5
 
 // UploadContents upload contents to sabakan
 func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth *DockerAuth, st storage.Storage) error {
-	client, err := sabakan.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
+	client, err := sabac.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
 	if err != nil {
 		return err
 	}
@@ -53,7 +55,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 }
 
 // uploadOSImages uploads CoreOS images
-func uploadOSImages(ctx context.Context, c *sabakan.Client, p *http.Client) error {
+func uploadOSImages(ctx context.Context, c *sabac.Client, p *http.Client) error {
 	index, err := c.ImagesIndex(ctx, imageOS)
 	if err != nil {
 		return err
@@ -152,7 +154,7 @@ func uploadOSImages(ctx context.Context, c *sabakan.Client, p *http.Client) erro
 }
 
 // uploadAssets uploads assets
-func uploadAssets(ctx context.Context, c *sabakan.Client, auth *DockerAuth) error {
+func uploadAssets(ctx context.Context, c *sabac.Client, auth *DockerAuth) error {
 	// Upload bird and chrony with ubuntu-debug
 	for _, img := range neco.SystemContainers {
 		err := uploadSystemImageAssets(ctx, img, c)
@@ -196,7 +198,7 @@ func uploadAssets(ctx context.Context, c *sabakan.Client, auth *DockerAuth) erro
 	return nil
 }
 
-func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.Client) error {
+func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Client) error {
 	name := neco.ACIAssetName(img)
 	need, err := needAssetUpload(ctx, name, c)
 	if err != nil {
@@ -211,7 +213,7 @@ func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *sa
 }
 
 // UploadImageAssets upload docker container image as sabakan assets.
-func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.Client, auth *DockerAuth) error {
+func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Client, auth *DockerAuth) error {
 	name := neco.ImageAssetName(img)
 	need, err := needAssetUpload(ctx, name, c)
 	if err != nil {
@@ -237,12 +239,12 @@ func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabakan.
 	return err
 }
 
-func needAssetUpload(ctx context.Context, name string, c *sabakan.Client) (bool, error) {
+func needAssetUpload(ctx context.Context, name string, c *sabac.Client) (bool, error) {
 	_, err := c.AssetsInfo(ctx, name)
 	if err == nil {
 		return false, nil
 	}
-	if sabakan.IsNotFound(err) {
+	if sabac.IsNotFound(err) {
 		return true, nil
 	}
 	return false, err
@@ -250,7 +252,7 @@ func needAssetUpload(ctx context.Context, name string, c *sabakan.Client) (bool,
 
 // UploadIgnitions updates ignitions from local file
 func UploadIgnitions(ctx context.Context, c *http.Client, id string, st storage.Storage) error {
-	client, err := sabakan.NewClient(neco.SabakanLocalEndpoint, c)
+	client, err := sabac.NewClient(neco.SabakanLocalEndpoint, c)
 	if err != nil {
 		return err
 	}
@@ -258,7 +260,7 @@ func UploadIgnitions(ctx context.Context, c *http.Client, id string, st storage.
 	return uploadIgnitions(ctx, client, id, st)
 }
 
-func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st storage.Storage) error {
+func uploadIgnitions(ctx context.Context, c *sabac.Client, id string, st storage.Storage) error {
 	roles, err := getInstalledRoles()
 	if err != nil {
 		return err
@@ -322,7 +324,7 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 	for _, role := range roles {
 		path := filepath.Join(neco.IgnitionDirectory, "roles", role, "site.yml")
 
-		tmpl, err := sabakan.BuildIgnitionTemplate(path, metadata)
+		tmpl, err := sabac.BuildIgnitionTemplate(path, metadata)
 		if err != nil {
 			return err
 		}
@@ -342,7 +344,7 @@ func uploadIgnitions(ctx context.Context, c *sabakan.Client, id string, st stora
 	return nil
 }
 
-func needIgnitionUpdate(ctx context.Context, c *sabakan.Client, role, id string) (bool, error) {
+func needIgnitionUpdate(ctx context.Context, c *sabac.Client, role, id string) (bool, error) {
 	ids, err := c.IgnitionsListIDs(ctx, role)
 	if err != nil {
 		return false, err
@@ -401,4 +403,25 @@ func setCKEMetadata(metadata map[string]interface{}) error {
 		metadata["cke:"+img.Name+".ref"] = img.FullName(false)
 	}
 	return sc.Err()
+}
+
+func UploadDHCPJSON(ctx context.Context, sabakanHTTP *http.Client) error {
+	saba, err := sabac.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Open(neco.SabakanDHCPJSONFile)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	var conf sabakan.DHCPConfig
+	err = json.NewDecoder(f).Decode(&conf)
+	if err != nil {
+		return err
+	}
+
+	return saba.DHCPConfigSet(ctx, &conf)
 }

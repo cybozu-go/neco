@@ -18,6 +18,8 @@ const (
 	KeyWorkerStatusPrefix  = "status/bootservers/"
 	KeySabakanContents     = "contents/sabakan"
 	KeyCKEContents         = "contents/cke"
+	KeyDHCPJSONContents    = "contents/dhcp.json"
+	KeyCKETemplateContents = "contents/cke-template"
 	KeyConfigPrefix        = "config/"
 	KeyNotificationSlack   = "config/notification/slack"
 	KeyProxy               = "config/proxy"
