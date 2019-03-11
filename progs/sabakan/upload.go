@@ -405,6 +405,7 @@ func setCKEMetadata(metadata map[string]interface{}) error {
 	return sc.Err()
 }
 
+// UploadDHCPJSON uploads dhcp.json
 func UploadDHCPJSON(ctx context.Context, sabakanHTTP *http.Client) error {
 	saba, err := sabac.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
 	if err != nil {

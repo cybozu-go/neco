@@ -14,6 +14,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/cke"
 	"github.com/cybozu-go/neco/storage"
+	"github.com/cybozu-go/well"
 )
 
 func (o *operator) StopCKE(ctx context.Context, req *neco.UpdateRequest) error {
@@ -205,7 +206,7 @@ func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateReques
 		}
 	}
 
-	err = cke.UploadCKETemplate(ctx, o.localClient)
+	err = well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", neco.CKETempateFile).Run()
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,
