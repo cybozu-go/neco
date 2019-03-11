@@ -58,7 +58,7 @@ mod:
 deb: $(DEB)
 
 $(DEB):
-	make -f Makefile.tools SUDO=$(SUDO)
+	$(MAKE) -f Makefile.tools SUDO=$(SUDO)
 	cp -r debian/* $(WORKDIR)
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
@@ -79,7 +79,7 @@ setup:
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
 
 clean:
-	make -f Makefile.tools clean
+	$(MAKE) -f Makefile.tools clean
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB)
 
 .PHONY:	all start-etcd stop-etcd test mod deb necogcp setup clean
