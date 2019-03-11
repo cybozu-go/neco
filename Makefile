@@ -79,6 +79,7 @@ setup:
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
 
 clean:
+	make -f Makefile.tools clean
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB)
 
 .PHONY:	all start-etcd stop-etcd test mod deb necogcp setup clean

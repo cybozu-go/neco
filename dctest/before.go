@@ -43,6 +43,17 @@ func RunBeforeSuiteInstall() {
 		return nil
 	}).Should(Succeed())
 
+	// Check chrony is synchronized
+	Eventually(func() error {
+		for _, host := range []string{boot0, boot1, boot2, boot3} {
+			_, _, err := execAt(host, "systemctl", "-q", "is-active", "chrony-wait.service")
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}).Should(Succeed())
+
 	// copy and install Neco deb package
 	fmt.Println("installing Neco")
 	f, err := os.Open(debFile)

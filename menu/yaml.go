@@ -23,14 +23,15 @@ type baseConfig struct {
 
 type networkConfig struct {
 	Spec struct {
-		IPAMConfig    string `yaml:"ipam-config"`
-		ASNBase       int    `yaml:"asn-base"`
-		Internet      string `yaml:"internet"`
-		SpineTor      string `yaml:"spine-tor"`
-		CoreSpine     string `yaml:"core-spine"`
-		CoreExternal  string `yaml:"core-external"`
-		CoreOperation string `yaml:"core-operation"`
-		Proxy         string `yaml:"proxy"`
+		IPAMConfig    string   `yaml:"ipam-config"`
+		ASNBase       int      `yaml:"asn-base"`
+		Internet      string   `yaml:"internet"`
+		SpineTor      string   `yaml:"spine-tor"`
+		CoreSpine     string   `yaml:"core-spine"`
+		CoreExternal  string   `yaml:"core-external"`
+		CoreOperation string   `yaml:"core-operation"`
+		Proxy         string   `yaml:"proxy"`
+		NTP           []string `yaml:"ntp"`
 		Exposed       struct {
 			Bastion      string `yaml:"bastion"`
 			LoadBalancer string `yaml:"loadbalancer"`
@@ -157,6 +158,16 @@ func unmarshalNetwork(dir string, data []byte) (*NetworkMenu, error) {
 		network.Proxy = net.ParseIP(n.Spec.Proxy)
 		if network.Proxy == nil {
 			return nil, errors.New("Invalid IP address of proxy: " + n.Spec.Proxy)
+		}
+	}
+	// `ntp` is optional value
+	if len(n.Spec.NTP) != 0 {
+		for _, address := range n.Spec.NTP {
+			proxyIP := net.ParseIP(address)
+			if proxyIP == nil {
+				return nil, errors.New("Invalid IP address of proxy: " + address)
+			}
+			network.NTP = append(network.NTP, proxyIP)
 		}
 	}
 

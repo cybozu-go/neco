@@ -30,6 +30,7 @@ type NetworkMenu struct {
 	CoreOperation  *net.IPNet
 	SpineTor       net.IP
 	Proxy          net.IP
+	NTP            []net.IP
 	Bastion        *net.IPNet
 	LoadBalancer   *net.IPNet
 	Ingress        *net.IPNet
