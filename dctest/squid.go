@@ -15,6 +15,7 @@ func TestSquidSetup() {
 		By("creating k8s resources")
 		execSafeAt(boot0, "sed", "-e", "s,%%SQUID_IMAGE%%,$(neco image squid),",
 			"-e", "'s,cache_mem .*,cache_mem 200 MB,'",
+			"-e", "s,%%UNBOUND_IMAGE%%,$(ckecli images | grep quay.io/cybozu/unbound),",
 			"/usr/share/neco/squid.yml", "|", "kubectl", "create", "-f", "-")
 	})
 }
