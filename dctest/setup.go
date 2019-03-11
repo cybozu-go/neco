@@ -69,8 +69,6 @@ func TestSetup() {
 			execSafeAt(h, "test", "-f", neco.EtcdBackupKeyFile)
 			execSafeAt(h, "test", "-f", neco.TimerFile("etcd-backup"))
 			execSafeAt(h, "test", "-f", neco.ServiceFile("etcd-backup"))
-			execSafeAt(h, "test", "-f", neco.SabactlBashCompletionFile)
-			execSafeAt(h, "test", "-f", neco.CKECLIBashCompletionFile)
 		}
 	})
 
