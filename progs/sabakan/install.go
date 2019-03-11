@@ -1,10 +1,8 @@
 package sabakan
 
 import (
-	"bytes"
 	"context"
-	"io"
-	"os"
+	"io/ioutil"
 	"os/exec"
 
 	"github.com/cybozu-go/neco"
@@ -26,17 +24,5 @@ func InstallBashCompletion(ctx context.Context) error {
 		return err
 	}
 
-	f, err := os.OpenFile(neco.SabactlBashCompletionFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	bc := bytes.NewReader(output)
-	_, err = io.Copy(f, bc)
-	if err != nil {
-		return err
-	}
-
-	return f.Sync()
+	return ioutil.WriteFile(neco.SabactlBashCompletionFile, output, 0644)
 }
