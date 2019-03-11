@@ -30,6 +30,10 @@ func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error
 		if err != nil {
 			return err
 		}
+		err = cke.InstallBashCompletion(ctx)
+		if err != nil {
+			return err
+		}
 		err = o.storage.RecordContainerTag(ctx, o.mylrn, "cke")
 		if err != nil {
 			return err
