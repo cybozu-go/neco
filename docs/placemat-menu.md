@@ -162,6 +162,9 @@ example is assigned addresses when `10.0.1.0` is specified:
 - `proxy`: The IP address of the HTTP/HTTPS proxy server to
     the Internet running on the core switch.
 
+- `ntp`: The IP addresses of the NTP server to
+    the Internet running chronyd on the core switch.
+
 - `exposed`: The network addresses advertise to outside of the cluster
     - `bastion`: The bastion network addresses, whey are also advertised to the
         external of the cluster.  They are assigned for the boot servers, and they able
