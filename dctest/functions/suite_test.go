@@ -49,5 +49,4 @@ var _ = Describe("Test Neco functions", func() {
 		dctest.TestSquid()
 	})
 	Context("join/remove", dctest.TestJoinRemove)
-	Context("reboot-all-nodes", dctest.TestRebootAllNodes)
 })

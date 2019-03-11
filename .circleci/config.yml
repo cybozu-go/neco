@@ -137,6 +137,35 @@ jobs:
       - dctest-command:
           script: run-dctest-release.sh
           suite: ./functions
+  dctest-release-functions-reboot:
+      docker:
+      - image: google/cloud-sdk
+      steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Configure GIT
+          command: |
+            git config --global user.email "neco@cybozu.com"
+            git config --global user.name "cybozu-neco"
+      - run: git checkout release
+      - run: git merge --no-commit origin/master
+      - run: cp /tmp/workspace/artifacts_release.go .
+      - run:
+          name: Check diff
+          command: |
+            diffs=$(git status -s)
+            if [ "$diffs" = "" ]; then touch .skip; exit 0; fi
+            printf "%s\n" "$diffs"
+      - dctest-command:
+          script: run-dctest-release.sh
+          suite: ./functions
+      - run:
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/run-dctest-suite.sh reboot
+          no_output_timeout: 20m
   dctest-release-upgrade-staging:
       docker:
       - image: google/cloud-sdk
@@ -165,7 +194,7 @@ jobs:
       - run:
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/run-dctest-upgrade.sh
+            ./bin/run-dctest-suite.sh upgrade
           no_output_timeout: 20m
   update-release:
       docker:
@@ -239,7 +268,7 @@ workflows:
                 - release
     jobs:
       - generate-artifacts
-      - dctest-release-functions:
+      - dctest-release-functions-reboot:
           requires:
             - generate-artifacts
       - dctest-release-upgrade-staging:
@@ -247,7 +276,7 @@ workflows:
             - generate-artifacts
       - update-release:
           requires:
-            - dctest-release-functions
+            - dctest-release-functions-reboot
             - dctest-release-upgrade-staging
   master:
     jobs:
@@ -256,7 +285,7 @@ workflows:
             branches:
               only:
                 - master
-      - dctest-release-functions:
+      - dctest-release-functions-reboot:
           requires:
             - generate-artifacts
           filters:
@@ -272,7 +301,7 @@ workflows:
                 - master
       - update-release:
           requires:
-            - dctest-release-functions
+            - dctest-release-functions-reboot
             - dctest-release-upgrade-staging
           filters:
             branches:
