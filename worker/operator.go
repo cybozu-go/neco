@@ -118,6 +118,10 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 12:
 		return o.UpdateSabakanContents(ctx, req)
 	case 13:
+		return o.UpdateDHCPJSON(ctx, req)
+	case 14:
+		return o.UpdateCKETemplate(ctx, req)
+	case 15:
 		// THIS MUST BE THE FINAL STEP!!!!!
 		// to synchronize before restarting etcd.
 		return nil

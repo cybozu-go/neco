@@ -185,3 +185,73 @@ func (o *operator) replaceSabakanFiles(ctx context.Context, mylrn int, lrns []in
 
 	return r1 || r2, nil
 }
+
+func (o *operator) UpdateDHCPJSON(ctx context.Context, req *neco.UpdateRequest) error {
+	// Check if Sabakan is alive
+	isActive, err := neco.IsActiveService(ctx, neco.SabakanService)
+	if err != nil {
+		return err
+	}
+	if !isActive {
+		log.Info("sabakan: skipped uploading dhcp.json because sabakan is inactive", nil)
+		return nil
+	}
+
+	// Leader election
+	sess, err := concurrency.NewSession(o.ec, concurrency.WithTTL(600))
+	if err != nil {
+		log.Error("sabakan: new session is not created", map[string]interface{}{
+			log.FnError: err,
+		})
+		return err
+	}
+	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
+	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
+	if err != nil {
+		log.Error("sabakan: cannot join a campaign", map[string]interface{}{
+			log.FnError: err,
+		})
+		return err
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		e.Resign(ctx)
+		cancel()
+	}()
+
+	status, err := o.storage.GetDHCPJSONContentsStatus(ctx)
+	if err != nil {
+		if err != storage.ErrNotFound {
+			return err
+		}
+	} else {
+		if status.Version == req.Version {
+			if status.Success {
+				return nil
+			}
+			return errors.New("update of dhcp.json failed by preceding worker")
+		}
+		if !status.Success {
+			return errors.New("unexpected status; success must be true if versions differ")
+		}
+	}
+
+	err = sabakan.UploadDHCPJSON(ctx, o.localClient)
+	ret := &neco.ContentsUpdateStatus{
+		Version: req.Version,
+		Success: err == nil,
+	}
+	err2 := o.storage.PutDHCPJSONContentsStatus(ctx, ret, e.Key())
+	if err2 != nil {
+		log.Error("sabakan: failed to update Sabakan contents status", map[string]interface{}{
+			log.FnError: err2,
+		})
+	}
+	// 'err' is more important than 'err2'
+	if err != nil {
+		return err
+	}
+
+	log.Info("sabakan: updated dhcp.json", nil)
+	return err2
+}

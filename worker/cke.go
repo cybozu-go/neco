@@ -14,6 +14,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/cke"
 	"github.com/cybozu-go/neco/storage"
+	"github.com/cybozu-go/well"
 )
 
 func (o *operator) StopCKE(ctx context.Context, req *neco.UpdateRequest) error {
@@ -152,5 +153,75 @@ func (o *operator) UpdateCKEContents(ctx context.Context, req *neco.UpdateReques
 	}
 
 	log.Info("cke: updated contents", nil)
+	return err2
+}
+
+func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateRequest) error {
+	// Check if CKE is alive
+	isActive, err := neco.IsActiveService(ctx, neco.CKEService)
+	if err != nil {
+		return err
+	}
+	if !isActive {
+		log.Info("cke: skipped uploading cke-template.yml because CKE is inactive", nil)
+		return nil
+	}
+
+	// Leader election
+	sess, err := concurrency.NewSession(o.ec, concurrency.WithTTL(600))
+	if err != nil {
+		log.Error("cke: new session is not created", map[string]interface{}{
+			log.FnError: err,
+		})
+		return err
+	}
+	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
+	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
+	if err != nil {
+		log.Error("cke: cannot join a campaign", map[string]interface{}{
+			log.FnError: err,
+		})
+		return err
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		e.Resign(ctx)
+		cancel()
+	}()
+
+	status, err := o.storage.GetCKETemplateContentsStatus(ctx)
+	if err != nil {
+		if err != storage.ErrNotFound {
+			return err
+		}
+	} else {
+		if status.Version == req.Version {
+			if status.Success {
+				return nil
+			}
+			return errors.New("cke: update of cke-template.yml failed by preceding worker")
+		}
+		if !status.Success {
+			return errors.New("cke: unexpected status; success must be true if versions differ")
+		}
+	}
+
+	err = well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", neco.CKETempateFile).Run()
+	ret := &neco.ContentsUpdateStatus{
+		Version: req.Version,
+		Success: err == nil,
+	}
+	err2 := o.storage.PutCKETemplateContentsStatus(ctx, ret, e.Key())
+	if err2 != nil {
+		log.Error("cke: failed to update cke-template.yml contents status", map[string]interface{}{
+			log.FnError: err2,
+		})
+	}
+	// 'err' is more important than 'err2'
+	if err != nil {
+		return err
+	}
+
+	log.Info("cke: updated cke-template.yml", nil)
 	return err2
 }
