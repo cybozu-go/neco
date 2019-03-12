@@ -233,30 +233,12 @@ func (s Server) handleSnapshots(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" && len(params) == 3 {
 		switch params[1] {
 		case "save":
-			env := well.NewEnvironment(r.Context())
-			for _, node := range s.cluster.Nodes {
-				vm := s.vms[node.SMBIOS.Serial]
-				node := node
-				env.Go(func(ctx context.Context) error {
-					return vm.SaveVM(ctx, node, params[2])
-				})
-			}
-			env.Stop()
-			err := env.Wait()
+			err := s.saveSnapshot(r.Context(), params[2])
 			if err != nil {
 				web.RenderError(r.Context(), w, web.InternalServerError(err))
 			}
 		case "load":
-			env := well.NewEnvironment(r.Context())
-			for _, node := range s.cluster.Nodes {
-				vm := s.vms[node.SMBIOS.Serial]
-				node := node
-				env.Go(func(ctx context.Context) error {
-					return vm.LoadVM(ctx, node, params[2])
-				})
-			}
-			env.Stop()
-			err := env.Wait()
+			err := s.loadSnapshot(r.Context(), params[2])
 			if err != nil {
 				web.RenderError(r.Context(), w, web.InternalServerError(err))
 			}
@@ -266,4 +248,50 @@ func (s Server) handleSnapshots(w http.ResponseWriter, r *http.Request) {
 	} else {
 		web.RenderError(r.Context(), w, web.APIErrBadRequest)
 	}
+}
+
+func (s Server) saveSnapshot(ctx context.Context, name string) error {
+	env := well.NewEnvironment(ctx)
+	for _, node := range s.cluster.Nodes {
+		vm := s.vms[node.SMBIOS.Serial]
+		node := node
+		env.Go(func(ctx context.Context) error {
+			return vm.SaveVM(ctx, node, name)
+		})
+	}
+	env.Stop()
+	err := env.Wait()
+	if err != nil {
+		return err
+	}
+	return s.resumeVM(ctx)
+}
+
+func (s Server) loadSnapshot(ctx context.Context, name string) error {
+	env := well.NewEnvironment(ctx)
+	for _, node := range s.cluster.Nodes {
+		vm := s.vms[node.SMBIOS.Serial]
+		node := node
+		env.Go(func(ctx context.Context) error {
+			return vm.LoadVM(ctx, node, name)
+		})
+	}
+	env.Stop()
+	err := env.Wait()
+	if err != nil {
+		return err
+	}
+	return s.resumeVM(ctx)
+}
+
+func (s Server) resumeVM(ctx context.Context) error {
+	env := well.NewEnvironment(ctx)
+	for _, node := range s.cluster.Nodes {
+		vm := s.vms[node.SMBIOS.Serial]
+		env.Go(func(ctx context.Context) error {
+			return vm.ResumeVM(ctx)
+		})
+	}
+	env.Stop()
+	return env.Wait()
 }
