@@ -2,7 +2,7 @@
 
 mkdir -p /etc/neco
 
-for i in $(seq 120); do
+for i in $(seq 20); do
     if curl -sfSL -o /etc/neco/bmc-user.json {{ MyURL }}/api/v1/assets/bmc-user.json; then
         break
     fi
