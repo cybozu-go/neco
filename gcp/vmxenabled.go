@@ -21,6 +21,7 @@ import (
 
 const (
 	assetDir = "/assets"
+	ctPath   = "/usr/local/bin/ct"
 )
 
 var (
@@ -68,6 +69,11 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 	}
 
 	err = installDebianPackage(ctx, client, artifacts.placematURL())
+	if err != nil {
+		return err
+	}
+
+	err = installBinaryFile(ctx, client, artifacts.ctURL(), ctPath)
 	if err != nil {
 		return err
 	}
@@ -148,7 +154,7 @@ func configureProjectAtomic(ctx context.Context) error {
 		return err
 	}
 
-	return well.CommandContext(ctx, "add-apt-repository", "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu xenial main").Run()
+	return well.CommandContext(ctx, "add-apt-repository", "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu bionic main").Run()
 }
 
 func installAptPackages(ctx context.Context, optionalPackages []string) error {
@@ -258,6 +264,16 @@ func installDebianPackage(ctx context.Context, client *http.Client, url string) 
 	return well.CommandContext(ctx, command[0], command[1:]...).Run()
 }
 
+func installBinaryFile(ctx context.Context, client *http.Client, url, dest string) error {
+	resp, err := client.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return writeToFile(dest, resp.Body, 0755)
+}
+
 func setupPodman() error {
 	return os.Symlink("/usr/lib/cri-o-runc/sbin/runc", "/usr/local/sbin/runc")
 }
@@ -342,7 +358,7 @@ func downloadAssets(client *http.Client) error {
 		}()
 		f := bzip2.NewReader(bz2)
 		extName := strings.TrimRight(bz2.Name(), ".bz2")
-		err = writeToFile(extName, f)
+		err = writeToFile(extName, f, 0644)
 		if err != nil {
 			return err
 		}
@@ -376,14 +392,14 @@ func downloadFile(client *http.Client, url, destDir string) error {
 	return f.Sync()
 }
 
-func writeToFile(p string, r io.Reader) error {
+func writeToFile(p string, r io.Reader, perm os.FileMode) error {
 	f, err := os.Create(p)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	err = f.Chmod(0644)
+	err = f.Chmod(perm)
 	if err != nil {
 		return err
 	}

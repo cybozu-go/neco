@@ -12,6 +12,7 @@ type artifactSet struct {
 	placematVersion     string
 	customUbuntuVersion string
 	coreOSVersion       string
+	ctVersion           string
 	debPackages         []string
 }
 
@@ -32,6 +33,10 @@ func (a artifactSet) rktURL() string {
 
 func (a artifactSet) placematURL() string {
 	return fmt.Sprintf("https://github.com/cybozu-go/placemat/releases/download/v%s/placemat_%s_amd64.deb", a.placematVersion, a.placematVersion)
+}
+
+func (a artifactSet) ctURL() string {
+	return fmt.Sprintf("https://github.com/coreos/container-linux-config-transpiler/releases/download/v%s/ct-v%s-x86_64-unknown-linux-gnu", a.ctVersion, a.ctVersion)
 }
 
 func (a artifactSet) assetURLs() []string {

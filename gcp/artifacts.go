@@ -7,6 +7,7 @@ var artifacts = artifactSet{
 	placematVersion:     "1.3.4",
 	customUbuntuVersion: "20190213",
 	coreOSVersion:       "2023.4.0",
+	ctVersion:           "0.9.0",
 	debPackages: []string{
 		"git",
 		"build-essential",
@@ -37,5 +38,6 @@ var artifacts = artifactSet{
 		"libdevmapper-dev",
 		"libgpgme-dev",
 		"libostree-dev",
+		"libseccomp-dev",
 	},
 }
