@@ -113,7 +113,7 @@ jobs:
           root: .
           paths:
             - "artifacts_release.go"
-  dctest-release-functions:
+  dctest-release-reboot:
       docker:
       - image: google/cloud-sdk
       steps:
@@ -136,7 +136,7 @@ jobs:
             printf "%s\n" "$diffs"
       - dctest-command:
           script: run-dctest-release.sh
-          suite: ./functions
+          suite: ./reboot
   dctest-release-upgrade-staging:
       docker:
       - image: google/cloud-sdk
@@ -165,7 +165,7 @@ jobs:
       - run:
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/run-dctest-upgrade.sh
+            ./bin/run-dctest-suite.sh upgrade
           no_output_timeout: 20m
   update-release:
       docker:
@@ -264,7 +264,7 @@ workflows:
                 - release
     jobs:
       - generate-artifacts
-      - dctest-release-functions:
+      - dctest-release-reboot:
           requires:
             - generate-artifacts
       - dctest-release-upgrade-staging:
@@ -272,7 +272,7 @@ workflows:
             - generate-artifacts
       - update-release:
           requires:
-            - dctest-release-functions
+            - dctest-release-reboot
             - dctest-release-upgrade-staging
   master:
     jobs:
@@ -281,7 +281,7 @@ workflows:
             branches:
               only:
                 - master
-      - dctest-release-functions:
+      - dctest-release-reboot:
           requires:
             - generate-artifacts
           filters:
@@ -297,7 +297,7 @@ workflows:
                 - master
       - update-release:
           requires:
-            - dctest-release-functions
+            - dctest-release-reboot
             - dctest-release-upgrade-staging
           filters:
             branches:

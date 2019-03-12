@@ -1,4 +1,11 @@
 #!/bin/sh -e
 
 mkdir -p /etc/neco
-curl -sfSL -o /etc/neco/bmc-user.json {{ MyURL }}/api/v1/assets/bmc-user.json
+
+for i in $(seq 20); do
+    if curl -sfSL -o /etc/neco/bmc-user.json {{ MyURL }}/api/v1/assets/bmc-user.json; then
+        break
+    fi
+    rm -f /etc/neco/bmc-user.json
+    sleep 5
+done
