@@ -13,6 +13,7 @@ type artifactSet struct {
 	customUbuntuVersion string
 	coreOSVersion       string
 	ctVersion           string
+	protocVersion       string
 	debPackages         []string
 }
 
@@ -37,6 +38,10 @@ func (a artifactSet) placematURL() string {
 
 func (a artifactSet) ctURL() string {
 	return fmt.Sprintf("https://github.com/coreos/container-linux-config-transpiler/releases/download/v%s/ct-v%s-x86_64-unknown-linux-gnu", a.ctVersion, a.ctVersion)
+}
+
+func (a artifactSet) protocURL() string {
+	return fmt.Sprintf("https://github.com/google/protobuf/releases/download/v%s/protoc-%s-linux-x86_64.zip", a.protocVersion, a.protocVersion)
 }
 
 func (a artifactSet) assetURLs() []string {

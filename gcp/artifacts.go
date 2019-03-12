@@ -8,6 +8,7 @@ var artifacts = artifactSet{
 	customUbuntuVersion: "20190213",
 	coreOSVersion:       "2023.4.0",
 	ctVersion:           "0.9.0",
+	protocVersion:       "3.6.1",
 	debPackages: []string{
 		"git",
 		"build-essential",
