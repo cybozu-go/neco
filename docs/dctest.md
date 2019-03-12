@@ -47,8 +47,8 @@ There are three types of test suites.
 
 4. reboot
 
-    This suite tests disaster recovery scenario. It depends on bootstrap.
-    Before running reboot test suite, bootstrap test must be executed.
+    This suite tests disaster recovery scenario.
+    It includes `functions` suite, so this suite takes more time than `functions` or `bootstrap`. 
 
 Each test suite has an entry point of test as `<suite>/suite_test.go`.
 

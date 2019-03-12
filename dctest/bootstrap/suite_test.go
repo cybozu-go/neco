@@ -25,27 +25,4 @@ var _ = BeforeSuite(func() {
 
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
-var _ = Describe("Test Neco bootstrap", func() {
-	Context("setup", dctest.TestSetup)
-	Context("initialize", dctest.TestInit)
-	Context("etcdpasswd", dctest.TestEtcdpasswd)
-	Context("sabakan", dctest.TestSabakan)
-	Context("machines", dctest.TestMachines)
-	Context("contents", dctest.UploadContents)
-	Context("cke", func() {
-		dctest.TestCKESetup()
-		dctest.TestCKE()
-	})
-	Context("coil", func() {
-		dctest.TestCoilSetup()
-		dctest.TestCoil()
-	})
-	Context("unbound", func() {
-		dctest.TestUnboundSetup()
-		dctest.TestUnbound()
-	})
-	Context("squid", func() {
-		dctest.TestSquidSetup()
-		dctest.TestSquid()
-	})
-})
+var _ = Describe("Test Neco bootstrap", dctest.BootstrapSuite)

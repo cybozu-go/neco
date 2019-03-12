@@ -20,10 +20,11 @@ func TestDCtest(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	dctest.RunBeforeSuite()
+	dctest.RunBeforeSuiteInstall()
 })
 
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
 var _ = Describe("Test Neco reboot", func() {
-	Context("reboot-all-nodes", dctest.TestRebootAllNodes)
+	dctest.RebootSuite()
 })
