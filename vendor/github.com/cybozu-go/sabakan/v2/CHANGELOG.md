@@ -5,6 +5,23 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.2.0] - 2019-03-05
+
+### Added
+- `sabactl completion` can generate bash completion scripts (#146).
+
+### Changed
+- Transition from `retiring` to `retired` should be explicitly ordered by `sabactl machines set-state` command (#143).
+- Registering disk encryption keys is prohibited for `retiring` machines in addition to `retired` ones (#143).
+
+## [2.1.0] - 2019-02-25
+
+### Added
+- REST API to download `sabakan-cryptsetup` (#142).
+
+### Changed
+- `sabakan-cryptsetup` was rewritten (#142).
+
 ## [2.0.1] - 2019-02-19
 
 ### Added
@@ -62,7 +79,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 See [CHANGELOG-0](./CHANGELOG-0.md).
 
-[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/cybozu-go/sabakan/compare/v2.1.0...v2.2.0
+[2.1.0]: https://github.com/cybozu-go/sabakan/compare/v2.0.1...v2.1.0
+[2.0.1]: https://github.com/cybozu-go/sabakan/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/cybozu-go/sabakan/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/cybozu-go/sabakan/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/cybozu-go/sabakan/compare/v1.0.1...v1.1.0

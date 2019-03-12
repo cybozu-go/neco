@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.4] - 2019-03-11
+
+### Changed
+- Wait resuming VMs after saving/loading snapshots (#83).
+
 ## [1.3.3] - 2019-03-04
 
 ### Changed
@@ -52,7 +57,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Many things.  See git log.
 
-[Unreleased]: https://github.com/cybozu-go/placemat/compare/v1.3.3...HEAD
+[Unreleased]: https://github.com/cybozu-go/placemat/compare/v1.3.4...HEAD
+[1.3.4]: https://github.com/cybozu-go/placemat/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/cybozu-go/placemat/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/cybozu-go/placemat/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/cybozu-go/placemat/compare/v1.3.0...v1.3.1

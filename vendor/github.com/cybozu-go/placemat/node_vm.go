@@ -181,16 +181,6 @@ func (n *NodeVM) SaveVM(ctx context.Context, node *Node, tag string) error {
 		"command": "savevm",
 	})
 
-	// Resume VM
-	out, err = execQEMUCommand(ctx, n.monitor, resumeCommand)
-	if err != nil {
-		return err
-	}
-	log.Info(fmt.Sprintf("monitor log: %s", out), map[string]interface{}{
-		"monitor": n.monitor,
-		"command": resumeCommand,
-	})
-
 	if len(saveVMOut) != 0 {
 		return errors.New(saveVMOut)
 	}
@@ -232,16 +222,6 @@ func (n *NodeVM) LoadVM(ctx context.Context, node *Node, tag string) error {
 		"command": "loadvm",
 	})
 
-	// Resume VM
-	out, err = execQEMUCommand(ctx, n.monitor, resumeCommand)
-	if err != nil {
-		return err
-	}
-	log.Info(fmt.Sprintf("monitor log: %s", out), map[string]interface{}{
-		"monitor": n.monitor,
-		"command": resumeCommand,
-	})
-
 	if len(loadVMOut) != 0 {
 		return errors.New(loadVMOut)
 	}
@@ -252,4 +232,17 @@ func (n *NodeVM) LoadVM(ctx context.Context, node *Node, tag string) error {
 // ListSnapshots returns all available snapshots of VM
 func (n *NodeVM) ListSnapshots(ctx context.Context, node *Node) (string, error) {
 	return execQEMUCommand(ctx, n.monitor, listCommand)
+}
+
+// ResumeVM resumes VM
+func (n *NodeVM) ResumeVM(ctx context.Context) error {
+	out, err := execQEMUCommand(ctx, n.monitor, resumeCommand)
+	if err != nil {
+		return err
+	}
+	log.Info(fmt.Sprintf("monitor log: %s", out), map[string]interface{}{
+		"monitor": n.monitor,
+		"command": resumeCommand,
+	})
+	return nil
 }

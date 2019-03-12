@@ -38,8 +38,8 @@ require (
 	github.com/cybozu-go/etcdutil v1.3.1
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
-	github.com/cybozu-go/placemat v1.3.3
-	github.com/cybozu-go/sabakan/v2 v2.0.1
+	github.com/cybozu-go/placemat v1.3.4
+	github.com/cybozu-go/sabakan/v2 v2.2.0
 	github.com/cybozu-go/well v1.8.1
 	github.com/dancannon/gorethink v4.0.0+incompatible // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
