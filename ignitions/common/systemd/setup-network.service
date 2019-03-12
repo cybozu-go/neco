@@ -5,8 +5,5 @@ After=var-lib-rkt.mount
 
 [Service]
 Type=oneshot
-# This "fetch" must be separated from "run" because "fetch" uses the DHCP-configured network.
-# "setup-local-network" reconfigures network, and "run" starts bird to manage the reconfigured network.
-ExecStart=/usr/bin/rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/{{ Metadata "bird.aci" }}
 ExecStart=/opt/sbin/setup-local-network
 RemainAfterExit=yes
