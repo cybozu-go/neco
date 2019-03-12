@@ -56,7 +56,7 @@ func TestUpgrade() {
 		stdout, stderr, err := execAt(boot0, "ckecli", "images")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
-		for _, img := range strings.Split(string(stdout), "\n") {
+		for _, img := range strings.Split(strings.TrimSpace(string(stdout)), "\n") {
 			split := strings.Split(img[len("quay.io/cybozu/"):], ":")
 			imageName := split[0]
 			version := split[1]
@@ -110,7 +110,7 @@ func checkVersionInDaemonSet(namespace, dsName, imageName, desiredVersion string
 	if err != nil {
 		return err
 	}
-	actual := ds.GetObjectMeta().GetAnnotations()["cke.cybozu.com/image"][len("quay.io/cybozu/:"+imageName):]
+	actual := ds.GetObjectMeta().GetAnnotations()["cke.cybozu.com/image"][len("quay.io/cybozu/"+imageName+":"):]
 	if actual != desiredVersion {
 		return fmt.Errorf("%s %s is not updated. desired version is %s, but actual version is %s",
 			dsName, imageName, desiredVersion, actual)
@@ -136,7 +136,7 @@ func checkVersionInDeployment(namespace, deploymentName, imageName, desiredVersi
 		if !strings.HasPrefix(c.Image, "quay.io/cybozu/"+imageName) {
 			continue
 		}
-		if actual := c.Image[len("quay.io/cybozu/"+imageName):]; actual != desiredVersion {
+		if actual := c.Image[len("quay.io/cybozu/"+imageName+":"):]; actual != desiredVersion {
 			return fmt.Errorf("%s's %s is not updated. desired version is %s, but actual version is %s",
 				deploymentName, imageName, desiredVersion, actual)
 		}
