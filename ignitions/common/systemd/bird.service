@@ -1,7 +1,7 @@
 [Unit]
 Description=BIRD container
 After=setup-network.service tune-rt-runtime.service
-Wants=setup-network.service tune-rt-runtime.service
+Requires=setup-network.service tune-rt-runtime.service
 
 [Service]
 Slice=machine.slice

@@ -1,5 +1,18 @@
 #!/bin/sh -e
 
+i=0
+# This "fetch" must be separated from "run" because "fetch" uses the DHCP-configured network.
+# "setup-local-network" reconfigures network, and "run" starts bird to manage the reconfigured network.
+while ! rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/{{ Metadata "bird.aci" }}; do
+    i=$((i+1))
+    if [ $i -ge 20 ]; then
+        echo "'rkt fetch bird.aci' failed.  Give up."
+        exit 1
+    fi
+    echo "'rkt fetch bird.aci' failed.  Retrying..."
+    sleep 5
+done
+
 cat >/etc/systemd/network/01-eth0.network <<EOF
 [Match]
 Name=eth0 eno1
