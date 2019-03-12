@@ -5,6 +5,8 @@ include Makefile.common
 CONTAINERD_VERSION = 1.2.4
 PROTOC_VERSION = 3.6.1
 PROTOC = /usr/local/bin/protoc
+PROTOC_PACKAGES = unzip
+CONTAINERD_PACKAGES := libseccomp-dev
 
 ### for node_exporter
 NODE_EXPORTER_VERSION = 0.17.0
@@ -32,11 +34,15 @@ node_exporter:
 	cd $(BUILDDIR)/node_exporter; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/$@/
 
 $(PROTOC):
+	$(SUDO) apt-get update
+	$(SUDO) apt-get -y install --no-install-recommends $(PROTOC_PACKAGES)
 	curl -fsSL -o protoc.zip https://github.com/google/protobuf/releases/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-linux-x86_64.zip
 	$(SUDO) unzip -o protoc.zip -d /usr/local
 	rm -f protoc.zip
 
 containerd: $(PROTOC)
+	$(SUDO) apt-get update
+	$(SUDO) apt-get -y install --no-install-recommends $(CONTAINERD_PACKAGES)
 	rm -rf $(GOPATH)/src/github.com/containerd/containerd
 	mkdir -p $(GOPATH)/src/github.com/containerd/containerd $(LIBEXECDIR) $(DOCDIR)/$@/
 	curl -fsSL -o containerd.tar.gz https://github.com/containerd/containerd/archive/v${CONTAINERD_VERSION}.tar.gz
