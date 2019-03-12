@@ -312,7 +312,10 @@ func installDebianPackage(ctx context.Context, client *http.Client, url string) 
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		f.Close()
+		os.Remove(f.Name())
+	}()
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
@@ -344,7 +347,10 @@ func installProtoc(ctx context.Context, client *http.Client, url string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		f.Close()
+		os.Remove(f.Name())
+	}()
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
