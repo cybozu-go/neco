@@ -62,4 +62,31 @@ func TestRebootAllNodes() {
 			return err
 		}).Should(Succeed())
 	})
+
+	It("can pull new image from internet", func() {
+		By("deploying a new pod whose image-pull-policy is Always")
+		testPod := "test-new-image"
+		execSafeAt(boot0, "kubectl", "run", testPod,
+			"--image=busybox", "--image-pull-policy=Always", "--generator=run-pod/v1",
+			"--command", "--", "/bin/sleep", "infinity")
+		By("checking the pod is running")
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "kubectl", "get", "pod", testPod, "-o=json")
+			if err != nil {
+				return err
+			}
+			pod := new(corev1.Pod)
+			err = json.Unmarshal(stdout, &pod)
+			if err != nil {
+				return err
+			}
+			if pod.Status.Phase != "Running" {
+				return fmt.Errorf("%s is not Running. current status: %v", testPod, pod.Status)
+			}
+			return nil
+		}).Should(Succeed())
+
+		By("deleting " + testPod)
+		execSafeAt(boot0, "kubectl", "delete", "pod", testPod)
+	})
 }
