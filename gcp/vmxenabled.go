@@ -2,6 +2,7 @@ package gcp
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
@@ -20,7 +21,9 @@ import (
 )
 
 const (
-	assetDir = "/assets"
+	assetDir   = "/assets"
+	ctPath     = "/usr/local/bin/ct"
+	protocPath = "/usr/local"
 )
 
 var (
@@ -68,6 +71,16 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 	}
 
 	err = installDebianPackage(ctx, client, artifacts.placematURL())
+	if err != nil {
+		return err
+	}
+
+	err = installBinaryFile(ctx, client, artifacts.ctURL(), ctPath)
+	if err != nil {
+		return err
+	}
+
+	err = installProtoc(ctx, client, artifacts.protocURL())
 	if err != nil {
 		return err
 	}
@@ -148,7 +161,7 @@ func configureProjectAtomic(ctx context.Context) error {
 		return err
 	}
 
-	return well.CommandContext(ctx, "add-apt-repository", "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu xenial main").Run()
+	return well.CommandContext(ctx, "add-apt-repository", "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu bionic main").Run()
 }
 
 func installAptPackages(ctx context.Context, optionalPackages []string) error {
@@ -236,6 +249,58 @@ func untargz(r io.Reader, dst string) error {
 	}
 }
 
+func unzip(r *os.File, dst string) error {
+	z, err := zip.OpenReader(r.Name())
+	if err != nil {
+		return err
+	}
+	defer z.Close()
+
+	extractAndWriteFile := func(f *zip.File) error {
+		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if err := rc.Close(); err != nil {
+				panic(err)
+			}
+		}()
+
+		target := filepath.Join(dst, f.Name)
+
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(target, f.Mode())
+		} else {
+			os.MkdirAll(filepath.Dir(target), f.Mode())
+			f, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if err := f.Close(); err != nil {
+					panic(err)
+				}
+			}()
+
+			_, err = io.Copy(f, rc)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	for _, f := range z.File {
+		err := extractAndWriteFile(f)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func installDebianPackage(ctx context.Context, client *http.Client, url string) error {
 	resp, err := client.Get(url)
 	if err != nil {
@@ -247,7 +312,10 @@ func installDebianPackage(ctx context.Context, client *http.Client, url string) 
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		f.Close()
+		os.Remove(f.Name())
+	}()
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
@@ -256,6 +324,40 @@ func installDebianPackage(ctx context.Context, client *http.Client, url string) 
 
 	command := []string{"sh", "-c", "dpkg -i " + f.Name() + " && rm " + f.Name()}
 	return well.CommandContext(ctx, command[0], command[1:]...).Run()
+}
+
+func installBinaryFile(ctx context.Context, client *http.Client, url, dest string) error {
+	resp, err := client.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return writeToFile(dest, resp.Body, 0755)
+}
+
+func installProtoc(ctx context.Context, client *http.Client, url string) error {
+	resp, err := client.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		f.Close()
+		os.Remove(f.Name())
+	}()
+
+	_, err = io.Copy(f, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return unzip(f, protocPath)
 }
 
 func setupPodman() error {
@@ -342,7 +444,7 @@ func downloadAssets(client *http.Client) error {
 		}()
 		f := bzip2.NewReader(bz2)
 		extName := strings.TrimRight(bz2.Name(), ".bz2")
-		err = writeToFile(extName, f)
+		err = writeToFile(extName, f, 0644)
 		if err != nil {
 			return err
 		}
@@ -376,14 +478,14 @@ func downloadFile(client *http.Client, url, destDir string) error {
 	return f.Sync()
 }
 
-func writeToFile(p string, r io.Reader) error {
+func writeToFile(p string, r io.Reader, perm os.FileMode) error {
 	f, err := os.Create(p)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	err = f.Chmod(0644)
+	err = f.Chmod(perm)
 	if err != nil {
 		return err
 	}

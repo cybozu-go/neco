@@ -7,6 +7,8 @@ var artifacts = artifactSet{
 	placematVersion:     "1.3.4",
 	customUbuntuVersion: "20190312",
 	coreOSVersion:       "2023.4.0",
+	ctVersion:           "0.9.0",
+	protocVersion:       "3.6.1",
 	debPackages: []string{
 		"git",
 		"build-essential",
@@ -29,13 +31,17 @@ var artifacts = artifactSet{
 		"libgpgme11",
 		"freeipmi-tools",
 		"unzip",
+		// required by building container image
 		"skopeo",
 		"podman",
 		"cri-o-runc",
 		"fakeroot",
 		"btrfs-tools",
+		// required by building neco
 		"libdevmapper-dev",
 		"libgpgme-dev",
 		"libostree-dev",
+		// required by building containerd
+		"libseccomp-dev",
 	},
 }
