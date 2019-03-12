@@ -5,7 +5,7 @@ var artifacts = artifactSet{
 	rktVersion:          "1.30.0",
 	etcdVersion:         "3.3.12",
 	placematVersion:     "1.3.4",
-	customUbuntuVersion: "20190213",
+	customUbuntuVersion: "20190312",
 	coreOSVersion:       "2023.4.0",
 	debPackages: []string{
 		"git",
