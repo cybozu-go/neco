@@ -73,6 +73,7 @@ $(OUTPUT)/$(CUSTOM_UBUNTU): $(CUSTOM_UBUNTU)
 
 # SABAKAN_CONTENTS
 $(DHCP_JSON):
+	go generate ../menu/assets.go
 	cd ..; go install -mod=vendor ./pkg/placemat-menu
 	$(GOPATH)/bin/placemat-menu -f $(MENU) -o $(OUTPUT)
 

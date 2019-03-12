@@ -1,6 +1,7 @@
 #!/bin/sh -ex
 
 . $(dirname $0)/env
+SUITE_NAME=$1
 
 delete_instance() {
   if [ $RET -ne 0 ]; then
@@ -25,7 +26,7 @@ export PATH
 # Run dctest
 cd \$GOPATH/src/github.com/cybozu-go/neco/dctest
 export GO111MODULE=on
-exec make test TAGS=release SUITE=upgrade
+exec make test TAGS=release SUITE=$SUITE_NAME
 EOF
 chmod +x run.sh
 
