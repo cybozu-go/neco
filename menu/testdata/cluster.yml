@@ -30,6 +30,16 @@ type: internal
 use-nat: false
 ---
 kind: Network
+name: core-ntp0
+type: internal
+use-nat: false
+---
+kind: Network
+name: core-ntp1
+type: internal
+use-nat: false
+---
+kind: Network
 name: bmc
 type: bmc
 use-nat: false
@@ -110,6 +120,8 @@ files:
   file: bird_core.conf
 - name: squid.conf
   file: squid.conf
+- name: chrony.conf
+  file: chrony.conf
 ---
 kind: DataFolder
 name: spine1-data
@@ -339,6 +351,12 @@ interfaces:
 - network: core-node0
   addresses:
   - 10.0.49.3/32
+- network: core-ntp0
+  addresses:
+  - 172.16.4.65/32
+- network: core-ntp1
+  addresses:
+  - 172.16.4.66/32
 - network: core-to-s1
   addresses:
   - 10.0.2.0/31
@@ -364,6 +382,14 @@ volumes:
   readonly: false
   mode: "0777"
 - name: squid-spool
+  kind: empty
+  readonly: false
+  mode: "0777"
+- name: chrony-run
+  kind: empty
+  readonly: false
+  mode: "0777"
+- name: chrony-var-lib-chrony
   kind: empty
   readonly: false
   mode: "0777"
@@ -393,6 +419,19 @@ apps:
     target: /var/log/squid
   - volume: squid-spool
     target: /var/spool/squid
+- name: ntp
+  image: docker://quay.io/cybozu/chrony:3.4
+  readonly-rootfs: false
+  args:
+  - -f
+  - /etc/chrony/chrony.conf
+  mount:
+  - volume: config
+    target: /etc/chrony
+  - volume: chrony-run
+    target: /run
+  - volume: chrony-var-lib-chrony
+    target: /var/lib/chrony
 ---
 kind: Pod
 name: spine1

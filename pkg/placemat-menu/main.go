@@ -16,7 +16,7 @@ var (
 	flagConfig = flag.String("f", "", "Template file for placemat-menu")
 	flagOutDir = flag.String("o", ".", "Directory for output files")
 
-	staticFiles = []string{"squid.conf"}
+	staticFiles = []string{"squid.conf", "chrony.conf"}
 )
 
 func main() {
