@@ -225,7 +225,10 @@ jobs:
             gcloud auth activate-service-account --key-file=account.json
       - attach_workspace:
           at: /tmp/workspace
-      - run: /tmp/workspace/necogcp neco-test create-image
+      - run:
+          command: |
+            /tmp/workspace/necogcp neco-test create-image
+          no_output_timeout: 20m
 
 workflows:
   version: 2

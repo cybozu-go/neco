@@ -1,12 +1,11 @@
 include Makefile.common
 
+PACKAGES := libseccomp-dev autoconf automake libtool
 
 ### for containerd
 CONTAINERD_VERSION = 1.2.4
-PROTOC_VERSION = 3.6.1
+PROTOBUF_VERSION = 3.7.0
 PROTOC = /usr/local/bin/protoc
-PROTOC_PACKAGES = unzip
-CONTAINERD_PACKAGES := libseccomp-dev
 
 ### for node_exporter
 NODE_EXPORTER_VERSION = 0.17.0
@@ -34,18 +33,16 @@ node_exporter:
 	cd $(BUILDDIR)/node_exporter; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/$@/
 
 $(PROTOC):
-	$(SUDO) apt-get update
-	$(SUDO) apt-get -y install --no-install-recommends $(PROTOC_PACKAGES)
-	curl -fsSL -o protoc.zip https://github.com/google/protobuf/releases/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-linux-x86_64.zip
-	$(SUDO) unzip -o protoc.zip -d /usr/local
-	rm -f protoc.zip
+	curl -fSSL -o /tmp/protobuf.tar.gz https://github.com/protocolbuffers/protobuf/archive/v$(PROTOBUF_VERSION).tar.gz
+	tar -x -z -f /tmp/protobuf.tar.gz -C /tmp
+	(cd /tmp/protobuf-$(PROTOBUF_VERSION); ./autogen.sh && ./configure && make && $(SUDO) make install)
+	$(SUDO) ldconfig
+	rm -rf /tmp/protobuf.tar.gz /tmp/protobuf-$(PROTOBUF_VERSION)
 
 containerd: $(PROTOC)
-	$(SUDO) apt-get update
-	$(SUDO) apt-get -y install --no-install-recommends $(CONTAINERD_PACKAGES)
 	rm -rf $(GOPATH)/src/github.com/containerd/containerd
 	mkdir -p $(GOPATH)/src/github.com/containerd/containerd $(LIBEXECDIR) $(DOCDIR)/$@/
-	curl -fsSL -o containerd.tar.gz https://github.com/containerd/containerd/archive/v${CONTAINERD_VERSION}.tar.gz
+	curl -fsSL -o containerd.tar.gz https://github.com/containerd/containerd/archive/v$(CONTAINERD_VERSION).tar.gz
 	tar -x -z --strip-components 1 -f containerd.tar.gz -C $(GOPATH)/src/github.com/containerd/containerd
 	rm -f containerd.tar.gz
 	(cd $(GOPATH)/src/github.com/containerd/containerd; env GO111MODULE=off make GOFLAGS= VERSION=$(CONTAINERD_VERSION))
@@ -78,7 +75,11 @@ kubectl:
 	curl -fsSL -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/LICENSE
 	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
 
+setup:
+	$(SUDO) apt-get update
+	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
+
 clean:
 	rm -rf $(BUILDDIR)
 
-.PHONY:	all clean
+.PHONY:	all setup clean
