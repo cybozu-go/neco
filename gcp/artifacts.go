@@ -8,7 +8,7 @@ var artifacts = artifactSet{
 	customUbuntuVersion: "20190312",
 	coreOSVersion:       "2023.4.0",
 	ctVersion:           "0.9.0",
-	protocVersion:       "3.6.1",
+	protobufVersion:     "3.7.0",
 	debPackages: []string{
 		"git",
 		"build-essential",
@@ -43,5 +43,9 @@ var artifacts = artifactSet{
 		"libostree-dev",
 		// required by building containerd
 		"libseccomp-dev",
+		// required by building protobuf
+		"autoconf",
+		"automake",
+		"libtool",
 	},
 }
