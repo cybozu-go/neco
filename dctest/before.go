@@ -66,7 +66,7 @@ func RunBeforeSuiteInstall() {
 			for _, service := range services {
 				_, _, err := execAt(host, "systemctl", "-q", "is-active", service)
 				if err != nil {
-					return err
+					return fmt.Errorf("%s is not active on %s", service, host)
 				}
 			}
 		}

@@ -163,11 +163,11 @@ func unmarshalNetwork(dir string, data []byte) (*NetworkMenu, error) {
 	// `ntp` is optional value
 	if len(n.Spec.NTP) != 0 {
 		for _, address := range n.Spec.NTP {
-			proxyIP := net.ParseIP(address)
-			if proxyIP == nil {
-				return nil, errors.New("Invalid IP address of proxy: " + address)
+			ntp := net.ParseIP(address)
+			if ntp == nil {
+				return nil, errors.New("Invalid IP address of ntp: " + address)
 			}
-			network.NTP = append(network.NTP, proxyIP)
+			network.NTP = append(network.NTP, ntp)
 		}
 	}
 
