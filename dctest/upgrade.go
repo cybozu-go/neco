@@ -110,7 +110,15 @@ func checkVersionInDaemonSet(namespace, dsName, imageName, desiredVersion string
 	if err != nil {
 		return err
 	}
-	actual := ds.GetObjectMeta().GetAnnotations()["cke.cybozu.com/image"][len("quay.io/cybozu/"+imageName+":"):]
+	var actual string
+	for _, c := range ds.Spec.Template.Spec.Containers {
+		if strings.HasPrefix(c.Image, "quay.io/cybozu/"+imageName) {
+			actual = c.Image[len("quay.io/cybozu/"+imageName+":"):]
+		}
+	}
+	if actual == "" {
+		return fmt.Errorf("DeamonSet %s does not contain %s", dsName, imageName)
+	}
 	if actual != desiredVersion {
 		return fmt.Errorf("%s %s is not updated. desired version is %s, but actual version is %s",
 			dsName, imageName, desiredVersion, actual)
@@ -119,6 +127,11 @@ func checkVersionInDaemonSet(namespace, dsName, imageName, desiredVersion string
 		return fmt.Errorf("%s %s is not updated completely. desired number scheduled is %d, but actual available is %d",
 			dsName, imageName, ds.Status.DesiredNumberScheduled, ds.Status.NumberAvailable)
 	}
+	if ds.Status.DesiredNumberScheduled != ds.Status.UpdatedNumberScheduled {
+		return fmt.Errorf("%s %s is not updated completely. desired number scheduled is %d, but actual updated is %d",
+			dsName, imageName, ds.Status.DesiredNumberScheduled, ds.Status.UpdatedNumberScheduled)
+	}
+
 	return nil
 }
 
@@ -145,5 +158,10 @@ func checkVersionInDeployment(namespace, deploymentName, imageName, desiredVersi
 		return fmt.Errorf("%s's %s is not updated completely. desired replicas is %d, but actual available is %d",
 			deploymentName, imageName, deploy.Spec.Replicas, actual)
 	}
+	if actual := deploy.Status.UpdatedReplicas; actual != *deploy.Spec.Replicas {
+		return fmt.Errorf("%s's %s is not updated completely. desired replicas is %d, but actual updated is %d",
+			deploymentName, imageName, deploy.Spec.Replicas, actual)
+	}
+
 	return nil
 }
