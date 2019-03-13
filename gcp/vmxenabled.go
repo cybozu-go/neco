@@ -321,6 +321,9 @@ func installProtobuf(ctx context.Context, client *http.Client, url, version stri
 	cmd = well.CommandContext(ctx, "make", "install")
 	cmd.Dir = workDir
 	err = cmd.Run()
+	if err != nil {
+		return err
+	}
 
 	cmd = well.CommandContext(ctx, "ldconfig")
 	cmd.Dir = workDir
