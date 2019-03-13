@@ -58,7 +58,7 @@ mod:
 deb: $(DEB)
 
 $(DEB):
-	make -f Makefile.tools SUDO=$(SUDO)
+	$(MAKE) -f Makefile.tools SUDO=$(SUDO)
 	cp -r debian/* $(WORKDIR)
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
@@ -77,6 +77,7 @@ setup:
 	GO111MODULE=off go get -u golang.org/x/lint/golint github.com/rakyll/statik
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
+	$(MAKE) -f Makefile.tools SUDO=$(SUDO) setup
 
 clean:
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB)

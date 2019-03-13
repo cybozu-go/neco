@@ -2,10 +2,10 @@ package gcp
 
 import (
 	"archive/tar"
-	"archive/zip"
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -80,7 +80,7 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 		return err
 	}
 
-	err = installProtoc(ctx, client, artifacts.protocURL())
+	err = installProtobuf(ctx, client, artifacts.protobufURL(), artifacts.protobufVersion)
 	if err != nil {
 		return err
 	}
@@ -249,58 +249,6 @@ func untargz(r io.Reader, dst string) error {
 	}
 }
 
-func unzip(r *os.File, dst string) error {
-	z, err := zip.OpenReader(r.Name())
-	if err != nil {
-		return err
-	}
-	defer z.Close()
-
-	extractAndWriteFile := func(f *zip.File) error {
-		rc, err := f.Open()
-		if err != nil {
-			return err
-		}
-		defer func() {
-			if err := rc.Close(); err != nil {
-				panic(err)
-			}
-		}()
-
-		target := filepath.Join(dst, f.Name)
-
-		if f.FileInfo().IsDir() {
-			os.MkdirAll(target, f.Mode())
-		} else {
-			os.MkdirAll(filepath.Dir(target), f.Mode())
-			f, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-			if err != nil {
-				return err
-			}
-			defer func() {
-				if err := f.Close(); err != nil {
-					panic(err)
-				}
-			}()
-
-			_, err = io.Copy(f, rc)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-
-	for _, f := range z.File {
-		err := extractAndWriteFile(f)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func installDebianPackage(ctx context.Context, client *http.Client, url string) error {
 	resp, err := client.Get(url)
 	if err != nil {
@@ -336,28 +284,50 @@ func installBinaryFile(ctx context.Context, client *http.Client, url, dest strin
 	return writeToFile(dest, resp.Body, 0755)
 }
 
-func installProtoc(ctx context.Context, client *http.Client, url string) error {
+func installProtobuf(ctx context.Context, client *http.Client, url, version string) error {
 	resp, err := client.Get(url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	f, err := ioutil.TempFile("", "")
-	if err != nil {
-		return err
-	}
-	defer func() {
-		f.Close()
-		os.Remove(f.Name())
-	}()
-
-	_, err = io.Copy(f, resp.Body)
+	err = untargz(resp.Body, "/tmp")
 	if err != nil {
 		return err
 	}
 
-	return unzip(f, protocPath)
+	workDir := fmt.Sprintf("/tmp/protobuf-%s", version)
+	cmd := well.CommandContext(ctx, "./autogen.sh")
+	cmd.Dir = workDir
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	cmd = well.CommandContext(ctx, "./configure")
+	cmd.Dir = workDir
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	cmd = well.CommandContext(ctx, "make")
+	cmd.Dir = workDir
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	cmd = well.CommandContext(ctx, "make", "install")
+	cmd.Dir = workDir
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	cmd = well.CommandContext(ctx, "ldconfig")
+	cmd.Dir = workDir
+	return cmd.Run()
 }
 
 func setupPodman() error {
