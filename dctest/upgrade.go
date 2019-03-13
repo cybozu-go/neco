@@ -117,7 +117,7 @@ func checkVersionInDaemonSet(namespace, dsName, imageName, desiredVersion string
 		}
 	}
 	if actual == "" {
-		return fmt.Errorf("DeamonSet %s does not contain %s", dsName, imageName)
+		return fmt.Errorf("DaemonSet %s does not contain %s", dsName, imageName)
 	}
 	if actual != desiredVersion {
 		return fmt.Errorf("%s %s is not updated. desired version is %s, but actual version is %s",
@@ -154,13 +154,17 @@ func checkVersionInDeployment(namespace, deploymentName, imageName, desiredVersi
 				deploymentName, imageName, desiredVersion, actual)
 		}
 	}
-	if actual := deploy.Status.AvailableReplicas; actual != *deploy.Spec.Replicas {
-		return fmt.Errorf("%s's %s is not updated completely. desired replicas is %d, but actual available is %d",
-			deploymentName, imageName, deploy.Spec.Replicas, actual)
+	desired := int32(1)
+	if deploy.Spec.Replicas != nil {
+		desired = *deploy.Spec.Replicas
 	}
-	if actual := deploy.Status.UpdatedReplicas; actual != *deploy.Spec.Replicas {
+	if actual := deploy.Status.AvailableReplicas; actual != desired {
+		return fmt.Errorf("%s's %s is not updated completely. desired replicas is %d, but actual available is %d",
+			deploymentName, imageName, desired, actual)
+	}
+	if actual := deploy.Status.UpdatedReplicas; actual != desired {
 		return fmt.Errorf("%s's %s is not updated completely. desired replicas is %d, but actual updated is %d",
-			deploymentName, imageName, deploy.Spec.Replicas, actual)
+			deploymentName, imageName, desired, actual)
 	}
 
 	return nil
