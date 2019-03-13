@@ -80,6 +80,7 @@ setup:
 	$(MAKE) -f Makefile.tools SUDO=$(SUDO) setup
 
 clean:
+	$(MAKE) -f Makefile.tools clean
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB)
 
 .PHONY:	all start-etcd stop-etcd test mod deb necogcp setup clean

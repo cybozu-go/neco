@@ -43,6 +43,36 @@ func RunBeforeSuiteInstall() {
 		return nil
 	}).Should(Succeed())
 
+	By("rebooting all boot servers")
+	for _, host := range []string{boot0, boot1, boot2, boot3} {
+		// Exit code is 255 when ssh is disconnected
+		execAt(host, "sudo", "reboot")
+	}
+
+	By("waiting all boot servers are online")
+	err := prepareSSHClients(boot0, boot1, boot2, boot3)
+	Expect(err).NotTo(HaveOccurred())
+
+	By("checking services on the boot servers are running after reboot")
+	services := []string{
+		"bird.service",
+		"systemd-networkd.service",
+		"chronyd.service",
+		// chrony-wait.service can be started after reboot
+		"chrony-wait.service",
+	}
+	Eventually(func() error {
+		for _, host := range []string{boot0, boot1, boot2, boot3} {
+			for _, service := range services {
+				_, _, err := execAt(host, "systemctl", "-q", "is-active", service)
+				if err != nil {
+					return fmt.Errorf("%s is not active on %s", service, host)
+				}
+			}
+		}
+		return nil
+	}).Should(Succeed())
+
 	// copy and install Neco deb package
 	fmt.Println("installing Neco")
 	f, err := os.Open(debFile)

@@ -13,6 +13,7 @@ const (
 	dockerImageDebug   = "docker://quay.io/cybozu/ubuntu-debug:18.04"
 	dockerImageDnsmasq = "docker://quay.io/cybozu/dnsmasq:2.79"
 	dockerImageSquid   = "docker://quay.io/cybozu/squid:3.5"
+	dockerImageChrony  = "docker://quay.io/cybozu/chrony:3.4"
 )
 
 var birdContainer = placemat.PodAppSpec{
@@ -372,6 +373,15 @@ func (c *cluster) appendCorePod(ta *TemplateArgs) {
 			Addresses: []string{ta.Core.ProxyAddress.String() + "/32"},
 		})
 	}
+	if ta.Core.NTPAddresses != nil {
+		for i := range ta.Core.NTPAddresses {
+			interfaces = append(interfaces, placemat.PodInterfaceSpec{
+				Network:   fmt.Sprintf("core-ntp%d", i),
+				Addresses: []string{ta.Core.NTPAddresses[i].String() + "/32"},
+			})
+		}
+	}
+
 	for i, spine := range ta.Spines {
 		interfaces = append(interfaces, placemat.PodInterfaceSpec{
 			Network: fmt.Sprintf("core-to-%s", spine.ShortName),
@@ -436,6 +446,39 @@ func (c *cluster) appendCorePod(ta *TemplateArgs) {
 				{
 					Volume: "squid-spool",
 					Target: "/var/spool/squid",
+				},
+			},
+		})
+	}
+	if ta.Core.NTPAddresses != nil {
+		coreVolumes = append(coreVolumes, []*placemat.PodVolumeSpec{
+			{
+				Name: "chrony-run",
+				Kind: "empty",
+				Mode: "0777",
+			},
+			{
+				Name: "chrony-var-lib-chrony",
+				Kind: "empty",
+				Mode: "0777",
+			},
+		}...)
+		coreApps = append(coreApps, &placemat.PodAppSpec{
+			Name:  "ntp",
+			Image: dockerImageChrony,
+			Args:  []string{"-f", "/etc/chrony/chrony.conf"},
+			Mount: []placemat.PodAppMountSpec{
+				{
+					Volume: "config",
+					Target: "/etc/chrony",
+				},
+				{
+					Volume: "chrony-run",
+					Target: "/run",
+				},
+				{
+					Volume: "chrony-var-lib-chrony",
+					Target: "/var/lib/chrony",
 				},
 			},
 		})
@@ -547,6 +590,12 @@ func (c *cluster) appendCoreDataFolder(ta *TemplateArgs) {
 			File: "squid.conf",
 		})
 	}
+	if ta.Core.NTPAddresses != nil {
+		files = append(files, placemat.DataFolderFileSpec{
+			Name: "chrony.conf",
+			File: "chrony.conf",
+		})
+	}
 	c.dataFolders = append(c.dataFolders,
 		&placemat.DataFolderSpec{
 			Kind:  "DataFolder",
@@ -654,6 +703,19 @@ func (c *cluster) appendCoreNetwork(ta *TemplateArgs) {
 			},
 		)
 	}
+	if ta.Core.NTPAddresses != nil {
+		for i := range ta.Core.NTPAddresses {
+			c.networks = append(
+				c.networks,
+				&placemat.NetworkSpec{
+					Kind: "Network",
+					Name: fmt.Sprintf("core-ntp%d", i),
+					Type: "internal",
+				},
+			)
+		}
+	}
+
 }
 
 func (c *cluster) appendBMCNetwork(ta *TemplateArgs) {

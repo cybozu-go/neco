@@ -110,6 +110,7 @@ type Core struct {
 	OperationAddress *net.IPNet
 	ExternalAddress  *net.IPNet
 	ProxyAddress     net.IP
+	NTPAddresses     []net.IP
 }
 
 // TemplateArgs is args for cluster.yml
@@ -320,6 +321,9 @@ func setCore(ta *TemplateArgs, menu *Menu) {
 	ta.Core.InternetAddress = addToIPNet(menu.Network.Internet, offsetInternetCore)
 	ta.Core.ExternalAddress = addToIPNet(menu.Network.CoreExternal, offsetExternalCore)
 	ta.Core.ProxyAddress = menu.Network.Proxy
+	for _, address := range menu.Network.NTP {
+		ta.Core.NTPAddresses = append(ta.Core.NTPAddresses, address)
+	}
 }
 
 func constructToRAddresses(rack *Rack, rackIdx int, menu *Menu, bases [][]net.IP) {
