@@ -106,3 +106,31 @@ spec:
   fsGroup:
     rule: 'RunAsAny'
   readOnlyRootFilesystem: true
+---
+
+# for squid
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: squid
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
+spec:
+  allowPrivilegeEscalation: false
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+  hostNetwork: false
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  readOnlyRootFilesystem: true

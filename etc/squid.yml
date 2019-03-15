@@ -1,3 +1,9 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: squid
+  namespace: internet-egress
+---
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -66,6 +72,7 @@ spec:
                   values:
                   - squid
               topologyKey: "cke.cybozu.com/rack"
+      serviceAccountName: squid
       containers:
         - name: squid
           image: "{{ .squid }}"
@@ -83,7 +90,6 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               add:
-                - NET_BIND_SERVICE
                 - CHOWN
                 - SETUID
                 - SETGID
@@ -170,3 +176,28 @@ spec:
       nodePort: 30128
       port: 3128
       targetPort: 3128
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: internet-egress
+  name: psp:squid
+rules:
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
+    resourceNames: ["squid"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: internet-egress
+  name: squid:psp:squid
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: squid
+subjects:
+- kind: ServiceAccount
+  name: squid
+  namespace: internet-egress

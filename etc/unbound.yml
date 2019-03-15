@@ -170,7 +170,7 @@ spec:
               topologyKey: "cke.cybozu.com/rack"
       containers:
         - name: unbound
-          image: "{{ .cke-unbound }}"
+          image: "{{ index . "cke-unbound" }}"
           imagePullPolicy: IfNotPresent
           args:
             - -c
