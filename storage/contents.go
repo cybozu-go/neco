@@ -88,3 +88,13 @@ func (s Storage) GetCKETemplateContentsStatus(ctx context.Context) (*neco.Conten
 func (s Storage) PutCKETemplateContentsStatus(ctx context.Context, st *neco.ContentsUpdateStatus, leaderKey string) error {
 	return s.putContentsUpdateStatus(ctx, KeyCKETemplateContents, st, leaderKey)
 }
+
+// GetUserResourcesContentsStatus returns update status of user-defined resources.
+func (s Storage) GetUserResourcesContentsStatus(ctx context.Context) (*neco.ContentsUpdateStatus, error) {
+	return s.getContentsUpdateStatus(ctx, KeyUserResourcesContents)
+}
+
+// PutUserResourcesContentsStatus puts update status of user-defined resources, only if caller is the leader.
+func (s Storage) PutUserResourcesContentsStatus(ctx context.Context, st *neco.ContentsUpdateStatus, leaderKey string) error {
+	return s.putContentsUpdateStatus(ctx, KeyUserResourcesContents, st, leaderKey)
+}

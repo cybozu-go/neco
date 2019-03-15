@@ -12,7 +12,8 @@ var RktImages = []string{"cke", "etcd", "setup-hw", "sabakan", "serf", "vault"}
 
 // Neco params
 const (
-	NecoDir = "/etc/neco"
+	NecoDir     = "/etc/neco"
+	NecoDataDir = "/usr/share/neco"
 
 	// NecoPrefix is the etcd key prefix for Neco tools.
 	NecoPrefix = "/neco/"
@@ -133,7 +134,7 @@ var (
 	SabakanConfFile           = filepath.Join(SabakanDir, "config.yml")
 	SabactlBin                = "/usr/local/bin/sabactl"
 	SabactlBashCompletionFile = filepath.Join(BashCompletionDir, "sabactl")
-	SabakanDHCPJSONFile       = "/usr/share/neco/dhcp.json"
+	SabakanDHCPJSONFile       = filepath.Join(NecoDataDir, "dhcp.json")
 
 	SerfConfFile = filepath.Join(SerfDir, "serf.json")
 
@@ -142,12 +143,20 @@ var (
 	CKEConfFile              = filepath.Join(CKEDir, "config.yml")
 	CKECLIBin                = "/usr/local/bin/ckecli"
 	CKECLIBashCompletionFile = filepath.Join(BashCompletionDir, "ckecli")
-	CKETempateFile           = "/usr/share/neco/cke-template.yml"
+	CKETemplateFile          = filepath.Join(NecoDataDir, "cke-template.yml")
+	CKEUserResourceFiles     = []string{
+		filepath.Join(NecoDataDir, "namespaces.yml"),
+		//filepath.Join(NecoDataDir, "pod-security-policy.yml"),
+		filepath.Join(NecoDataDir, "coil-rbac.yml"),
+		filepath.Join(NecoDataDir, "coil-deploy.yml"),
+		filepath.Join(NecoDataDir, "unbound.yml"),
+		filepath.Join(NecoDataDir, "squid.yml"),
+	}
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
 	NecoConfFile = filepath.Join(NecoDir, "config.yml")
 	NecoBin      = "/usr/bin/neco"
 
-	IgnitionDirectory = "/usr/share/neco/ignitions"
+	IgnitionDirectory = filepath.Join(NecoDataDir, "ignitions")
 )

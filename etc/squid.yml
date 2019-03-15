@@ -68,7 +68,7 @@ spec:
               topologyKey: "cke.cybozu.com/rack"
       containers:
         - name: squid
-          image: "%%SQUID_IMAGE%%"
+          image: "{{ .squid }}"
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /var/spool/squid

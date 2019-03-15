@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
+	"text/template"
 	"time"
 
 	"github.com/coreos/etcd/clientv3/concurrency"
@@ -206,7 +208,7 @@ func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateReques
 		}
 	}
 
-	err = well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", neco.CKETempateFile).Run()
+	err = well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", neco.CKETemplateFile).Run()
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,
@@ -223,5 +225,101 @@ func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateReques
 	}
 
 	log.Info("cke: updated cke-template.yml", nil)
+	return err2
+}
+
+func (o *operator) UpdateUserResources(ctx context.Context, req *neco.UpdateRequest) error {
+	// Leader election
+	sess, err := concurrency.NewSession(o.ec, concurrency.WithTTL(600))
+	if err != nil {
+		log.Error("cke: new session is not created", map[string]interface{}{
+			log.FnError: err,
+		})
+		return err
+	}
+	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
+	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
+	if err != nil {
+		log.Error("cke: cannot join a campaign", map[string]interface{}{
+			log.FnError: err,
+		})
+		return err
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		e.Resign(ctx)
+		cancel()
+	}()
+
+	status, err := o.storage.GetUserResourcesContentsStatus(ctx)
+	if err != nil {
+		if err != storage.ErrNotFound {
+			return err
+		}
+	} else {
+		if status.Version == req.Version {
+			if status.Success {
+				return nil
+			}
+			return errors.New("update of user-defined resources failed by preceding worker")
+		}
+		if !status.Success {
+			return errors.New("unexpected status; success must be true if versions differ")
+		}
+	}
+
+	templateParams := make(map[string]string)
+	for _, img := range neco.CurrentArtifacts.Images {
+		templateParams[img.Name] = img.FullName(false)
+	}
+	images, err := cke.GetCKEImages()
+	if err != nil {
+		return err
+	}
+	for _, img := range images {
+		templateParams["cke-"+img.Name] = img.FullName(false)
+	}
+
+	for _, filename := range neco.CKEUserResourceFiles {
+		content, err := ioutil.ReadFile(filename)
+		if err != nil {
+			return err
+		}
+
+		tmpl, err := template.New(filepath.Base(filename)).Parse(string(content))
+		if err != nil {
+			return err
+		}
+
+		buf := &bytes.Buffer{}
+		err = tmpl.Execute(buf, templateParams)
+		if err != nil {
+			return err
+		}
+
+		cmd := well.CommandContext(ctx, neco.CKECLIBin, "resource", "set", "-")
+		cmd.Stdin = buf
+		err = cmd.Run()
+		if err != nil {
+			return err
+		}
+	}
+
+	ret := &neco.ContentsUpdateStatus{
+		Version: req.Version,
+		Success: err == nil,
+	}
+	err2 := o.storage.PutUserResourcesContentsStatus(ctx, ret, e.Key())
+	if err2 != nil {
+		log.Error("failed to update user-defined resources contents status", map[string]interface{}{
+			log.FnError: err2,
+		})
+	}
+	// 'err' is more important than 'err2'
+	if err != nil {
+		return err
+	}
+
+	log.Info("updated user-defined resources", nil)
 	return err2
 }

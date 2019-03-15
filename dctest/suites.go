@@ -19,11 +19,9 @@ var BootstrapSuite = func() {
 		TestCoil()
 	})
 	Context("unbound", func() {
-		TestUnboundSetup()
 		TestUnbound()
 	})
 	Context("squid", func() {
-		TestSquidSetup()
 		TestSquid()
 	})
 }
