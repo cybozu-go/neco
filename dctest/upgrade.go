@@ -56,51 +56,46 @@ func TestUpgrade() {
 		stdout, stderr, err := execAt(boot0, "ckecli", "images")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
-		for _, img := range strings.Split(strings.TrimSpace(string(stdout)), "\n") {
-			split := strings.Split(img[len("quay.io/cybozu/"):], ":")
-			imageName := split[0]
-			version := split[1]
-
+		for _, img := range strings.Fields(string(stdout)) {
 			// TODO: check all images
-			if imageName != "unbound" && imageName != "coredns" {
+			if !strings.Contains(img, "unbound") && !strings.Contains(img, "coredns") {
 				continue
 			}
-			err := checkRunningDesiredVersion(imageName, version)
+			err := checkRunningDesiredVersion(img)
 			Expect(err).ShouldNot(HaveOccurred())
 		}
 	})
 }
 
-func checkRunningDesiredVersion(imageName string, desiredVersion string) error {
-	switch imageName {
-	case "unbound":
+func checkRunningDesiredVersion(image string) error {
+	if strings.Contains(image, "unbound") {
 		// node-dns
-		err := checkVersionInDaemonSet("kube-system", "node-dns", imageName, desiredVersion)
+		err := checkVersionInDaemonSet("kube-system", "node-dns", image)
 		if err != nil {
 			return err
 		}
 		// internet full resolver
-		err = checkVersionInDeployment("internet-egress", "unbound", imageName, desiredVersion)
+		err = checkVersionInDeployment("internet-egress", "unbound", image)
 		if err != nil {
 			return err
 		}
 		// unbound in squid pod
-		err = checkVersionInDeployment("internet-egress", "squid", imageName, desiredVersion)
+		err = checkVersionInDeployment("internet-egress", "squid", image)
 		if err != nil {
 			return err
 		}
-	case "coredns":
-		err := checkVersionInDeployment("kube-system", "cluster-dns", imageName, desiredVersion)
+	} else if strings.Contains(image, "coredns") {
+		err := checkVersionInDeployment("kube-system", "cluster-dns", image)
 		if err != nil {
 			return err
 		}
-	default:
-		return fmt.Errorf("checker function for %s is not implemented", imageName)
+	} else {
+		return fmt.Errorf("checking %s is not implemented", image)
 	}
 	return nil
 }
 
-func checkVersionInDaemonSet(namespace, dsName, imageName, desiredVersion string) error {
+func checkVersionInDaemonSet(namespace, dsName, image string) error {
 	stdout, _, err := execAt(boot0, "kubectl", "get", "ds", "-n", namespace, dsName, "-o", "json")
 	if err != nil {
 		return err
@@ -110,32 +105,27 @@ func checkVersionInDaemonSet(namespace, dsName, imageName, desiredVersion string
 	if err != nil {
 		return err
 	}
-	var actual string
+	found := false
 	for _, c := range ds.Spec.Template.Spec.Containers {
-		if strings.HasPrefix(c.Image, "quay.io/cybozu/"+imageName) {
-			actual = c.Image[len("quay.io/cybozu/"+imageName+":"):]
+		if c.Image == image {
+			found = true
 		}
 	}
-	if actual == "" {
-		return fmt.Errorf("DaemonSet %s does not contain %s", dsName, imageName)
-	}
-	if actual != desiredVersion {
-		return fmt.Errorf("%s %s is not updated. desired version is %s, but actual version is %s",
-			dsName, imageName, desiredVersion, actual)
+	if !found {
+		return fmt.Errorf("%s not found in %s", image, dsName)
 	}
 	if ds.Status.DesiredNumberScheduled != ds.Status.NumberAvailable {
 		return fmt.Errorf("%s %s is not updated completely. desired number scheduled is %d, but actual available is %d",
-			dsName, imageName, ds.Status.DesiredNumberScheduled, ds.Status.NumberAvailable)
+			dsName, image, ds.Status.DesiredNumberScheduled, ds.Status.NumberAvailable)
 	}
 	if ds.Status.DesiredNumberScheduled != ds.Status.UpdatedNumberScheduled {
 		return fmt.Errorf("%s %s is not updated completely. desired number scheduled is %d, but actual updated is %d",
-			dsName, imageName, ds.Status.DesiredNumberScheduled, ds.Status.UpdatedNumberScheduled)
+			dsName, image, ds.Status.DesiredNumberScheduled, ds.Status.UpdatedNumberScheduled)
 	}
-
 	return nil
 }
 
-func checkVersionInDeployment(namespace, deploymentName, imageName, desiredVersion string) error {
+func checkVersionInDeployment(namespace, deploymentName, image string) error {
 	stdout, _, err := execAt(boot0, "kubectl", "get", "deployment", "-n", namespace, deploymentName, "-o", "json")
 	if err != nil {
 		return err
@@ -145,14 +135,14 @@ func checkVersionInDeployment(namespace, deploymentName, imageName, desiredVersi
 	if err != nil {
 		return err
 	}
+	found := false
 	for _, c := range deploy.Spec.Template.Spec.Containers {
-		if !strings.HasPrefix(c.Image, "quay.io/cybozu/"+imageName) {
-			continue
+		if c.Image == image {
+			found = true
 		}
-		if actual := c.Image[len("quay.io/cybozu/"+imageName+":"):]; actual != desiredVersion {
-			return fmt.Errorf("%s's %s is not updated. desired version is %s, but actual version is %s",
-				deploymentName, imageName, desiredVersion, actual)
-		}
+	}
+	if !found {
+		return fmt.Errorf("%s not found in %s", image, deploymentName)
 	}
 	desired := int32(1)
 	if deploy.Spec.Replicas != nil {
@@ -160,12 +150,11 @@ func checkVersionInDeployment(namespace, deploymentName, imageName, desiredVersi
 	}
 	if actual := deploy.Status.AvailableReplicas; actual != desired {
 		return fmt.Errorf("%s's %s is not updated completely. desired replicas is %d, but actual available is %d",
-			deploymentName, imageName, desired, actual)
+			deploymentName, image, desired, actual)
 	}
 	if actual := deploy.Status.UpdatedReplicas; actual != desired {
 		return fmt.Errorf("%s's %s is not updated completely. desired replicas is %d, but actual updated is %d",
-			deploymentName, imageName, desired, actual)
+			deploymentName, image, desired, actual)
 	}
-
 	return nil
 }
