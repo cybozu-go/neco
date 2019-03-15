@@ -35,7 +35,7 @@ node_exporter:
 $(PROTOC):
 	curl -fsSL -o /tmp/protobuf.tar.gz https://github.com/protocolbuffers/protobuf/archive/v$(PROTOBUF_VERSION).tar.gz
 	tar -x -z -f /tmp/protobuf.tar.gz -C /tmp
-	(cd /tmp/protobuf-$(PROTOBUF_VERSION); ./autogen.sh && ./configure && make -j $(nproc) && $(SUDO) make install)
+	(cd /tmp/protobuf-$(PROTOBUF_VERSION); ./autogen.sh && ./configure && make -j 4 && $(SUDO) make install)
 	$(SUDO) ldconfig
 	rm -rf /tmp/protobuf.tar.gz /tmp/protobuf-$(PROTOBUF_VERSION)
 
