@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// UploadContents executes "neco sabakan-upload"
-func UploadContents() {
-	It("should upload contents to sabakan", func() {
+// TestInitData executes "neco init-data"
+func TestInitData() {
+	It("should initialize data for sabakan and CKE", func() {
 		data, err := ioutil.ReadFile("../secrets")
 		switch {
 		case err == nil:
@@ -29,7 +29,7 @@ func UploadContents() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
-		By("uploading sabakan contents")
-		execSafeAt(boot0, "neco", "sabakan-upload")
+		By("initialize data for sabakan and CKE")
+		execSafeAt(boot0, "neco", "init-data")
 	})
 }

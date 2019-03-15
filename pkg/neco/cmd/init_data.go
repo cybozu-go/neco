@@ -16,7 +16,7 @@ import (
 
 var ignitionsOnly bool
 
-func sabakanUpload(ctx context.Context, st storage.Storage) error {
+func initData(ctx context.Context, st storage.Storage) error {
 	version, err := neco.GetDebianVersion(neco.NecoPackageName)
 	if err != nil {
 		return err
@@ -66,15 +66,23 @@ func sabakanUpload(ctx context.Context, st storage.Storage) error {
 	env.Go(func(ctx context.Context) error {
 		return cke.UploadContents(ctx, localClient, proxyClient, version)
 	})
+	env.Go(func(ctx context.Context) error {
+		return sabakan.UploadDHCPJSON(ctx, localClient)
+	})
+	env.Go(func(ctx context.Context) error {
+		return well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", neco.CKETemplateFile).Run()
+	})
+	env.Go(func(ctx context.Context) error {
+		return cke.UpdateResources(ctx)
+	})
 	env.Stop()
 	return env.Wait()
 }
 
-// sabakanUploadCmd implements "sabakan-upload"
-var sabakanUploadCmd = &cobra.Command{
-	Use:   "sabakan-upload",
-	Short: "Upload sabakan contents using artifacts.go",
-	Long: `Upload sabakan contents using artifacts.go
+var initDataCmd = &cobra.Command{
+	Use:   "init-data",
+	Short: "initialize data for sabakan and CKE",
+	Long: `Initialize data for sabakan and CKE
 If uploaded versions are up to date, do nothing.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -86,7 +94,7 @@ If uploaded versions are up to date, do nothing.
 		st := storage.NewStorage(ec)
 
 		well.Go(func(ctx context.Context) error {
-			return sabakanUpload(ctx, st)
+			return initData(ctx, st)
 		})
 		well.Stop()
 		err = well.Wait()
@@ -97,6 +105,6 @@ If uploaded versions are up to date, do nothing.
 }
 
 func init() {
-	sabakanUploadCmd.Flags().BoolVar(&ignitionsOnly, "ignitions-only", false, "upload ignitions only")
-	rootCmd.AddCommand(sabakanUploadCmd)
+	initDataCmd.Flags().BoolVar(&ignitionsOnly, "ignitions-only", false, "upload ignitions only")
+	rootCmd.AddCommand(initDataCmd)
 }

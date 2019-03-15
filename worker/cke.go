@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
-	"text/template"
 	"time"
 
 	"github.com/coreos/etcd/clientv3/concurrency"
@@ -229,6 +227,16 @@ func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateReques
 }
 
 func (o *operator) UpdateUserResources(ctx context.Context, req *neco.UpdateRequest) error {
+	// Check if CKE is alive
+	isActive, err := neco.IsActiveService(ctx, neco.CKEService)
+	if err != nil {
+		return err
+	}
+	if !isActive {
+		log.Info("cke: skipped uploading cke-template.yml because CKE is inactive", nil)
+		return nil
+	}
+
 	// Leader election
 	sess, err := concurrency.NewSession(o.ec, concurrency.WithTTL(600))
 	if err != nil {
@@ -268,43 +276,7 @@ func (o *operator) UpdateUserResources(ctx context.Context, req *neco.UpdateRequ
 		}
 	}
 
-	templateParams := make(map[string]string)
-	for _, img := range neco.CurrentArtifacts.Images {
-		templateParams[img.Name] = img.FullName(false)
-	}
-	images, err := cke.GetCKEImages()
-	if err != nil {
-		return err
-	}
-	for _, img := range images {
-		templateParams["cke-"+img.Name] = img.FullName(false)
-	}
-
-	for _, filename := range neco.CKEUserResourceFiles {
-		content, err := ioutil.ReadFile(filename)
-		if err != nil {
-			return err
-		}
-
-		tmpl, err := template.New(filepath.Base(filename)).Parse(string(content))
-		if err != nil {
-			return err
-		}
-
-		buf := &bytes.Buffer{}
-		err = tmpl.Execute(buf, templateParams)
-		if err != nil {
-			return err
-		}
-
-		cmd := well.CommandContext(ctx, neco.CKECLIBin, "resource", "set", "-")
-		cmd.Stdin = buf
-		err = cmd.Run()
-		if err != nil {
-			return err
-		}
-	}
-
+	err = cke.UpdateResources(ctx)
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,
