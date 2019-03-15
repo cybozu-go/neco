@@ -146,7 +146,7 @@ var (
 	CKETemplateFile          = filepath.Join(NecoDataDir, "cke-template.yml")
 	CKEUserResourceFiles     = []string{
 		filepath.Join(NecoDataDir, "namespaces.yml"),
-		//filepath.Join(NecoDataDir, "pod-security-policy.yml"),
+		filepath.Join(NecoDataDir, "pod-security-policy.yml"),
 		filepath.Join(NecoDataDir, "coil-rbac.yml"),
 		filepath.Join(NecoDataDir, "coil-deploy.yml"),
 		filepath.Join(NecoDataDir, "unbound.yml"),
