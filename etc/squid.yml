@@ -3,6 +3,32 @@ kind: ServiceAccount
 metadata:
   name: squid
   namespace: internet-egress
+automountServiceAccountToken: false
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: internet-egress
+  name: psp:squid
+rules:
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
+    resourceNames: ["squid"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: internet-egress
+  name: squid:psp:squid
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: psp:squid
+subjects:
+- kind: ServiceAccount
+  name: squid
+  namespace: internet-egress
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -75,7 +101,7 @@ spec:
       serviceAccountName: squid
       containers:
         - name: squid
-          image: "{{ .squid }}"
+          image: {{ .squid }}
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /var/spool/squid
@@ -103,7 +129,7 @@ spec:
             initialDelaySeconds: 10
             failureThreshold: 6
         - name: unbound
-          image: "{{ index . "cke-unbound" }}"
+          image: {{ index . "cke-unbound" }}
           imagePullPolicy: IfNotPresent
           args:
             - -c
@@ -176,28 +202,3 @@ spec:
       nodePort: 30128
       port: 3128
       targetPort: 3128
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  namespace: internet-egress
-  name: psp:squid
-rules:
-  - apiGroups: ["policy"]
-    resources: ["podsecuritypolicies"]
-    verbs: ["use"]
-    resourceNames: ["squid"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  namespace: internet-egress
-  name: squid:psp:squid
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: squid
-subjects:
-- kind: ServiceAccount
-  name: squid
-  namespace: internet-egress
