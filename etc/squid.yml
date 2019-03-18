@@ -103,7 +103,7 @@ spec:
             initialDelaySeconds: 10
             failureThreshold: 6
         - name: unbound
-          image: "%%UNBOUND_IMAGE%%"
+          image: "{{ index . "cke-unbound" }}"
           imagePullPolicy: IfNotPresent
           args:
             - -c
