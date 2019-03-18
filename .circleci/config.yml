@@ -54,7 +54,7 @@ commands:
 jobs:
   build:
     docker:
-    - image: quay.io/cybozu/golang:1.11-bionic
+    - image: quay.io/cybozu/golang:1.12-bionic
     - image: quay.io/coreos/etcd:v3.3
     working_directory: /work
     resource_class: large
@@ -65,7 +65,7 @@ jobs:
     - run: make deb SUDO="" FAKEROOT=
   build_release:
     docker:
-    - image: quay.io/cybozu/golang:1.11-bionic
+    - image: quay.io/cybozu/golang:1.12-bionic
     - image: quay.io/coreos/etcd:v3.3
     working_directory: /work
     resource_class: large
@@ -84,7 +84,7 @@ jobs:
           - "*.deb"
   deploy_github:
     docker:
-    - image: quay.io/cybozu/golang:1.11-bionic
+    - image: quay.io/cybozu/golang:1.12-bionic
     steps:
     - attach_workspace:
         at: ./artifacts
@@ -104,7 +104,7 @@ jobs:
             gcloud --quiet --project neco-test compute project-info remove-metadata --keys=ssh-keys
   generate-artifacts:
       docker:
-      - image: quay.io/cybozu/golang:1.11-bionic
+      - image: quay.io/cybozu/golang:1.12-bionic
       steps:
       - checkout
       - run: go install -mod=vendor ./pkg/generate-artifacts/
@@ -169,7 +169,7 @@ jobs:
           no_output_timeout: 20m
   update-release:
       docker:
-      - image: quay.io/cybozu/golang:1.11-bionic
+      - image: quay.io/cybozu/golang:1.12-bionic
       steps:
       - checkout
       - attach_workspace:
@@ -203,7 +203,7 @@ jobs:
             ./bin/commit-push.sh
   build_necogcp:
     docker:
-      - image: quay.io/cybozu/golang:1.11-bionic
+      - image: quay.io/cybozu/golang:1.12-bionic
     working_directory: /work
     steps:
       - checkout
