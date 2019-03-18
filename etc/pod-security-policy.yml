@@ -124,7 +124,7 @@ spec:
     - 'projected'
     - 'secret'
     - 'downwardAPI'
-  hostNetwork: false
+  hostNetwork: true
   runAsUser:
     rule: 'RunAsAny'
   seLinux:
