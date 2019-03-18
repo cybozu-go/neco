@@ -51,6 +51,9 @@ spec:
           effect: NoSchedule
         - key: CriticalAddonsOnly
           operator: Exists
+      dnsConfig:
+        nameservers:
+          - 127.0.0.1
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -93,6 +96,46 @@ spec:
             periodSeconds: 1
             initialDelaySeconds: 10
             failureThreshold: 6
+        - name: unbound
+          image: "%%UNBOUND_IMAGE%%"
+          imagePullPolicy: IfNotPresent
+          args:
+            - -c
+            - /etc/unbound/unbound.conf
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/unbound
+              readOnly: true
+            - name: temporary-volume
+              mountPath: /tmp
+          ports:
+            - containerPort: 53
+              name: dns
+              protocol: UDP
+            - containerPort: 53
+              name: dns-tcp
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - NET_BIND_SERVICE
+              drop:
+                - all
+            readOnlyRootFilesystem: true
+          resources:
+            limits:
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          livenessProbe:
+            tcpSocket:
+              port: 53
+              host: 127.0.0.1
+            periodSeconds: 1
+            initialDelaySeconds: 1
+            failureThreshold: 6
       volumes:
         - name: cache
           emptyDir: {}
@@ -102,6 +145,16 @@ spec:
             items:
               - key: squid.conf
                 path: squid.conf
+        - name: config-volume
+          configMap:
+            name: unbound
+            items:
+              - key: unbound.conf
+                path: unbound.conf
+              - key: root.hints
+                path: root.hints
+        - name: temporary-volume
+          emptyDir: {}
 ---
 kind: Service
 apiVersion: v1

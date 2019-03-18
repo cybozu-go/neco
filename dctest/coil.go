@@ -32,7 +32,7 @@ func TestCoilSetup() {
 		execSafeAt(boot0, "sed", "s,%%COIL_IMAGE%%,$(neco image coil),",
 			"/usr/share/neco/coil-deploy.yml", "|", "kubectl", "create", "-f", "-")
 
-		By("waiting for coil-node DaemonSet and coil-controllers Deployement")
+		By("waiting for coil-node DaemonSet and coil-controllers Deployment")
 		checkCoilNodeDaemonSet()
 		checkCoilControllersDeployment()
 
@@ -87,7 +87,7 @@ func TestCoilSetup() {
 // TestCoil tests Coil
 func TestCoil() {
 	It("should be available", func() {
-		By("checking coil-node DaemonSet and coil-controllers Deployement")
+		By("checking coil-node DaemonSet and coil-controllers Deployment")
 		checkCoilNodeDaemonSet()
 		checkCoilControllersDeployment()
 
