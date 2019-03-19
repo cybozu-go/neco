@@ -13,9 +13,11 @@ import (
 // TestRebootAllNodes tests all nodes stop scenario
 func TestRebootAllNodes() {
 	It("can access a pod from another pod running on different node", func() {
-		execSafeAt(boot0, "kubectl", "run", "nginx-reboot-test", "--generator=run-pod/v1", "--image=docker.io/nginx:latest")
+		execSafeAt(boot0, "kubectl", "run", "nginx-reboot-test", "--image=docker.io/busybox:latest",
+			`--overrides='{"spec":{"template":{"spec":{"securityContext":{"runAsUser":10000}}}}}'`, "--generator=run-pod/v1",
+			"--", "httpd", "-f", "-p", "8000", "-h", "/etc")
 		execSafeAt(boot0, "kubectl", "run", "debug-reboot-test", "--generator=run-pod/v1", "--image=quay.io/cybozu/ubuntu-debug:18.04", "sleep", "Infinity")
-		execSafeAt(boot0, "kubectl", "expose", "pod", "nginx-reboot-test", "--port=80", "--name=nginx-reboot-test")
+		execSafeAt(boot0, "kubectl", "expose", "pod", "nginx-reboot-test", "--port=80", "--target-port=8000", "--name=nginx-reboot-test")
 		Eventually(func() error {
 			_, _, err := execAt(boot0, "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
 			return err
