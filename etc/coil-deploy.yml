@@ -82,7 +82,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - name: coild
-          image: "%%COIL_IMAGE%%"
+          image: "{{ .coil }}"
           command:
             - /coild
             - "--etcd-endpoints=@cke-etcd"
@@ -113,7 +113,7 @@ spec:
         # This container installs the coil CNI plugin and configuration file.
       initContainers:
         - name: coil-installer
-          image: "%%COIL_IMAGE%%"
+          image: "{{ .coil }}"
           command: ["/coil-installer"]
           env:
             - name: CNI_NETCONF
@@ -193,7 +193,7 @@ spec:
       serviceAccountName: coil-controller
       containers:
         - name: controller
-          image: "%%COIL_IMAGE%%"
+          image: "{{ .coil }}"
           command:
             - /coil-controller
             - "--etcd-endpoints=@cke-etcd"

@@ -20,21 +20,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 		return err
 	}
 
-	output, err := exec.Command(neco.CKECLIBin, "images").Output()
-	if err != nil {
-		return err
-	}
-
-	var images []neco.ContainerImage
-	sc := bufio.NewScanner(bytes.NewReader(output))
-	for sc.Scan() {
-		img, err := neco.ParseContainerImageName(sc.Text())
-		if err != nil {
-			return err
-		}
-		images = append(images, img)
-	}
-	err = sc.Err()
+	images, err := GetCKEImages()
 	if err != nil {
 		return err
 	}
@@ -48,4 +34,27 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 	}
 	env.Stop()
 	return env.Wait()
+}
+
+// GetCKEImages get images list from `ckecli images`
+func GetCKEImages() ([]neco.ContainerImage, error) {
+	output, err := exec.Command(neco.CKECLIBin, "images").Output()
+	if err != nil {
+		return nil, err
+	}
+
+	var images []neco.ContainerImage
+	sc := bufio.NewScanner(bytes.NewReader(output))
+	for sc.Scan() {
+		img, err := neco.ParseContainerImageName(sc.Text())
+		if err != nil {
+			return nil, err
+		}
+		images = append(images, img)
+	}
+	err = sc.Err()
+	if err != nil {
+		return nil, err
+	}
+	return images, nil
 }

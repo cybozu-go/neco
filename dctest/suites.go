@@ -9,7 +9,7 @@ var BootstrapSuite = func() {
 	Context("etcdpasswd", TestEtcdpasswd)
 	Context("sabakan", TestSabakan)
 	Context("machines", TestMachines)
-	Context("contents", UploadContents)
+	Context("init-data", TestInitData)
 	Context("cke", func() {
 		TestCKESetup()
 		TestCKE()
@@ -19,11 +19,9 @@ var BootstrapSuite = func() {
 		TestCoil()
 	})
 	Context("unbound", func() {
-		TestUnboundSetup()
 		TestUnbound()
 	})
 	Context("squid", func() {
-		TestSquidSetup()
 		TestSquid()
 	})
 }

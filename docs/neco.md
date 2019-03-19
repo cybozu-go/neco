@@ -59,6 +59,12 @@ Synopsis
 
     This command should be **executed on all boot servers**.
 
+* `neco init-data`
+
+    Initialize data for sabakan and CKE. If uploaded versions are up to date, do nothing.
+    This command must be invoked only once in the cluster after `neco init` and 
+    `neco init-local` completed.
+
 * `neco status`
 
     Show the status of the current update process.
@@ -85,11 +91,6 @@ Synopsis
 * `neco recover`
 
     Removes the current update status from etcd to resolve the update failure.
-
-* `neco sabakan-upload`
-
-    Upload sabakan contents using `artifacts.go`.  If uploaded versions are
-    up to date, do nothing.
 
 ### For worker nodes
 
@@ -231,6 +232,7 @@ Use case
     12. Add etcd key `<prefix>/bootservers/LRN` on the finished boot server.
 2. Run `neco init NAME` on one of boot servers. etcd user/role has created.
 3. Run `neco init-local NAME` on each boot server. Client certificates for `NAME` have issued.
+4. Run `neco init-data` on one of boot servers.
 
 ### Add a new boot server
 

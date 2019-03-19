@@ -27,11 +27,6 @@ func TestCoilSetup() {
 			"--from-file=etcd-coil.key")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
-		By("creating k8s resources")
-		execSafeAt(boot0, "kubectl", "create", "-f", "/usr/share/neco/coil-rbac.yml")
-		execSafeAt(boot0, "sed", "s,%%COIL_IMAGE%%,$(neco image coil),",
-			"/usr/share/neco/coil-deploy.yml", "|", "kubectl", "create", "-f", "-")
-
 		By("waiting for coil-node DaemonSet and coil-controllers Deployment")
 		checkCoilNodeDaemonSet()
 		checkCoilControllersDeployment()
@@ -76,8 +71,6 @@ func TestCoilSetup() {
 		podName := podList.Items[0].Name
 
 		_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "default", "10.64.0.0/14", "5")
-		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
-		_, stderr, err = execAt(boot0, "kubectl", "create", "namespace", "internet-egress")
 		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
 		_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "internet-egress", "172.17.0.0/28", "0")
 		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)

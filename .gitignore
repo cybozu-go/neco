@@ -25,3 +25,6 @@
 # ignore gcp files
 /.necogcp.yml
 pkg/necogcp-app/cron.yaml
+
+# misc
+/build

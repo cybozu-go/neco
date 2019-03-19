@@ -26,6 +26,10 @@ CUSTOM_UBUNTU = cybozu-ubuntu-18.04-server-cloudimg-amd64.img
 CUSTOM_UBUNTU_API_URL = https://api.github.com/repos/cybozu/neco-ubuntu/releases/latest
 CUSTOM_UBUNTU_DISK_SIZE = 30G
 
+### for Go
+GOFLAGS = -mod=vendor
+export GOFLAGS
+
 # non-configuration variables
 OUTPUT = ./output
 SABAKAN_DIR = $(OUTPUT)/sabakan
@@ -73,8 +77,8 @@ $(OUTPUT)/$(CUSTOM_UBUNTU): $(CUSTOM_UBUNTU)
 
 # SABAKAN_CONTENTS
 $(DHCP_JSON):
-	go generate ../menu/assets.go
-	cd ..; go install -mod=vendor ./pkg/placemat-menu
+	cd ..; go generate ./menu
+	cd ..; go install ./pkg/placemat-menu
 	$(GOPATH)/bin/placemat-menu -f $(MENU) -o $(OUTPUT)
 
 $(AUTOCONFIG): auto-config $(DHCP_JSON)
@@ -90,7 +94,7 @@ $(GENERATED_DEB):
 
 $(DOWNLOADED_DEB):
 	mkdir -p $(OUTPUT)
-	cd ..; go install -mod=vendor ./pkg/download-neco-deb
+	cd ..; go install ./pkg/download-neco-deb
 	download-neco-deb $(DATACENTER) > $@
 
 # Targets
@@ -118,6 +122,6 @@ fullclean: clean
 
 setup:
 	cd ../ && $(MAKE) setup
-	go install -mod=vendor github.com/onsi/ginkgo/ginkgo
+	go install github.com/onsi/ginkgo/ginkgo
 
 .PHONY:	all test placemat stop clean fullclean setup
