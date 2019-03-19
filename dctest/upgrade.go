@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/cybozu-go/neco"
 	. "github.com/onsi/ginkgo"
@@ -61,8 +62,10 @@ func TestUpgrade() {
 			if !strings.Contains(img, "unbound") && !strings.Contains(img, "coredns") {
 				continue
 			}
-			err := checkRunningDesiredVersion(img)
-			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				err := checkRunningDesiredVersion(img)
+				return err
+			}, 20*time.Minute).Should(Succeed())
 		}
 	})
 }
