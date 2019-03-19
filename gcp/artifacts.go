@@ -35,6 +35,7 @@ var artifacts = artifactSet{
 		"skopeo",
 		"podman",
 		"cri-o-runc",
+		"cri-o-1.13",
 		"fakeroot",
 		"btrfs-tools",
 		// required by building neco
