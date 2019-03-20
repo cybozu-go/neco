@@ -60,6 +60,12 @@ func TestCoilSetup() {
 			return nil
 		}).Should(Succeed())
 
+		By("waiting for kube-system/cke-etcd getting created")
+		Eventually(func() error {
+			_, _, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "endpoints/cke-etcd")
+			return err
+		}).Should(Succeed())
+
 		By("creating IP address pool")
 		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=k8s-app=coil-controllers", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
