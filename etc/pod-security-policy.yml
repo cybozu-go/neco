@@ -1,4 +1,4 @@
-apiVersion: policy/v1beta1
+apiVersion: extensions/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: restricted
@@ -78,7 +78,7 @@ subjects:
 ---
 
 # for coil
-apiVersion: policy/v1beta1
+apiVersion: extensions/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: coil
@@ -113,7 +113,7 @@ spec:
 ---
 
 # for squid + unbound
-apiVersion: policy/v1beta1
+apiVersion: extensions/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: squid
@@ -143,7 +143,7 @@ spec:
 ---
 
 # for unbound
-apiVersion: policy/v1beta1
+apiVersion: extensions/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: unbound
