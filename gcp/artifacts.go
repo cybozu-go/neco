@@ -1,7 +1,7 @@
 package gcp
 
 var artifacts = artifactSet{
-	goVersion:           "1.11.5",
+	goVersion:           "1.12.1",
 	rktVersion:          "1.30.0",
 	etcdVersion:         "3.3.12",
 	placematVersion:     "1.3.5",
@@ -35,6 +35,7 @@ var artifacts = artifactSet{
 		"skopeo",
 		"podman",
 		"cri-o-runc",
+		"cri-o-1.13",
 		"fakeroot",
 		"btrfs-tools",
 		// required by building neco

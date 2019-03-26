@@ -9,15 +9,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-// TestUnboundSetup test unbound setup
-func TestUnboundSetup() {
-	It("should be deployed as internet-egress/unbound", func() {
-		execSafeAt(boot0,
-			"sed", "s,%%UNBOUND_IMAGE%%,$(ckecli images | grep quay.io/cybozu/unbound),",
-			"/usr/share/neco/unbound.yml", "|", "kubectl", "create", "-f", "-")
-	})
-}
-
 // TestUnbound test installed unbound
 func TestUnbound() {
 	It("should be available", func() {

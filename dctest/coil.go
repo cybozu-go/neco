@@ -27,12 +27,7 @@ func TestCoilSetup() {
 			"--from-file=etcd-coil.key")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
-		By("creating k8s resources")
-		execSafeAt(boot0, "kubectl", "create", "-f", "/usr/share/neco/coil-rbac.yml")
-		execSafeAt(boot0, "sed", "s,%%COIL_IMAGE%%,$(neco image coil),",
-			"/usr/share/neco/coil-deploy.yml", "|", "kubectl", "create", "-f", "-")
-
-		By("waiting for coil-node DaemonSet and coil-controllers Deployement")
+		By("waiting for coil-node DaemonSet and coil-controllers Deployment")
 		checkCoilNodeDaemonSet()
 		checkCoilControllersDeployment()
 
@@ -65,6 +60,12 @@ func TestCoilSetup() {
 			return nil
 		}).Should(Succeed())
 
+		By("waiting for kube-system/cke-etcd getting created")
+		Eventually(func() error {
+			_, _, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "endpoints/cke-etcd")
+			return err
+		}).Should(Succeed())
+
 		By("creating IP address pool")
 		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=k8s-app=coil-controllers", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
@@ -77,8 +78,6 @@ func TestCoilSetup() {
 
 		_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "default", "10.64.0.0/14", "5")
 		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
-		_, stderr, err = execAt(boot0, "kubectl", "create", "namespace", "internet-egress")
-		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
 		_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "internet-egress", "172.17.0.0/28", "0")
 		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
 	})
@@ -87,7 +86,7 @@ func TestCoilSetup() {
 // TestCoil tests Coil
 func TestCoil() {
 	It("should be available", func() {
-		By("checking coil-node DaemonSet and coil-controllers Deployement")
+		By("checking coil-node DaemonSet and coil-controllers Deployment")
 		checkCoilNodeDaemonSet()
 		checkCoilControllersDeployment()
 

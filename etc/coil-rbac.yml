@@ -2,6 +2,10 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: coil-controllers
+  annotations:
+    # turn on auto-reconciliation
+    # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#auto-reconciliation
+    rbac.authorization.kubernetes.io/autoupdate: "true"
 rules:
   - apiGroups: [""]
     resources: ["nodes"]
@@ -9,11 +13,17 @@ rules:
   - apiGroups: [""]
     resources: ["endpoints"]
     verbs: ["get"]
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
+    resourceNames: ["coil"]
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: coil-controllers
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -29,6 +39,8 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: coil-node
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
 rules:
   - apiGroups: [""]
     resources: ["nodes"]
@@ -36,11 +48,17 @@ rules:
   - apiGroups: [""]
     resources: ["pods", "services", "endpoints"]
     verbs: ["get"]
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
+    resourceNames: ["coil"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: coil-node
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

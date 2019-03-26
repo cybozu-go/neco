@@ -54,10 +54,10 @@ commands:
 jobs:
   build:
     docker:
-    - image: quay.io/cybozu/golang:1.11-bionic
+    - image: quay.io/cybozu/golang:1.12-bionic
     - image: quay.io/coreos/etcd:v3.3
     working_directory: /work
-    resource_class: large
+    resource_class: xlarge
     steps:
     - checkout
     - run: make SUDO="" setup
@@ -65,10 +65,10 @@ jobs:
     - run: make deb SUDO="" FAKEROOT=
   build_release:
     docker:
-    - image: quay.io/cybozu/golang:1.11-bionic
+    - image: quay.io/cybozu/golang:1.12-bionic
     - image: quay.io/coreos/etcd:v3.3
     working_directory: /work
-    resource_class: large
+    resource_class: xlarge
     steps:
     - checkout
     - run: make SUDO="" setup
@@ -84,7 +84,7 @@ jobs:
           - "*.deb"
   deploy_github:
     docker:
-    - image: quay.io/cybozu/golang:1.11-bionic
+    - image: quay.io/cybozu/golang:1.12-bionic
     steps:
     - attach_workspace:
         at: ./artifacts
@@ -92,7 +92,7 @@ jobs:
   dctest:
     docker:
       - image: google/cloud-sdk
-    resource_class: large
+    resource_class: xlarge
     steps:
       - checkout
       - dctest-command:
@@ -104,7 +104,7 @@ jobs:
             gcloud --quiet --project neco-test compute project-info remove-metadata --keys=ssh-keys
   generate-artifacts:
       docker:
-      - image: quay.io/cybozu/golang:1.11-bionic
+      - image: quay.io/cybozu/golang:1.12-bionic
       steps:
       - checkout
       - run: go install -mod=vendor ./pkg/generate-artifacts/
@@ -169,7 +169,7 @@ jobs:
           no_output_timeout: 20m
   update-release:
       docker:
-      - image: quay.io/cybozu/golang:1.11-bionic
+      - image: quay.io/cybozu/golang:1.12-bionic
       steps:
       - checkout
       - attach_workspace:
@@ -203,7 +203,7 @@ jobs:
             ./bin/commit-push.sh
   build_necogcp:
     docker:
-      - image: quay.io/cybozu/golang:1.11-bionic
+      - image: quay.io/cybozu/golang:1.12-bionic
     working_directory: /work
     steps:
       - checkout
@@ -270,13 +270,13 @@ workflows:
       - dctest-release-reboot:
           requires:
             - generate-artifacts
-      - dctest-release-upgrade-staging:
-          requires:
-            - generate-artifacts
+#      - dctest-release-upgrade-staging:
+#          requires:
+#            - generate-artifacts
       - update-release:
           requires:
             - dctest-release-reboot
-            - dctest-release-upgrade-staging
+#            - dctest-release-upgrade-staging
   master:
     jobs:
       - generate-artifacts:
@@ -291,17 +291,17 @@ workflows:
             branches:
               only:
                 - master
-      - dctest-release-upgrade-staging:
-          requires:
-            - generate-artifacts
-          filters:
-            branches:
-              only:
-                - master
+#      - dctest-release-upgrade-staging:
+#          requires:
+#            - generate-artifacts
+#          filters:
+#            branches:
+#              only:
+#                - master
       - update-release:
           requires:
             - dctest-release-reboot
-            - dctest-release-upgrade-staging
+#            - dctest-release-upgrade-staging
           filters:
             branches:
               only:

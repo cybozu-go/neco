@@ -9,16 +9,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-// TestSquidSetup test squid setup
-func TestSquidSetup() {
-	It("should be deployed successfully", func() {
-		By("creating k8s resources")
-		execSafeAt(boot0, "sed", "-e", "s,%%SQUID_IMAGE%%,$(neco image squid),",
-			"-e", "'s,cache_mem .*,cache_mem 200 MB,'",
-			"/usr/share/neco/squid.yml", "|", "kubectl", "create", "-f", "-")
-	})
-}
-
 // TestSquid test installed squid
 func TestSquid() {
 	It("should be available", func() {
@@ -44,11 +34,13 @@ func TestSquid() {
 	})
 
 	It("should serve for docker daemon", func() {
-		By("running nginx pods")
-		execSafeAt(boot0, "kubectl", "run", "nginx", "--image=docker.io/nginx:latest", "--replicas=2")
+		By("running busybox pods")
+		execSafeAt(boot0, "kubectl", "run", "busybox", "--image=docker.io/busybox:latest", "--replicas=2",
+			`--overrides='{"spec":{"template":{"spec":{"securityContext":{"runAsUser":10000}}}}}'`,
+			"--", "httpd", "-f", "-p", "8000", "-h", "/etc")
 
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/nginx", "-o=json")
+			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/busybox", "-o=json")
 			if err != nil {
 				return err
 			}
@@ -65,7 +57,7 @@ func TestSquid() {
 			return nil
 		}).Should(Succeed())
 
-		By("removing nginx pods")
-		execSafeAt(boot0, "kubectl", "delete", "deployments/nginx")
+		By("removing busybox pods")
+		execSafeAt(boot0, "kubectl", "delete", "deployments/busybox")
 	})
 }

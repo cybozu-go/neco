@@ -34,7 +34,6 @@ func TestCKESetup() {
 		By("setting configurations")
 		execSafeAt(boot0, "ckecli", "constraints", "set", "control-plane-count", "3")
 		execSafeAt(boot0, "ckecli", "constraints", "set", "minimum-workers", "2")
-		execSafeAt(boot0, "ckecli", "sabakan", "set-template", "/usr/share/neco/cke-template.yml")
 		execSafeAt(boot0, "ckecli", "sabakan", "set-url", "http://localhost:10080")
 
 		By("waiting for cluster.yml generation")
@@ -100,12 +99,6 @@ func TestCKE() {
 				return fmt.Errorf("too few nodes: %d", len(nl.Items))
 			}
 			return nil
-		}).Should(Succeed())
-
-		By("waiting for kube-system/cke-etcd getting created")
-		Eventually(func() error {
-			_, _, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "endpoints/cke-etcd")
-			return err
 		}).Should(Succeed())
 	})
 }
