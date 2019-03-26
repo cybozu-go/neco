@@ -270,13 +270,13 @@ workflows:
       - dctest-release-reboot:
           requires:
             - generate-artifacts
-      - dctest-release-upgrade-staging:
-          requires:
-            - generate-artifacts
+#      - dctest-release-upgrade-staging:
+#          requires:
+#            - generate-artifacts
       - update-release:
           requires:
             - dctest-release-reboot
-            - dctest-release-upgrade-staging
+#            - dctest-release-upgrade-staging
   master:
     jobs:
       - generate-artifacts:
@@ -291,17 +291,17 @@ workflows:
             branches:
               only:
                 - master
-      - dctest-release-upgrade-staging:
-          requires:
-            - generate-artifacts
-          filters:
-            branches:
-              only:
-                - master
+#      - dctest-release-upgrade-staging:
+#          requires:
+#            - generate-artifacts
+#          filters:
+#            branches:
+#              only:
+#                - master
       - update-release:
           requires:
             - dctest-release-reboot
-            - dctest-release-upgrade-staging
+#            - dctest-release-upgrade-staging
           filters:
             branches:
               only:
