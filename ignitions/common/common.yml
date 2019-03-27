@@ -25,6 +25,7 @@ files:
   - /opt/bin/wait-k8s-containerd-socket
   - /opt/sbin/bird-wait
   - /opt/sbin/chrony-wait
+  - /opt/sbin/fetch-chrony-image
   - /opt/sbin/neco-wait-dhcp-online
   - /opt/sbin/setup-bmc-user
   - /opt/sbin/setup-hw
