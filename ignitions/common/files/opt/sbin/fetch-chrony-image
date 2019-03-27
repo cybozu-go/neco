@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+i=0
+while ! rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/{{ Metadata "chrony.aci" }}; do
+    i=$((i+1))
+    if [ $i -ge 20 ]; then
+        echo "'rkt fetch chrony.aci' failed.  Give up."
+        exit 1
+    fi
+    echo "'rkt fetch chrony.aci' failed.  Retrying..."
+    sleep 5
+done
