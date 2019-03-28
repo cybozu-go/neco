@@ -13,14 +13,11 @@ spec:
   # but we can provide it for defense in depth.
   # Allow core volume types.
   volumes:
-    - 'configMap'
-    - 'emptyDir'
-    - 'projected'
-    - 'secret'
-    - 'downwardAPI'
-    # Assume that persistentVolumes set up by the cluster admin are safe to use.
-    - 'persistentVolumeClaim'
+    - '*'
   hostNetwork: true
+  hostPorts:
+    - max: 10000
+      min: 1024
   hostIPC: true
   hostPID: true
   runAsUser:
@@ -46,7 +43,7 @@ data:
   etcd-config: |-
     ---
     endpoints:
-      - http://cke-etcd.kube-system.svc.cluster.local:2379
+      - https://cke-etcd.kube-system.svc.cluster.local:2379
     # In case you want to use TLS in etcd, uncomment the 'ca-file' line
     # and create a kubernetes secret by following the tutorial in
     # https://cilium.link/etcd-config

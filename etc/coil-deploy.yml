@@ -19,6 +19,9 @@ data:
             "mtu": 1400
           },
           {
+            "type": "cilium-cni"
+          },
+          {
             "type": "portmap",
             "snat": true,
             "capabilities": {"portMappings": true}
