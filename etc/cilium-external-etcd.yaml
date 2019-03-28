@@ -1,3 +1,39 @@
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: debug
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
+spec:
+  privileged: true
+  # Required to prevent escalations to root.
+  allowPrivilegeEscalation: true
+  # This is redundant with non-root + disallow privilege escalation,
+  # but we can provide it for defense in depth.
+  # Allow core volume types.
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    # Assume that persistentVolumes set up by the cluster admin are safe to use.
+    - 'persistentVolumeClaim'
+  hostNetwork: true
+  hostIPC: true
+  hostPID: true
+  runAsUser:
+    # Require the container to run without root privileges.
+    rule: 'RunAsAny'
+  seLinux:
+    # This policy assumes the nodes are using AppArmor rather than SELinux.
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  readOnlyRootFilesystem: false
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -10,18 +46,17 @@ data:
   etcd-config: |-
     ---
     endpoints:
-      - http://EDIT-ME-ETCD-ADDRESS:2379
-    #
+      - http://cke-etcd.kube-system.svc.cluster.local:2379
     # In case you want to use TLS in etcd, uncomment the 'ca-file' line
     # and create a kubernetes secret by following the tutorial in
     # https://cilium.link/etcd-config
-    # ca-file: '/var/lib/etcd-secrets/etcd-client-ca.crt'
+    ca-file: '/var/lib/etcd-secrets/etcd-client-ca.crt'
     #
     # In case you want client to server authentication, uncomment the following
     # lines and create a kubernetes secret by following the tutorial in
     # https://cilium.link/etcd-config
-    # key-file: '/var/lib/etcd-secrets/etcd-client.key'
-    # cert-file: '/var/lib/etcd-secrets/etcd-client.crt'
+    key-file: '/var/lib/etcd-secrets/etcd-client.key'
+    cert-file: '/var/lib/etcd-secrets/etcd-client.crt'
 
   # If you want to run cilium in debug mode change this value to true
   debug: "false"
@@ -113,7 +148,7 @@ data:
   #   - disabled
   #   - vxlan (default)
   #   - geneve
-  tunnel: "vxlan"
+  tunnel: "disabled"
 
   # Name of the cluster. Only relevant when building a mesh of clusters.
   cluster-name: default
@@ -656,6 +691,11 @@ rules:
   - ciliumendpoints/status
   verbs:
   - '*'
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+  - debug
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -749,6 +789,11 @@ rules:
   - ciliumendpoints/status
   verbs:
   - '*'
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+    - debug
 ---
 apiVersion: v1
 kind: ServiceAccount
