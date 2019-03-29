@@ -3,7 +3,7 @@ How to install Cilium
 
 ```console
 @boot-0
-$ ckecli user-add cilium cilium
+$ ckecli etcd user-add cilium cilium
 $ ckecli etcd issue cilium --output=file
 $ kubectl create secret generic -n kube-system cilium-etcd-secrets \
        --from-file=etcd-client-ca.crt=etcd-ca.crt \
