@@ -53,6 +53,19 @@ func TestUpgrade() {
 			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
 		}
 	})
+
+	It("should generate encryption key for CKE 1.13.17", func() {
+		stdout, _, err := execAt(boot0, "ckecli", "--version")
+		Expect(err).ShouldNot(HaveOccurred())
+
+		if !bytes.Contains(stdout, []byte("1.13.17")) {
+			return
+		}
+
+		_, _, err = execAt(boot0, "ckecli", "vault", "enckey")
+		Expect(err).ShouldNot(HaveOccurred())
+	})
+
 	It("should install desired version", func() {
 		stdout, stderr, err := execAt(boot0, "ckecli", "images")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
