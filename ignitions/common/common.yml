@@ -83,8 +83,6 @@ systemd:
     enabled: true
   - name: squid-image.service
     enabled: true
-  - name: sys-fs-bfs.mount
-    enabled: true
   - name: coil-image.service
     enabled: true
   - name: setup-serf.service

@@ -360,6 +360,8 @@ spec:
               key: masquerade
               name: cilium-config
               optional: true
+        - name: CNI_CONF_NAME
+          value: "11-cilium.conf"
         - name: CILIUM_AUTO_DIRECT_NODE_ROUTES
           valueFrom:
             configMapKeyRef:
