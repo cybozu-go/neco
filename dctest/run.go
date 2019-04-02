@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	sshTimeout = 3 * time.Minute
+	sshTimeout = 5 * time.Minute
 
 	defaultDialTimeout = 30 * time.Second
 	defaultKeepAlive   = 5 * time.Second
@@ -104,7 +104,7 @@ func prepareSSHClients(addresses ...string) error {
 	RETRY:
 		select {
 		case <-ch:
-			return errors.New("timed out")
+			return errors.New("prepareSSHClients timed out")
 		default:
 		}
 		agent, err := sshTo(a, sshKey, "cybozu")
