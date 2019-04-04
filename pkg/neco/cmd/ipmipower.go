@@ -125,7 +125,10 @@ var ipmiPowerCmd = &cobra.Command{
 
 func getDriver() string {
 	ipmiVersion := "2.0"
-	data, _ := ioutil.ReadFile("/sys/devices/virtual/dmi/id/sys_vendor")
+	data, err := ioutil.ReadFile("/sys/devices/virtual/dmi/id/sys_vendor")
+	if err != nil {
+		log.ErrorExit(err)
+	}
 	if strings.TrimSpace(string(data)) == "QEMU" {
 		ipmiVersion = "1.5"
 	}
