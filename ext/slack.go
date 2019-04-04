@@ -48,7 +48,6 @@ type Attachment struct {
 	ThumbURL   string            `json:"thumb_url,omitempty"`
 	Footer     string            `json:"footer,omitempty"`
 	FooterIcon string            `json:"footer_icon,omitempty"`
-	Timestamp  time.Time         `json:"ts,omitempty"`
 }
 
 // SlackClient is a slack client
@@ -58,7 +57,7 @@ type SlackClient struct {
 }
 
 // PostWebHook posts a payload to slack
-func (c SlackClient) PostWebHook(ctx context.Context, payload Payload) error {
+func (c SlackClient) PostWebHook(payload Payload) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -67,6 +66,10 @@ func (c SlackClient) PostWebHook(ctx context.Context, payload Payload) error {
 	if err != nil {
 		return err
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	req = req.WithContext(ctx)
 	req.Header.Set("Content-Type", "application/json")
 
@@ -86,7 +89,7 @@ func (c SlackClient) PostWebHook(ctx context.Context, payload Payload) error {
 }
 
 // NotifyInfo notifies to slack that update was started.
-func (c SlackClient) NotifyInfo(ctx context.Context, req neco.UpdateRequest, message string) error {
+func (c SlackClient) NotifyInfo(req neco.UpdateRequest, message string) error {
 	att := Attachment{
 		Color:      ColorInfo,
 		AuthorName: "Boot server updater",
@@ -100,11 +103,11 @@ func (c SlackClient) NotifyInfo(ctx context.Context, req neco.UpdateRequest, mes
 		},
 	}
 	payload := Payload{Attachments: []Attachment{att}}
-	return c.PostWebHook(ctx, payload)
+	return c.PostWebHook(payload)
 }
 
 // NotifySucceeded notifies to slack that update was successful.
-func (c SlackClient) NotifySucceeded(ctx context.Context, req neco.UpdateRequest) error {
+func (c SlackClient) NotifySucceeded(req neco.UpdateRequest) error {
 	att := Attachment{
 		Color:      ColorGood,
 		AuthorName: "Boot server updater",
@@ -117,11 +120,11 @@ func (c SlackClient) NotifySucceeded(ctx context.Context, req neco.UpdateRequest
 		},
 	}
 	payload := Payload{Attachments: []Attachment{att}}
-	return c.PostWebHook(ctx, payload)
+	return c.PostWebHook(payload)
 }
 
 // NotifyFailure notifies to slack that update was failure.
-func (c SlackClient) NotifyFailure(ctx context.Context, req neco.UpdateRequest, message string) error {
+func (c SlackClient) NotifyFailure(req neco.UpdateRequest, message string) error {
 	att := Attachment{
 		Color:      ColorDanger,
 		AuthorName: "Boot server updater",
@@ -135,5 +138,5 @@ func (c SlackClient) NotifyFailure(ctx context.Context, req neco.UpdateRequest, 
 		},
 	}
 	payload := Payload{Attachments: []Attachment{att}}
-	return c.PostWebHook(ctx, payload)
+	return c.PostWebHook(payload)
 }

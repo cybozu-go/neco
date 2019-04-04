@@ -1,15 +1,12 @@
 package ext
 
 import (
-	"context"
 	"testing"
 	"time"
 )
 
 func testPostWebHook(t *testing.T) {
 	t.Skip()
-
-	ctx := context.Background()
 
 	url := "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXX"
 
@@ -41,7 +38,7 @@ func testPostWebHook(t *testing.T) {
 	}
 
 	c := SlackClient{URL: url}
-	err := c.PostWebHook(ctx, Payload{Attachments: attachments})
+	err := c.PostWebHook(Payload{Attachments: attachments})
 	if err != nil {
 		t.Fatal(err)
 	}

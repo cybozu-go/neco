@@ -122,7 +122,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			if err != nil {
 				return err
 			}
-			err = s.notifier.NotifyInfo(ctx, req, "start boot servers reconfiguration.")
+			err = s.notifier.NotifyInfo(req, "start boot servers reconfiguration.")
 			if err != nil {
 				log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 			}
@@ -136,7 +136,7 @@ func (s Server) runLoop(ctx context.Context, leaderKey string) error {
 			if err != nil {
 				return err
 			}
-			err = s.notifier.NotifyInfo(ctx, req, "start updating the new release.")
+			err = s.notifier.NotifyInfo(req, "start updating the new release.")
 			if err != nil {
 				log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 			}
@@ -180,7 +180,7 @@ func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.
 			"started_at": ss.Request.StartedAt,
 			"timeout":    timeout.String(),
 		})
-		err = s.notifier.NotifyFailure(ctx, *ss.Request, fmt.Sprintf("timeout occurred: %s", timeout.String()))
+		err = s.notifier.NotifyFailure(*ss.Request, fmt.Sprintf("timeout occurred: %s", timeout.String()))
 		if err != nil {
 			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}
@@ -208,7 +208,7 @@ func (h statusHandler) handleStatus(ctx context.Context, lrn int, st *neco.Updat
 			"lrn":     lrn,
 			"message": st.Message,
 		})
-		err := h.notifier.NotifyFailure(ctx, *h.req, "update request was aborted: "+st.Message)
+		err := h.notifier.NotifyFailure(*h.req, "update request was aborted: "+st.Message)
 		if err != nil {
 			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}
@@ -226,7 +226,7 @@ func (h statusHandler) handleStatus(ctx context.Context, lrn int, st *neco.Updat
 			"version": h.req.Version,
 			"servers": h.req.Servers,
 		})
-		err := h.notifier.NotifySucceeded(ctx, *h.req)
+		err := h.notifier.NotifySucceeded(*h.req)
 		if err != nil {
 			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}

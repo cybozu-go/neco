@@ -9,21 +9,21 @@ import (
 
 // Notifier notifies the result of update to the outside.
 type Notifier interface {
-	NotifyInfo(ctx context.Context, req neco.UpdateRequest, message string) error
-	NotifySucceeded(ctx context.Context, req neco.UpdateRequest) error
-	NotifyFailure(ctx context.Context, req neco.UpdateRequest, message string) error
+	NotifyInfo(req neco.UpdateRequest, message string) error
+	NotifySucceeded(req neco.UpdateRequest) error
+	NotifyFailure(req neco.UpdateRequest, message string) error
 }
 
 type nopNotifier struct {
 }
 
-func (n nopNotifier) NotifyInfo(ctx context.Context, req neco.UpdateRequest, message string) error {
+func (n nopNotifier) NotifyInfo(req neco.UpdateRequest, message string) error {
 	return nil
 }
-func (n nopNotifier) NotifySucceeded(ctx context.Context, req neco.UpdateRequest) error {
+func (n nopNotifier) NotifySucceeded(req neco.UpdateRequest) error {
 	return nil
 }
-func (n nopNotifier) NotifyFailure(ctx context.Context, req neco.UpdateRequest, message string) error {
+func (n nopNotifier) NotifyFailure(req neco.UpdateRequest, message string) error {
 	return nil
 }
 
