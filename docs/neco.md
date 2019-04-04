@@ -92,6 +92,10 @@ Synopsis
 
     Removes the current update status from etcd to resolve the update failure.
 
+* `neco reboot-worker`
+
+    Reboot all worker nodes.
+
 ### For worker nodes
 
 * `neco ssh generate [--dump]`

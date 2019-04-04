@@ -106,16 +106,7 @@ var ipmiPowerCmd = &cobra.Command{
 	Args:      cobra.ExactArgs(2),
 	ValidArgs: []string{"start", "stop", "restart", "status"},
 	Run: func(cmd *cobra.Command, args []string) {
-		var driver string
-		switch ipmiVersion {
-		case "2.0", "2":
-			driver = "LAN_2_0"
-		case "1.5":
-			driver = "LAN"
-		default:
-			log.ErrorExit(errors.New("invalid IPMI version: " + ipmiVersion))
-		}
-
+		driver := getDriver()
 		well.Go(func(ctx context.Context) error {
 			addr, err := lookupMachineBMCAddress(ctx, args[1])
 			if err != nil {
@@ -132,13 +123,24 @@ var ipmiPowerCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	ver := "2.0"
+func getDriver() string {
+	ipmiVersion := "2.0"
 	data, _ := ioutil.ReadFile("/sys/devices/virtual/dmi/id/sys_vendor")
 	if strings.TrimSpace(string(data)) == "QEMU" {
-		ver = "1.5"
+		ipmiVersion = "1.5"
 	}
-	ipmiPowerCmd.Flags().StringVar(&ipmiVersion, "ipmi-version", ver,
-		"IPMI protocol version.  Possible values are: 2.0, 2, 1.5")
+	var driver string
+	switch ipmiVersion {
+	case "2.0", "2":
+		driver = "LAN_2_0"
+	case "1.5":
+		driver = "LAN"
+	default:
+		log.ErrorExit(errors.New("invalid IPMI version: " + ipmiVersion))
+	}
+	return driver
+}
+
+func init() {
 	rootCmd.AddCommand(ipmiPowerCmd)
 }
