@@ -1,5 +1,5 @@
 ---
-name: Issue
+name: Task
 about: Describe this issue
 title: ''
 labels: ''
