@@ -19,44 +19,6 @@ var httpClient = &well.HTTPClient{
 	Client: &http.Client{},
 }
 
-// GraphQLQuery is GraphQL query to retrieve machine information from sabakan.
-const GraphQLQuery = `
-query rebootSearch($having: MachineParams = null,
-                $notHaving: MachineParams = {
-					roles: ["boot"]
-				  }) {
-  searchMachines(having: $having, notHaving: $notHaving) {
-    spec {
-		serial
-		labels {
-		  name
-		  value
-		}
-      role
-      ipv4
-    }
-  }
-}
-`
-
-// GraphQLEndpoint is an endpoint to send GraphQLQuery to sabakan.
-const GraphQLEndpoint = neco.SabakanLocalEndpoint + "/graphql"
-
-// State is the enum type for sabakan states.
-type State string
-
-// MachineParams is the query parameter type.
-type MachineParams struct {
-	Labels []struct {
-		Name  string `json:"name" yaml:"name"`
-		Value string `json:"value" yaml:"value"`
-	} `json:"labels" yaml:"labels"`
-	Racks               []int    `json:"racks" yaml:"racks"`
-	Roles               []string `json:"roles" yaml:"roles"`
-	States              []State  `json:"states" yaml:"states"`
-	MinDaysBeforeRetire int      `json:"minDaysBeforeRetire" yaml:"minDaysBeforeRetire"`
-}
-
 // Machine represents a machine registered with sabakan.
 type Machine struct {
 	Spec struct {
@@ -70,12 +32,6 @@ type Machine struct {
 	} `json:"spec"`
 }
 
-// QueryVariables represents the JSON object of the query variables.
-type QueryVariables struct {
-	Having    *MachineParams `json:"having"`
-	NotHaving *MachineParams `json:"notHaving"`
-}
-
 var rebootWorkerCmd = &cobra.Command{
 	Use:   "reboot-worker",
 	Short: "Reboot all worker nodes.",
@@ -83,7 +39,25 @@ var rebootWorkerCmd = &cobra.Command{
 
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-
+		graphQLQuery := `
+		query rebootSearch($having: MachineParams = null,
+						$notHaving: MachineParams = {
+							roles: ["boot"]
+						}) {
+			searchMachines(having: $having, notHaving: $notHaving) {
+				spec {
+					serial
+					labels {
+						name
+						value
+					}
+					role
+					ipv4
+				}
+			}
+		}
+		`
+		graphQLEndpoint := neco.SabakanLocalEndpoint + "/graphql"
 		fmt.Println("WARNING: this command reboots all servers other than boot servers and will cause a system down.")
 		ans, err := askYorN("Continue?")
 		if err != nil {
@@ -102,7 +76,7 @@ var rebootWorkerCmd = &cobra.Command{
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		machines, err := doQuery(ctx, GraphQLEndpoint, nil, httpClient)
+		machines, err := doQuery(ctx, graphQLEndpoint, graphQLQuery, httpClient)
 		if err != nil {
 			log.ErrorExit(err)
 		}
@@ -142,13 +116,11 @@ func askYorN(query string) (bool, error) {
 	return false, nil
 }
 
-func doQuery(ctx context.Context, url string, vars *QueryVariables, hc *well.HTTPClient) ([]Machine, error) {
+func doQuery(ctx context.Context, url string, query string, hc *well.HTTPClient) ([]Machine, error) {
 	body := struct {
-		Query     string          `json:"query"`
-		Variables *QueryVariables `json:"variables,omitempty"`
+		Query string `json:"query"`
 	}{
-		GraphQLQuery,
-		vars,
+		query,
 	}
 	data, err := json.Marshal(body)
 	if err != nil {

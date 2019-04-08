@@ -92,10 +92,6 @@ Synopsis
 
     Removes the current update status from etcd to resolve the update failure.
 
-* `neco reboot-worker`
-
-    Reboot all worker nodes.
-
 ### For worker nodes
 
 * `neco ssh generate [--dump]`
@@ -150,6 +146,10 @@ Synopsis
 * `neco ipmipower [start|stop|restart|status] SERIAL_OR_IP`
 
     Control power of a machine having `SERIAL` or `IP` address.
+
+* `neco reboot-worker`
+
+    Reboot all worker nodes.
 
 ### Miscellaneous
 
