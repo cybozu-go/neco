@@ -12,6 +12,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
+	"github.com/tcnksm/go-input"
 )
 
 var httpClient = &well.HTTPClient{
@@ -22,8 +23,8 @@ var httpClient = &well.HTTPClient{
 const GraphQLQuery = `
 query rebootSearch($having: MachineParams = null,
                 $notHaving: MachineParams = {
-                  roles: ["boot"]
-                }) {
+					roles: ["boot"]
+				  }) {
   searchMachines(having: $having, notHaving: $notHaving) {
     spec {
 		serial
@@ -37,6 +38,9 @@ query rebootSearch($having: MachineParams = null,
   }
 }
 `
+
+// GraphQLEndpoint is an endpoint to send GraphQLQuery to sabakan.
+const GraphQLEndpoint = neco.SabakanLocalEndpoint + "/graphql"
 
 // State is the enum type for sabakan states.
 type State string
@@ -80,15 +84,31 @@ var rebootWorkerCmd = &cobra.Command{
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 
-		url := neco.SabakanLocalEndpoint
+		fmt.Println("WARNING: this command reboots all servers other than boot servers and will cause a system down.")
+		ans, err := askYorN("Continue?")
+		if err != nil {
+			log.ErrorExit(err)
+		}
+		if !ans {
+			return
+		}
+		fmt.Println("WARNING: rebooting starts immediately after this question.")
+		ans, err = askYorN("Continue?")
+		if err != nil {
+			log.ErrorExit(err)
+		}
+		if !ans {
+			return
+		}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		machines, err := doQuery(ctx, url, nil, httpClient)
+		machines, err := doQuery(ctx, GraphQLEndpoint, nil, httpClient)
 		if err != nil {
 			log.ErrorExit(err)
 		}
 		driverVersion := getDriver()
 		for _, m := range machines {
+			m := m
 			well.Go(func(ctx context.Context) error {
 				addr, err := lookupMachineBMCAddress(ctx, m.Spec.Serial)
 				if err != nil {
@@ -104,6 +124,22 @@ var rebootWorkerCmd = &cobra.Command{
 		}
 		return
 	},
+}
+
+func askYorN(query string) (bool, error) {
+	ans, err := input.DefaultUI().Ask(query+" [y/N]", &input.Options{
+		Default:     "N",
+		HideDefault: true,
+		HideOrder:   true,
+	})
+	if err != nil {
+		return false, err
+	}
+	switch ans {
+	case "y", "Y", "yes", "YES":
+		return true, nil
+	}
+	return false, nil
 }
 
 func doQuery(ctx context.Context, url string, vars *QueryVariables, hc *well.HTTPClient) ([]Machine, error) {
@@ -152,7 +188,6 @@ func doQuery(ctx context.Context, url string, vars *QueryVariables, hc *well.HTT
 	if len(result.Errors) > 0 {
 		return nil, fmt.Errorf("sabakan returns error: %v", result.Errors)
 	}
-
 	return result.Data.Machines, nil
 }
 
