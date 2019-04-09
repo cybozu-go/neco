@@ -39,6 +39,23 @@ type BMC struct {
 	IPv4 string `json:"ipv4"`
 }
 
+// graphQLQuery is GraphQL query to retrieve machine information from sabakan.
+const graphQLQuery = `
+query rebootSearch($having: MachineParams = null,
+					$notHaving: MachineParams = {
+						roles: ["boot"]
+					}) {
+	searchMachines(having: $having, notHaving: $notHaving) {
+		spec {
+			serial
+			bmc {
+				ipv4
+			}
+		}
+	}
+}
+`
+
 var rebootWorkerCmd = &cobra.Command{
 	Use:   "reboot-worker",
 	Short: "Reboot all worker nodes.",
@@ -46,27 +63,6 @@ var rebootWorkerCmd = &cobra.Command{
 
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		graphQLQuery := `
-		query rebootSearch($having: MachineParams = null,
-						$notHaving: MachineParams = {
-							roles: ["boot"]
-						}) {
-			searchMachines(having: $having, notHaving: $notHaving) {
-				spec {
-					serial
-					labels {
-						name
-						value
-					}
-					role
-					ipv4
-					bmc {
-						ipv4
-					}
-				}
-			}
-		}
-		`
 		graphQLEndpoint := neco.SabakanLocalEndpoint + "/graphql"
 		fmt.Println("WARNING: this command reboots all servers other than boot servers and will cause a system down.")
 		ans, err := askYorN("Continue?")
@@ -96,7 +92,7 @@ var rebootWorkerCmd = &cobra.Command{
 			if addr == "" {
 				log.ErrorExit(errors.New(m.Spec.Serial + "'s BMC IPAddress not found"))
 			}
-			err := ipmiPower(ctx, "restart", driverVersion, addr)
+			err := ipmiPower(context.Background(), "restart", driverVersion, addr)
 			if err != nil {
 				log.ErrorExit(err)
 			}
