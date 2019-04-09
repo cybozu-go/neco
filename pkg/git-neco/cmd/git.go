@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -79,8 +80,15 @@ func CurrentRepo() (*GitHubRepo, error) {
 	if err != nil {
 		return nil, err
 	}
+	url := strings.TrimSpace(string(data))
 
-	parts := strings.Split(strings.TrimSpace(string(data)), "/")
+	// Extract path from SCP-like address (Eg, git@github.com:user/repo.git -> user/repo.git)
+	reg := regexp.MustCompile(`^([a-zA-Z0-9_]+)@([a-zA-Z0-9._-]+):(.*)$`)
+	if m := reg.FindStringSubmatch(url); m != nil {
+		url = m[3]
+	}
+
+	parts := strings.Split(url, "/")
 	if len(parts) < 2 {
 		return nil, errors.New("bad remote URL: " + string(data))
 	}
