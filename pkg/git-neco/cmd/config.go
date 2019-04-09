@@ -3,22 +3,17 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"net/url"
 	"path/filepath"
 	"strings"
 
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	input "github.com/tcnksm/go-input"
+	"github.com/tcnksm/go-input"
 )
 
 var config = struct {
-	KintoneURL   string `json:"kintone_url"`
-	KintoneToken string `json:"kintone_token"`
-	GithubToken  string `json:"github_token"`
-	GheURL       string `json:"ghe_url"`
-	GheToken     string `json:"ghe_token"`
+	GithubToken string `json:"github_token"`
 }{}
 
 func configInput() error {
@@ -38,25 +33,7 @@ func configInput() error {
 		return nil
 	}
 
-	if err := ask(&config.KintoneURL, "kintone app URL", false, func(s string) error {
-		_, err := newAppClient(strings.TrimSpace(s), config.KintoneToken)
-		return err
-	}); err != nil {
-		return err
-	}
-	if err := ask(&config.KintoneToken, "kintone app token", true, nil); err != nil {
-		return err
-	}
 	if err := ask(&config.GithubToken, "github personal token", true, nil); err != nil {
-		return err
-	}
-	if err := ask(&config.GheURL, "github enterprise URL", false, func(s string) error {
-		_, err := url.Parse(strings.TrimSpace(s))
-		return err
-	}); err != nil {
-		return err
-	}
-	if err := ask(&config.GheToken, "github enterprise personal token", true, nil); err != nil {
 		return err
 	}
 

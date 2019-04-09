@@ -8,7 +8,7 @@ import (
 )
 
 var reviewCmd = &cobra.Command{
-	Use:   "review [TASK]",
+	Use:   "review [ISSUE]",
 	Short: "mark draft PR ready for review, or create a one",
 	Long: `Mark a draft PR ready for review if such a PR exists
 for the current branch.  If no such PR exists, this command works
@@ -39,14 +39,9 @@ func runReviewCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	var pr string
-	if repo.Owner == "Neco" {
-		pr = ""
-	} else {
-		pr, err = gc.GetDraftPR(ctx, *repo, br)
-		if err != nil {
-			return err
-		}
+	pr, err := gc.GetDraftPR(ctx, *repo, br)
+	if err != nil {
+		return err
 	}
 
 	if pr == "" {
