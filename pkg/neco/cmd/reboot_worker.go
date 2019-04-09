@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -29,7 +30,13 @@ type Machine struct {
 		} `json:"labels"`
 		Role string   `json:"role"`
 		IPv4 []string `json:"ipv4"`
+		BMC  BMC      `json:"bmc"`
 	} `json:"spec"`
+}
+
+// BMC contains a machine's BMC information.
+type BMC struct {
+	IPv4 string `json:"ipv4"`
 }
 
 var rebootWorkerCmd = &cobra.Command{
@@ -53,6 +60,9 @@ var rebootWorkerCmd = &cobra.Command{
 					}
 					role
 					ipv4
+					bmc {
+						ipv4
+					}
 				}
 			}
 		}
@@ -82,19 +92,14 @@ var rebootWorkerCmd = &cobra.Command{
 		}
 		driverVersion := getDriver()
 		for _, m := range machines {
-			m := m
-			well.Go(func(ctx context.Context) error {
-				addr, err := lookupMachineBMCAddress(ctx, m.Spec.Serial)
-				if err != nil {
-					return err
-				}
-				return ipmiPower(ctx, "restart", driverVersion, addr)
-			})
-		}
-		well.Stop()
-		err = well.Wait()
-		if err != nil {
-			log.ErrorExit(err)
+			addr := m.Spec.BMC.IPv4
+			if addr == "" {
+				log.ErrorExit(errors.New(m.Spec.Serial + "'s BMC IPAddress not found"))
+			}
+			err := ipmiPower(ctx, "restart", driverVersion, addr)
+			if err != nil {
+				log.ErrorExit(err)
+			}
 		}
 		return
 	},
