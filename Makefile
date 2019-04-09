@@ -73,6 +73,9 @@ $(DEB):
 necogcp: $(STATIK)
 	go install ./pkg/necogcp
 
+git-neco:
+	go install ./pkg/git-neco
+
 setup:
 	GO111MODULE=off go get -u golang.org/x/lint/golint github.com/rakyll/statik
 	$(SUDO) apt-get update
