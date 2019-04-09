@@ -147,6 +147,10 @@ Synopsis
 
     Control power of a machine having `SERIAL` or `IP` address.
 
+* `neco reboot-worker`
+
+    Reboot all worker nodes.
+
 ### Miscellaneous
 
 * `neco image NAME`
