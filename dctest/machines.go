@@ -28,7 +28,7 @@ func TestMachines() {
 			Eventually(func() error {
 				stdout, stderr, err := execAt(host, "sudo", "neco", "bmc", "setup-hw")
 				if err != nil {
-					return fmt.Errorf("neco bmc setup-hw failed; err: %s, stdout: %s, stderr: %s", err, stdout, stderr)
+					return fmt.Errorf("neco bmc setup-hw failed; host: %s, err: %s, stdout: %s, stderr: %s", host, err, stdout, stderr)
 				}
 				return nil
 			}).Should(Succeed())
