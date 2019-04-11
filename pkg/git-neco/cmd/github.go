@@ -12,6 +12,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
+const githubAPIv4Endpoint = "https://api.github.com/graphql"
+
 var (
 	githubPreviewHeaders = []string{
 		"application/vnd.github.ocelot-preview+json",
@@ -26,7 +28,8 @@ type GitHubClient struct {
 }
 
 // NewGitHubClient creates GitHubClient
-func NewGitHubClient(ctx context.Context, endpoint *url.URL, token string) GitHubClient {
+func NewGitHubClient(ctx context.Context, token string) GitHubClient {
+	endpoint, _ := url.Parse(githubAPIv4Endpoint)
 	src := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
@@ -108,6 +111,32 @@ func (gh GitHubClient) Repository(ctx context.Context, repo GitHubRepo) (string,
 		return "", err
 	}
 	return resp.Repository.ID, nil
+}
+
+// GetViewerID returns global node ID of the login user.
+func (gh GitHubClient) GetViewerID(ctx context.Context) (string, error) {
+	query := `query {
+  viewer {
+    id
+  }
+}`
+	vars := map[string]interface{}{}
+	data, err := gh.request(ctx, query, vars)
+	if err != nil {
+		return "", err
+	}
+
+	var resp struct {
+		Viewer struct {
+			ID string `json:"id"`
+		} `json:"viewer"`
+	}
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		return "", err
+	}
+
+	return resp.Viewer.ID, nil
 }
 
 // GetDraftPR returns a draft pull request in a repository for a branch.
@@ -197,11 +226,12 @@ type pullRequestInput struct {
 
 // CreatePullRequest creates a new pull request to merge head into base.
 // title must not be empty.
-// When succeeds, it returns a permalink to the new PR.
-func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, title, body string, draft bool) (string, error) {
+// When succeeds, it returns a global node ID of the new PR and a permalink to the new PR.
+func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, title, body string, draft bool) (string, string, error) {
 	query := `mutation createPR($input: CreatePullRequestInput!) {
   createPullRequest(input: $input) {
     pullRequest {
+      id,
       permalink
     }
   }
@@ -220,20 +250,45 @@ func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, 
 
 	data, err := gh.request(ctx, query, vars)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	var resp struct {
 		CreatePullRequest struct {
 			PullRequest struct {
+				ID        string `json:"id"`
 				Permalink string `json:"permalink"`
 			} `json:"pullRequest"`
 		} `json:"createPullRequest"`
 	}
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return resp.CreatePullRequest.PullRequest.Permalink, nil
+	return resp.CreatePullRequest.PullRequest.ID, resp.CreatePullRequest.PullRequest.Permalink, nil
+}
+
+type addAssigneeInput struct {
+	AssigneeID    string `json:"assigneeIds"`
+	PullRequestID string `json:"assignableId"`
+}
+
+// AddAssigneeToPullRequest add a assignee to a pull request.
+func (gh GitHubClient) AddAssigneeToPullRequest(ctx context.Context, assignee, pr string) error {
+	query := `mutation addAssignee($input: AddAssigneesToAssignableInput!) {
+  addAssigneesToAssignable(input: $input) {
+    clientMutationId
+  }
+}`
+	input := addAssigneeInput{
+		AssigneeID:    assignee,
+		PullRequestID: pr,
+	}
+	vars := map[string]interface{}{
+		"input": input,
+	}
+
+	_, err := gh.request(ctx, query, vars)
+	return err
 }

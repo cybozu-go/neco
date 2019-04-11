@@ -29,7 +29,7 @@ func runReviewCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	ctx := context.Background()
-	gc, err := githubClientForRepo(ctx, *repo)
+	gc, err := githubClient(ctx)
 	if err != nil {
 		return err
 	}

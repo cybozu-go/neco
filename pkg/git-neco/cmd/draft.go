@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -114,20 +113,19 @@ func confirmUncommitted() (bool, error) {
 	return askYorN("Continue?")
 }
 
-func githubClientForRepo(ctx context.Context, repo GitHubRepo) (GitHubClient, error) {
-	endpoint, _ := url.Parse("https://api.github.com/graphql")
-	token := config.GithubToken
-	return NewGitHubClient(ctx, endpoint, token), nil
-}
-
 func createPR(branch, title, body string, draft bool) (string, error) {
+	ctx := context.Background()
+	gc, err := githubClient(ctx)
+	if err != nil {
+		return "", err
+	}
+
 	repo, err := CurrentRepo()
 	if err != nil {
 		return "", err
 	}
 
-	ctx := context.Background()
-	gc, err := githubClientForRepo(ctx, *repo)
+	userID, err := gc.GetViewerID(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -136,5 +134,16 @@ func createPR(branch, title, body string, draft bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return gc.CreatePullRequest(ctx, repoID, "master", branch, title, body, draft)
+
+	prID, prURL, err := gc.CreatePullRequest(ctx, repoID, "master", branch, title, body, draft)
+	if err != nil {
+		return "", err
+	}
+
+	err = gc.AddAssigneeToPullRequest(ctx, userID, prID)
+	if err != nil {
+		return "", err
+	}
+
+	return prURL, nil
 }

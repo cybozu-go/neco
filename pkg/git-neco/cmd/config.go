@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"path/filepath"
 	"strings"
@@ -38,6 +39,11 @@ func configInput() error {
 	}
 
 	return nil
+}
+
+func githubClient(ctx context.Context) (GitHubClient, error) {
+	token := config.GithubToken
+	return NewGitHubClient(ctx, token), nil
 }
 
 var configCmd = &cobra.Command{
