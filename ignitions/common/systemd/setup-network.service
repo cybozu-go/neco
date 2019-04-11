@@ -7,3 +7,5 @@ After=var-lib-rkt.mount
 Type=oneshot
 ExecStart=/opt/sbin/setup-local-network
 RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console

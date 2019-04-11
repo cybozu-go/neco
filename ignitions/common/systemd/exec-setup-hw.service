@@ -8,6 +8,9 @@ After=setup-hw.service setup-bmc-user.service
 Type=oneshot
 ExecStart=/opt/sbin/setup-hw
 RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
 
 [Install]
 WantedBy=multi-user.target

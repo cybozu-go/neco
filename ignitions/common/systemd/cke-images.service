@@ -21,6 +21,9 @@ ExecStart=/opt/bin/load-containerd-image \
   {{ MyURL }}/api/v1/assets/{{ Metadata "cke:coredns.img" }}   {{ Metadata "cke:coredns.ref" }}
 ExecStart=/opt/bin/load-containerd-image \
   {{ MyURL }}/api/v1/assets/{{ Metadata "cke:unbound.img" }}   {{ Metadata "cke:unbound.ref" }}
+StandardOutput=journal+console
+StandardError=journal+console
+
 
 [Install]
 WantedBy=multi-user.target

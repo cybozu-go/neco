@@ -8,3 +8,5 @@ After=network-online.target
 Type=oneshot
 ExecStart=/opt/sbin/setup-serf-conf
 RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
