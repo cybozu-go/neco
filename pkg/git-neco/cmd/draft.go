@@ -99,7 +99,7 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 		return err
 	}
 
-	_, curRepoID, err := getCurrentRepo(ctx, gc)
+	curRepoName, curRepoID, err := getCurrentRepo(ctx, gc)
 	if err != nil {
 		return err
 	}
@@ -114,11 +114,13 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 		if draftOpts.repo != "" {
 			repo = draftOpts.repo
 		}
-		_, issueRepoID, err := getRepo(ctx, gc, repo)
+		issueRepoName, issueRepoID, err := getRepo(ctx, gc, repo)
 		if err != nil {
 			return err
 		}
 
+		fmt.Printf("Connect %s/%s#%d with %s/%s#%d.\n", curRepoName.Owner, curRepoName.Name, pr.Number,
+			issueRepoName.Owner, issueRepoName.Name, draftOpts.issue)
 		zh := NewZenHubClient(config.ZenhubToken)
 		err = zh.Connect(ctx, issueRepoID.Number, draftOpts.issue, curRepoID.Number, pr.Number)
 		if err != nil {

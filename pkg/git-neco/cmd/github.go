@@ -28,28 +28,32 @@ type GitHubClient struct {
 	hc       *http.Client
 }
 
+// GitHubUser represents a GitHub user.
 type GitHubUser struct {
 	ID    string
 	Login string
 }
 
-// GitHubRepoName represents a repository hosted on GitHub.
+// GitHubRepoName represents a repository name hosted on GitHub.
 type GitHubRepoName struct {
 	Owner string
 	Name  string
 }
 
+// GitHubRepoID represents a repository id hosted on GitHub.
 type GitHubRepoID struct {
 	ID     string
 	Number int
 }
 
+// PullRequest represents a pull request on GitHub.
 type PullRequest struct {
 	ID        string
 	Number    int
 	Permalink string
 }
 
+// ExtractGitHubRepoName repository name from URL.
 func ExtractGitHubRepoName(url string) *GitHubRepoName {
 	// Extract repository name from SCP-like address
 	// Eg, git@github.com:user/repo.git -> user/repo.git
