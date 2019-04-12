@@ -100,7 +100,7 @@ func (gh GitHubClient) request(ctx context.Context, query string, vars map[strin
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("POST", gh.endpoint.String(), bytes.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, gh.endpoint.String(), bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (gh GitHubClient) request(ctx context.Context, query string, vars map[strin
 	return []byte(gresp.Data), nil
 }
 
-// GetRepository returns global node ID of the repo.
+// GetRepository returns global node ID and database ID of the repo.
 func (gh GitHubClient) GetRepository(ctx context.Context, repo *GitHubRepoName) (*GitHubRepoID, error) {
 	query := `query getRepository($owner: String!, $name: String!) {
   repository(owner: $owner, name: $name) {
