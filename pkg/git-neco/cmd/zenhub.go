@@ -21,10 +21,12 @@ func getZenHubURL(addPath string) *url.URL {
 	return u
 }
 
+// ZenHubClient implements a partial ZenHub API.
 type ZenHubClient struct {
 	token string
 }
 
+// NewZenHubClient creates ZenHubClient.
 func NewZenHubClient(token string) *ZenHubClient {
 	return &ZenHubClient{
 		token: token,
@@ -32,8 +34,6 @@ func NewZenHubClient(token string) *ZenHubClient {
 }
 
 func (zh *ZenHubClient) request(ctx context.Context, method string, url string, body string) ([]byte, error) {
-	fmt.Println(url)
-
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
 		return nil, err
@@ -60,6 +60,7 @@ func (zh *ZenHubClient) request(ctx context.Context, method string, url string, 
 	return data, nil
 }
 
+// Connect connect a pull request with an issue.
 func (zh *ZenHubClient) Connect(ctx context.Context, issueRepo int, issue int, prRepo int, pr int) error {
 	u := getZenHubURL(fmt.Sprintf("repositories/%d/connection", issueRepo))
 
@@ -75,6 +76,7 @@ func (zh *ZenHubClient) Connect(ctx context.Context, issueRepo int, issue int, p
 	return nil
 }
 
+// GetConnection gets a connection of a github object (Eg, issue, pull request).
 func (zh *ZenHubClient) GetConnection(ctx context.Context, repo int, issue int) error {
 	u := getZenHubURL(fmt.Sprintf("repositories/%d/connected", repo))
 
