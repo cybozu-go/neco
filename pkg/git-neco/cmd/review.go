@@ -23,13 +23,13 @@ func init() {
 }
 
 func runReviewCmd(cmd *cobra.Command, args []string) error {
-	repo, err := CurrentRepo()
+	ctx := context.Background()
+	gc, err := githubClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	ctx := context.Background()
-	gc, err := githubClient(ctx)
+	repo, _, err := getCurrentRepo(ctx, gc)
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func runReviewCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	pr, err := gc.GetDraftPR(ctx, *repo, br)
+	pr, err := gc.GetDraftPR(ctx, repo, br)
 	if err != nil {
 		return err
 	}

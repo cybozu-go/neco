@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"path/filepath"
 	"strings"
@@ -14,7 +13,9 @@ import (
 )
 
 var config = struct {
+	GithubRepo  string `json:"github_repo"`
 	GithubToken string `json:"github_token"`
+	ZenhubToken string `json:"zenhub_extension_token"`
 }{}
 
 func configInput() error {
@@ -34,16 +35,19 @@ func configInput() error {
 		return nil
 	}
 
+	if err := ask(&config.GithubRepo, "github repository used to manage issues", true, nil); err != nil {
+		return err
+	}
+
 	if err := ask(&config.GithubToken, "github personal token", true, nil); err != nil {
 		return err
 	}
 
-	return nil
-}
+	if err := ask(&config.ZenhubToken, "zenhub extension token", true, nil); err != nil {
+		return err
+	}
 
-func githubClient(ctx context.Context) (GitHubClient, error) {
-	token := config.GithubToken
-	return NewGitHubClient(ctx, token), nil
+	return nil
 }
 
 var configCmd = &cobra.Command{

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"golang.org/x/oauth2"
@@ -25,6 +26,46 @@ var (
 type GitHubClient struct {
 	endpoint *url.URL
 	hc       *http.Client
+}
+
+type GitHubUser struct {
+	ID    string
+	Login string
+}
+
+// GitHubRepoName represents a repository hosted on GitHub.
+type GitHubRepoName struct {
+	Owner string
+	Name  string
+}
+
+type GitHubRepoID struct {
+	ID     string
+	Number int
+}
+
+type PullRequest struct {
+	ID        string
+	Number    int
+	Permalink string
+}
+
+func ExtractGitHubRepoName(url string) *GitHubRepoName {
+	// Extract repository name from SCP-like address
+	// Eg, git@github.com:user/repo.git -> user/repo.git
+	reg := regexp.MustCompile(`^([a-zA-Z0-9_]+)@([a-zA-Z0-9._-]+):(.*)$`)
+	if m := reg.FindStringSubmatch(url); m != nil {
+		url = m[3]
+	}
+
+	parts := strings.Split(url, "/")
+	if len(parts) < 2 {
+		return nil
+	}
+	return &GitHubRepoName{
+		Owner: parts[len(parts)-2],
+		Name:  strings.Split(parts[len(parts)-1], ".")[0],
+	}
 }
 
 // NewGitHubClient creates GitHubClient
@@ -84,11 +125,12 @@ func (gh GitHubClient) request(ctx context.Context, query string, vars map[strin
 	return []byte(gresp.Data), nil
 }
 
-// Repository returns global node ID of the repo.
-func (gh GitHubClient) Repository(ctx context.Context, repo GitHubRepo) (string, error) {
-	query := `query getRepositoryID($owner: String!, $name: String!) {
+// GetRepository returns global node ID of the repo.
+func (gh GitHubClient) GetRepository(ctx context.Context, repo *GitHubRepoName) (*GitHubRepoID, error) {
+	query := `query getRepository($owner: String!, $name: String!) {
   repository(owner: $owner, name: $name) {
-    id
+    id,
+    databaseId
   }
 }`
 	vars := map[string]interface{}{
@@ -98,50 +140,59 @@ func (gh GitHubClient) Repository(ctx context.Context, repo GitHubRepo) (string,
 
 	data, err := gh.request(ctx, query, vars)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	var resp struct {
 		Repository struct {
-			ID string `json:"id"`
+			ID         string `json:"id"`
+			DatabaseID int    `json:"databaseId"`
 		} `json:"repository"`
 	}
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return resp.Repository.ID, nil
+	return &GitHubRepoID{
+		ID:     resp.Repository.ID,
+		Number: resp.Repository.DatabaseID,
+	}, nil
 }
 
-// GetViewerID returns global node ID of the login user.
-func (gh GitHubClient) GetViewerID(ctx context.Context) (string, error) {
+// GetViewer returns global node ID and Login ID of the login user.
+func (gh GitHubClient) GetViewer(ctx context.Context) (*GitHubUser, error) {
 	query := `query {
   viewer {
-    id
+    id,
+	login
   }
 }`
 	vars := map[string]interface{}{}
 	data, err := gh.request(ctx, query, vars)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	var resp struct {
 		Viewer struct {
-			ID string `json:"id"`
+			ID    string `json:"id"`
+			Login string `json:"login"`
 		} `json:"viewer"`
 	}
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return resp.Viewer.ID, nil
+	return &GitHubUser{
+		ID:    resp.Viewer.ID,
+		Login: resp.Viewer.Login,
+	}, nil
 }
 
 // GetDraftPR returns a draft pull request in a repository for a branch.
 // If no pull request is found, this returns ("", nil).
-func (gh GitHubClient) GetDraftPR(ctx context.Context, repo GitHubRepo, branch string) (string, error) {
+func (gh GitHubClient) GetDraftPR(ctx context.Context, repo *GitHubRepoName, branch string) (string, error) {
 	query := `query getDraftPR($owner: String!, $name: String!, $headRef: String!) {
   repository(owner: $owner, name: $name) {
     pullRequests(headRefName: $headRef, first: 100) {
@@ -226,12 +277,16 @@ type pullRequestInput struct {
 
 // CreatePullRequest creates a new pull request to merge head into base.
 // title must not be empty.
-// When succeeds, it returns a global node ID of the new PR and a permalink to the new PR.
-func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, title, body string, draft bool) (string, string, error) {
+// When succeeds, it returns this:
+//  - a global node ID of the new PR
+//  - a number of the new PR
+//  - a permalink to the new PR
+func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, title, body string, draft bool) (*PullRequest, error) {
 	query := `mutation createPR($input: CreatePullRequestInput!) {
   createPullRequest(input: $input) {
     pullRequest {
       id,
+      number,
       permalink
     }
   }
@@ -250,23 +305,28 @@ func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, 
 
 	data, err := gh.request(ctx, query, vars)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	var resp struct {
 		CreatePullRequest struct {
 			PullRequest struct {
 				ID        string `json:"id"`
+				Number    int    `json:"number"`
 				Permalink string `json:"permalink"`
 			} `json:"pullRequest"`
 		} `json:"createPullRequest"`
 	}
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	return resp.CreatePullRequest.PullRequest.ID, resp.CreatePullRequest.PullRequest.Permalink, nil
+	return &PullRequest{
+		ID:        resp.CreatePullRequest.PullRequest.ID,
+		Number:    resp.CreatePullRequest.PullRequest.Number,
+		Permalink: resp.CreatePullRequest.PullRequest.Permalink,
+	}, nil
 }
 
 type addAssigneeInput struct {
@@ -275,15 +335,15 @@ type addAssigneeInput struct {
 }
 
 // AddAssigneeToPullRequest add a assignee to a pull request.
-func (gh GitHubClient) AddAssigneeToPullRequest(ctx context.Context, assignee, pr string) error {
+func (gh GitHubClient) AddAssigneeToPullRequest(ctx context.Context, userID, prID string) error {
 	query := `mutation addAssignee($input: AddAssigneesToAssignableInput!) {
   addAssigneesToAssignable(input: $input) {
     clientMutationId
   }
 }`
 	input := addAssigneeInput{
-		AssigneeID:    assignee,
-		PullRequestID: pr,
+		AssigneeID:    userID,
+		PullRequestID: prID,
 	}
 	vars := map[string]interface{}{
 		"input": input,
