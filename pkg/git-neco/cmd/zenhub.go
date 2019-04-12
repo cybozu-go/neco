@@ -43,7 +43,10 @@ func (zh *ZenHubClient) request(ctx context.Context, method string, url string, 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	client := new(http.Client)
-	resp, _ := client.Do(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || 299 < resp.StatusCode {

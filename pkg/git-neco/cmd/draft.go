@@ -119,8 +119,9 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 			return err
 		}
 
-		fmt.Printf("Connect %s/%s#%d with %s/%s#%d.\n", curRepoName.Owner, curRepoName.Name, pr.Number,
-			issueRepoName.Owner, issueRepoName.Name, draftOpts.issue)
+		fmt.Printf("Connect %s/%s(%d)#%d with %s/%s(%d)#%d.\n",
+			curRepoName.Owner, curRepoName.Name, curRepoID.Number, pr.Number,
+			issueRepoName.Owner, issueRepoName.Name, issueRepoID.Number, draftOpts.issue)
 		zh := NewZenHubClient(config.ZenhubToken)
 		err = zh.Connect(ctx, issueRepoID.Number, draftOpts.issue, curRepoID.Number, pr.Number)
 		if err != nil {
