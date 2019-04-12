@@ -34,13 +34,11 @@ func TestSquid() {
 	})
 
 	It("should serve for docker daemon", func() {
-		By("running busybox pods")
-		execSafeAt(boot0, "kubectl", "run", "busybox", "--image=docker.io/busybox:latest", "--replicas=2",
-			`--overrides='{"spec":{"template":{"spec":{"securityContext":{"runAsUser":10000}}}}}'`,
-			"--", "httpd", "-f", "-p", "8000", "-h", "/etc")
+		By("running testhttpd pods")
+		execSafeAt(boot0, "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0", "--replicas=2")
 
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/busybox", "-o=json")
+			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/testhttpd", "-o=json")
 			if err != nil {
 				return err
 			}
@@ -57,7 +55,7 @@ func TestSquid() {
 			return nil
 		}).Should(Succeed())
 
-		By("removing busybox pods")
-		execSafeAt(boot0, "kubectl", "delete", "deployments/busybox")
+		By("removing testhttpd deployments")
+		execSafeAt(boot0, "kubectl", "delete", "deployments/testhttpd")
 	})
 }
