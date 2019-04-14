@@ -8,6 +8,9 @@ Before=network-online.target
 Type=oneshot
 ExecStart=/opt/sbin/neco-wait-dhcp-online
 RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
 
 [Install]
 WantedBy=multi-user.target

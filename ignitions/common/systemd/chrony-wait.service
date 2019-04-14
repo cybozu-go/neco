@@ -8,6 +8,9 @@ Before=time-sync.target
 Type=oneshot
 ExecStart=/opt/sbin/chrony-wait
 RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
 
 [Install]
 WantedBy=multi-user.target

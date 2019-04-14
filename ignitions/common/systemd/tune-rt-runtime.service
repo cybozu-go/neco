@@ -7,3 +7,5 @@ Wants=machine.slice
 Type=oneshot
 ExecStart=/opt/sbin/tune-rt-runtime
 RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
