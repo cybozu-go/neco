@@ -9,6 +9,9 @@ DefaultDependencies=no
 Type=oneshot
 ExecStart=/opt/sbin/setup-var
 RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
 
 [Install]
 WantedBy=multi-user.target

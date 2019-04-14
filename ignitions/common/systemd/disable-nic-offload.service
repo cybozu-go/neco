@@ -9,6 +9,9 @@ Type=oneshot
 ExecStart=/usr/sbin/ethtool -K eno1 tx off rx off
 ExecStart=/usr/sbin/ethtool -K eno2 tx off rx off
 RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
 
 [Install]
 WantedBy=multi-user.target

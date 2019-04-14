@@ -8,6 +8,9 @@ After=network-online.target wait-k8s-containerd-socket.service
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/opt/bin/load-containerd-image {{ MyURL }}/api/v1/assets/{{ Metadata "coil.img" }} {{ Metadata "coil.ref" }}
+StandardOutput=journal+console
+StandardError=journal+console
+
 
 [Install]
 WantedBy=multi-user.target

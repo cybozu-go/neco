@@ -7,6 +7,9 @@ After=k8s-containerd.service
 Type=oneshot
 ExecStart=/opt/bin/wait-k8s-containerd-socket
 RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
 
 [Install]
 WantedBy=multi-user.target

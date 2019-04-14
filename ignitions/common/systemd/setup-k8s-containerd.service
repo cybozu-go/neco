@@ -7,6 +7,9 @@ After=data.mount
 Type=oneshot
 ExecStart=/opt/sbin/setup-containerd
 RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
 
 [Install]
 WantedBy=multi-user.target
