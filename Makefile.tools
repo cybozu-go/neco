@@ -92,4 +92,4 @@ setup:
 clean:
 	rm -rf $(BUILDDIR)
 
-.PHONY:	all setup clean
+.PHONY:	all setup clean node_exporter containerd crictl argocd kubectl kustomize
