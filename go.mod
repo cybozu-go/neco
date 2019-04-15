@@ -160,8 +160,9 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v0.0.0-20181112162635-ac52e6811b56 // indirect
 	go.opencensus.io v0.18.0 // indirect
-	golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85
+	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
+	golang.org/x/tools v0.0.0-20190411180116-681f9ce8ac52
 	google.golang.org/api v0.0.0-20181203220731-00684f929d85
 	google.golang.org/appengine v1.1.0
 	google.golang.org/genproto v0.0.0-20190201180003-4b09977fb922 // indirect
