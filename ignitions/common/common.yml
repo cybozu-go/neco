@@ -19,6 +19,9 @@ files:
   - /etc/systemd/system/docker.service.d/99-kubernetes-network.conf
   - /etc/systemd/system/docker.service.d/99-run-after-time-sync.conf
   - /etc/systemd/system/docker.socket.d/99-run-after-time-sync.conf
+  - /etc/systemd/system/containerd.service.d/10-wait-mount.conf
+  - /etc/systemd/system/docker.service.d/10-wait-mount.conf
+  - /etc/systemd/system/rkt-gc.timer.d/10-wait-mount.conf
   - /opt/bin/podenter
   - /opt/bin/load-docker-image
   - /opt/bin/load-containerd-image
