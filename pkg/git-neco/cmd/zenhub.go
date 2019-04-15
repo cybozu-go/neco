@@ -49,18 +49,19 @@ func (zh *ZenHubClient) request(ctx context.Context, method string, url string, 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode < 200 || 299 < resp.StatusCode {
-		var errResp struct {
-			Message string `json:"message"`
-		}
-		err = json.NewDecoder(resp.Body).Decode(&errResp)
-		if err != nil {
-			return nil, err
-		}
-		return nil, errors.New(errResp.Message)
+	if 200 <= resp.StatusCode && resp.StatusCode <= 299 {
+		return ioutil.ReadAll(resp.Body)
 	}
-	data, _ := ioutil.ReadAll(resp.Body)
-	return data, nil
+
+	// Error handling
+	var errResp struct {
+		Message string `json:"message"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&errResp)
+	if err != nil {
+		return nil, err
+	}
+	return nil, errors.New(errResp.Message)
 }
 
 // Connect connect a pull request with an issue.
@@ -73,21 +74,6 @@ func (zh *ZenHubClient) Connect(ctx context.Context, issueRepo int, issue int, p
 	v.Add("connected_issue_number", strconv.Itoa(pr))
 
 	_, err := zh.request(ctx, http.MethodPost, u.String(), v.Encode())
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// GetConnection gets a connection of a github object (Eg, issue, pull request).
-func (zh *ZenHubClient) GetConnection(ctx context.Context, repo int, issue int) error {
-	u := getZenHubURL(fmt.Sprintf("repositories/%d/connected", repo))
-
-	q := u.Query()
-	q.Set("connected_issue_number", strconv.Itoa(issue))
-	u.RawQuery = q.Encode()
-
-	_, err := zh.request(ctx, http.MethodGet, u.String(), "")
 	if err != nil {
 		return err
 	}

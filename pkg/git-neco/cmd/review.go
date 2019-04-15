@@ -12,7 +12,15 @@ var reviewCmd = &cobra.Command{
 	Short: "mark draft PR ready for review, or create a one",
 	Long: `Mark a draft PR ready for review if such a PR exists
 for the current branch.  If no such PR exists, this command works
-just like "draft" but do not make the PR as draft.`,
+just like "draft" but do not make the PR as draft.
+
+If draft PR is not found and ISSUE is given, this command connects
+the new pull request with the issue.
+The ISSUE can be specified in one of the following formats.
+  - <issue number>
+  - <owner>/<repo>#<issue number>
+  - https://github.com/<owner>/<repo>#<issue number>
+  - git@github.com:<owner>/<repo>#<issue number>`,
 	Args: taskArguments,
 	RunE: runReviewCmd,
 }
@@ -29,7 +37,7 @@ func runReviewCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	repo, _, err := getCurrentRepo(ctx, gc)
+	repo, err := getCurrentRepo(ctx, gc)
 	if err != nil {
 		return err
 	}

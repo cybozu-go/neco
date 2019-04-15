@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tcnksm/go-input"
-	"regexp"
 	"strconv"
+	"strings"
 )
+
+const defaultRepository = "cybozu-go/neco"
 
 var draftOpts struct {
 	title string
@@ -24,16 +26,18 @@ func taskArguments(cmd *cobra.Command, args []string) error {
 		return errors.New("too many arguments")
 	}
 
-	tmp := args[0]
-	reg := regexp.MustCompile(`([a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+)#([0-9]+)$`)
-	if m := reg.FindStringSubmatch(args[0]); m != nil {
-		draftOpts.repo = m[1]
-		tmp = m[2]
+	issueNum := args[0]
+	parts := strings.Split(args[0], "#")
+	if len(parts) > 2 {
+		return errors.New("too many '#' in issue number")
+	} else if len(parts) == 2 {
+		draftOpts.repo = parts[0]
+		issueNum = parts[1]
 	}
 
-	num, err := strconv.Atoi(tmp)
+	num, err := strconv.Atoi(issueNum)
 	if err != nil {
-		return errors.New("invalid argument")
+		return err
 	}
 	draftOpts.issue = num
 
@@ -45,7 +49,12 @@ var draftCmd = &cobra.Command{
 	Short: "create a draft pull request for the current branch",
 	Long: `Create a draft pull request for the current branch.
 
-If ISSUE is given, this command connect the new pull request with the issue`,
+If ISSUE is given, this command connects the new pull request with the issue.
+The ISSUE can be specified in one of the following formats.
+  - <issue number>
+  - <owner>/<repo>#<issue number>
+  - https://github.com/<owner>/<repo>#<issue number>
+  - git@github.com:<owner>/<repo>#<issue number>`,
 
 	Args: taskArguments,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -99,34 +108,36 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 		return err
 	}
 
-	curRepoName, curRepoID, err := getCurrentRepo(ctx, gc)
+	curRepo, err := getCurrentRepo(ctx, gc)
 	if err != nil {
 		return err
 	}
 
-	pr, err := createPR(ctx, gc, curRepoID, branch, title, firstBody, draft)
+	pr, err := createPR(ctx, gc, curRepo, branch, title, firstBody, draft)
 	if err != nil {
 		return err
 	}
 
-	if draftOpts.issue != 0 {
-		repo := config.GithubRepo
-		if draftOpts.repo != "" {
-			repo = draftOpts.repo
-		}
-		issueRepoName, issueRepoID, err := getRepo(ctx, gc, repo)
-		if err != nil {
-			return err
-		}
+	if draftOpts.issue == 0 {
+		return nil
+	}
 
-		fmt.Printf("Connect %s/%s(%d)#%d with %s/%s(%d)#%d.\n",
-			curRepoName.Owner, curRepoName.Name, curRepoID.Number, pr.Number,
-			issueRepoName.Owner, issueRepoName.Name, issueRepoID.Number, draftOpts.issue)
-		zh := NewZenHubClient(config.ZenhubToken)
-		err = zh.Connect(ctx, issueRepoID.Number, draftOpts.issue, curRepoID.Number, pr.Number)
-		if err != nil {
-			return err
-		}
+	repo := defaultRepository
+	if draftOpts.repo != "" {
+		repo = draftOpts.repo
+	}
+	isuueRepo, err := getRepo(ctx, gc, repo)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Connect %s/%s(%d)#%d with %s/%s(%d)#%d.\n",
+		curRepo.Owner, curRepo.Name, curRepo.DatabaseID, pr.Number,
+		isuueRepo.Owner, isuueRepo.Name, isuueRepo.DatabaseID, draftOpts.issue)
+	zh := NewZenHubClient(config.ZenhubToken)
+	err = zh.Connect(ctx, isuueRepo.DatabaseID, draftOpts.issue, curRepo.DatabaseID, pr.Number)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -161,29 +172,25 @@ func confirmUncommitted() (bool, error) {
 	return askYorN("Continue?")
 }
 
-func getRepo(ctx context.Context, gc GitHubClient, url string) (*GitHubRepoName, *GitHubRepoID, error) {
-	name := ExtractGitHubRepoName(url)
-	if name == nil {
-		return nil, nil, errors.New("bad URL: " + url)
+func getRepo(ctx context.Context, gc GitHubClient, repo string) (*GitHubRepository, error) {
+	owner, name, err := ExtractGitHubRepositoryName(repo)
+	if err != nil {
+		return nil, err
 	}
 
-	id, err := gc.GetRepository(ctx, name)
-	if err != nil {
-		return nil, nil, err
-	}
-	return name, id, nil
+	return gc.GetRepository(ctx, owner, name)
 }
 
-func getCurrentRepo(ctx context.Context, gc GitHubClient) (*GitHubRepoName, *GitHubRepoID, error) {
+func getCurrentRepo(ctx context.Context, gc GitHubClient) (*GitHubRepository, error) {
 	origin, err := originURL()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	return getRepo(ctx, gc, origin)
 }
 
 // Create a new pull request and add assignee to the pull request.
-func createPR(ctx context.Context, gc GitHubClient, repo *GitHubRepoID, branch, title, body string, draft bool) (*PullRequest, error) {
+func createPR(ctx context.Context, gc GitHubClient, repo *GitHubRepository, branch, title, body string, draft bool) (*PullRequest, error) {
 	pr, err := gc.CreatePullRequest(ctx, repo.ID, "master", branch, title, body, draft)
 	if err != nil {
 		return nil, err
@@ -199,7 +206,6 @@ func createPR(ctx context.Context, gc GitHubClient, repo *GitHubRepoID, branch, 
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Add assignee:", assignee.Login)
 
 	return pr, nil
 }

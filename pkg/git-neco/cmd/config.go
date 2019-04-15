@@ -13,7 +13,6 @@ import (
 )
 
 var config = struct {
-	GithubRepo  string `json:"github_repo"`
 	GithubToken string `json:"github_token"`
 	ZenhubToken string `json:"zenhub_extension_token"`
 }{}
@@ -33,10 +32,6 @@ func configInput() error {
 		}
 		*p = strings.TrimSpace(ans)
 		return nil
-	}
-
-	if err := ask(&config.GithubRepo, "github repository used to manage issues", true, nil); err != nil {
-		return err
 	}
 
 	if err := ask(&config.GithubToken, "github personal token", true, nil); err != nil {

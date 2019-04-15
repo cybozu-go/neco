@@ -34,16 +34,12 @@ type GitHubUser struct {
 	Login string
 }
 
-// GitHubRepoName represents a repository name hosted on GitHub.
-type GitHubRepoName struct {
-	Owner string
-	Name  string
-}
-
-// GitHubRepoID represents a repository id hosted on GitHub.
-type GitHubRepoID struct {
-	ID     string
-	Number int
+// GitHubRepository represents a repository hosted on GitHub.
+type GitHubRepository struct {
+	Owner      string // repository owner (e.g. cybozu-go)
+	Name       string // repository name (e.g. neco)
+	ID         string // global node ID used for GitHub GraphQL API
+	DatabaseID int    // database ID used for GitHub REST API
 }
 
 // PullRequest represents a pull request on GitHub.
@@ -53,26 +49,33 @@ type PullRequest struct {
 	Permalink string
 }
 
-// ExtractGitHubRepoName repository name from URL.
-func ExtractGitHubRepoName(url string) *GitHubRepoName {
-	// Extract repository name from SCP-like address
-	// Eg, git@github.com:user/repo.git -> user/repo.git
-	reg := regexp.MustCompile(`^([a-zA-Z0-9_]+)@([a-zA-Z0-9._-]+):(.*)$`)
-	if m := reg.FindStringSubmatch(url); m != nil {
-		url = m[3]
+// ExtractGitHubRepositoryName extracts repository owner and name from a string.
+// This function treats following syntax.
+// 1. GitHub URL
+//    - https://github.com/<owner>/<name>.git -> (owner, name)
+// 2. SCP-like address
+//    - git@github.com:<owner>/<name>.git -> (owner, name)
+// 3. Other
+//    - <owner>/<name> -> (owner, name)
+func ExtractGitHubRepositoryName(repo string) (string, string, error) {
+	// For SCP-like address
+	// e.g. git@github.com:user/repo.git -> user/repo.git
+	reg, err := regexp.Compile(`^([a-zA-Z0-9_]+)@([a-zA-Z0-9._-]+):(.*)$`)
+	if err != nil {
+		return "", "", err
+	}
+	if m := reg.FindStringSubmatch(repo); m != nil {
+		repo = m[3]
 	}
 
-	parts := strings.Split(url, "/")
+	parts := strings.Split(repo, "/")
 	if len(parts) < 2 {
-		return nil
+		return "", "", errors.New("invalid repository name")
 	}
-	return &GitHubRepoName{
-		Owner: parts[len(parts)-2],
-		Name:  strings.Split(parts[len(parts)-1], ".")[0],
-	}
+	return parts[len(parts)-2], strings.Split(parts[len(parts)-1], ".")[0], nil
 }
 
-// NewGitHubClient creates GitHubClient
+// NewGitHubClient creates GitHubClient.
 func NewGitHubClient(ctx context.Context, token string) GitHubClient {
 	endpoint, _ := url.Parse(githubAPIv4Endpoint)
 	src := oauth2.StaticTokenSource(
@@ -129,8 +132,8 @@ func (gh GitHubClient) request(ctx context.Context, query string, vars map[strin
 	return []byte(gresp.Data), nil
 }
 
-// GetRepository returns global node ID and database ID of the repo.
-func (gh GitHubClient) GetRepository(ctx context.Context, repo *GitHubRepoName) (*GitHubRepoID, error) {
+// GetRepository acquires global node ID and database ID and returns GitHubRepository with them.
+func (gh GitHubClient) GetRepository(ctx context.Context, owner, name string) (*GitHubRepository, error) {
 	query := `query getRepository($owner: String!, $name: String!) {
   repository(owner: $owner, name: $name) {
     id,
@@ -138,8 +141,8 @@ func (gh GitHubClient) GetRepository(ctx context.Context, repo *GitHubRepoName) 
   }
 }`
 	vars := map[string]interface{}{
-		"owner": repo.Owner,
-		"name":  repo.Name,
+		"owner": owner,
+		"name":  name,
 	}
 
 	data, err := gh.request(ctx, query, vars)
@@ -157,9 +160,11 @@ func (gh GitHubClient) GetRepository(ctx context.Context, repo *GitHubRepoName) 
 	if err != nil {
 		return nil, err
 	}
-	return &GitHubRepoID{
-		ID:     resp.Repository.ID,
-		Number: resp.Repository.DatabaseID,
+	return &GitHubRepository{
+		Owner:      owner,
+		Name:       name,
+		ID:         resp.Repository.ID,
+		DatabaseID: resp.Repository.DatabaseID,
 	}, nil
 }
 
@@ -196,7 +201,7 @@ func (gh GitHubClient) GetViewer(ctx context.Context) (*GitHubUser, error) {
 
 // GetDraftPR returns a draft pull request in a repository for a branch.
 // If no pull request is found, this returns ("", nil).
-func (gh GitHubClient) GetDraftPR(ctx context.Context, repo *GitHubRepoName, branch string) (string, error) {
+func (gh GitHubClient) GetDraftPR(ctx context.Context, repo *GitHubRepository, branch string) (string, error) {
 	query := `query getDraftPR($owner: String!, $name: String!, $headRef: String!) {
   repository(owner: $owner, name: $name) {
     pullRequests(headRefName: $headRef, first: 100) {
