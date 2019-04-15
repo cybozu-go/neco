@@ -81,8 +81,8 @@ kubectl:
 kustomize:
 	curl -sSLf -o $(BINDIR)/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v$(KUSTOMIZE_VERSION)/kustomize_$(KUSTOMIZE_VERSION)_linux_amd64
 	chmod +x $(BINDIR)/kustomize
-	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/$(KUSTOMIZE_VERSION)/README.md
-	curl -fsSL -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/kustomize/$(KUSTOMIZE_VERSION)/LICENSE
+	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v$(KUSTOMIZE_VERSION)/README.md
+	curl -fsSL -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v$(KUSTOMIZE_VERSION)/LICENSE
 
 setup:
 	$(SUDO) apt-get update
