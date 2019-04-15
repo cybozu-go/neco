@@ -132,7 +132,7 @@ func (cc *ComputeClient) CreateHomeDisk(ctx context.Context) error {
 
 	configSize := strconv.Itoa(cc.cfg.Compute.HostVM.HomeDiskSizeGB) + "GB"
 	gcmdCreate := cc.gCloudComputeDisks()
-	gcmdCreate = append(gcmdCreate, "create", "home", "--size", configSize, "--type", "pd-ssd")
+	gcmdCreate = append(gcmdCreate, "create", "home", "--size", configSize, "--type", "pd-ssd", "--zone", cc.cfg.Common.Zone)
 	c = well.CommandContext(ctx, gcmdCreate[0], gcmdCreate[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
