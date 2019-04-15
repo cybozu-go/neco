@@ -79,6 +79,7 @@ kubectl:
 	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
 
 kustomize:
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
 	curl -sSLf -o $(BINDIR)/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v$(KUSTOMIZE_VERSION)/kustomize_$(KUSTOMIZE_VERSION)_linux_amd64
 	chmod +x $(BINDIR)/kustomize
 	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v$(KUSTOMIZE_VERSION)/README.md
