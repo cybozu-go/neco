@@ -361,3 +361,38 @@ func (gh GitHubClient) AddAssigneeToPullRequest(ctx context.Context, userID, prI
 	_, err := gh.request(ctx, query, vars)
 	return err
 }
+
+// GetIssueTitle returns issue title.
+func (gh GitHubClient) GetIssueTitle(ctx context.Context, repo *GitHubRepository, issue int) (string, error) {
+	query := `query getIssue($owner: String!, $name: String!, $number: Int!) {
+  repository(owner: $owner, name: $name) {
+    issue(number: $number){
+      title,
+    }
+  }
+}`
+	vars := map[string]interface{}{
+		"owner":  repo.Owner,
+		"name":   repo.Name,
+		"number": issue,
+	}
+
+	data, err := gh.request(ctx, query, vars)
+	if err != nil {
+		return "", err
+	}
+
+	var resp struct {
+		Repository struct {
+			Issue struct {
+				Title string `json:"title"`
+			} `json:"issue"`
+		} `json:"repository"`
+	}
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		return "", err
+	}
+
+	return resp.Repository.Issue.Title, nil
+}

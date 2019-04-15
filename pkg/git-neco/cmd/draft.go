@@ -93,15 +93,6 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 		return nil
 	}
 
-	if err := git("push", "-u", "origin", branch+":"+branch); err != nil {
-		return err
-	}
-
-	title := draftOpts.title
-	if title == "" {
-		title = firstSummary
-	}
-
 	ctx := context.Background()
 	gc, err := githubClient(ctx)
 	if err != nil {
@@ -113,6 +104,31 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 		return err
 	}
 
+	repo := defaultRepository
+	if draftOpts.repo != "" {
+		repo = draftOpts.repo
+	}
+	issueRepo, err := getRepo(ctx, gc, repo)
+	if err != nil {
+		return err
+	}
+
+	if draftOpts.issue != 0 {
+		if ok, err := confirmIssue(ctx, gc, issueRepo, draftOpts.issue); err != nil {
+			return err
+		} else if !ok {
+			return nil
+		}
+	}
+
+	if err := git("push", "-u", "origin", branch+":"+branch); err != nil {
+		return err
+	}
+
+	title := draftOpts.title
+	if title == "" {
+		title = firstSummary
+	}
 	pr, err := createPR(ctx, gc, curRepo, branch, title, firstBody, draft)
 	if err != nil {
 		return err
@@ -122,20 +138,10 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 		return nil
 	}
 
-	repo := defaultRepository
-	if draftOpts.repo != "" {
-		repo = draftOpts.repo
-	}
-	isuueRepo, err := getRepo(ctx, gc, repo)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Connect %s/%s(%d)#%d with %s/%s(%d)#%d.\n",
-		curRepo.Owner, curRepo.Name, curRepo.DatabaseID, pr.Number,
-		isuueRepo.Owner, isuueRepo.Name, isuueRepo.DatabaseID, draftOpts.issue)
+	fmt.Printf("Connect %s/%s#%d with %s/%s#%d.\n",
+		curRepo.Owner, curRepo.Name, pr.Number, issueRepo.Owner, issueRepo.Name, draftOpts.issue)
 	zh := NewZenHubClient(config.ZenhubToken)
-	err = zh.Connect(ctx, isuueRepo.DatabaseID, draftOpts.issue, curRepo.DatabaseID, pr.Number)
+	err = zh.Connect(ctx, issueRepo.DatabaseID, draftOpts.issue, curRepo.DatabaseID, pr.Number)
 	if err != nil {
 		return err
 	}
@@ -170,6 +176,16 @@ func confirmUncommitted() (bool, error) {
 
 	fmt.Println("WARNING: you have uncommitted files.")
 	return askYorN("Continue?")
+}
+
+func confirmIssue(ctx context.Context, gc GitHubClient, repo *GitHubRepository, issue int) (bool, error) {
+	title, err := gc.GetIssueTitle(ctx, repo, issue)
+	if err != nil {
+		return false, err
+	}
+
+	fmt.Printf("%s/%s#%d: %s\n", repo.Owner, repo.Name, issue, title)
+	return askYorN("Is this ok?")
 }
 
 func getRepo(ctx context.Context, gc GitHubClient, repo string) (*GitHubRepository, error) {
