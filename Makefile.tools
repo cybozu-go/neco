@@ -15,12 +15,15 @@ NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_
 CRITOOLS_VERSION = 1.13.0
 
 ### for argocd
-ARGOCD_VERSION = 0.11.1
+ARGOCD_VERSION = 0.12.1
 
 ### for kubectl
 K8S_VERSION = 1.13.2
 
-all: node_exporter containerd crictl argocd kubectl
+### for kustomize
+KUSTOMIZE_VERSION = 2.0.3
+
+all: node_exporter containerd crictl argocd kubectl kustomize
 
 node_exporter:
 	rm -f $(LIBEXECDIR)/node_exporter
@@ -75,6 +78,13 @@ kubectl:
 	curl -fsSL -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/LICENSE
 	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
 
+kustomize:
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	curl -sSLf -o $(BINDIR)/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v$(KUSTOMIZE_VERSION)/kustomize_$(KUSTOMIZE_VERSION)_linux_amd64
+	chmod +x $(BINDIR)/kustomize
+	curl -fsSL -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v$(KUSTOMIZE_VERSION)/README.md
+	curl -fsSL -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v$(KUSTOMIZE_VERSION)/LICENSE
+
 setup:
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
@@ -82,4 +92,4 @@ setup:
 clean:
 	rm -rf $(BUILDDIR)
 
-.PHONY:	all setup clean
+.PHONY:	all setup clean node_exporter containerd crictl argocd kubectl kustomize
