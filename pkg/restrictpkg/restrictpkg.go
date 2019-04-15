@@ -1,4 +1,4 @@
-package restrict_pkg
+package restrictpkg
 
 import (
 	"fmt"
@@ -10,9 +10,10 @@ import (
 	"golang.org/x/tools/go/ast/inspector"
 )
 
-var Analyzer = &analysis.Analyzer{
-	Name: "restrict_pkg",
-	Doc:  Doc,
+// RestrictPackageAnalyzer checks if you are using banned package
+var RestrictPackageAnalyzer = &analysis.Analyzer{
+	Name: "restrictpkg",
+	Doc:  doc,
 	Run:  run,
 	Requires: []*analysis.Analyzer{
 		inspect.Analyzer,
@@ -20,12 +21,12 @@ var Analyzer = &analysis.Analyzer{
 	RunDespiteErrors: false,
 }
 
-const Doc = "restrict-pkg checks if you are using a banned packages"
+const doc = "restrictpkg checks if you are using banned packages"
 
 var flagPackages string // -name flag
 
 func init() {
-	Analyzer.Flags.StringVar(&flagPackages, "packages", flagPackages, "list of packages to be restricted")
+	RestrictPackageAnalyzer.Flags.StringVar(&flagPackages, "packages", flagPackages, "list of packages to be restricted")
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {
