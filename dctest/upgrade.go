@@ -3,11 +3,11 @@ package dctest
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/cybozu-go/neco"
 	. "github.com/onsi/ginkgo"
@@ -155,7 +155,7 @@ func TestUpgrade() {
 					break
 				}
 				return nil
-			}).Should(Succeed())
+			}, 20*time.Minute).Should(Succeed())
 		}
 	})
 
@@ -169,15 +169,15 @@ func TestUpgrade() {
 			Eventually(func() error {
 				switch img.Name {
 				case "coil":
-					if err := checkVersionInDaemonSet("kube-system", "coil-node", string(stdout)); err != nil {
+					if err := checkVersionInDaemonSet("kube-system", "coil-node", newImage); err != nil {
 						return err
 					}
-					return checkVersionInDeployment("kube-system", "coil-controller", string(stdout))
+					return checkVersionInDeployment("kube-system", "coil-controllers", newImage)
 				case "squid":
-					return checkVersionInDeployment("internet-egress", "squid", string(stdout))
+					return checkVersionInDeployment("internet-egress", "squid", newImage)
 				default:
-					for _, h := range []string{boot0, boot1, boot2, boot3} {
-						if err := checkVersionByRkt(h, string(stdout)); err != nil {
+					for _, h := range []string{boot0, boot1, boot2} {
+						if err := checkVersionByRkt(h, newImage); err != nil {
 							return err
 						}
 					}
@@ -208,17 +208,14 @@ func checkVersionByDocker(address, name, image string) error {
 	return nil
 }
 
-func checkVersionByRkt(address, image string) error {
+func checkVersionByRkt(host, image string) error {
 	fullName := strings.Split(image, ":")[0]
-	fmt.Println(fullName)
 	shortName := strings.TrimPrefix(fullName, "quay.io/cybozu/")
-	fmt.Println(shortName)
 	version := strings.Split(image, ":")[1]
-	fmt.Println(version)
 
-	stdout, stderr, err := execAt(address, "sudo", "rkt", "list", "--format", "json")
+	stdout, stderr, err := execAt(host, "sudo", "rkt", "list", "--format", "json")
 	if err != nil {
-		return fmt.Errorf("stderr: %s, err: %v", stderr, err)
+		return fmt.Errorf("host: %s, stderr: %s, err: %v", host, stderr, err)
 	}
 
 	var pods []neco.RktPod
@@ -228,7 +225,7 @@ func checkVersionByRkt(address, image string) error {
 	}
 
 	if len(pods) == 0 {
-		return errors.New("failed to get pod list")
+		return fmt.Errorf("failed to get pod list at %s", host)
 	}
 
 	for _, pod := range pods {
@@ -247,9 +244,9 @@ func checkVersionByRkt(address, image string) error {
 			continue
 		}
 
-		stdout, stderr, err := execAt(address, "sudo", "rkt", "cat-manifest", uuid)
+		stdout, stderr, err := execAt(host, "sudo", "rkt", "cat-manifest", uuid)
 		if err != nil {
-			return fmt.Errorf("stderr: %s, err: %v", stderr, err)
+			return fmt.Errorf("host: %s, stderr: %s, err: %v", host, stderr, err)
 		}
 
 		var manifest rktManifest
@@ -272,40 +269,12 @@ func checkVersionByRkt(address, image string) error {
 			}
 		}
 
-		if !nameFound || !versionFound {
-			return fmt.Errorf("desired image is not running: %v", image)
+		if nameFound && versionFound {
+			return nil
 		}
 	}
 
-	return nil
-}
-
-func checkRunningDesiredVersion(image string) error {
-	if strings.Contains(image, "unbound") {
-		// node-dns
-		err := checkVersionInDaemonSet("kube-system", "node-dns", image)
-		if err != nil {
-			return err
-		}
-		// internet full resolver
-		err = checkVersionInDeployment("internet-egress", "unbound", image)
-		if err != nil {
-			return err
-		}
-		// unbound in squid pod
-		err = checkVersionInDeployment("internet-egress", "squid", image)
-		if err != nil {
-			return err
-		}
-	} else if strings.Contains(image, "coredns") {
-		err := checkVersionInDeployment("kube-system", "cluster-dns", image)
-		if err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("checking %s is not implemented", image)
-	}
-	return nil
+	return fmt.Errorf("desired image %s is not running at %s", image, host)
 }
 
 func checkVersionInDaemonSet(namespace, dsName, image string) error {
