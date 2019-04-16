@@ -67,25 +67,10 @@ func firstUnmerged() (hash string, summary string, body string, err error) {
 	return hash, fields[0], strings.TrimSpace(fields[1]), nil
 }
 
-// GitHubRepo represents a repository hosted on GitHub.
-type GitHubRepo struct {
-	Owner string
-	Name  string
-}
-
-// CurrentRepo returns GitHubRepo for the current git worktree.
-func CurrentRepo() (*GitHubRepo, error) {
+func originURL() (string, error) {
 	data, err := gitOutput("remote", "get-url", "origin")
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-
-	parts := strings.Split(strings.TrimSpace(string(data)), "/")
-	if len(parts) < 2 {
-		return nil, errors.New("bad remote URL: " + string(data))
-	}
-	return &GitHubRepo{
-		Owner: parts[len(parts)-2],
-		Name:  strings.Split(parts[len(parts)-1], ".")[0],
-	}, nil
+	return strings.TrimSpace(string(data)), nil
 }

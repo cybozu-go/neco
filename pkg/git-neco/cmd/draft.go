@@ -4,18 +4,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
 	"strconv"
+	"strings"
 
-	"github.com/cybozu-go/log"
-	kintone "github.com/kintone/go-kintone"
 	"github.com/spf13/cobra"
-	input "github.com/tcnksm/go-input"
+	"github.com/tcnksm/go-input"
 )
 
+const defaultRepository = "cybozu-go/neco"
+
 var draftOpts struct {
-	title    string
-	recordID uint64
+	title string
+	repo  string
+	issue int
 }
 
 func taskArguments(cmd *cobra.Command, args []string) error {
@@ -25,21 +26,36 @@ func taskArguments(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return errors.New("too many arguments")
 	}
-	id, err := strconv.ParseUint(args[0], 10, 64)
+
+	issueNum := args[0]
+	parts := strings.Split(args[0], "#")
+	if len(parts) > 2 {
+		return errors.New("too many '#' in issue number")
+	} else if len(parts) == 2 {
+		draftOpts.repo = parts[0]
+		issueNum = parts[1]
+	}
+
+	num, err := strconv.Atoi(issueNum)
 	if err != nil {
 		return err
 	}
-	draftOpts.recordID = id
+	draftOpts.issue = num
+
 	return nil
 }
 
 var draftCmd = &cobra.Command{
-	Use:   "draft [TASK]",
+	Use:   "draft [ISSUE]",
 	Short: "create a draft pull request for the current branch",
 	Long: `Create a draft pull request for the current branch.
 
-If TASK is given, this command edits kintone record for TASK to
-add URL of the new pull request.`,
+If ISSUE is given, this command connects the new pull request with the issue.
+The ISSUE can be specified in one of the following formats.
+  - <issue number>
+  - <owner>/<repo>#<issue number>
+  - https://github.com/<owner>/<repo>#<issue number>
+  - git@github.com:<owner>/<repo>#<issue number>`,
 
 	Args: taskArguments,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -52,7 +68,13 @@ func init() {
 	rootCmd.AddCommand(draftCmd)
 }
 
+func githubClient(ctx context.Context) (GitHubClient, error) {
+	token := config.GithubToken
+	return NewGitHubClient(ctx, token), nil
+}
+
 func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
+
 	branch, err := currentBranch()
 	if err != nil {
 		return err
@@ -72,15 +94,32 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 		return nil
 	}
 
-	var app *kintone.App
-	if draftOpts.recordID != 0 {
-		app, err = newAppClient(config.KintoneURL, config.KintoneToken)
+	ctx := context.Background()
+	gc, err := githubClient(ctx)
+	if err != nil {
+		return err
 	}
 
-	if ok, err := confirmTask(app, draftOpts.recordID); err != nil {
+	curRepo, err := getCurrentRepo(ctx, gc)
+	if err != nil {
 		return err
-	} else if !ok {
-		return nil
+	}
+
+	repo := defaultRepository
+	if draftOpts.repo != "" {
+		repo = draftOpts.repo
+	}
+	issueRepo, err := getRepo(ctx, gc, repo)
+	if err != nil {
+		return err
+	}
+
+	if draftOpts.issue != 0 {
+		if ok, err := confirmIssue(ctx, gc, issueRepo, draftOpts.issue); err != nil {
+			return err
+		} else if !ok {
+			return nil
+		}
 	}
 
 	if err := git("push", "-u", "origin", branch+":"+branch); err != nil {
@@ -91,21 +130,19 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 	if title == "" {
 		title = firstSummary
 	}
-
-	prURL, err := createPR(branch, title, firstBody, draft)
+	pr, err := createPR(ctx, gc, curRepo, branch, title, firstBody, draft)
 	if err != nil {
 		return err
 	}
-	fmt.Println("\nCreated a pull request:", prURL)
 
-	if err := addURLToRecord(app, draftOpts.recordID, prURL); err != nil {
-		return err
-	}
-	if app != nil {
-		fmt.Println("\nUpdated kintone record.")
+	if draftOpts.issue == 0 {
+		return nil
 	}
 
-	return nil
+	fmt.Printf("Connect %s/%s#%d with %s/%s#%d.\n",
+		curRepo.Owner, curRepo.Name, pr.Number, issueRepo.Owner, issueRepo.Name, draftOpts.issue)
+	zh := NewZenHubClient(config.ZenhubToken)
+	return zh.Connect(ctx, issueRepo.DatabaseID, draftOpts.issue, curRepo.DatabaseID, pr.Number)
 }
 
 func askYorN(query string) (bool, error) {
@@ -137,86 +174,50 @@ func confirmUncommitted() (bool, error) {
 	return askYorN("Continue?")
 }
 
-func confirmTask(app *kintone.App, id uint64) (bool, error) {
-	if app == nil {
-		return true, nil
-	}
-
-	rec, err := app.GetRecord(id)
+func confirmIssue(ctx context.Context, gc GitHubClient, repo *GitHubRepository, issue int) (bool, error) {
+	title, err := gc.GetIssueTitle(ctx, repo, issue)
 	if err != nil {
 		return false, err
 	}
 
-	field := rec.Fields["summary"]
-	summary, ok := field.(kintone.SingleLineTextField)
-	if !ok {
-		return false, fmt.Errorf("unexpected summary field: %T, %v", field, field)
-	}
-
-	fmt.Printf("NecoTask-%d: %s\n", id, string(summary))
+	fmt.Printf("%s/%s#%d: %s\n", repo.Owner, repo.Name, issue, title)
 	return askYorN("Is this ok?")
 }
 
-func githubClientForRepo(ctx context.Context, repo GitHubRepo) (GitHubClient, error) {
-	endpoint, _ := url.Parse("https://api.github.com/graphql")
-	token := config.GithubToken
-
-	switch repo.Owner {
-	case "Neco":
-		u, err := url.Parse(config.GheURL)
-		if err != nil {
-			return GitHubClient{}, err
-		}
-		u.Path = "/api/graphql"
-		endpoint = u
-		token = config.GheToken
+func getRepo(ctx context.Context, gc GitHubClient, repo string) (*GitHubRepository, error) {
+	owner, name, err := ExtractGitHubRepositoryName(repo)
+	if err != nil {
+		return nil, err
 	}
-	return NewGitHubClient(ctx, endpoint, token), nil
+
+	return gc.GetRepository(ctx, owner, name)
 }
 
-func createPR(branch, title, body string, draft bool) (string, error) {
-	repo, err := CurrentRepo()
+func getCurrentRepo(ctx context.Context, gc GitHubClient) (*GitHubRepository, error) {
+	origin, err := originURL()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-
-	ctx := context.Background()
-	gc, err := githubClientForRepo(ctx, *repo)
-	if err != nil {
-		return "", err
-	}
-
-	repoID, err := gc.Repository(ctx, *repo)
-	if err != nil {
-		return "", err
-	}
-	return gc.CreatePullRequest(ctx, repoID, "master", branch, title, body, draft)
+	return getRepo(ctx, gc, origin)
 }
 
-func addURLToRecord(app *kintone.App, id uint64, prURL string) error {
-	if app == nil {
-		return nil
-	}
-
-	rec, err := app.GetRecord(id)
+// Create a new pull request and add assignee to the pull request.
+func createPR(ctx context.Context, gc GitHubClient, repo *GitHubRepository, branch, title, body string, draft bool) (*PullRequest, error) {
+	pr, err := gc.CreatePullRequest(ctx, repo.ID, "master", branch, title, body, draft)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	field, ok := rec.Fields["prs"]
-	if !ok {
-		log.Warn("development detail field is not found in kintone app", nil)
-		return nil
-	}
-	dd, ok := field.(kintone.MultiLineTextField)
-	if !ok {
-		return fmt.Errorf("unexpected field type: %T, %v", field, field)
-	}
-	if dd == "" {
-		dd = kintone.MultiLineTextField(prURL)
-	} else {
-		dd = kintone.MultiLineTextField(fmt.Sprintf("%s\n%s", string(dd), prURL))
-	}
-	rec.Fields = map[string]interface{}{"prs": dd}
+	fmt.Println("\nCreated a pull request:", pr.Permalink)
 
-	return app.UpdateRecord(rec, true)
+	assignee, err := gc.GetViewer(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = gc.AddAssigneeToPullRequest(ctx, assignee.ID, pr.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return pr, nil
 }

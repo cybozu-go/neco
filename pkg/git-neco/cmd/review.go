@@ -8,11 +8,19 @@ import (
 )
 
 var reviewCmd = &cobra.Command{
-	Use:   "review [TASK]",
+	Use:   "review [ISSUE]",
 	Short: "mark draft PR ready for review, or create a one",
 	Long: `Mark a draft PR ready for review if such a PR exists
 for the current branch.  If no such PR exists, this command works
-just like "draft" but do not make the PR as draft.`,
+just like "draft" but do not make the PR as draft.
+
+If draft PR is not found and ISSUE is given, this command connects
+the new pull request with the issue.
+The ISSUE can be specified in one of the following formats.
+  - <issue number>
+  - <owner>/<repo>#<issue number>
+  - https://github.com/<owner>/<repo>#<issue number>
+  - git@github.com:<owner>/<repo>#<issue number>`,
 	Args: taskArguments,
 	RunE: runReviewCmd,
 }
@@ -23,13 +31,13 @@ func init() {
 }
 
 func runReviewCmd(cmd *cobra.Command, args []string) error {
-	repo, err := CurrentRepo()
+	ctx := context.Background()
+	gc, err := githubClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	ctx := context.Background()
-	gc, err := githubClientForRepo(ctx, *repo)
+	repo, err := getCurrentRepo(ctx, gc)
 	if err != nil {
 		return err
 	}
@@ -39,14 +47,9 @@ func runReviewCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	var pr string
-	if repo.Owner == "Neco" {
-		pr = ""
-	} else {
-		pr, err = gc.GetDraftPR(ctx, *repo, br)
-		if err != nil {
-			return err
-		}
+	pr, err := gc.GetDraftPR(ctx, repo, br)
+	if err != nil {
+		return err
 	}
 
 	if pr == "" {
