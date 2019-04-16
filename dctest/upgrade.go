@@ -3,17 +3,50 @@ package dctest
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/cybozu-go/neco"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	yaml "gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
 )
+
+// ckeCluster is part of cke.Cluster in github.com/cybozu-go/cke
+type ckeCluster struct {
+	Nodes []*ckeNode `yaml:"nodes"`
+}
+
+// ckeNode is part of cke.Node in github.com/cybozu-go/cke
+type ckeNode struct {
+	Address      string `yaml:"address"`
+	ControlPlane bool   `yaml:"control_plane"`
+}
+
+// dockerInspect is part of docker inspect JSON
+type dockerInspect struct {
+	Config struct {
+		Image string `json:"Image"`
+	} `json:"Config"`
+}
+
+// rktManifest is part of rkt cat-manifest JSON
+type rktManifest struct {
+	Apps []struct {
+		Name  string `json:"name"`
+		Image struct {
+			Name   string `json:"name"`
+			Labels []struct {
+				Name  string `json:"name"`
+				Value string `json:"value"`
+			} `json:"labels"`
+		} `json:"image"`
+	} `json:"apps"`
+}
 
 // TestUpgrade test neco debian package upgrade scenario
 func TestUpgrade() {
@@ -66,21 +99,185 @@ func TestUpgrade() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
-	It("should install desired version", func() {
-		stdout, stderr, err := execAt(boot0, "ckecli", "images")
+	It("should running newer cke desired image version", func() {
+		stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
+		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+
+		cluster := new(ckeCluster)
+		err = yaml.Unmarshal(stdout, cluster)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		stdout, stderr, err = execAt(boot0, "ckecli", "images")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
 		for _, img := range strings.Fields(string(stdout)) {
-			// TODO: check all images
-			if !strings.Contains(img, "unbound") && !strings.Contains(img, "coredns") {
-				continue
-			}
+			By("checking " + img + " is running")
 			Eventually(func() error {
-				err := checkRunningDesiredVersion(img)
-				return err
-			}, 20*time.Minute).Should(Succeed())
+				switch strings.Split(img, ":")[0] {
+				case "quay.io/cybozu/unbound":
+					if err := checkVersionInDaemonSet("kube-system", "node-dns", img); err != nil {
+						return err
+					}
+					return checkVersionInDeployment("internet-egress", "unbound", img)
+				case "quay.io/cybozu/coredns":
+					return checkVersionInDeployment("kube-system", "cluster-dns", img)
+				case "quay.io/cybozu/hyperkube":
+					for _, node := range cluster.Nodes {
+						if node.ControlPlane {
+							for _, cn := range []string{"kube-apiserver", "kube-scheduler", "kube-controller-manager"} {
+								if err := checkVersionByDocker(node.Address, cn, img); err != nil {
+									return err
+								}
+							}
+						}
+						for _, cn := range []string{"kube-proxy", "kubelet"} {
+							if err := checkVersionByDocker(node.Address, cn, img); err != nil {
+								return err
+							}
+						}
+					}
+				case "quay.io/cybozu/etcd":
+					for _, node := range cluster.Nodes {
+						if node.ControlPlane {
+							if err := checkVersionByDocker(node.Address, "etcd", img); err != nil {
+								return err
+							}
+						}
+					}
+				case "quay.io/cybozu/cke-tools":
+					for _, node := range cluster.Nodes {
+						if err := checkVersionByDocker(node.Address, "rivers", img); err != nil {
+							return err
+						}
+					}
+				case "quay.io/cybozu/pause":
+					// Skip to check version because newer pause image is loaded after reboot
+					break
+				}
+				return nil
+			}).Should(Succeed())
 		}
 	})
+
+	It("should running newer neco desired image version", func() {
+		for _, img := range neco.CurrentArtifacts.Images {
+			stdout, stderr, err := execAt(boot0, "neco", "image", img.Name)
+			Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+			newImage := string(bytes.TrimSpace(stdout))
+			By("checking " + newImage + " is running")
+
+			Eventually(func() error {
+				switch img.Name {
+				case "coil":
+					if err := checkVersionInDaemonSet("kube-system", "coil-node", string(stdout)); err != nil {
+						return err
+					}
+					return checkVersionInDeployment("kube-system", "coil-controller", string(stdout))
+				case "squid":
+					return checkVersionInDeployment("internet-egress", "squid", string(stdout))
+				default:
+					for _, h := range []string{boot0, boot1, boot2, boot3} {
+						if err := checkVersionByRkt(h, string(stdout)); err != nil {
+							return err
+						}
+					}
+				}
+				return nil
+			}).Should(Succeed())
+		}
+	})
+}
+
+func checkVersionByDocker(address, name, image string) error {
+	stdout, stderr, err := execAt(boot0, "ckecli", "ssh", address, "docker", "inspect", name)
+	if err != nil {
+		return fmt.Errorf("stderr: %s, err: %v", stderr, err)
+	}
+
+	var dis []dockerInspect
+	err = json.Unmarshal(stdout, &dis)
+	if err != nil {
+		return err
+	}
+
+	for _, di := range dis {
+		if image != di.Config.Image {
+			return fmt.Errorf("desired image: %s, actual image: %s", image, di.Config.Image)
+		}
+	}
+	return nil
+}
+
+func checkVersionByRkt(address, image string) error {
+	fullName := strings.Split(image, ":")[0]
+	fmt.Println(fullName)
+	shortName := strings.TrimPrefix(fullName, "quay.io/cybozu/")
+	fmt.Println(shortName)
+	version := strings.Split(image, ":")[1]
+	fmt.Println(version)
+
+	stdout, stderr, err := execAt(address, "sudo", "rkt", "list", "--format", "json")
+	if err != nil {
+		return fmt.Errorf("stderr: %s, err: %v", stderr, err)
+	}
+
+	var pods []neco.RktPod
+	err = json.Unmarshal(stdout, &pods)
+	if err != nil {
+		return err
+	}
+
+	if len(pods) == 0 {
+		return errors.New("failed to get pod list")
+	}
+
+	for _, pod := range pods {
+		if pod.State != "running" {
+			continue
+		}
+
+		var uuid string
+		for _, appName := range pod.AppNames {
+			if appName == shortName {
+				uuid = pod.Name
+			}
+		}
+
+		if len(uuid) == 0 {
+			continue
+		}
+
+		stdout, stderr, err := execAt(address, "sudo", "rkt", "cat-manifest", uuid)
+		if err != nil {
+			return fmt.Errorf("stderr: %s, err: %v", stderr, err)
+		}
+
+		var manifest rktManifest
+		err = json.Unmarshal(stdout, &manifest)
+		if err != nil {
+			return err
+		}
+
+		nameFound := false
+		versionFound := false
+		for _, app := range manifest.Apps {
+			if app.Image.Name == fullName {
+				nameFound = true
+			}
+
+			for _, label := range app.Image.Labels {
+				if label.Name == "version" && label.Value == version {
+					versionFound = true
+				}
+			}
+		}
+
+		if !nameFound || !versionFound {
+			return fmt.Errorf("desired image is not running: %v", image)
+		}
+	}
+
+	return nil
 }
 
 func checkRunningDesiredVersion(image string) error {
