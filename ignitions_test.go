@@ -1,7 +1,6 @@
 package neco
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -18,6 +17,7 @@ const (
 	commonYAML     = "ignitions/common/common.yml"
 	testFilesDir   = "ignitions/common/files"
 	testSystemdDir = "ignitions/common/systemd"
+	testRoleDir    = "ignitions/roles"
 )
 
 func testIgnitionsCommon(t *testing.T) {
@@ -53,14 +53,13 @@ func testIgnitionsCommon(t *testing.T) {
 		return nil
 	})
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	sort.Strings(filelistInDir)
 
-	fmt.Println(pretty.Compare(filelistInYAML, filelistInDir))
 	if !reflect.DeepEqual(filelistInYAML, filelistInDir) {
-		t.Errorf("\nyaml      %v\ndirectory %v", filelistInYAML, filelistInDir)
+		t.Errorf("files in common.yml and file tree is not same\n%v", pretty.Compare(filelistInYAML, filelistInDir))
 	}
 }
 
@@ -96,7 +95,7 @@ func testIgnitionsSystemd(t *testing.T) {
 		return nil
 	})
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	for _, f := range filelistInDir {
@@ -113,8 +112,52 @@ func testIgnitionsSystemd(t *testing.T) {
 	}
 }
 
+func testIgnitionsRole(t *testing.T) {
+	t.Parallel()
+
+	var siteYAMLs []string
+	err := filepath.Walk(testRoleDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		if info.Name() == "site.yml" {
+			siteYAMLs = append(siteYAMLs, path)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, sy := range siteYAMLs {
+		data, err := ioutil.ReadFile(sy)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		src := &sabakan.TemplateSource{}
+		err = yaml.Unmarshal(data, src)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		abs, err := filepath.Abs(filepath.Join(filepath.Dir(sy), src.Include))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = os.Stat(abs)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+}
+
 func TestIgnitions(t *testing.T) {
 	t.Run("common", testIgnitionsCommon)
 	t.Run("systemd", testIgnitionsSystemd)
-	//t.Run("site", testIgnitionsSite)
+	t.Run("role", testIgnitionsRole)
 }
