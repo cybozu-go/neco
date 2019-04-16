@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/tcnksm/go-input"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/cobra"
+	"github.com/tcnksm/go-input"
 )
 
 const defaultRepository = "cybozu-go/neco"
@@ -141,12 +142,7 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 	fmt.Printf("Connect %s/%s#%d with %s/%s#%d.\n",
 		curRepo.Owner, curRepo.Name, pr.Number, issueRepo.Owner, issueRepo.Name, draftOpts.issue)
 	zh := NewZenHubClient(config.ZenhubToken)
-	err = zh.Connect(ctx, issueRepo.DatabaseID, draftOpts.issue, curRepo.DatabaseID, pr.Number)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return zh.Connect(ctx, issueRepo.DatabaseID, draftOpts.issue, curRepo.DatabaseID, pr.Number)
 }
 
 func askYorN(query string) (bool, error) {
