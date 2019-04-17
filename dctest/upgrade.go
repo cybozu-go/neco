@@ -255,21 +255,18 @@ func checkVersionByRkt(host, image string) error {
 			return err
 		}
 
-		nameFound := false
-		versionFound := false
+		found := false
 		for _, app := range manifest.Apps {
 			if app.Image.Name == fullName {
-				nameFound = true
-			}
-
-			for _, label := range app.Image.Labels {
-				if label.Name == "version" && label.Value == version {
-					versionFound = true
+				for _, label := range app.Image.Labels {
+					if label.Name == "version" && label.Value == version {
+						found = true
+					}
 				}
 			}
 		}
 
-		if nameFound && versionFound {
+		if found {
 			return nil
 		}
 	}
