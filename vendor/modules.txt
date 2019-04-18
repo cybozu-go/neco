@@ -252,6 +252,9 @@ github.com/inconshreveable/mousetrap
 github.com/kintone/go-kintone
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
+# github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
+github.com/kylelemons/godebug/pretty
+github.com/kylelemons/godebug/diff
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
 # github.com/mattn/go-colorable v0.0.9
