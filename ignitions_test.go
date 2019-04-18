@@ -1,6 +1,7 @@
 package neco
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,108 +15,170 @@ import (
 )
 
 const (
-	commonYAML     = "ignitions/common/common.yml"
-	testFilesDir   = "ignitions/common/files"
-	testSystemdDir = "ignitions/common/systemd"
-	testRoleDir    = "ignitions/roles"
+	testRoleDir = "ignitions/roles"
 )
 
-func testIgnitionsCommon(t *testing.T) {
-	t.Parallel()
-
-	data, err := ioutil.ReadFile(commonYAML)
+func testIgnitionTemplates(path string) error {
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		t.Fatal(err)
+		return err
 	}
 
-	src := &sabakan.TemplateSource{}
-	err = yaml.Unmarshal(data, src)
+	t := &sabakan.TemplateSource{}
+	err = yaml.Unmarshal(data, t)
 	if err != nil {
-		t.Fatal(err)
+		return err
 	}
 
-	var filelistInYAML []string
-	for _, f := range src.Files {
-		realPath := filepath.Join(testFilesDir, f)
-		filelistInYAML = append(filelistInYAML, realPath)
-	}
-	sort.Strings(filelistInYAML)
-
-	var filelistInDir []string
-	err = filepath.Walk(testFilesDir, func(path string, info os.FileInfo, err error) error {
+	if len(t.Include) != 0 {
+		abs, err := filepath.Abs(filepath.Join(filepath.Dir(path), t.Include))
 		if err != nil {
 			return err
 		}
-		if info.IsDir() {
-			return nil
-		}
-		filelistInDir = append(filelistInDir, path)
-		return nil
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	sort.Strings(filelistInDir)
-
-	if !reflect.DeepEqual(filelistInYAML, filelistInDir) {
-		t.Errorf("files in common.yml and file tree is not same\n%v", pretty.Compare(filelistInYAML, filelistInDir))
-	}
-}
-
-func testIgnitionsSystemd(t *testing.T) {
-	t.Parallel()
-
-	data, err := ioutil.ReadFile(commonYAML)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	src := &sabakan.TemplateSource{}
-	err = yaml.Unmarshal(data, src)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	var systemdInYAML []string
-	for _, s := range src.Systemd {
-		realPath := filepath.Join(testSystemdDir, s.Name)
-		systemdInYAML = append(systemdInYAML, realPath)
-	}
-
-	var filelistInDir []string
-	err = filepath.Walk(testSystemdDir, func(path string, info os.FileInfo, err error) error {
+		_, err = os.Stat(abs)
 		if err != nil {
 			return err
 		}
-		if info.IsDir() {
-			return nil
+
+		err = testIgnitionTemplates(abs)
+		if err != nil {
+			return err
 		}
-		filelistInDir = append(filelistInDir, path)
-		return nil
-	})
-	if err != nil {
-		t.Fatal(err)
 	}
 
-	for _, f := range filelistInDir {
-		found := false
-		for _, s := range src.Systemd {
-			if f == filepath.Join(testSystemdDir, s.Name) {
-				found = true
-				break
+	if len(t.Passwd) != 0 {
+		abs, err := filepath.Abs(filepath.Join(filepath.Dir(path), t.Passwd))
+		if err != nil {
+			return err
+		}
+
+		_, err = os.Stat(abs)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(t.Files) != 0 {
+		filesDir, err := filepath.Abs(filepath.Join(filepath.Dir(path), "files"))
+		if err != nil {
+			return err
+		}
+
+		var filelistInYAML []string
+		for _, f := range t.Files {
+			realPath := filepath.Join(filesDir, f)
+			filelistInYAML = append(filelistInYAML, realPath)
+		}
+		sort.Strings(filelistInYAML)
+
+		var filelistInDir []string
+		err = filepath.Walk(filesDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
 			}
+			if info.IsDir() {
+				return nil
+			}
+			filelistInDir = append(filelistInDir, path)
+			return nil
+		})
+		if err != nil {
+			return err
 		}
-		if !found {
-			t.Errorf("%s is not defined in %s", f, commonYAML)
+
+		sort.Strings(filelistInDir)
+
+		if !reflect.DeepEqual(filelistInYAML, filelistInDir) {
+			return fmt.Errorf("files in %s and file tree %s differ\n%v", path, filesDir, pretty.Compare(filelistInYAML, filelistInDir))
 		}
 	}
+
+	// remote_files does not use in Neco.
+	//if len(t.RemoteFiles) != 0 {
+	//	...
+	//}
+
+	if len(t.Systemd) != 0 {
+		systemdDir, err := filepath.Abs(filepath.Join(filepath.Dir(path), "systemd"))
+		if err != nil {
+			return err
+		}
+
+		var systemdInYAML []string
+		for _, s := range t.Systemd {
+			realPath := filepath.Join(systemdDir, s.Name)
+			systemdInYAML = append(systemdInYAML, realPath)
+		}
+
+		var filelistInDir []string
+		err = filepath.Walk(systemdDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			filelistInDir = append(filelistInDir, path)
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+	OUTER:
+		for _, f := range filelistInDir {
+			for _, s := range t.Systemd {
+				if f == filepath.Join(systemdDir, s.Name) {
+					continue OUTER
+				}
+			}
+			return fmt.Errorf("%s is not defined in %s", f, path)
+		}
+	}
+
+	if len(t.Networkd) != 0 {
+		networkdDir, err := filepath.Abs(filepath.Join(filepath.Dir(path), "networkd"))
+		if err != nil {
+			return err
+		}
+
+		var filelistInYAML []string
+		for _, f := range t.Networkd {
+			realPath := filepath.Join(networkdDir, f)
+			filelistInYAML = append(filelistInYAML, realPath)
+		}
+		sort.Strings(filelistInYAML)
+
+		var filelistInDir []string
+		err = filepath.Walk(networkdDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			filelistInDir = append(filelistInDir, path)
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+		sort.Strings(filelistInDir)
+
+		if !reflect.DeepEqual(filelistInYAML, filelistInDir) {
+			return fmt.Errorf("files in %s and file tree %s differ\n%v", path, networkdDir, pretty.Compare(filelistInYAML, filelistInDir))
+		}
+	}
+
+	return nil
 }
 
-func testIgnitionsRole(t *testing.T) {
-	t.Parallel()
-
+func TestNecoIgnitionTemplates(t *testing.T) {
 	var siteYAMLs []string
+
+	t.Parallel()
 	err := filepath.Walk(testRoleDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -133,31 +196,9 @@ func testIgnitionsRole(t *testing.T) {
 	}
 
 	for _, sy := range siteYAMLs {
-		data, err := ioutil.ReadFile(sy)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		src := &sabakan.TemplateSource{}
-		err = yaml.Unmarshal(data, src)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		abs, err := filepath.Abs(filepath.Join(filepath.Dir(sy), src.Include))
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		_, err = os.Stat(abs)
+		err := testIgnitionTemplates(sy)
 		if err != nil {
 			t.Error(err)
 		}
 	}
-}
-
-func TestIgnitions(t *testing.T) {
-	t.Run("common", testIgnitionsCommon)
-	t.Run("systemd", testIgnitionsSystemd)
-	t.Run("role", testIgnitionsRole)
 }
