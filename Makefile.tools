@@ -3,7 +3,7 @@ include Makefile.common
 PACKAGES := libseccomp-dev autoconf automake libtool
 
 ### for containerd
-CONTAINERD_VERSION = 1.2.4
+CONTAINERD_VERSION = 1.2.6
 PROTOBUF_VERSION = 3.7.0
 PROTOC = /usr/local/bin/protoc
 
