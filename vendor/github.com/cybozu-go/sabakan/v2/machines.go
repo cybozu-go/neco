@@ -50,9 +50,18 @@ const (
 )
 
 var (
-	reValidBmcType   = regexp.MustCompile(`^[a-z0-9A-Z-_/.]+$`)
-	reValidLabelName = regexp.MustCompile(`^[a-z0-9A-Z]([a-z0-9A-Z_.-]{0,61}[a-z0-9A-Z])?$`)
-	reValidLabelVal  = regexp.MustCompile(`^[a-z0-9A-Z]([a-z0-9A-Z_.-]{0,61}[a-z0-9A-Z])?$`)
+	reValidBmcType       = regexp.MustCompile(`^[a-z0-9A-Z-_/.]+$`)
+	reValidLabelName     = regexp.MustCompile(`^[a-z0-9A-Z]([a-z0-9A-Z_.-]{0,61}[a-z0-9A-Z])?$`)
+	reValidLabelVal      = regexp.MustCompile(`^[a-z0-9A-Z]([a-z0-9A-Z_.-]{0,61}[a-z0-9A-Z])?$`)
+	permittedTransitions = map[MachineState][]MachineState{
+		StateUninitialized: {StateHealthy, StateRetiring},
+		StateHealthy:       {StateUnhealthy, StateUnreachable, StateUpdating, StateRetiring},
+		StateUnhealthy:     {StateHealthy, StateUnreachable, StateRetiring},
+		StateUnreachable:   {StateHealthy, StateRetiring},
+		StateUpdating:      {StateUninitialized},
+		StateRetiring:      {StateRetired},
+		StateRetired:       {StateUninitialized},
+	}
 )
 
 // IsValidRole returns true if role is valid as machine role
@@ -156,41 +165,28 @@ func NewMachine(spec MachineSpec) *Machine {
 	}
 }
 
+func (m *Machine) isPermittedTransition(to MachineState) bool {
+	for _, v := range permittedTransitions[m.Status.State] {
+		if v == to {
+			return true
+		}
+	}
+	return false
+}
+
 // SetState sets the state of the machine.
 func (m *Machine) SetState(ms MachineState) error {
 	if m.Status.State == ms {
 		return nil
 	}
 
-	switch m.Status.State {
-	case StateUninitialized:
-		if ms != StateHealthy && ms != StateRetiring {
-			return errors.New("transition to state other than healthy or retiring is forbidden")
-		}
-	case StateHealthy:
-		if ms == StateUninitialized || ms == StateRetired {
-			return errors.New("transition to " + ms.String() + " is forbidden")
-		}
-	case StateUnhealthy:
-		if ms != StateUninitialized && ms != StateRetiring {
-			return errors.New("transition to " + ms.String() + " is forbidden")
-		}
-	case StateUnreachable:
-		if ms == StateUpdating || ms == StateRetired || ms == StateUnhealthy {
-			return errors.New("transition to " + ms.String() + " is forbidden")
-		}
-	case StateUpdating:
-		if ms != StateUninitialized {
-			return errors.New("transition to state other than uninitialized is forbidden")
-		}
-	case StateRetiring:
-		if ms != StateRetired {
-			return errors.New("transition to state other than retired is forbidden")
-		}
-	case StateRetired:
-		if ms != StateUninitialized {
-			return errors.New("transition to state other than uninitialized is forbidden")
-		}
+	_, ok := permittedTransitions[m.Status.State]
+	if !ok {
+		return errors.New(m.Status.State.String() + " has no permitted states")
+	}
+
+	if !m.isPermittedTransition(ms) {
+		return errors.New("transition from " + m.Status.State.String() + " to state " + ms.String() + " is forbidden")
 	}
 
 	m.Status.State = ms
