@@ -83,7 +83,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.5.0 // indirect
 	github.com/hashicorp/go-rootcerts v0.0.0-20160503143440-6bb64b370b90 // indirect
 	github.com/hashicorp/go-sockaddr v0.0.0-20180320115054-6d291a969b86 // indirect
-	github.com/hashicorp/go-version v1.0.0
+	github.com/hashicorp/go-version v1.1.0
 	github.com/hashicorp/memberlist v0.1.0 // indirect
 	github.com/hashicorp/nomad v0.8.6 // indirect
 	github.com/hashicorp/raft v1.0.0 // indirect
@@ -108,7 +108,6 @@ require (
 	github.com/json-iterator/go v1.1.5 // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/keybase/go-crypto v0.0.0-20181127160227-255a5089e85a // indirect
-	github.com/kintone/go-kintone v0.1.1
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mattbaird/elastigo v0.0.0-20170123220020-2fe47fd29e4b // indirect
