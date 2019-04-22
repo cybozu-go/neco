@@ -9,12 +9,13 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 	"text/template"
 
 	"github.com/containers/image/docker"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	version "github.com/hashicorp/go-version"
+	"github.com/hashicorp/go-version"
 	"golang.org/x/oauth2"
 )
 
@@ -116,6 +117,10 @@ func getLatestImage(ctx context.Context, name string, release bool) (*neco.Conta
 	}
 	versions := make([]*version.Version, 0, len(tags))
 	for _, tag := range tags {
+		if strings.Count(tag, ".") < 2 {
+			// ignore branch tags such as "1.2"
+			continue
+		}
 		v, err := version.NewVersion(tag)
 		if err != nil {
 			continue

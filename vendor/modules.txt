@@ -213,7 +213,7 @@ github.com/hashicorp/go-retryablehttp
 github.com/hashicorp/go-rootcerts
 # github.com/hashicorp/go-sockaddr v0.0.0-20180320115054-6d291a969b86
 github.com/hashicorp/go-sockaddr
-# github.com/hashicorp/go-version v1.0.0
+# github.com/hashicorp/go-version v1.1.0
 github.com/hashicorp/go-version
 # github.com/hashicorp/hcl v1.0.0
 github.com/hashicorp/hcl
@@ -248,8 +248,6 @@ github.com/htruong/go-md2
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
-# github.com/kintone/go-kintone v0.1.1
-github.com/kintone/go-kintone
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
