@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
+	"path"
 
-	sabakan "github.com/cybozu-go/sabakan/v2"
+	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/well"
 	serf "github.com/hashicorp/serf/client"
 	"github.com/prometheus/prom2json"
@@ -32,9 +34,11 @@ func main() {
 }
 
 func run() error {
-	var mcs []sabakan.Machine
+	localHTTPClient := ext.LocalHTTPClient()
+	sm := new(searchMachineResponse)
+	sabakanEndpoint := path.Join(*flagSabakanAddress, "/graphql")
 	well.Go(func(ctx context.Context) error {
-		_, err := getSabakanMachines(ctx, *flagSabakanAddress)
+		sm, err := getSabakanMachines(ctx, localHTTPClient, sabakanEndpoint)
 		if err != nil {
 			return err
 		}
@@ -45,8 +49,11 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	if len(sm.SearchMachines) == 0 {
+		return errors.New("no machines found")
+	}
 
-	mss := make([]machineStateSource, len(mcs))
+	mss := make([]machineStateSource, len(sm.SearchMachines))
 
 	_, err = getSerfStatus()
 	if err != nil {
