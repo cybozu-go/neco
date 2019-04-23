@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -34,14 +35,23 @@ type spec struct {
 	IPv4   []string `json:"ipv4"`
 }
 
-func requestGQL(ctx context.Context, client *http.Client, address string, data []byte) ([]byte, error) {
-	req, err := http.NewRequest(http.MethodPost, address, bytes.NewReader(data))
+type gqlClient struct {
+	httpClient *http.Client
+	endpoint   string
+}
+
+func (g *gqlClient) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte, error) {
+	data, err := json.Marshal(greq)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest(http.MethodPost, g.endpoint, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
 	req = req.WithContext(ctx)
 
-	resp, err := client.Do(req)
+	resp, err := g.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +69,7 @@ func requestGQL(ctx context.Context, client *http.Client, address string, data [
 	return []byte(gresp.Data), nil
 }
 
-func getSabakanMachines(ctx context.Context, client *http.Client, address string) (*searchMachineResponse, error) {
+func (g *gqlClient) getSabakanMachines(ctx context.Context) (*searchMachineResponse, error) {
 	greq := graphQLRequest{
 		Query: `{
   searchMachines(having: null, notHaving: null) {
@@ -70,11 +80,7 @@ func getSabakanMachines(ctx context.Context, client *http.Client, address string
   }
 }`,
 	}
-	data, err := json.Marshal(greq)
-	if err != nil {
-		return nil, err
-	}
-	gdata, err := requestGQL(ctx, client, address, data)
+	gdata, err := g.requestGQL(ctx, greq)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +94,16 @@ func getSabakanMachines(ctx context.Context, client *http.Client, address string
 	return resp, nil
 }
 
-func setSabakanStates(ctx context.Context, ms machineStateSource) error {
-	return nil
+func (g *gqlClient) setSabakanStates(ctx context.Context, ms machineStateSource) error {
+	state := ""
+	greq := graphQLRequest{
+		Query: fmt.Sprintf(`mutation {
+  setMachineState(serial: "%s", state: %s) {
+    state
+  }
+}`, ms.serial, state),
+	}
+
+	_, err := g.requestGQL(ctx, greq)
+	return err
 }

@@ -1,10 +1,24 @@
 package main
 
 import (
-	sabakan "github.com/cybozu-go/sabakan/v2"
+	"context"
+
+	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/prom2json"
 )
 
-func getMetrics([]sabakan.Machine) ([]*prom2json.Family, error) {
-	return nil, nil
+func (source *machineStateSource) getMetrics(ctx context.Context) error {
+	mfChan := make(chan *dto.MetricFamily, 1024)
+	addr := source.ipv4 + ":9105"
+	err := prom2json.FetchMetricFamilies(addr, mfChan, "", "", true)
+	if err != nil {
+		return err
+	}
+	var result []*prom2json.Family
+	for mf := range mfChan {
+		result = append(result, prom2json.NewFamily(mf))
+	}
+
+	source.metrics = result
+	return nil
 }

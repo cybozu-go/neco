@@ -5,9 +5,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"path"
 
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/well"
 	serf "github.com/hashicorp/serf/client"
@@ -19,33 +21,30 @@ var (
 )
 
 type machineStateSource struct {
-	serial     string
-	serfStatus serf.Member
+	serial string
+	ipv4   string
+
+	serfStatus *serf.Member
 	metrics    []*prom2json.Family
 }
 
 func main() {
 	flag.Parse()
-	err := run()
+	well.Go(run)
+	well.Stop()
+	err := well.Wait()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	localHTTPClient := ext.LocalHTTPClient()
+func run(ctx context.Context) error {
 	sm := new(searchMachineResponse)
 	sabakanEndpoint := path.Join(*flagSabakanAddress, "/graphql")
-	well.Go(func(ctx context.Context) error {
-		sm, err := getSabakanMachines(ctx, localHTTPClient, sabakanEndpoint)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	well.Stop()
-	err := well.Wait()
+	gql := gqlClient{ext.LocalHTTPClient(), sabakanEndpoint}
+
+	sm, err := gql.getSabakanMachines(ctx)
 	if err != nil {
 		return err
 	}
@@ -55,26 +54,58 @@ func run() error {
 
 	mss := make([]machineStateSource, len(sm.SearchMachines))
 
-	_, err = getSerfStatus()
+	// Get serf members
+	serfc, err := serf.NewRPCClient("127.0.0.1:7373")
+	if err != nil {
+		return err
+	}
+	members, err := getSerfMembers(serfc)
 	if err != nil {
 		return err
 	}
 
-	_, err = getMetrics(mcs)
-	if err != nil {
-		return err
+	for _, m := range sm.SearchMachines {
+		mss = append(mss, newMachineStateSource(m, members))
 	}
 
-	for _, ms := range mss {
-		well.Go(func(ctx context.Context) error {
-			return setSabakanStates(ctx, ms)
+	// Get machine metrics
+	env := well.NewEnvironment(ctx)
+	for _, m := range mss {
+		source := m
+		env.Go(source.getMetrics)
+	}
+	env.Stop()
+	err = env.Wait()
+	if err != nil {
+		// do not exit
+		log.Warn("error occurred when get metrics", map[string]interface{}{
+			log.FnError: err.Error(),
 		})
-		well.Stop()
-		err := well.Wait()
+	}
+	for _, ms := range mss {
+		err = gql.setSabakanStates(ctx, ms)
 		if err != nil {
-			return err
+			log.Warn("error occurred when set state", map[string]interface{}{
+				log.FnError: err.Error(),
+			})
 		}
-		return nil
+	}
+	return nil
+}
+
+func newMachineStateSource(m machine, members []serf.Member) machineStateSource {
+	return machineStateSource{
+		serial:     m.Spec.Serial,
+		ipv4:       m.Spec.IPv4[0],
+		serfStatus: findMember(members, m.Spec.IPv4[0]),
+	}
+}
+
+func findMember(members []serf.Member, addr string) *serf.Member {
+	for _, member := range members {
+		if member.Addr.Equal(net.ParseIP(addr)) {
+			return &member
+		}
 	}
 	return nil
 }
