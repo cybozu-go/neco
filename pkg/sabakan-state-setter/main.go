@@ -11,9 +11,11 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/ext"
+	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
 	"github.com/cybozu-go/well"
 	serf "github.com/hashicorp/serf/client"
 	"github.com/prometheus/prom2json"
+	"github.com/vektah/gqlparser/gqlerror"
 )
 
 var (
@@ -85,9 +87,23 @@ func run(ctx context.Context) error {
 	for _, ms := range mss {
 		err = gql.setSabakanStates(ctx, ms)
 		if err != nil {
-			log.Warn("error occurred when set state", map[string]interface{}{
-				log.FnError: err.Error(),
-			})
+			switch e := err.(type) {
+			case *gqlerror.Error:
+				// In the case of an invalid state transition, the log may continue to be output.
+				// So the log is not output.
+				if eType, ok := e.Extensions["type"]; ok && eType == gqlsabakan.ErrInvalidStateTransition {
+					break
+				}
+				log.Warn("error occurred when set state", map[string]interface{}{
+					log.FnError: err.Error(),
+					"serial":    ms.serial,
+				})
+			default:
+				log.Warn("error occurred when set state", map[string]interface{}{
+					log.FnError: err.Error(),
+					"serial":    ms.serial,
+				})
+			}
 		}
 	}
 	return nil

@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/vektah/gqlparser/gqlerror"
 )
 
 type graphQLRequest struct {
@@ -14,12 +15,8 @@ type graphQLRequest struct {
 }
 
 type graphQLResponse struct {
-	Data   json.RawMessage `json:"data"`
-	Errors []graphQLError  `json:"errors,omitempty"`
-}
-
-type graphQLError struct {
-	Message string `json:"message"`
+	Data   json.RawMessage  `json:"data"`
+	Errors []gqlerror.Error `json:"errors,omitempty"`
 }
 
 type searchMachineResponse struct {
@@ -64,7 +61,7 @@ func (g *gqlClient) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte
 	}
 
 	if len(gresp.Errors) > 0 {
-		return nil, errors.New(gresp.Errors[0].Message)
+		return nil, &gresp.Errors[0]
 	}
 	return []byte(gresp.Data), nil
 }
