@@ -24,8 +24,8 @@ func NewWorkerWatcher(
 }
 
 // Watch watches worker changes until deadline is reached.
-// If the handleStatus returns (true, nil) this returns nil
-// Otherwise non-nil error is returned
+// If the handleStatus returns true, this returns nil.
+// Otherwise non-nil error is returned.
 func (w WorkerWatcher) Watch(ctx context.Context, rev int64, storage Storage) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -51,5 +51,10 @@ func (w WorkerWatcher) Watch(ctx context.Context, rev int64, storage Storage) er
 			}
 		}
 	}
-	return ErrTimedOut
+
+	err := ctx.Err()
+	if err == context.DeadlineExceeded {
+		return ErrTimedOut
+	}
+	return err
 }
