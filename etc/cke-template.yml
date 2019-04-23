@@ -9,7 +9,10 @@ pod_subnet: 10.64.0.0/14
 dns_service: internet-egress/unbound
 options:
   kube-api:
-    extra_args: ["--enable-admission-plugins=PodSecurityPolicy"]
+    extra_args:
+      - "--enable-admission-plugins=PodSecurityPolicy"
+      - "--feature-gates=CSIPersistentVolume=true,MountPropagation=true"
+      - "--runtime-config=storage.k8s.io/v1alpha1=true"
   kubelet:
     boot_taints:
       - key: coil.cybozu.com/bootstrap
