@@ -1,0 +1,35 @@
+# Refer to https://gqlgen.com/config/
+# for detailed gqlgen.yml documentation.
+
+schema:
+- schema.graphql
+exec:
+  filename: generated.go
+model:
+  filename: models_gen.go
+resolver:
+  filename: resolver.go
+  type: Resolver
+models:
+  Machine:
+    model: github.com/cybozu-go/sabakan/v2.Machine
+  MachineSpec:
+    model: github.com/cybozu-go/sabakan/v2.MachineSpec
+  BMC:
+    model: github.com/cybozu-go/sabakan/v2.MachineBMC
+  MachineStatus:
+    model: github.com/cybozu-go/sabakan/v2.MachineStatus
+  MachineState:
+    model: github.com/cybozu-go/sabakan/v2/gql.MachineState
+  IPAddress:
+    model: github.com/cybozu-go/sabakan/v2/gql.IPAddress
+  DateTime:
+    model: github.com/cybozu-go/sabakan/v2/gql.DateTime
+  MachineInfo:
+    model: github.com/cybozu-go/sabakan/v2.MachineInfo
+  NetworkInfo:
+    model: github.com/cybozu-go/sabakan/v2.NetworkInfo
+  BMCInfo:
+    model: github.com/cybozu-go/sabakan/v2.BMCInfo
+  NICConfig:
+    model: github.com/cybozu-go/sabakan/v2.NICConfig

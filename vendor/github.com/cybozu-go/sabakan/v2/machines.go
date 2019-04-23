@@ -2,6 +2,7 @@ package sabakan
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -40,13 +41,14 @@ func (ms MachineState) IsValid() bool {
 
 // Machine state definitions.
 const (
-	StateUninitialized = MachineState("uninitialized")
-	StateHealthy       = MachineState("healthy")
-	StateUnhealthy     = MachineState("unhealthy")
-	StateUnreachable   = MachineState("unreachable")
-	StateUpdating      = MachineState("updating")
-	StateRetiring      = MachineState("retiring")
-	StateRetired       = MachineState("retired")
+	StateUninitialized  = MachineState("uninitialized")
+	StateHealthy        = MachineState("healthy")
+	StateUnhealthy      = MachineState("unhealthy")
+	StateUnreachable    = MachineState("unreachable")
+	StateUpdating       = MachineState("updating")
+	StateRetiring       = MachineState("retiring")
+	StateRetired        = MachineState("retired")
+	SetStateErrorFormat = "transition from [ %s ] to [ %s ] is forbidden"
 )
 
 var (
@@ -186,7 +188,7 @@ func (m *Machine) SetState(ms MachineState) error {
 	}
 
 	if !m.isPermittedTransition(ms) {
-		return errors.New("transition from " + m.Status.State.String() + " to state " + ms.String() + " is forbidden")
+		return fmt.Errorf(SetStateErrorFormat, m.Status.State.String(), ms.String())
 	}
 
 	m.Status.State = ms
