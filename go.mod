@@ -41,7 +41,7 @@ require (
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
 	github.com/cybozu-go/placemat v1.3.4
-	github.com/cybozu-go/sabakan/v2 v2.3.1-0.20190423081359-a006c46072fc
+	github.com/cybozu-go/sabakan/v2 v2.3.1-0.20190423093333-6206792440ac
 	github.com/cybozu-go/well v1.8.1
 	github.com/dancannon/gorethink v4.0.0+incompatible // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
@@ -82,13 +82,15 @@ require (
 	github.com/hashicorp/go-gcp-common v0.0.0-20180425173946-763e39302965 // indirect
 	github.com/hashicorp/go-hclog v0.0.0-20181001195459-61d530d6c27f // indirect
 	github.com/hashicorp/go-memdb v0.0.0-20181108192425-032f93b25bec // indirect
+	github.com/hashicorp/go-msgpack v0.5.4 // indirect
 	github.com/hashicorp/go-plugin v0.0.0-20181030172320-54b6ff97d818 // indirect
 	github.com/hashicorp/go-retryablehttp v0.5.0 // indirect
 	github.com/hashicorp/go-rootcerts v0.0.0-20160503143440-6bb64b370b90 // indirect
-	github.com/hashicorp/go-version v1.1.0
+	github.com/hashicorp/go-sockaddr v1.0.2 // indirect
+	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/nomad v0.8.6 // indirect
 	github.com/hashicorp/raft v1.0.0 // indirect
-	github.com/hashicorp/serf v0.8.3 // indirect
+	github.com/hashicorp/serf v0.8.3
 	github.com/hashicorp/vault v1.0.0
 	github.com/hashicorp/vault-plugin-auth-alicloud v0.0.0-20181109180636-f278a59ca3e8 // indirect
 	github.com/hashicorp/vault-plugin-auth-azure v0.0.0-20180816201044-d75e09c45e50 // indirect
@@ -113,10 +115,12 @@ require (
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mattbaird/elastigo v0.0.0-20170123220020-2fe47fd29e4b // indirect
+	github.com/mattn/go-colorable v0.1.1 // indirect
+	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/mattn/go-runewidth v0.0.0-20170201023540-14207d285c6c // indirect
 	github.com/mattn/go-shellwords v1.0.3 // indirect
 	github.com/michaelklishin/rabbit-hole v1.4.0 // indirect
-	github.com/miekg/dns v1.1.1 // indirect
+	github.com/miekg/dns v1.1.8 // indirect
 	github.com/mistifyio/go-zfs v0.0.0-20161103015429-c0224de804d4 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.0.0
@@ -136,19 +140,17 @@ require (
 	github.com/ory-am/common v0.4.0 // indirect
 	github.com/ory/dockertest v3.3.2+incompatible // indirect
 	github.com/ostreedev/ostree-go v0.0.0-20170616214430-aeb02c6b6aa2 // indirect
+	github.com/pascaldekloe/goe v0.1.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pborman/uuid v0.0.0-20170112150404-1b00554d8222 // indirect
 	github.com/pelletier/go-toml v1.3.0 // indirect
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 // indirect
 	github.com/pquerna/otp v1.0.0 // indirect
-<<<<<<< HEAD
-=======
 	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
 	github.com/prometheus/common v0.3.0 // indirect
 	github.com/prometheus/procfs v0.0.0-20190416084830-8368d24ba045 // indirect
 	github.com/prometheus/prom2json v1.1.0
->>>>>>> ad6d5ad... import github.com/cybozu-go/sabakan/v2@set-state-mutation
 	github.com/rakyll/statik v0.1.5
 	github.com/ryanuber/go-glob v0.0.0-20170128012129-256dc444b735 // indirect
 	github.com/samuel/go-zookeeper v0.0.0-20180130194729-c4fab1ac1bec // indirect
@@ -172,16 +174,6 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v0.0.0-20181112162635-ac52e6811b56 // indirect
-<<<<<<< HEAD
-	go.opencensus.io v0.18.0 // indirect
-	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9
-	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
-	golang.org/x/sys v0.0.0-20181206074257-70b957f3b65e // indirect
-	google.golang.org/api v0.0.0-20181203220731-00684f929d85
-	google.golang.org/appengine v1.1.0
-	google.golang.org/genproto v0.0.0-20190201180003-4b09977fb922 // indirect
-	google.golang.org/grpc v1.17.0 // indirect
-=======
 	github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 // indirect
 	go.etcd.io/bbolt v1.3.2 // indirect
 	go.opencensus.io v0.20.2 // indirect
@@ -195,7 +187,6 @@ require (
 	google.golang.org/appengine v1.5.0
 	google.golang.org/genproto v0.0.0-20190418145605-e7d98fc518a7 // indirect
 	google.golang.org/grpc v1.20.1 // indirect
->>>>>>> ad6d5ad... import github.com/cybozu-go/sabakan/v2@set-state-mutation
 	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.7 // indirect
 	gopkg.in/gorethink/gorethink.v4 v4.1.0 // indirect

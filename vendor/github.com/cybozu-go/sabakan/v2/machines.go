@@ -39,6 +39,28 @@ func (ms MachineState) IsValid() bool {
 	return false
 }
 
+// GQLEnum returns graphql defined enum string.
+func (ms MachineState) GQLEnum() string {
+	switch ms {
+	case StateUninitialized:
+		return "UNINITIALIZED"
+	case StateHealthy:
+		return "HEALTHY"
+	case StateUnhealthy:
+		return "UNHEALTHY"
+	case StateUnreachable:
+		return "UNREACHABLE"
+	case StateUpdating:
+		return "UPDATING"
+	case StateRetiring:
+		return "RETIRING"
+	case StateRetired:
+		return "RETIRED"
+	}
+
+	return ""
+}
+
 // Machine state definitions.
 const (
 	StateUninitialized  = MachineState("uninitialized")

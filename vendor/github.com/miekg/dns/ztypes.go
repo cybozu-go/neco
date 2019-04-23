@@ -54,6 +54,7 @@ var TypeToRR = map[uint16]func() RR{
 	TypeNSEC:       func() RR { return new(NSEC) },
 	TypeNSEC3:      func() RR { return new(NSEC3) },
 	TypeNSEC3PARAM: func() RR { return new(NSEC3PARAM) },
+	TypeNULL:       func() RR { return new(NULL) },
 	TypeOPENPGPKEY: func() RR { return new(OPENPGPKEY) },
 	TypeOPT:        func() RR { return new(OPT) },
 	TypePTR:        func() RR { return new(PTR) },
@@ -209,6 +210,7 @@ func (rr *NSAPPTR) Header() *RR_Header    { return &rr.Hdr }
 func (rr *NSEC) Header() *RR_Header       { return &rr.Hdr }
 func (rr *NSEC3) Header() *RR_Header      { return &rr.Hdr }
 func (rr *NSEC3PARAM) Header() *RR_Header { return &rr.Hdr }
+func (rr *NULL) Header() *RR_Header       { return &rr.Hdr }
 func (rr *OPENPGPKEY) Header() *RR_Header { return &rr.Hdr }
 func (rr *OPT) Header() *RR_Header        { return &rr.Hdr }
 func (rr *PTR) Header() *RR_Header        { return &rr.Hdr }
@@ -238,12 +240,16 @@ func (rr *X25) Header() *RR_Header        { return &rr.Hdr }
 // len() functions
 func (rr *A) len(off int, compression map[string]struct{}) int {
 	l := rr.Hdr.len(off, compression)
-	l += net.IPv4len // A
+	if len(rr.A) != 0 {
+		l += net.IPv4len
+	}
 	return l
 }
 func (rr *AAAA) len(off int, compression map[string]struct{}) int {
 	l := rr.Hdr.len(off, compression)
-	l += net.IPv6len // AAAA
+	if len(rr.AAAA) != 0 {
+		l += net.IPv6len
+	}
 	return l
 }
 func (rr *AFSDB) len(off int, compression map[string]struct{}) int {
@@ -362,8 +368,10 @@ func (rr *KX) len(off int, compression map[string]struct{}) int {
 }
 func (rr *L32) len(off int, compression map[string]struct{}) int {
 	l := rr.Hdr.len(off, compression)
-	l += 2           // Preference
-	l += net.IPv4len // Locator32
+	l += 2 // Preference
+	if len(rr.Locator32) != 0 {
+		l += net.IPv4len
+	}
 	return l
 }
 func (rr *L64) len(off int, compression map[string]struct{}) int {
@@ -471,6 +479,11 @@ func (rr *NSEC3PARAM) len(off int, compression map[string]struct{}) int {
 	l += 2 // Iterations
 	l++    // SaltLength
 	l += len(rr.Salt) / 2
+	return l
+}
+func (rr *NULL) len(off int, compression map[string]struct{}) int {
+	l := rr.Hdr.len(off, compression)
+	l += len(rr.Data)
 	return l
 }
 func (rr *OPENPGPKEY) len(off int, compression map[string]struct{}) int {
@@ -783,12 +796,17 @@ func (rr *NSEC3) copy() RR {
 func (rr *NSEC3PARAM) copy() RR {
 	return &NSEC3PARAM{rr.Hdr, rr.Hash, rr.Flags, rr.Iterations, rr.SaltLength, rr.Salt}
 }
+func (rr *NULL) copy() RR {
+	return &NULL{rr.Hdr, rr.Data}
+}
 func (rr *OPENPGPKEY) copy() RR {
 	return &OPENPGPKEY{rr.Hdr, rr.PublicKey}
 }
 func (rr *OPT) copy() RR {
 	Option := make([]EDNS0, len(rr.Option))
-	copy(Option, rr.Option)
+	for i, e := range rr.Option {
+		Option[i] = e.copy()
+	}
 	return &OPT{rr.Hdr, Option}
 }
 func (rr *PTR) copy() RR {

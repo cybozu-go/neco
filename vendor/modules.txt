@@ -125,7 +125,7 @@ github.com/cybozu-go/netutil
 # github.com/cybozu-go/placemat v1.3.4
 github.com/cybozu-go/placemat
 github.com/cybozu-go/placemat/web
-# github.com/cybozu-go/sabakan/v2 v2.3.1-0.20190423081359-a006c46072fc
+# github.com/cybozu-go/sabakan/v2 v2.3.1-0.20190423093333-6206792440ac
 github.com/cybozu-go/sabakan/v2
 github.com/cybozu-go/sabakan/v2/client
 github.com/cybozu-go/sabakan/v2/gql
@@ -215,7 +215,7 @@ github.com/hashicorp/errwrap
 github.com/hashicorp/go-cleanhttp
 # github.com/hashicorp/go-immutable-radix v1.0.0
 github.com/hashicorp/go-immutable-radix
-# github.com/hashicorp/go-msgpack v0.5.3
+# github.com/hashicorp/go-msgpack v0.5.4
 github.com/hashicorp/go-msgpack/codec
 # github.com/hashicorp/go-multierror v1.0.0
 github.com/hashicorp/go-multierror
@@ -223,7 +223,7 @@ github.com/hashicorp/go-multierror
 github.com/hashicorp/go-retryablehttp
 # github.com/hashicorp/go-rootcerts v0.0.0-20160503143440-6bb64b370b90
 github.com/hashicorp/go-rootcerts
-# github.com/hashicorp/go-sockaddr v1.0.0
+# github.com/hashicorp/go-sockaddr v1.0.2
 github.com/hashicorp/go-sockaddr
 # github.com/hashicorp/go-version v1.1.0
 github.com/hashicorp/go-version
@@ -277,9 +277,9 @@ github.com/kylelemons/godebug/pretty
 github.com/kylelemons/godebug/diff
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
-# github.com/mattn/go-colorable v0.0.9
+# github.com/mattn/go-colorable v0.1.1
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.4
+# github.com/mattn/go-isatty v0.0.7
 github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.0-20170201023540-14207d285c6c
 github.com/mattn/go-runewidth
@@ -287,7 +287,7 @@ github.com/mattn/go-runewidth
 github.com/mattn/go-shellwords
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/miekg/dns v1.1.1
+# github.com/miekg/dns v1.1.8
 github.com/miekg/dns
 # github.com/mistifyio/go-zfs v0.0.0-20161103015429-c0224de804d4
 github.com/mistifyio/go-zfs
