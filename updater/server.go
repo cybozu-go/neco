@@ -175,12 +175,12 @@ func (s Server) waitComplete(ctx context.Context, leaderKey string, ss *storage.
 	err := storage.NewWorkerWatcher(h.handleStatus).
 		Watch(ctxWithDeadline, ss.Revision, s.storage)
 	if err == storage.ErrTimedOut {
-		log.Warn("workers timed-out", map[string]interface{}{
+		log.Warn("workers take too long for update", map[string]interface{}{
 			"version":    ss.Request.Version,
 			"started_at": ss.Request.StartedAt,
 			"timeout":    timeout.String(),
 		})
-		err = s.notifier.NotifyFailure(*ss.Request, fmt.Sprintf("timeout occurred: %s", timeout.String()))
+		err = s.notifier.NotifyFailure(*ss.Request, "workers take too long for update: "+timeout.String())
 		if err != nil {
 			log.Warn("failed to notify", map[string]interface{}{log.FnError: err})
 		}
