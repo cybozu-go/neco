@@ -47,6 +47,8 @@ test: $(STATIK)
 	test -z "$$(gofmt -s -l . | grep -v '^vendor/\|^menu/assets.go\|^build/' | tee /dev/stderr)"
 	test -z "$$(golint $$(go list -tags='$(GOTAGS)' ./... | grep -v /vendor/) | grep -v '/dctest/.*: should not use dot imports' | tee /dev/stderr)"
 	ineffassign .
+	test -z "$$(nilerr ./... 2>&1 | tee /dev/stderr)"
+	test -z "$$(restrictpkg -packages=html/template,log ./... 2>&1 | tee /dev/stderr)"
 	go build -tags='$(GOTAGS)' ./...
 	go test -tags='$(GOTAGS)' -race -v ./...
 	RUN_COMPACTION_TEST=yes go test -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
@@ -89,6 +91,9 @@ git-neco:
 
 setup:
 	go install github.com/rakyll/statik
+	GO111MODULE=off go get -u golang.org/x/lint/golint \
+		github.com/rakyll/statik \
+		github.com/cybozu/neco-containers/golang/restrictpkg/cmd/restrictpkg
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
 

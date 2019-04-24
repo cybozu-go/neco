@@ -25,6 +25,7 @@ func loadConfig() (*gcp.Config, error) {
 	}
 	data, err := ioutil.ReadFile(cfgFile)
 	if err != nil {
+		// return nil
 		// If cfgFile does not exist, use neco-test config
 		return gcp.NecoTestConfig(), nil
 	}

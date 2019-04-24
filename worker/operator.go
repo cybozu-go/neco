@@ -142,6 +142,7 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 func (o *operator) restoreService(ctx context.Context, svc string) error {
 	_, err := os.Stat(neco.ServiceFile(svc))
 	if err != nil {
+		// return nil
 		return nil
 	}
 
@@ -151,6 +152,7 @@ func (o *operator) restoreService(ctx context.Context, svc string) error {
 func (o *operator) stopService(ctx context.Context, svc string) error {
 	_, err := os.Stat(neco.ServiceFile(svc))
 	if err != nil {
+		// return nil
 		return nil
 	}
 
