@@ -47,8 +47,8 @@ test: $(STATIK)
 	test -z "$$(gofmt -s -l . | grep -v '^vendor/\|^menu/assets.go\|^build/' | tee /dev/stderr)"
 	test -z "$$(golint $$(go list -tags='$(GOTAGS)' ./... | grep -v /vendor/) | grep -v '/dctest/.*: should not use dot imports' | tee /dev/stderr)"
 	ineffassign .
-	test -z "$$(nilerr ./... 2>&1 | tee /dev/stderr)"
-	test -z "$$(restrictpkg -packages=html/template,log ./... 2>&1 | tee /dev/stderr)"
+	test -z "$$(GOFLAGS="-tags='$(GOTAGS)'" nilerr ./... 2>&1 | tee /dev/stderr)"
+	test -z "$$(GOFLAGS="-tags='$(GOTAGS)'" restrictpkg -packages=html/template,log ./... 2>&1 | tee /dev/stderr)"
 	go build -tags='$(GOTAGS)' ./...
 	go test -tags='$(GOTAGS)' -race -v ./...
 	RUN_COMPACTION_TEST=yes go test -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
