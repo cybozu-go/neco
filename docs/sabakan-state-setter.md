@@ -4,22 +4,42 @@ sabakan-state-setter
 This command set sabakan machine states according to [serf][] status and [monitor-hw][] metrics.
 It runs by systemd oneshot service which is executed periodically by `systemd.timer`.
 
-This command runs as follows.
+Machine state selection
+-----------------------
 
-1. Check the status of the serf members and the metrics of monitor-hw of all available nodes according to sabakan machines list.
-2. If the serf status is alive and serf tags `systemd-units-failed` is ok, the command changes sabakan machines state to `Healthy`.
-3. If the serf status is failed, the command changes sabakan machines state to `Unreachable`.
-4. Otherwise, it changes sabakan machines state to `Unhealthy`.
-5. If a machine peripheral has some problems, the command changes sabakan machines state to `Unhealthy`.
-6. If a machine peripheral has no problem(or is back to normal), the command changes sabakan machines state to `Healthy`.
+See machine state types at [Sabakan lifecycle management](https://github.com/cybozu-go/sabakan/blob/master/docs/lifecycle.md).
 
-If `serf.service` in the local boot server is stopped or failed, the command does nothing to change states.
+`sabakan-state-setter` decides machine state by the strategy as follows:
+
+- Set `Healthy`
+  - serf status is `alive`.
+  - serf tags `systemd-units-failed` has no errors.
+  - All of later mentioned machine peripherals are healthy.
+- Set `Unreachable`
+  - serf status is `failed` or machine is not yet as a serf member. It is the same as that `sabakan-state-setter` can not access monitor-hw metrics.
+- Set `Unhealthy`
+  - serf status is `alive`.
+  - At least one of them matches:
+    - serf tags `systemd-units-failed` has errors.
+    - At least one of later mentioned machine peripherals are healthy.
+- Nothing to set machine state
+  - `sabakan-state-setter` can not access to `serf.service` of the same boot server.
+
+Target machine peripherals
+--------------------------
+
+- CPU
+- Memory
+- Storage controllers
+- NVMe SSD
+- [Dell BOSS][]
+- **Planned:** Hard drive on the storage servers
 
 Usage
 -----
 
 ```console
-$ sabakan-state-setter [OPTIONS]
+sabakan-state-setter [OPTIONS]
 ```
 
 | Option              | Default value            | Description    |
@@ -28,3 +48,4 @@ $ sabakan-state-setter [OPTIONS]
 
 [serf]: https://www.serf.io/
 [monitor-hw]: https://github.com/cybozu-go/setup-hw/blob/master/docs/monitor-hw.md
+[Dell BOSS]: https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-Boot-Optimized-Storage-Solution.pdf
