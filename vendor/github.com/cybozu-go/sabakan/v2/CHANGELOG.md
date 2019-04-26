@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.4.0] - 2019-04-26
+
+### Added
+- Add GraphQL API for set machine state (#156).
+
+### Changed
+- Do not push branch tag for pre-releases (#155).
+
 ## [2.3.0] - 2019-04-19
 
 ### Changed
@@ -99,7 +107,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 See [CHANGELOG-0](./CHANGELOG-0.md).
 
-[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/cybozu-go/sabakan/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/cybozu-go/sabakan/compare/v2.2.2...v2.3.0
 [2.2.2]: https://github.com/cybozu-go/sabakan/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/cybozu-go/sabakan/compare/v2.2.0...v2.2.1
