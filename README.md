@@ -3,8 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/cybozu-go/neco?status.svg)][godoc]
 [![Go Report Card](https://goreportcard.com/badge/github.com/cybozu-go/neco)](https://goreportcard.com/report/github.com/cybozu-go/neco)
 
-Neco
-====
+<img src="./neco_logo.svg" width="100" alt="neco logo" />
 
 **Neco** is a collection of tools to build and maintain large data center
 infrastructure.  It is used in [cybozu.com](https://www.cybozu.com/), the
