@@ -1,6 +1,7 @@
 package dctest
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"encoding/json"
 	"errors"
@@ -106,7 +107,7 @@ func TestJoinRemove() {
 		Eventually(func() error {
 			serial := fmt.Sprintf("%x", sha1.Sum([]byte("boot-3")))
 			stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", serial)
-			state := string(stdout)
+			state := string(bytes.TrimSpace(stdout))
 			if state != "healthy" {
 				return errors.New("boot-3 machine state is not healthy: " + state)
 			}
@@ -149,7 +150,7 @@ func TestJoinRemove() {
 		Eventually(func() error {
 			serial := fmt.Sprintf("%x", sha1.Sum([]byte("boot-3")))
 			stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", serial)
-			state := string(stdout)
+			state := string(bytes.TrimSpace(stdout))
 			if state != "unreachable" {
 				return errors.New("boot-3 machine state is not unreachable: " + state)
 			}

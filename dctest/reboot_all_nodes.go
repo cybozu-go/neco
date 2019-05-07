@@ -1,6 +1,7 @@
 package dctest
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -53,7 +54,7 @@ func TestRebootAllNodes() {
 
 			for _, m := range machines {
 				stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", m.Spec.Serial)
-				state := string(stdout)
+				state := string(bytes.TrimSpace(stdout))
 				if state != "healthy" {
 					return fmt.Errorf("sabakan machine state of %s is not healthy: %s", m.Spec.Serial, state)
 				}

@@ -1,6 +1,7 @@
 package dctest
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -77,7 +78,7 @@ func TestCKE() {
 					return fmt.Errorf("member %s does not define tag serial", member.Name)
 				}
 				stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", serial)
-				state := string(stdout)
+				state := string(bytes.TrimSpace(stdout))
 				if state != "healthy" {
 					return fmt.Errorf("sabakan machine state of member %s is not healthy: %s", member.Name, state)
 				}
