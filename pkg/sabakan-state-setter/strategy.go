@@ -1,111 +1,103 @@
 package main
 
 import (
-	"encoding/json"
 	"strings"
 
 	"github.com/cybozu-go/sabakan/v2"
+	"github.com/prometheus/prom2json"
 )
 
 const (
-	monitorHWStatusHealth   = "0"
-	monitorHWStatusWarning  = "1"
-	monitorHWStatusCritical = "2"
-	monitorHWStatusNull     = "-1"
-	bossControllerPrefix    = "AHCI.Slot"
-	nvmeControllerPrefix    = "PCIeSSD.Slot"
+	monitorHWStatusHealth       = "0"
+	monitorHWStatusWarning      = "1"
+	monitorHWStatusCritical     = "2"
+	monitorHWStatusNull         = "-1"
+	bossControllerPrefix        = "AHCI.Slot"
+	nvmeControllerPrefix        = "PCIeSSD.Slot"
+	storageControllerMetricName = "hw_storage_controller_status_health"
+	StateMetricsNotFound        = ""
 )
 
-type familyMetrics struct {
-	Labels []familyMetricsLabels `json:"labels"`
-	Value  string                `json:"value"`
-}
+var (
+	partsMetricNames = []string{
+		"hw_processor_status_health",
+		"hw_system_memory_summary_status_health",
+		"hw_chassis_temperature_status_health",
+		"hw_chassis_voltage_status_health",
+		"hw_storage_device_status_health",
+	}
+	allMetricNames = append(partsMetricNames, storageControllerMetricName)
+)
 
-type familyMetricsLabels struct {
-	Controller string `json:"controller,omitempty"`
-	Device     string `json:"device,omitempty"`
-	Sensor     string `json:"sensor,omitempty"`
-}
-
-func decideSabakanState(ms machineStateSource) (string, error) {
+func decideSabakanState(ms machineStateSource) string {
 	if ms.serfStatus.Status != "alive" {
-		return sabakan.StateUnreachable.GQLEnum(), nil
+		return sabakan.StateUnreachable.GQLEnum()
 	}
 
 	suf, ok := ms.serfStatus.Tags["systemd-units-failed"]
 	if !ok {
-		return sabakan.StateUnhealthy.GQLEnum(), nil
+		return sabakan.StateUnhealthy.GQLEnum()
 	}
 
 	if len(suf) != 0 {
-		return sabakan.StateUnhealthy.GQLEnum(), nil
+		return sabakan.StateUnhealthy.GQLEnum()
 	}
 
 	return decideByMonitorHW(ms)
 }
 
-func decideByMonitorHW(ms machineStateSource) (string, error) {
+func decideByMonitorHW(ms machineStateSource) string {
 	if ms.metrics == nil {
-		return sabakan.StateUnhealthy.GQLEnum(), nil
+		return sabakan.StateUnhealthy.GQLEnum()
 	}
 
 	for _, family := range ms.metrics {
-		switch family.Name {
-		case "hw_processor_status_health", "hw_system_memory_summary_status_health", "hw_chassis_temperature_status_health", "hw_chassis_voltage_status_health":
-			for _, m := range family.Metrics {
-				var metrics familyMetrics
-				data, ok := m.(*[]byte)
-				if !ok {
-					continue
-				}
-				err := json.Unmarshal(*data, &metrics)
-				if err != nil {
-					continue
-				}
+		if !contains(family) {
+			return StateMetricsNotFound
+		}
 
-				if metrics.Value != monitorHWStatusHealth {
-					return sabakan.StateUnhealthy.GQLEnum(), nil
-				}
+		for _, labelName := range partsMetricNames {
+			if family.Name != labelName {
+				continue
 			}
-		case "hw_storage_controller_status_health":
 			for _, m := range family.Metrics {
-				var metrics familyMetrics
-				data, ok := m.(*[]byte)
+				metric, ok := m.(prom2json.Metric)
 				if !ok {
 					continue
 				}
-				err := json.Unmarshal(*data, &metrics)
-				if err != nil {
-					continue
-				}
-
-
-				for _, l := range metrics.Labels {
-				if strings.Contains(l.Controller, bossControllerPrefix) && strings.Contains(l.Controller, nvmeControllerPrefix) {
-					if metrics.Value != monitorHWStatusHealth {
-						return sabakan.StateUnhealthy.GQLEnum(), nil
-					}
-				}
-				}
-			}
-		case "hw_storage_device_status_health":
-			for _, m := range family.Metrics {
-				var metrics familyMetrics
-				data, ok := m.(*[]byte)
-				if !ok {
-					continue
-				}
-				err := json.Unmarshal(*data, &metrics)
-				if err != nil {
-					continue
-				}
-
-				if metrics.Value != monitorHWStatusHealth {
-					return sabakan.StateUnhealthy.GQLEnum(), nil
+				if metric.Value != monitorHWStatusHealth {
+					return sabakan.StateUnhealthy.GQLEnum()
 				}
 			}
 		}
-	}
 
-	return sabakan.StateHealthy.GQLEnum(), nil
+		if family.Name == storageControllerMetricName {
+			for _, m := range family.Metrics {
+				metric, ok := m.(prom2json.Metric)
+				if !ok {
+					continue
+				}
+				v, ok := metric.Labels["controller"]
+				if !ok {
+					continue
+				}
+				if strings.Contains(v, bossControllerPrefix) || strings.Contains(v, nvmeControllerPrefix) {
+					if metric.Value != monitorHWStatusHealth {
+						return sabakan.StateUnhealthy.GQLEnum()
+					}
+				}
+			}
+		}
+
+	}
+	return sabakan.StateHealthy.GQLEnum()
+}
+
+func contains(family *prom2json.Family) bool {
+	for _, labelName := range allMetricNames {
+		if family.Name == labelName {
+			return true
+		}
+	}
+	return false
 }

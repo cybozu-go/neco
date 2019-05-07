@@ -91,8 +91,7 @@ func (g *gqlClient) getSabakanMachines(ctx context.Context) (*searchMachineRespo
 	return resp, nil
 }
 
-func (g *gqlClient) setSabakanStates(ctx context.Context, ms machineStateSource) error {
-	state := ""
+func (g *gqlClient) setSabakanState(ctx context.Context, ms machineStateSource, state string) error {
 	greq := graphQLRequest{
 		Query: fmt.Sprintf(`mutation {
   setMachineState(serial: "%s", state: %s) {

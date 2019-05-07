@@ -85,7 +85,11 @@ func run(ctx context.Context) error {
 		})
 	}
 	for _, ms := range mss {
-		err = gql.setSabakanStates(ctx, ms)
+		state := decideSabakanState(ms)
+		if state == StateMetricsNotFound {
+			continue
+		}
+		err = gql.setSabakanState(ctx, ms, state)
 		if err != nil {
 			switch e := err.(type) {
 			case *gqlerror.Error:
