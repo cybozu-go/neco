@@ -1,8 +1,10 @@
 package dctest
 
 import (
+	"crypto/sha1"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -49,9 +51,17 @@ func TestJoinRemove() {
 		execSafeAt(boot3, "test", "-f", neco.TimerFile("etcd-backup"))
 		execSafeAt(boot3, "test", "-f", neco.ServiceFile("etcd-backup"))
 
+		execSafeAt(boot3, "test", "-f", neco.ServiceFile("neco-updater"))
+		execSafeAt(boot3, "test", "-f", neco.ServiceFile("neco-worker"))
+		execSafeAt(boot3, "test", "-f", neco.ServiceFile("node-exporter"))
+		execSafeAt(boot3, "test", "-f", neco.TimerFile("sabakan-state-setter"))
+		execSafeAt(boot3, "test", "-f", neco.ServiceFile("sabakan-state-setter"))
+
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-updater.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-worker.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "node-exporter.service")
+		execSafeAt(boot3, "systemctl", "-q", "is-active", "sabakan-state-setter.timer")
+		execSafeAt(boot3, "systemctl", "-q", "is-active", "etcd-backup.timer")
 	})
 
 	It("should install programs", func() {
@@ -91,6 +101,19 @@ func TestJoinRemove() {
 		Expect(names).Should(ContainElement("boot-3"))
 	})
 
+	It("should set state of boot-3 to healthy", func() {
+		By("Checking boot-3 machine state")
+		Eventually(func() error {
+			serial := fmt.Sprintf("%x", sha1.Sum([]byte("boot-3")))
+			stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", serial)
+			state := string(stdout)
+			if state != "healthy" {
+				return errors.New("boot-3 machine state is not healthy: " + state)
+			}
+			return nil
+		}).Should(Succeed())
+	})
+
 	It("should remove boot-3", func() {
 		By("Running neco leave 3")
 		token := getVaultToken()
@@ -118,6 +141,17 @@ func TestJoinRemove() {
 				if m.Name == "boot-3" {
 					return errors.New("boot-3 is not removed from etcd")
 				}
+			}
+			return nil
+		}).Should(Succeed())
+
+		By("Check boot-3 machine state")
+		Eventually(func() error {
+			serial := fmt.Sprintf("%x", sha1.Sum([]byte("boot-3")))
+			stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", serial)
+			state := string(stdout)
+			if state != "unreachable" {
+				return errors.New("boot-3 machine state is not unreachable: " + state)
 			}
 			return nil
 		}).Should(Succeed())
