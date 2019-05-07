@@ -1,0 +1,10 @@
+[Unit]
+Description=run sabakan-state-setter
+PartOf=sabakan-state-setter.service
+
+[Timer]
+OnCalendar=minutely
+Persistent=true
+
+[Install]
+WantedBy=timers.target
