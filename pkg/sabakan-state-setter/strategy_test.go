@@ -70,7 +70,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 				serfStatus: base,
 				metrics:    []*prom2json.Family{{}},
 			},
-			expected: StateMetricsNotFound,
+			expected: stateMetricNotFound,
 			message:  "empty metric returns empty string",
 		},
 		{

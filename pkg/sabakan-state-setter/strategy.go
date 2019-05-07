@@ -15,7 +15,7 @@ const (
 	bossControllerPrefix        = "AHCI.Slot"
 	nvmeControllerPrefix        = "PCIeSSD.Slot"
 	storageControllerMetricName = "hw_storage_controller_status_health"
-	StateMetricsNotFound        = ""
+	stateMetricNotFound         = ""
 )
 
 var (
@@ -53,7 +53,7 @@ func decideByMonitorHW(ms machineStateSource) string {
 
 	for _, family := range ms.metrics {
 		if !contains(family) {
-			return StateMetricsNotFound
+			return stateMetricNotFound
 		}
 
 		for _, labelName := range partsMetricNames {
