@@ -70,11 +70,11 @@ func TestSetup() {
 			execSafeAt(h, "test", "-f", neco.TimerFile("etcd-backup"))
 			execSafeAt(h, "test", "-f", neco.ServiceFile("etcd-backup"))
 
-			execSafeAt(h, "test", "-f", neco.ServiceFile("neco-updater"))
-			execSafeAt(h, "test", "-f", neco.ServiceFile("neco-worker"))
-			execSafeAt(h, "test", "-f", neco.ServiceFile("node-exporter"))
-			execSafeAt(h, "test", "-f", neco.TimerFile("sabakan-state-setter"))
-			execSafeAt(h, "test", "-f", neco.ServiceFile("sabakan-state-setter"))
+			execSafeAt(h, "test", "-f", "/lib/systemd/system/neco-updater.service")
+			execSafeAt(h, "test", "-f", "/lib/systemd/system/neco-worker.service")
+			execSafeAt(h, "test", "-f", "/lib/systemd/system/node-exporter.service")
+			execSafeAt(h, "test", "-f", "/lib/systemd/system/sabakan-state-setter.service")
+			execSafeAt(h, "test", "-f", "/lib/systemd/system/sabakan-state-setter.timer")
 		}
 	})
 

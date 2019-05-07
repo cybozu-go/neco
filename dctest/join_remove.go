@@ -51,11 +51,11 @@ func TestJoinRemove() {
 		execSafeAt(boot3, "test", "-f", neco.TimerFile("etcd-backup"))
 		execSafeAt(boot3, "test", "-f", neco.ServiceFile("etcd-backup"))
 
-		execSafeAt(boot3, "test", "-f", neco.ServiceFile("neco-updater"))
-		execSafeAt(boot3, "test", "-f", neco.ServiceFile("neco-worker"))
-		execSafeAt(boot3, "test", "-f", neco.ServiceFile("node-exporter"))
-		execSafeAt(boot3, "test", "-f", neco.TimerFile("sabakan-state-setter"))
-		execSafeAt(boot3, "test", "-f", neco.ServiceFile("sabakan-state-setter"))
+		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/neco-updater.service")
+		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/neco-worker.service")
+		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/node-exporter.service")
+		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/sabakan-state-setter.service")
+		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/sabakan-state-setter.timer")
 
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-updater.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-worker.service")
