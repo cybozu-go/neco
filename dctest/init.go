@@ -54,7 +54,6 @@ func TestInit() {
 	It("should success initialize Serf", func() {
 		for _, host := range []string{boot0, boot1, boot2} {
 			execSafeAt(host, "test", "-f", neco.SerfConfFile)
-			execSafeAt(host, "test", "-x", neco.SerfHandler)
 			execSafeAt(host, "systemctl", "-q", "is-active", "serf.service")
 		}
 	})

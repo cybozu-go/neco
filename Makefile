@@ -17,7 +17,7 @@ VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 BIN_PKGS = ./pkg/neco ./pkg/sabakan-state-setter
-SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
+SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
 
 STATIK = gcp/statik/statik.go
 
