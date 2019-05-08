@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"net/url"
 	"os"
 	"path"
 
@@ -43,10 +44,12 @@ func main() {
 
 func run(ctx context.Context) error {
 	sm := new(searchMachineResponse)
-	sabakanEndpoint := path.Join(*flagSabakanAddress, "/graphql")
-	gql := gqlClient{ext.LocalHTTPClient(), sabakanEndpoint}
+	gql, err := newGQLClient(*flagSabakanAddress)
+	if err != nil {
+		return err
+	}
 
-	sm, err := gql.getSabakanMachines(ctx)
+	sm, err = gql.getSabakanMachines(ctx)
 	if err != nil {
 		return err
 	}
@@ -111,6 +114,16 @@ func run(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+func newGQLClient(address string) (*gqlClient, error) {
+	baseURL, err := url.Parse(address)
+	if err != nil {
+		return nil, err
+	}
+	baseURL.Path = path.Join(baseURL.Path, "/graphql")
+	sabakanEndpoint := baseURL.String()
+	return &gqlClient{ext.LocalHTTPClient(), sabakanEndpoint}, nil
 }
 
 func newMachineStateSource(m machine, members []serf.Member) machineStateSource {
