@@ -65,6 +65,27 @@ func TestJoinRemove() {
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "etcd-backup.timer")
 	})
 
+	It("should success initialize sabakan", func() {
+		token := getVaultToken()
+		stdout, stderr, err := execAt(
+			boot3, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "sabakan")
+		if err != nil {
+			log.Error("neco init-local sabakan", map[string]interface{}{
+				"host":   boot3,
+				"stdout": string(stdout),
+				"stderr": string(stderr),
+			})
+			Expect(err).NotTo(HaveOccurred())
+		}
+		execSafeAt(boot3, "test", "-d", neco.SabakanDataDir)
+		execSafeAt(boot3, "test", "-f", neco.SabakanConfFile)
+		execSafeAt(boot3, "test", "-f", neco.SabakanKeyFile)
+		execSafeAt(boot3, "test", "-f", neco.SabakanCertFile)
+		execSafeAt(boot3, "test", "-f", neco.SabactlBashCompletionFile)
+
+		execSafeAt(boot3, "systemctl", "-q", "is-active", "sabakan.service")
+	})
+
 	It("should setup hw", func() {
 		Eventually(func() error {
 			stdout, stderr, err := execAt(boot3, "sudo", "neco", "bmc", "setup-hw")
@@ -163,14 +184,13 @@ func TestJoinRemove() {
 	})
 
 	It("should shutdown boot-3", func() {
-		serial := fmt.Sprintf("%x", sha1.Sum([]byte("boot-3")))
-
 		By("Running neco power stop")
-		stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "stop", serial)
+		stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "stop", boot3)
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("Checking boot-3 machine state")
 		Eventually(func() error {
+			serial := fmt.Sprintf("%x", sha1.Sum([]byte("boot-3")))
 			stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", serial)
 			state := string(bytes.TrimSpace(stdout))
 			if state != "unreachable" {
