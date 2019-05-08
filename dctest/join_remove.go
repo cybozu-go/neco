@@ -146,9 +146,20 @@ func TestJoinRemove() {
 			return nil
 		}).Should(Succeed())
 
-		By("Check boot-3 machine state")
+		// need to wait for boot-1/2 to restart etcd, or the system would become
+		// unstable during tests.
+		time.Sleep(3 * time.Minute)
+	})
+
+	It("should shutdown boot-3", func() {
+		serial := fmt.Sprintf("%x", sha1.Sum([]byte("boot-3")))
+
+		By("Running neco power stop")
+		stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "stop", serial)
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		By("Checking boot-3 machine state")
 		Eventually(func() error {
-			serial := fmt.Sprintf("%x", sha1.Sum([]byte("boot-3")))
 			stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", serial)
 			state := string(bytes.TrimSpace(stdout))
 			if state != "unreachable" {
@@ -156,9 +167,5 @@ func TestJoinRemove() {
 			}
 			return nil
 		}).Should(Succeed())
-
-		// need to wait for boot-1/2 to restart etcd, or the system would become
-		// unstable during tests.
-		time.Sleep(3 * time.Minute)
 	})
 }
