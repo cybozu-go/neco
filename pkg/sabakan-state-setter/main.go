@@ -28,9 +28,11 @@ type machineStateSource struct {
 	ipv4   string
 
 	serfStatus  *serf.Member
-	metrics     []*prom2json.Family
-	machineType *MachineType
+	metrics     map[string]machineMetrics
+	machineType *machineType
 }
+
+type machineMetrics []prom2json.Metric
 
 func main() {
 	flag.Parse()
@@ -54,7 +56,6 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(cfg)
 
 	sm := new(searchMachineResponse)
 	gql, err := newGQLClient(*flagSabakanAddress)
@@ -89,7 +90,7 @@ func run(ctx context.Context) error {
 	// Get machine metrics
 	env := well.NewEnvironment(ctx)
 	for _, m := range mss {
-		if len(m.machineType.Metrics) == 0 {
+		if len(m.machineType.MetricsCheckList) == 0 {
 			continue
 		}
 		source := m
@@ -105,9 +106,6 @@ func run(ctx context.Context) error {
 	}
 	for _, ms := range mss {
 		state := decideSabakanState(ms)
-		if state == stateMetricNotFound {
-			continue
-		}
 		err = gql.setSabakanState(ctx, ms, state)
 		if err != nil {
 			switch e := err.(type) {
@@ -132,7 +130,7 @@ func run(ctx context.Context) error {
 	return nil
 }
 
-func newMachineStateSource(m machine, members []serf.Member, cfg *Config) machineStateSource {
+func newMachineStateSource(m machine, members []serf.Member, cfg *config) machineStateSource {
 	return machineStateSource{
 		serial:      m.Spec.Serial,
 		ipv4:        m.Spec.IPv4[0],
@@ -150,7 +148,7 @@ func findMember(members []serf.Member, addr string) *serf.Member {
 	return nil
 }
 
-func findMachineType(m *machine, config *Config) *MachineType {
+func findMachineType(m *machine, config *config) *machineType {
 	machineType, ok := m.Spec.Labels[machineTypeLabel]
 	if !ok {
 		log.Warn(machineTypeLabel+" is not set", map[string]interface{}{

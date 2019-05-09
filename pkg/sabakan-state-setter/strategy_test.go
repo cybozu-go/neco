@@ -8,6 +8,18 @@ import (
 	"github.com/prometheus/prom2json"
 )
 
+func TestCheckSpecifyTarget(t *testing.T) {
+	metrics := machineMetrics{{
+		Labels: map[string]string{"k1": "v1", "k2": "v2"},
+		Value:  monitorHWStatusHealth,
+	}}
+	labels := map[string]string{"k1": "v1"}
+
+	if res := checkSpecifiedTarget(metrics, labels); res != sabakan.StateHealthy.GQLEnum() {
+		t.Error("checkSpecifiedTarget(metrics, labels) != sabakan.StateHealthy.GQLEnum()", res)
+	}
+}
+
 func TestDecideSabakanState(t *testing.T) {
 	testCases := []struct {
 		mss      machineStateSource
@@ -62,175 +74,290 @@ func TestDecideSabakanState(t *testing.T) {
 }
 
 func TestDecideByMonitorHW(t *testing.T) {
+	parts1 := "parts1_status_health"
+	parts2 := "parts2_status_health"
+	parts3 := "parts3_status_health"
+
 	base := &serf.Member{
 		Status: "alive",
 		Tags:   map[string]string{"systemd-units-failed": ""},
 	}
 	testCases := []struct {
+		message  string
 		mss      machineStateSource
 		expected string
-		message  string
 	}{
 		{
+			message: "If checklist is empty, returns healthy",
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics:    []*prom2json.Family{{}},
+				metrics:    nil,
+				machineType: &machineType{
+					Name:             "boot",
+					MetricsCheckList: []metric{},
+				},
 			},
-			expected: stateMetricNotFound,
-			message:  "empty metric returns empty string",
+			expected: sabakan.StateHealthy.GQLEnum(),
 		},
 		{
+			message: "If metrics is nil, returns unhealthy",
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: []*prom2json.Family{
-					{
-						Name:    "hw_processor_status_health",
-						Metrics: []interface{}{prom2json.Metric{Value: "1"}},
-					},
+				metrics:    nil,
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []metric{{
+						Name:   "boot",
+						Labels: map[string]string{"aaa": "bbb"},
+					}},
 				},
 			},
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			message:  "CPU is unhealthy",
 		},
 		{
+			message: "Target metrics is existed, and it is healthy",
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: []*prom2json.Family{
-					{
-						Name:    "hw_system_memory_summary_status_health",
-						Metrics: []interface{}{prom2json.Metric{Value: "1"}},
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb"},
+							Value:  monitorHWStatusHealth,
+						},
 					},
 				},
-			},
-			expected: sabakan.StateUnhealthy.GQLEnum(),
-			message:  "CPU is unhealthy",
-		},
-		{
-			mss: machineStateSource{
-				serfStatus: base,
-				metrics: []*prom2json.Family{
-					{
-						Name:    "hw_chassis_temperature_status_health",
-						Metrics: []interface{}{prom2json.Metric{Value: "1"}},
-					},
-				},
-			},
-			expected: sabakan.StateUnhealthy.GQLEnum(),
-			message:  "CPU is unhealthy",
-		},
-		{
-			mss: machineStateSource{
-				serfStatus: base,
-				metrics: []*prom2json.Family{
-					{
-						Name:    "hw_chassis_voltage_status_health",
-						Metrics: []interface{}{prom2json.Metric{Value: "1"}},
-					},
-				},
-			},
-			expected: sabakan.StateUnhealthy.GQLEnum(),
-			message:  "CPU is unhealthy",
-		},
-		{
-			mss: machineStateSource{
-				serfStatus: base,
-				metrics: []*prom2json.Family{
-					{
-						Name:    "hw_chassis_temperature_status_health",
-						Metrics: []interface{}{prom2json.Metric{Value: "0"}},
-					},
-					{
-						Name:    "hw_chassis_voltage_status_health",
-						Metrics: []interface{}{prom2json.Metric{Value: "0"}},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []metric{{
+						Name:   parts1,
+						Labels: map[string]string{"aaa": "bbb"}},
 					},
 				},
 			},
 			expected: sabakan.StateHealthy.GQLEnum(),
-			message:  "healthy",
 		},
 		{
+			message: "Target metrics is existed, and it is healthy",
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: []*prom2json.Family{
-					{
-						Name: "hw_storage_controller_status_health",
-						Metrics: []interface{}{prom2json.Metric{
-							Value: "1",
-							Labels: map[string]string{
-								"controller": "AHCI.Slot.1",
-							},
-						}},
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb"},
+							Value:  monitorHWStatusWarning,
+						},
 					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []metric{{
+						Name:   parts1,
+						Labels: map[string]string{"aaa": "bbb"},
+					}},
 				},
 			},
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			message:  "AHCI.Slot is unhealthy",
 		},
 		{
+			message: "Target metrics are existed, and they are healthy",
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: []*prom2json.Family{
-					{
-						Name: "hw_storage_controller_status_health",
-						Metrics: []interface{}{prom2json.Metric{
-							Value: "1",
-							Labels: map[string]string{
-								"controller": "PCIeSSD.Slot.1",
-							},
-						}},
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb"},
+							Value:  monitorHWStatusHealth,
+						},
+					},
+					parts2: {
+						prom2json.Metric{
+							Labels: map[string]string{"ccc": "ddd"},
+							Value:  monitorHWStatusHealth,
+						},
+					},
+					parts3: {
+						prom2json.Metric{
+							Labels: map[string]string{"ccc": "ddd"},
+							Value:  monitorHWStatusWarning,
+						},
 					},
 				},
-			},
-			expected: sabakan.StateUnhealthy.GQLEnum(),
-			message:  "PCIeSSD.Slot is unhealthy",
-		},
-		{
-			mss: machineStateSource{
-				serfStatus: base,
-				metrics: []*prom2json.Family{
-					{
-						Name: "hw_storage_controller_status_health",
-						Metrics: []interface{}{prom2json.Metric{
-							Value: "0",
-							Labels: map[string]string{
-								"controller": "PCIeSSD.Slot.1",
-							},
-						}},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []metric{
+						{
+							Name:   parts1,
+							Labels: map[string]string{"aaa": "bbb"},
+						},
+						{
+							Name:   parts2,
+							Labels: map[string]string{"ccc": "ddd"},
+						},
 					},
 				},
 			},
 			expected: sabakan.StateHealthy.GQLEnum(),
-			message:  "PCIeSSD.Slot is healthy",
 		},
 		{
+			message: "Target metrics are existed, and they are healthy (multiple labels)",
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: []*prom2json.Family{
-					{
-						Name: "hw_storage_device_status_health",
-						Metrics: []interface{}{prom2json.Metric{
-							Value: "0",
-						}},
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd", "eee": "fff"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+							Value:  monitorHWStatusHealth,
+						},
+					},
+					parts2: {
+						prom2json.Metric{
+							Labels: map[string]string{"ccc": "ddd"},
+							Value:  monitorHWStatusHealth,
+						},
+					},
+					parts3: {
+						prom2json.Metric{
+							Labels: map[string]string{"ccc": "ddd"},
+							Value:  monitorHWStatusWarning,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []metric{
+						{
+							Name:   parts1,
+							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+						},
+						{
+							Name:   parts2,
+							Labels: map[string]string{"ccc": "ddd"},
+						},
 					},
 				},
 			},
 			expected: sabakan.StateHealthy.GQLEnum(),
-			message:  "storage device is healthy",
 		},
 		{
+			message: "There are multiple matching metrics, and the one of them is broken",
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: []*prom2json.Family{
-					{
-						Name: "hw_storage_device_status_health",
-						Metrics: []interface{}{prom2json.Metric{
-							Value: "1",
-						}},
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd", "eee": "fff"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+							Value:  monitorHWStatusWarning,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []metric{
+						{
+							Name:   parts1,
+							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+						},
 					},
 				},
 			},
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			message:  "storage device is unhealthy",
+		},
+		{
+			message: "Target peripheral is existed, but label is not matched",
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb"},
+							Value:  monitorHWStatusHealth,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []metric{
+						{
+							Name:   parts1,
+							Labels: map[string]string{"not": "existed"},
+						},
+					},
+				},
+			},
+			expected: sabakan.StateUnhealthy.GQLEnum(),
+		},
+		{
+			message: "Target label is not specified, and the all of metrics is healthy",
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"ccc": "ddd"},
+							Value:  monitorHWStatusHealth,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name:             "boot",
+					MetricsCheckList: []metric{{Name: parts1}},
+				},
+			},
+			expected: sabakan.StateHealthy.GQLEnum(),
+		},
+		{
+			message: "Target's label is not specified, and there is a broken metric",
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"ccc": "ddd"},
+							Value:  monitorHWStatusWarning,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name:             "boot",
+					MetricsCheckList: []metric{{Name: parts1}},
+				},
+			},
+			expected: sabakan.StateUnhealthy.GQLEnum(),
+		},
+		{
+			message: "Target's label is not specified, and there is a broken metric",
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"aaa": "bbb"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"ccc": "ddd"},
+							Value:  monitorHWStatusWarning,
+						},
+					},
+				},
+			},
+			expected: sabakan.StateUnhealthy.GQLEnum(),
 		},
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"strings"
 	"testing"
 )
@@ -8,18 +9,23 @@ import (
 func TestParseConfigFile(t *testing.T) {
 	fileContent := `machine-types:
   - name: qemu
-  - name: dell-14g-boot
+  - name: boot
     metrics:
-      - name: hw_chassis_voltage_status_health
-      - name: hw_storage_controller_status_health
+      - name: a
+      - name: b
         labels:
-          controller: AHCI.Slot.1-1
+          aaa: bbb
 `
 	cfg, err := parseConfig(strings.NewReader(fileContent))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(cfg.MachineTypes) != 2 {
-		t.Error("len(cfg.MachineTypes) != 2. actual ", len(cfg.MachineTypes))
+		t.Error("len(cfg.MachineTypes) != 2, actual ", len(cfg.MachineTypes))
+	}
+
+	_, err = parseConfig(strings.NewReader("machine-types:"))
+	if err == nil {
+		t.Error(errors.New("it should be raised an error"))
 	}
 }

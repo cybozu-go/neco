@@ -19,6 +19,17 @@ func (source *machineStateSource) getMetrics(ctx context.Context) error {
 		result = append(result, prom2json.NewFamily(mf))
 	}
 
-	source.metrics = result
+	var metrics machineMetrics
+	for _, r := range result {
+		for _, item := range r.Metrics {
+			metric, ok := item.(prom2json.Metric)
+			if !ok {
+				continue
+			}
+			metrics = append(metrics, metric)
+		}
+		source.metrics[r.Name] = metrics
+	}
+
 	return nil
 }
