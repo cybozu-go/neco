@@ -16,6 +16,12 @@ func TestDecideSabakanState(t *testing.T) {
 	}{
 		{
 			mss: machineStateSource{
+				serfStatus: nil,
+			},
+			expected: sabakan.StateUnreachable.GQLEnum(),
+			message:  "cannot get serf status",
+		}, {
+			mss: machineStateSource{
 				serfStatus: &serf.Member{
 					Status: "failed",
 					Tags: map[string]string{

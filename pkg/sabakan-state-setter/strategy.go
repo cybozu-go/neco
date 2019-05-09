@@ -30,7 +30,7 @@ var (
 )
 
 func decideSabakanState(ms machineStateSource) string {
-	if ms.serfStatus.Status != "alive" {
+	if ms.serfStatus == nil || ms.serfStatus.Status != "alive" {
 		return sabakan.StateUnreachable.GQLEnum()
 	}
 
