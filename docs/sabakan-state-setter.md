@@ -45,10 +45,10 @@ Usage
 sabakan-state-setter [OPTIONS]
 ```
 
-| Option              | Default value            | Description    |
-| ------------------- | ------------------------ | -------------- |
-| `--sabakan-address` | `http://localhost:10080` | URL of sabakan |
-
+| Option              | Default value            | Description         |
+| ------------------- | ------------------------ | --------------      |
+| `--sabakan-address` | `http://localhost:10080` | URL of sabakan      |
+| `--config-file`     | `''`                     | Path of config file |
 
 Settings of target machine peripherals
 --------------------------------------
@@ -58,14 +58,14 @@ You can configure a set of metrics to scrape for each machine type.
 
 | Field                                             | Default value            | Description                                                                                         |
 | -------------------                               | ------------------------ | --------------                                                                                      |
-| `machine-types` [MachineType](#MachineType) array | `nil`                    | Machine types is a list of MachineType. You should list all machine types used in your data center. |
+| `machine-types` [MachineType](#MachineType) array | `nil`                    | Machine types is a list of `MachineType`. You should list all machine types used in your data center. |
 
 ### `MachineType`
 
-| Field                             | Default value            | Description                                                                          |
-| -------------------               | ------------------------ | --------------                                                                       |
-| `name` string                     | `''`                      | Name of this machine type. It is expected that this field is unique in setting file. |
-| `metrics` [Metric](#Metric) array | nil                      | Metrics is a array of Metric.                                                        |
+| Field                             | Default value            | Description                                                                                                               |
+| -------------------               | ------------------------ | --------------                                                                                                            |
+| `name` string                     | `''`                     | Name of this machine type. It is expected that this field is unique in setting file.                                      |
+| `metrics` [Metric](#Metric) array | `nil`                    | Metrics is a array of `Metric`. If any of the metrics declared in this list are not healthy, then the machine is unhealthy. |
 
 ### `Metric`
 
