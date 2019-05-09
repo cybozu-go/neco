@@ -9,7 +9,7 @@ import (
 
 func (source *machineStateSource) getMetrics(ctx context.Context) error {
 	mfChan := make(chan *dto.MetricFamily, 1024)
-	addr := "http://" + source.ipv4 + ":9105"
+	addr := "http://" + source.ipv4 + ":9105/metrics"
 	err := prom2json.FetchMetricFamilies(addr, mfChan, "", "", true)
 	if err != nil {
 		return err
