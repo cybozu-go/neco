@@ -6,7 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"path"
 
+	"github.com/cybozu-go/neco/ext"
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
@@ -35,6 +38,16 @@ type spec struct {
 type gqlClient struct {
 	httpClient *http.Client
 	endpoint   string
+}
+
+func newGQLClient(address string) (*gqlClient, error) {
+	baseURL, err := url.Parse(address)
+	if err != nil {
+		return nil, err
+	}
+	baseURL.Path = path.Join(baseURL.Path, "/graphql")
+	sabakanEndpoint := baseURL.String()
+	return &gqlClient{ext.LocalHTTPClient(), sabakanEndpoint}, nil
 }
 
 func (g *gqlClient) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte, error) {

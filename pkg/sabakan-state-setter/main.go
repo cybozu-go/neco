@@ -6,12 +6,9 @@ import (
 	"flag"
 	"fmt"
 	"net"
-	"net/url"
 	"os"
-	"path"
 
 	"github.com/cybozu-go/log"
-	"github.com/cybozu-go/neco/ext"
 	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
 	"github.com/cybozu-go/well"
 	serf "github.com/hashicorp/serf/client"
@@ -57,7 +54,7 @@ func run(ctx context.Context) error {
 		return errors.New("no machines found")
 	}
 
-	mss := make([]machineStateSource, len(sm.SearchMachines))
+	mss := make([]machineStateSource, 0, len(sm.SearchMachines))
 
 	// Get serf members
 	serfc, err := serf.NewRPCClient("127.0.0.1:7373")
@@ -114,16 +111,6 @@ func run(ctx context.Context) error {
 		}
 	}
 	return nil
-}
-
-func newGQLClient(address string) (*gqlClient, error) {
-	baseURL, err := url.Parse(address)
-	if err != nil {
-		return nil, err
-	}
-	baseURL.Path = path.Join(baseURL.Path, "/graphql")
-	sabakanEndpoint := baseURL.String()
-	return &gqlClient{ext.LocalHTTPClient(), sabakanEndpoint}, nil
 }
 
 func newMachineStateSource(m machine, members []serf.Member) machineStateSource {
