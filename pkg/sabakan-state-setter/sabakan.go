@@ -31,8 +31,9 @@ type machine struct {
 }
 
 type spec struct {
-	Serial string   `json:"serial"`
-	IPv4   []string `json:"ipv4"`
+	Serial string            `json:"serial"`
+	IPv4   []string          `json:"ipv4"`
+	Labels map[string]string `json:"labels"`
 }
 
 type gqlClient struct {

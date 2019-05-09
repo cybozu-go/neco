@@ -16,6 +16,7 @@ const (
 	nvmeControllerPrefix        = "PCIeSSD.Slot"
 	storageControllerMetricName = "hw_storage_controller_status_health"
 	stateMetricNotFound         = ""
+	systemdUnitsFailedTag       = "systemd-units-failed"
 )
 
 var (
@@ -34,7 +35,7 @@ func decideSabakanState(ms machineStateSource) string {
 		return sabakan.StateUnreachable.GQLEnum()
 	}
 
-	suf, ok := ms.serfStatus.Tags["systemd-units-failed"]
+	suf, ok := ms.serfStatus.Tags[systemdUnitsFailedTag]
 	if !ok {
 		return sabakan.StateUnhealthy.GQLEnum()
 	}

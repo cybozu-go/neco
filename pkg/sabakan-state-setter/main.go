@@ -16,16 +16,20 @@ import (
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
+const machineTypeLabel = "machine-type"
+
 var (
 	flagSabakanAddress = flag.String("sabakan-address", "http://localhost:10080", "sabakan address")
+	flagConfigFile     = flag.String("config-file", "", "path of config file")
 )
 
 type machineStateSource struct {
 	serial string
 	ipv4   string
 
-	serfStatus *serf.Member
-	metrics    []*prom2json.Family
+	serfStatus  *serf.Member
+	metrics     []*prom2json.Family
+	machineType *MachineType
 }
 
 func main() {
@@ -40,6 +44,18 @@ func main() {
 }
 
 func run(ctx context.Context) error {
+	confFile, err := os.Open(*flagConfigFile)
+	if err != nil {
+		return err
+	}
+	defer confFile.Close()
+
+	cfg, err := parseConfig(confFile)
+	if err != nil {
+		return err
+	}
+	fmt.Println(cfg)
+
 	sm := new(searchMachineResponse)
 	gql, err := newGQLClient(*flagSabakanAddress)
 	if err != nil {
@@ -67,12 +83,15 @@ func run(ctx context.Context) error {
 	}
 
 	for _, m := range sm.SearchMachines {
-		mss = append(mss, newMachineStateSource(m, members))
+		mss = append(mss, newMachineStateSource(m, members, cfg))
 	}
 
 	// Get machine metrics
 	env := well.NewEnvironment(ctx)
 	for _, m := range mss {
+		if len(m.machineType.Metrics) == 0 {
+			continue
+		}
 		source := m
 		env.Go(source.getMetrics)
 	}
@@ -113,11 +132,12 @@ func run(ctx context.Context) error {
 	return nil
 }
 
-func newMachineStateSource(m machine, members []serf.Member) machineStateSource {
+func newMachineStateSource(m machine, members []serf.Member, cfg *Config) machineStateSource {
 	return machineStateSource{
-		serial:     m.Spec.Serial,
-		ipv4:       m.Spec.IPv4[0],
-		serfStatus: findMember(members, m.Spec.IPv4[0]),
+		serial:      m.Spec.Serial,
+		ipv4:        m.Spec.IPv4[0],
+		serfStatus:  findMember(members, m.Spec.IPv4[0]),
+		machineType: findMachineType(&m, cfg),
 	}
 }
 
@@ -125,6 +145,22 @@ func findMember(members []serf.Member, addr string) *serf.Member {
 	for _, member := range members {
 		if member.Addr.Equal(net.ParseIP(addr)) {
 			return &member
+		}
+	}
+	return nil
+}
+
+func findMachineType(m *machine, config *Config) *MachineType {
+	machineType, ok := m.Spec.Labels[machineTypeLabel]
+	if !ok {
+		log.Warn(machineTypeLabel+" is not set", map[string]interface{}{
+			"machine-spec-ipv4": m.Spec.IPv4,
+		})
+		return nil
+	}
+	for _, mt := range config.MachineTypes {
+		if mt.Name == machineType {
+			return &mt
 		}
 	}
 	return nil
