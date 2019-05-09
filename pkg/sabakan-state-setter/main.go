@@ -130,7 +130,7 @@ func run(ctx context.Context) error {
 	return nil
 }
 
-func newMachineStateSource(m machine, members []serf.Member, cfg *config) machineStateSource {
+func newMachineStateSource(m machine, members []serf.Member, cfg *connfig) machineStateSource {
 	return machineStateSource{
 		serial:      m.Spec.Serial,
 		ipv4:        m.Spec.IPv4[0],
@@ -148,7 +148,7 @@ func findMember(members []serf.Member, addr string) *serf.Member {
 	return nil
 }
 
-func findMachineType(m *machine, config *config) *machineType {
+func findMachineType(m *machine, config *connfig) *machineType {
 	machineType, ok := m.Spec.Labels[machineTypeLabel]
 	if !ok {
 		log.Warn(machineTypeLabel+" is not set", map[string]interface{}{

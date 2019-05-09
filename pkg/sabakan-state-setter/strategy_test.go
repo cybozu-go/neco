@@ -115,7 +115,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy.GQLEnum(),
 		},
 		{
-			message: "Target metrics is existed, and it is healthy",
+			message: "Target metric exists, and it is healthy",
 			mss: machineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
@@ -137,7 +137,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateHealthy.GQLEnum(),
 		},
 		{
-			message: "Target metrics is existed, and it is healthy",
+			message: "Target metrics exist, and it is healthy",
 			mss: machineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
@@ -159,7 +159,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy.GQLEnum(),
 		},
 		{
-			message: "Target metrics are existed, and they are healthy",
+			message: "Target metrics exist, and they are healthy",
 			mss: machineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
@@ -199,7 +199,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateHealthy.GQLEnum(),
 		},
 		{
-			message: "Target metrics are existed, and they are healthy (multiple labels)",
+			message: "Target metrics exist, and they are healthy (multiple labels)",
 			mss: machineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
@@ -271,7 +271,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy.GQLEnum(),
 		},
 		{
-			message: "Target peripheral is existed, but label is not matched",
+			message: "Target metric exists, but label is not matched",
 			mss: machineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
@@ -341,7 +341,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy.GQLEnum(),
 		},
 		{
-			message: "Target's label is not specified, and there is a broken metric",
+			message: "parts2 is not found",
 			mss: machineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
@@ -350,9 +350,18 @@ func TestDecideByMonitorHW(t *testing.T) {
 							Labels: map[string]string{"aaa": "bbb"},
 							Value:  monitorHWStatusHealth,
 						},
-						prom2json.Metric{
-							Labels: map[string]string{"ccc": "ddd"},
-							Value:  monitorHWStatusWarning,
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []metric{
+						{
+							Name:   parts1,
+							Labels: map[string]string{"aaa": "bbb"},
+						},
+						{
+							Name:   parts2,
+							Labels: map[string]string{"aaa": "bbb"},
 						},
 					},
 				},

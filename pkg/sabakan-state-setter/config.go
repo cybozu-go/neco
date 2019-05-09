@@ -17,12 +17,12 @@ type machineType struct {
 	MetricsCheckList []metric `yaml:"metrics,omitempty"`
 }
 
-type config struct {
+type connfig struct {
 	MachineTypes []machineType `yaml:"machine-types"`
 }
 
-func parseConfig(reader io.Reader) (*config, error) {
-	cfg := new(config)
+func parseConfig(reader io.Reader) (*connfig, error) {
+	cfg := new(connfig)
 	err := yaml.NewDecoder(reader).Decode(cfg)
 	if err != nil {
 		return nil, err
