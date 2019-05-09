@@ -36,6 +36,8 @@ Target machine peripherals
 - [Dell BOSS][]
 - **Planned:** Hard drive on the storage servers
 
+Describe in the configuration file the metrics names with labels.
+
 Usage
 -----
 
@@ -46,6 +48,31 @@ sabakan-state-setter [OPTIONS]
 | Option              | Default value            | Description    |
 | ------------------- | ------------------------ | -------------- |
 | `--sabakan-address` | `http://localhost:10080` | URL of sabakan |
+
+
+Settings of target machine peripherals
+--------------------------------------
+
+The set of metrics used for health checking depends on its machine type.
+You can configure a set of metrics to scrape for each machine type.
+
+| Field                                             | Default value            | Description                                                                                         |
+| -------------------                               | ------------------------ | --------------                                                                                      |
+| `machine-types` [MachineType](#MachineType) array | `nil`                    | Machine types is a list of MachineType. You should list all machine types used in your data center. |
+
+### `MachineType`
+
+| Field                             | Default value            | Description                                                                          |
+| -------------------               | ------------------------ | --------------                                                                       |
+| `name` string                     | `''`                      | Name of this machine type. It is expected that this field is unique in setting file. |
+| `metrics` [Metric](#Metric) array | nil                      | Metrics is a array of Metric.                                                        |
+
+### `Metric`
+
+| Field                        | Default value            | Description                                                                                                    |
+| -------------------          | ------------------------ | --------------                                                                                                 |
+| `name` string                | `''`                     | Name of this metric.                                                                                           |
+| `labels` `map[string]string` | `nil`                    | Label map. The machine will be Unhealthy unless all labels defined in labels are present and not healthy. |
 
 [serf]: https://www.serf.io/
 [monitor-hw]: https://github.com/cybozu-go/setup-hw/blob/master/docs/monitor-hw.md
