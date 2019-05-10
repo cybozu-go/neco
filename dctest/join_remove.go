@@ -66,17 +66,6 @@ func TestJoinRemove() {
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "etcd-backup.timer")
 	})
 
-	It("should setup hw", func() {
-		Eventually(func() error {
-			stdout, stderr, err := execAt(boot3, "sudo", "neco", "bmc", "setup-hw")
-			if err != nil {
-				return fmt.Errorf("neco bmc setup-hw failed; host: %s, err: %s, stdout: %s, stderr: %s",
-					boot3, err, stdout, stderr)
-			}
-			return nil
-		}).Should(Succeed())
-	})
-
 	It("should install programs", func() {
 		By("Waiting for request to complete")
 		waitRequestComplete("members: [0 1 2 3]")
@@ -163,7 +152,7 @@ func TestJoinRemove() {
 		time.Sleep(3 * time.Minute)
 	})
 
-	It("should shutdown boot-3", func() {
+	It("should set state of boot-3 to unreachable", func() {
 		By("Stopping boot-3")
 		out, err := exec.Command("sudo", "pmctl", "node", "action", "stop", "boot-3").Output()
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s", out)
