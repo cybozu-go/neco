@@ -71,8 +71,6 @@ func run(ctx context.Context) error {
 		return errors.New("no machines found")
 	}
 
-	mss := make([]machineStateSource, 0, len(sm.SearchMachines))
-
 	// Get serf members
 	serfc, err := serf.NewRPCClient("127.0.0.1:7373")
 	if err != nil {
@@ -83,6 +81,8 @@ func run(ctx context.Context) error {
 		return err
 	}
 
+	// Construct a slice of MachineStateSource
+	mss := make([]machineStateSource, 0, len(sm.SearchMachines))
 	for _, m := range sm.SearchMachines {
 		mss = append(mss, newMachineStateSource(m, members, cfg))
 	}
@@ -104,6 +104,8 @@ func run(ctx context.Context) error {
 			log.FnError: err.Error(),
 		})
 	}
+
+	// For each machine sources, decide its next state, then update sabakan
 	for _, ms := range mss {
 		state := decideSabakanState(ms)
 		err = gql.setSabakanState(ctx, ms, state)
@@ -113,9 +115,9 @@ func run(ctx context.Context) error {
 				// In the case of an invalid state transition, the log may continue to be output.
 				// So the log is not output.
 				if eType, ok := e.Extensions["type"]; ok && eType == gqlsabakan.ErrInvalidStateTransition {
-					break
+					continue
 				}
-				log.Warn("error occurred when set state", map[string]interface{}{
+				log.Warn("gql error occurred when set state", map[string]interface{}{
 					log.FnError: err.Error(),
 					"serial":    ms.serial,
 				})

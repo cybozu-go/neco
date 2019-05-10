@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/cybozu-go/log"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/prom2json"
 )
@@ -24,6 +25,9 @@ func (source *machineStateSource) getMetrics(ctx context.Context) error {
 		for _, item := range r.Metrics {
 			metric, ok := item.(prom2json.Metric)
 			if !ok {
+				log.Warn("failed to cast an item to prom2json.Metric", map[string]interface{}{
+					"item": item,
+				})
 				continue
 			}
 			metrics = append(metrics, metric)

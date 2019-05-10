@@ -318,7 +318,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateHealthy.GQLEnum(),
 		},
 		{
-			message: "Target's label is not specified, and there is a broken metric",
+			message: "Target's label is not specified, and there is an unhealthy metric",
 			mss: machineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
