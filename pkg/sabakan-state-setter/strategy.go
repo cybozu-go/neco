@@ -20,7 +20,8 @@ func decideSabakanState(ms machineStateSource) string {
 
 	suf, ok := ms.serfStatus.Tags[systemdUnitsFailedTag]
 	if !ok {
-		return sabakan.StateUnhealthy.GQLEnum()
+		// boot servers have no "systemd-units-failed" tag
+		return decideByMonitorHW(ms)
 	}
 
 	if len(suf) != 0 {
