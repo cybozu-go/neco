@@ -89,6 +89,7 @@ spec:
             - "--etcd-tls-ca=/coil-secrets/etcd-ca.crt"
             - "--etcd-tls-cert=/coil-secrets/etcd-coil.crt"
             - "--etcd-tls-key=/coil-secrets/etcd-coil.key"
+            - "--scan-interval=10m"
           env:
             - name: COIL_NODE_NAME
               valueFrom:
@@ -200,6 +201,8 @@ spec:
             - "--etcd-tls-ca=/coil-secrets/etcd-ca.crt"
             - "--etcd-tls-cert=/coil-secrets/etcd-coil.crt"
             - "--etcd-tls-key=/coil-secrets/etcd-coil.key"
+            - "--scan-interval=10m"
+            - "--address-expiration=24h"
           # for "kubectl exec POD coilctl"
           env:
             - name: COILCTL_ENDPOINTS
