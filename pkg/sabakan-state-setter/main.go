@@ -16,7 +16,7 @@ import (
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
-const machineTypeLabel = "machine-type"
+const machineTypeLabelName = "machine-type"
 
 var (
 	flagSabakanAddress = flag.String("sabakan-address", "http://localhost:10080", "sabakan address")
@@ -149,21 +149,30 @@ func findMember(members []serf.Member, addr string) *serf.Member {
 }
 
 func findMachineType(m *machine, config *config) *machineType {
-	machineType, ok := m.Spec.Labels[machineTypeLabel]
-	if !ok {
-		log.Warn(machineTypeLabel+" is not set", map[string]interface{}{
+	mtLabel := findLabel(m.Spec.Labels, machineTypeLabelName)
+	if mtLabel == nil {
+		log.Warn(machineTypeLabelName+" is not set", map[string]interface{}{
 			"serial": m.Spec.Serial,
 		})
 		return nil
 	}
 	for _, mt := range config.MachineTypes {
-		if mt.Name == machineType {
+		if mt.Name == mtLabel.Value {
 			return &mt
 		}
 	}
 
-	log.Warn(machineTypeLabel+"["+machineType+"] is not defined", map[string]interface{}{
+	log.Warn(machineTypeLabelName+"["+mtLabel.Value+"] is not defined", map[string]interface{}{
 		"serial": m.Spec.Serial,
 	})
+	return nil
+}
+
+func findLabel(labels []label, key string) *label {
+	for _, l := range labels {
+		if l.Name == key {
+			return &l
+		}
+	}
 	return nil
 }

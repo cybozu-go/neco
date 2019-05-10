@@ -31,9 +31,14 @@ type machine struct {
 }
 
 type spec struct {
-	Serial string            `json:"serial"`
-	IPv4   []string          `json:"ipv4"`
-	Labels map[string]string `json:"labels"`
+	Serial string   `json:"serial"`
+	IPv4   []string `json:"ipv4"`
+	Labels []label  `json:"labels"`
+}
+
+type label struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 type gqlClient struct {
@@ -87,6 +92,10 @@ func (g *gqlClient) getSabakanMachines(ctx context.Context) (*searchMachineRespo
     spec {
       serial
       ipv4
+      labels {
+        name
+        value
+      }
     }
   }
 }`,
