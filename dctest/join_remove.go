@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -154,8 +153,13 @@ func TestJoinRemove() {
 
 	It("should set state of boot-3 to unreachable", func() {
 		By("Stopping boot-3")
-		out, err := exec.Command("sudo", "pmctl", "node", "action", "stop", "boot-3").Output()
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s", out)
+		// In DCtest on CircleCI, ginkgo is executed in the operation pod, so you cannot use pmctl in this context.
+		// This error is ignored deliberately, because this SSH session is closed by remote host when it is succeeded.
+		stdout, stderr, _ := execAt(boot3, "sudo", "shutdown", "now")
+		log.Info("boot-3 is stopped", map[string]interface{}{
+			"stdout": string(stdout),
+			"stderr": string(stderr),
+		})
 
 		By("Checking boot-3 machine state")
 		Eventually(func() error {
