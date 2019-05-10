@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -63,27 +64,6 @@ func TestJoinRemove() {
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "node-exporter.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "sabakan-state-setter.timer")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "etcd-backup.timer")
-	})
-
-	It("should success initialize sabakan", func() {
-		token := getVaultToken()
-		stdout, stderr, err := execAt(
-			boot3, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "sabakan")
-		if err != nil {
-			log.Error("neco init-local sabakan", map[string]interface{}{
-				"host":   boot3,
-				"stdout": string(stdout),
-				"stderr": string(stderr),
-			})
-			Expect(err).NotTo(HaveOccurred())
-		}
-		execSafeAt(boot3, "test", "-d", neco.SabakanDataDir)
-		execSafeAt(boot3, "test", "-f", neco.SabakanConfFile)
-		execSafeAt(boot3, "test", "-f", neco.SabakanKeyFile)
-		execSafeAt(boot3, "test", "-f", neco.SabakanCertFile)
-		execSafeAt(boot3, "test", "-f", neco.SabactlBashCompletionFile)
-
-		execSafeAt(boot3, "systemctl", "-q", "is-active", "sabakan.service")
 	})
 
 	It("should setup hw", func() {
@@ -184,9 +164,9 @@ func TestJoinRemove() {
 	})
 
 	It("should shutdown boot-3", func() {
-		By("Running neco power stop")
-		stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "stop", boot3)
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		By("Stopping boot-3")
+		out, err := exec.Command("sudo", "pmctl", "node", "action", "stop", "boot-3").Output()
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s", out)
 
 		By("Checking boot-3 machine state")
 		Eventually(func() error {
