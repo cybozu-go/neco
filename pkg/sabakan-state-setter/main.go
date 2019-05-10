@@ -90,7 +90,7 @@ func run(ctx context.Context) error {
 	// Get machine metrics
 	env := well.NewEnvironment(ctx)
 	for _, m := range mss {
-		if len(m.machineType.MetricsCheckList) == 0 {
+		if m.machineType == nil || len(m.machineType.MetricsCheckList) == 0 {
 			continue
 		}
 		source := m
@@ -130,7 +130,7 @@ func run(ctx context.Context) error {
 	return nil
 }
 
-func newMachineStateSource(m machine, members []serf.Member, cfg *connfig) machineStateSource {
+func newMachineStateSource(m machine, members []serf.Member, cfg *config) machineStateSource {
 	return machineStateSource{
 		serial:      m.Spec.Serial,
 		ipv4:        m.Spec.IPv4[0],
@@ -148,11 +148,11 @@ func findMember(members []serf.Member, addr string) *serf.Member {
 	return nil
 }
 
-func findMachineType(m *machine, config *connfig) *machineType {
+func findMachineType(m *machine, config *config) *machineType {
 	machineType, ok := m.Spec.Labels[machineTypeLabel]
 	if !ok {
 		log.Warn(machineTypeLabel+" is not set", map[string]interface{}{
-			"machine-spec-ipv4": m.Spec.IPv4,
+			"serial": m.Spec.Serial,
 		})
 		return nil
 	}
@@ -161,5 +161,9 @@ func findMachineType(m *machine, config *connfig) *machineType {
 			return &mt
 		}
 	}
+
+	log.Warn(machineTypeLabel+"["+machineType+"] is not defined", map[string]interface{}{
+		"serial": m.Spec.Serial,
+	})
 	return nil
 }
