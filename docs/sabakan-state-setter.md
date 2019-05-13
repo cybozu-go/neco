@@ -13,14 +13,14 @@ See machine state types at [Sabakan lifecycle management](https://github.com/cyb
 
 - Set `Healthy`
   - serf status is `alive`.
-  - serf tags `systemd-units-failed` has no errors or not set.
+  - serf tags `systemd-units-failed` is set and has no errors.
   - All of later mentioned machine peripherals are healthy.
 - Set `Unreachable`
   - serf status is `failed`, `left` or machine is not yet as a serf member. It is the same as that `sabakan-state-setter` can not access monitor-hw metrics.
 - Set `Unhealthy`
   - serf status is `alive`.
   - At least one of them matches:
-    - serf tags `systemd-units-failed` has errors.
+    - serf tags `systemd-units-failed` is not set or has errors.
     - `sabakan-state-setter` can not retrieve monitor-hw metrics.
     - At least one of later mentioned machine peripherals is unhealthy.
 - Nothing to set machine state
