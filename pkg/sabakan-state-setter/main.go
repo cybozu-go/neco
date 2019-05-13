@@ -21,6 +21,7 @@ const machineTypeLabelName = "machine-type"
 var (
 	flagSabakanAddress = flag.String("sabakan-address", "http://localhost:10080", "sabakan address")
 	flagConfigFile     = flag.String("config-file", "", "path of config file")
+	flagParallelSize   = flag.Int("parallel", 30, "parallel size")
 )
 
 type machineStateSource struct {
@@ -88,13 +89,21 @@ func run(ctx context.Context) error {
 	}
 
 	// Get machine metrics
+	smf := make(chan struct{}, *flagParallelSize)
+	for i := 0; i < *flagParallelSize; i++ {
+		smf <- struct{}{}
+	}
 	env := well.NewEnvironment(ctx)
 	for _, m := range mss {
 		if m.machineType == nil || len(m.machineType.MetricsCheckList) == 0 {
 			continue
 		}
 		source := m
-		env.Go(source.getMetrics)
+		env.Go(func(ctx context.Context) error {
+			<-smf
+			defer func() { smf <- struct{}{} }()
+			return source.getMetrics(ctx)
+		})
 	}
 	env.Stop()
 	err = env.Wait()
