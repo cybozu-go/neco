@@ -1,28 +1,20 @@
 machine-types:
   - name: qemu
-  - name: dell-14g-boot
+  - name: staging-dell-14g-boot
     metrics:
       - name: hw_processor_status_health
       - name: hw_system_memory_summary_status_health
-      - name: hw_chassis_temperature_status_health
       - name: hw_chassis_voltage_status_health
       - name: hw_storage_device_status_health
-      - name: hw_storage_controller_status_health
-        labels:
-          controller: AHCI.Slot.1-1
       - name: hw_storage_controller_status_health
         labels:
           controller: PCIeSSD.Slot.2-C
-  - name: dell-14g-cs
+  - name: staging-dell-14g-cs
     metrics:
       - name: hw_processor_status_health
       - name: hw_system_memory_summary_status_health
-      - name: hw_chassis_temperature_status_health
       - name: hw_chassis_voltage_status_health
       - name: hw_storage_device_status_health
-      - name: hw_storage_controller_status_health
-        labels:
-          controller: AHCI.Slot.1-1
       - name: hw_storage_controller_status_health
         labels:
           controller: PCIeSSD.Slot.2-C
