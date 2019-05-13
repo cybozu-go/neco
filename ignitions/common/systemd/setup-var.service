@@ -1,8 +1,9 @@
 [Unit]
 Description=Setup filesystem for /var
-Wants=lvm2-lvmetad.service
+Wants=lvm2-lvmetad.service lvm2-monitor.service
 Requires=sabakan-cryptsetup.service
 After=lvm2-lvmetad.service sabakan-cryptsetup.service
+Before=lvm2-monitor.service
 DefaultDependencies=no
 
 [Service]
