@@ -10,6 +10,7 @@ var BootstrapSuite = func() {
 	Context("sabakan", TestSabakan)
 	Context("machines", TestMachines)
 	Context("init-data", TestInitData)
+	Context("sabakan-state-setter", TestSabakanStateSetter)
 	Context("cke", func() {
 		TestCKESetup()
 		TestCKE()

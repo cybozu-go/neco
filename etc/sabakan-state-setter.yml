@@ -1,5 +1,14 @@
 machine-types:
   - name: qemu
+    metrics:
+      - name: hw_processor_status_health
+      - name: hw_storage_controller_status_health
+        labels:
+          controller: PCIeSSD.Slot.2-C
+          system: System.Embedded.1
+      - name: hw_storage_controller_status_health
+        labels:
+          controller: PCIeSSD.Slot.3-C
   - name: staging-dell-14g-boot
     metrics:
       - name: hw_processor_status_health
