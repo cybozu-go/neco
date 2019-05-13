@@ -60,19 +60,29 @@ You can configure a set of metrics to scrape for each machine type.
 | -------------------                               | ------------------------ | --------------                                                                                      |
 | `machine-types` [MachineType](#MachineType) array | `nil`                    | Machine types is a list of `MachineType`. You should list all machine types used in your data center. |
 
+If all metrics defined in the config file are healthy, the machine is healthy. Otherwise, it's unhealthy.
+
 ### `MachineType`
 
 | Field                             | Default value            | Description                                                                                                               |
 | -------------------               | ------------------------ | --------------                                                                                                            |
 | `name` string                     | `''`                     | Name of this machine type. It is expected that this field is unique in setting file.                                      |
-| `metrics` [Metric](#Metric) array | `nil`                    | Metrics is a array of `Metric`. If any of the metrics declared in this list are not healthy, then the machine is unhealthy. |
+| `metrics` [Metric](#Metric) array | `nil`                    | Metrics is an array of `Metric` to be checked. |
 
 ### `Metric`
 
 | Field                        | Default value            | Description                                                                                                    |
 | -------------------          | ------------------------ | --------------                                                                                                 |
 | `name` string                | `''`                     | Name of this metric.                                                                                           |
-| `labels` `map[string]string` | `nil`                    | Label map. The machine will be Unhealthy unless all labels defined in labels are present and not healthy. |
+| `labels` `map[string]string` | `nil`                    | Check all metrics named `name` having labels in `labels`. If `labels` is `nil`, check all metrics named `name`.  |
+
+The meaning of `name` and `labels` are the same as Prometheus.
+
+https://prometheus.io/docs/concepts/data_model/#metric-names-and-labels
+
+Please refer to the following link to know how to define `name` and `labels`.
+
+https://github.com/cybozu-go/setup-hw/blob/master/docs/rule.md
 
 [serf]: https://www.serf.io/
 [monitor-hw]: https://github.com/cybozu-go/setup-hw/blob/master/docs/monitor-hw.md
