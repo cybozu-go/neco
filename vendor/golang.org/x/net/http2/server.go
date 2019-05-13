@@ -1594,6 +1594,12 @@ func (sc *serverConn) processData(f *DataFrame) error {
 		// type PROTOCOL_ERROR."
 		return ConnectionError(ErrCodeProtocol)
 	}
+	// RFC 7540, sec 6.1: If a DATA frame is received whose stream is not in
+	// "open" or "half-closed (local)" state, the recipient MUST respond with a
+	// stream error (Section 5.4.2) of type STREAM_CLOSED.
+	if state == stateClosed {
+		return streamError(id, ErrCodeStreamClosed)
+	}
 	if st == nil || state != stateOpen || st.gotTrailerHeader || st.resetQueued {
 		// This includes sending a RST_STREAM if the stream is
 		// in stateHalfClosedLocal (which currently means that
@@ -2307,16 +2313,7 @@ type chunkWriter struct{ rws *responseWriterState }
 
 func (cw chunkWriter) Write(p []byte) (n int, err error) { return cw.rws.writeChunk(p) }
 
-func (rws *responseWriterState) hasTrailers() bool { return len(rws.trailers) > 0 }
-
-func (rws *responseWriterState) hasNonemptyTrailers() bool {
-	for _, trailer := range rws.trailers {
-		if _, ok := rws.handlerHeader[trailer]; ok {
-			return true
-		}
-	}
-	return false
-}
+func (rws *responseWriterState) hasTrailers() bool { return len(rws.trailers) != 0 }
 
 // declareTrailer is called for each Trailer header when the
 // response header is written. It notes that a header will need to be
@@ -2416,10 +2413,7 @@ func (rws *responseWriterState) writeChunk(p []byte) (n int, err error) {
 		rws.promoteUndeclaredTrailers()
 	}
 
-	// only send trailers if they have actually been defined by the
-	// server handler.
-	hasNonemptyTrailers := rws.hasNonemptyTrailers()
-	endStream := rws.handlerDone && !hasNonemptyTrailers
+	endStream := rws.handlerDone && !rws.hasTrailers()
 	if len(p) > 0 || endStream {
 		// only send a 0 byte DATA frame if we're ending the stream.
 		if err := rws.conn.writeDataFromHandler(rws.stream, p, endStream); err != nil {
@@ -2428,7 +2422,7 @@ func (rws *responseWriterState) writeChunk(p []byte) (n int, err error) {
 		}
 	}
 
-	if rws.handlerDone && hasNonemptyTrailers {
+	if rws.handlerDone && rws.hasTrailers() {
 		err = rws.conn.writeHeaders(rws.stream, &writeResHeaders{
 			streamID:  rws.stream.id,
 			h:         rws.handlerHeader,
