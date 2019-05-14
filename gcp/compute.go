@@ -226,13 +226,12 @@ func (cc *ComputeClient) DeleteInstance(ctx context.Context) error {
 // WaitInstance waits given instance until online
 func (cc *ComputeClient) WaitInstance(ctx context.Context) error {
 	gcmd := cc.gCloudComputeSSH([]string{"date"})
-	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-
 	return neco.RetryWithSleep(ctx, retryCount, time.Second,
 		func(ctx context.Context) error {
+			c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+			c.Stdin = os.Stdin
+			c.Stdout = os.Stdout
+			c.Stderr = os.Stderr
 			return c.Run()
 		},
 		func(err error) {
