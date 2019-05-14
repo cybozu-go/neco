@@ -2,8 +2,7 @@ package setupserftags
 
 import "text/template"
 
-var scriptTmpl = template.Must(template.New("setup-serf-tags").Parse(`
-#!/bin/sh
+var scriptTmpl = template.Must(template.New("setup-serf-tags").Parse(`#!/bin/sh
 
 # list failed unit names
 # limit to 300 bytes because whole length of tags must be < 512 bytes.

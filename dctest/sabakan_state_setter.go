@@ -23,7 +23,7 @@ func TestSabakanStateSetter() {
 		for _, boot := range []string{boot0, boot1, boot2, boot3} {
 			_, _, err = execAtWithInput(boot, []byte(fileContent), "dd", "of="+fileName)
 			Expect(err).ShouldNot(HaveOccurred())
-			_, _, err = execAt(boot, "mv", fileName, filepath.Join("/etc/neco/", fileName))
+			_, _, err = execAt(boot, "sudo", "mv", fileName, filepath.Join("/etc/neco/", fileName))
 			Expect(err).ShouldNot(HaveOccurred())
 		}
 		machines, err := getMachinesSpecifiedRole("worker")
