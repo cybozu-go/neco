@@ -7,7 +7,7 @@ var CurrentArtifacts = ArtifactSet{
 	Images: []ContainerImage{
 		{Name: "cke", Repository: "quay.io/cybozu/cke", Tag: "1.14.0", Private: false},
 		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.3.12.2", Private: false},
-		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.3.0", Private: true},
+		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.4.0", Private: true},
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.4.0", Private: false},
 		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.8.1.7", Private: false},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.0.3.2", Private: false},
