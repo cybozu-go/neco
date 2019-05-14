@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,9 +19,7 @@ func TestSabakanStateSetter() {
 		fileName := "dummy_redfish_data.json"
 		fileContent, err := generateFileContent("OK", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C")
 		Expect(err).ShouldNot(HaveOccurred())
-		err = neco.WriteFile(fileName, fileContent)
-		Expect(err).ShouldNot(HaveOccurred())
-		for _, boot := range []string{boot0, boot1, boot2} {
+		for _, boot := range []string{boot0, boot1, boot2, boot3} {
 			_, _, err = execAtWithInput(boot, []byte(fileContent), "dd", "of="+fileName)
 			Expect(err).ShouldNot(HaveOccurred())
 			_, _, err = execAt(boot, "mv", fileName, filepath.Join("/etc/neco/", fileName))

@@ -31,6 +31,8 @@ var BootstrapSuite = func() {
 var FunctionsSuite = func() {
 	BootstrapSuite()
 	Context("join/remove", TestJoinRemove)
+	Context("parts failure", TestPartsFailure)
+	Context("parts missing", TestPartsMissing)
 }
 
 // RebootSuite is a test suite that tests disaster recovery scenario
