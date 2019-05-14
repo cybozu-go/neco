@@ -82,6 +82,29 @@ func TestJoinRemove() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
+	It("should setup sabakan on boot-3", func() {
+		stdout, stderr, err := execAt(
+			boot3, "sudo", "env", "VAULT_TOKEN="+getVaultToken(), "neco", "init-local", "sabakan")
+		if err != nil {
+			log.Error("neco init-local sabakan", map[string]interface{}{
+				"host":   boot3,
+				"stdout": string(stdout),
+				"stderr": string(stderr),
+			})
+			Expect(err).NotTo(HaveOccurred())
+		}
+	})
+
+	It("should setup boot-3 hardware", func() {
+		Eventually(func() error {
+			stdout, stderr, err := execAt(boot3, "sudo", "neco", "bmc", "setup-hw")
+			if err != nil {
+				return fmt.Errorf("neco bmc setup-hw failed; host: %s, err: %s, stdout: %s, stderr: %s", boot3, err, stdout, stderr)
+			}
+			return nil
+		}).Should(Succeed())
+	})
+
 	It("should add boot-3 to etcd cluster", func() {
 		stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
 			"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
