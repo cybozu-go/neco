@@ -64,7 +64,7 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
         "data": {
             "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.1",
             "Status": {
-                "Health": "OK",
+                "Health": "OK"
             }
         }
     },
@@ -73,7 +73,7 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
         "data": {
             "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.2",
             "Status": {
-                "Health": "{{ .Health1 }}",
+                "Health": "{{ .Health1 }}"
             }
         }
     },
@@ -82,7 +82,7 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
         "data": {
             "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Storage/AHCI.Slot.1-1",
             "Status": {
-                "Health": "OK",
+                "Health": "OK"
             }
         }
     },
@@ -91,7 +91,7 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
         "data": {
             "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Controller1 }}",
             "Status": {
-                "Health": "{{ .Health2 }}",
+                "Health": "{{ .Health2 }}"
             }
         }
     },
@@ -100,7 +100,7 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
         "data": {
             "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Controller2 }}",
             "Status": {
-                "Health": "{{ .Health3 }}",
+                "Health": "{{ .Health3 }}"
             }
         }
     }

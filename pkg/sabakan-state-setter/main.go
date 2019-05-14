@@ -147,6 +147,7 @@ func newMachineStateSource(m machine, members []serf.Member, cfg *config) machin
 		ipv4:        m.Spec.IPv4[0],
 		serfStatus:  findMember(members, m.Spec.IPv4[0]),
 		machineType: findMachineType(&m, cfg),
+		metrics:     map[string]machineMetrics{},
 	}
 }
 
