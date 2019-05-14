@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"text/template"
 
@@ -26,12 +27,19 @@ func TestSabakanStateSetter() {
 			Expect(err).ShouldNot(HaveOccurred())
 		}
 		machines, err := getMachinesSpecifiedRole("worker")
-		for _, m := range machines {
-			stdout, stderr, err := execAt(boot0, "ckecli", "scp", filepath.Join("/etc/neco/", fileName), "cybozu@"+m.Spec.IPv4[0]+":")
-			Expect(err).ShouldNot(HaveOccurred(), "machine:%s, stdout:%s, stderr:%s", m.Spec.IPv4[0], stdout, stderr)
-			stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+m.Spec.IPv4[0], "sudo", "mv", fileName, filepath.Join("/etc/neco", fileName))
-			Expect(err).ShouldNot(HaveOccurred(), "machine:%s, stdout:%s, stderr:%s", m.Spec.IPv4[0], stdout, stderr)
-		}
+		Eventually(func() error {
+			for _, m := range machines {
+				stdout, stderr, err := execAt(boot0, "ckecli", "scp", filepath.Join("/etc/neco/", fileName), "cybozu@"+m.Spec.IPv4[0]+":")
+				if err != nil {
+					return fmt.Errorf("machine: %s, stdout:%s, stderr:%s, err:%v", m.Spec.IPv4[0], stdout, stderr, err)
+				}
+				stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+m.Spec.IPv4[0], "sudo", "mv", fileName, filepath.Join("/etc/neco", fileName))
+				if err != nil {
+					return fmt.Errorf("machine: %s, stdout:%s, stderr:%s, err:%v", m.Spec.IPv4[0], stdout, stderr, err)
+				}
+				return nil
+			}
+		}).Should(Succeed())
 
 		By("checking all machine's state")
 		Eventually(func() error {
