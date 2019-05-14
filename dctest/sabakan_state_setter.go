@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+// TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter() {
 	It("is confirmed that states of all machines are healthy", func() {
 		By("copying dummy_redfish_data.json to all nodes")
@@ -125,10 +126,9 @@ func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
 		if role == "" {
 			stdout, _, err := execAt(boot0, "sabactl", "machines", "get")
 			return stdout, err
-		} else {
-			stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", role)
-			return stdout, err
 		}
+		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", role)
+		return stdout, err
 	}(role)
 
 	if err != nil {

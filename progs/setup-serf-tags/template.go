@@ -1,4 +1,4 @@
-package setup_serf_tags
+package setupserftags
 
 import "text/template"
 
