@@ -37,8 +37,8 @@ func TestSabakanStateSetter() {
 				if err != nil {
 					return fmt.Errorf("machine: %s, stdout:%s, stderr:%s, err:%v", m.Spec.IPv4[0], stdout, stderr, err)
 				}
-				return nil
 			}
+			return nil
 		}).Should(Succeed())
 
 		By("checking all machine's state")
