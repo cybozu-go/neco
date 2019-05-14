@@ -48,6 +48,9 @@ func TestSabakanStateSetter() {
 				return err
 			}
 			for _, m := range machines {
+				if m.Spec.Rack == 3 && m.Spec.Role == "boot" {
+					continue
+				}
 				if m.Status.State.String() != "healthy" {
 					return errors.New(m.Spec.Serial + " is not healthy:" + m.Status.State.String())
 				}
