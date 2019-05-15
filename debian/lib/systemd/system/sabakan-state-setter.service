@@ -1,0 +1,8 @@
+[Unit]
+Description=Sabakan state setter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sabakan-state-setter -config-file=/usr/share/neco/sabakan-state-setter.yml
