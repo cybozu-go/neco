@@ -25,6 +25,10 @@ lvsize() {
 }
 
 prepare_lv() {
+    # enable COW volume auto extension
+    lvmconfig --config activation/snapshot_autoextend_threshold=70 \
+      --withsummary --withcomments --withspaces --withversions -f /etc/lvm/lvm.conf
+
     # When lvmetad is used, PVs are not scaned by vgchange.
     # We need to scan PVs manually and send infomation to lvmetad. 
     pvscan --cache -a ay
