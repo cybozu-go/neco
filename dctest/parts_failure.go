@@ -12,14 +12,14 @@ import (
 )
 
 func isNodeNumEqual(num int) error {
-	stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+	stdout, stderr, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
 	if err != nil {
-		return err
+		return fmt.Errorf("kubectl get nodes -o json failed. err: %v, stdout: %s, stderr: %s", err, stdout, stderr)
 	}
 	var nl corev1.NodeList
 	err = json.Unmarshal(stdout, &nl)
 	if err != nil {
-		return err
+		return fmt.Errorf("unmarshal failed. err: %v", err)
 	}
 	if len(nl.Items) != num {
 		return fmt.Errorf("cluster node should be %d, but %d", num, len(nl.Items))
