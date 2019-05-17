@@ -3,16 +3,18 @@ package dctest
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // TestPartsFailure test parts failure scenario
 func TestPartsFailure() {
-	It("transitition machine state to unhealthy", func() {
+	It("transition machine state to unhealthy", func() {
 		By("changing mock server response")
 		fileName := "dummy_redfish_data.json"
 		fileContent, err := generateFileContent("Warning", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C")
@@ -42,9 +44,26 @@ func TestPartsFailure() {
 			}
 			return nil
 		}).Should(Succeed())
+
+		By("checking the number of cluster nodes")
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+			if err != nil {
+				return err
+			}
+			var nl corev1.NodeList
+			err = json.Unmarshal(stdout, &nl)
+			if err != nil {
+				return err
+			}
+			if len(nl.Items) != 6 {
+				return fmt.Errorf("cluster node should be 6, but %d", len(nl.Items))
+			}
+			return nil
+		}).Should(Succeed())
 	})
 
-	It("transitition machine state to healthy", func() {
+	It("transition machine state to healthy", func() {
 		By("changing mock server response")
 		fileName := "dummy_redfish_data.json"
 		fileContent, err := generateFileContent("OK", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C")
@@ -72,6 +91,20 @@ func TestPartsFailure() {
 					return errors.New(m.Spec.Serial + " is not healthy:" + m.Status.State.String())
 				}
 			}
+			return nil
+		}).Should(Succeed())
+	})
+
+	It("removes one extra node which is joined as a result of unhealthy machine", func() {
+		By("removing one extra node")
+		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
+		Expect(err).ShouldNot(HaveOccurred())
+		var machines []sabakan.Machine
+		err = json.Unmarshal(stdout, &machines)
+		Expect(err).ShouldNot(HaveOccurred())
+		targetIP := machines[0].Spec.IPv4[0]
+		stdout, _, err = execAt(boot0, "neco", "ipmipower", "stop", targetIP)
+		Eventually(func() error {
 			return nil
 		}).Should(Succeed())
 	})
