@@ -11,6 +11,7 @@ const (
 	monitorHWStatusCritical = "2"
 	monitorHWStatusNull     = "-1"
 	systemdUnitsFailedTag   = "systemd-units-failed"
+	noStateTransition       = "no-transition"
 )
 
 func decideSabakanState(ms machineStateSource) string {
@@ -20,7 +21,13 @@ func decideSabakanState(ms machineStateSource) string {
 
 	suf, ok := ms.serfStatus.Tags[systemdUnitsFailedTag]
 	if !ok {
-		return sabakan.StateUnhealthy.GQLEnum()
+		state := decideByMonitorHW(ms)
+		if state == sabakan.StateHealthy.GQLEnum() {
+			// Do nothing if there is no systemd-units-failed tag and no hardware failure.
+			// In this case, the machine is starting up.
+			return noStateTransition
+		}
+		return state
 	}
 
 	if len(suf) != 0 {

@@ -117,6 +117,9 @@ func run(ctx context.Context) error {
 	// For each machine sources, decide its next state, then update sabakan
 	for _, ms := range mss {
 		state := decideSabakanState(ms)
+		if state == noStateTransition {
+			continue
+		}
 		err = gql.setSabakanState(ctx, ms, state)
 		if err != nil {
 			switch e := err.(type) {
