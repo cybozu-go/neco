@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -37,6 +38,43 @@ func TestRebootAllNodes() {
 			_, _, err = execAt(boot0, "neco", "ipmipower", "start", m.Spec.IPv4[0])
 			Expect(err).ShouldNot(HaveOccurred())
 		}
+
+		fileName := "dummy_redfish_data.json"
+		fileContent, err := generateFileContent("OK", "OK", "OK", "PCIeSSD.Slot.2-C", "	PCIeSSD.Slot.3-C")
+		Expect(err).ShouldNot(HaveOccurred())
+		_, _, err = execAtWithInput(boot0, []byte(fileContent), "dd", "of="+fileName)
+		Expect(err).ShouldNot(HaveOccurred())
+		Eventually(func() error {
+			for _, m := range machines {
+				stdout, stderr, err := execAt(boot0, "ckecli", "scp", filepath.Join("/etc/neco/", fileName), "cybozu@"+m.Spec.IPv4[0]+":")
+				if err != nil {
+					return fmt.Errorf("machine: %s, stdout:%s, stderr:%s, err:%v", m.Spec.IPv4[0], stdout, stderr, err)
+				}
+				stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+m.Spec.IPv4[0], "sudo", "mv", fileName, filepath.Join("/etc/neco", fileName))
+				if err != nil {
+					return fmt.Errorf("machine: %s, stdout:%s, stderr:%s, err:%v", m.Spec.IPv4[0], stdout, stderr, err)
+				}
+			}
+			return nil
+		}).Should(Succeed())
+	})
+
+	It("recovers 5 nodes", func() {
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+			if err != nil {
+				return err
+			}
+			var nl corev1.NodeList
+			err = json.Unmarshal(stdout, &nl)
+			if err != nil {
+				return err
+			}
+			if len(nl.Items) != 5 {
+				return fmt.Errorf("too few nodes: %d", len(nl.Items))
+			}
+			return nil
+		}).Should(Succeed())
 	})
 
 	It("sets all nodes' machine state to healthy", func() {
@@ -60,24 +98,6 @@ func TestRebootAllNodes() {
 				}
 			}
 
-			return nil
-		}).Should(Succeed())
-	})
-
-	It("recovers 5 nodes", func() {
-		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
-			if err != nil {
-				return err
-			}
-			var nl corev1.NodeList
-			err = json.Unmarshal(stdout, &nl)
-			if err != nil {
-				return err
-			}
-			if len(nl.Items) != 5 {
-				return fmt.Errorf("too few nodes: %d", len(nl.Items))
-			}
 			return nil
 		}).Should(Succeed())
 	})
