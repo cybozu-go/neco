@@ -4,35 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"path"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 )
-
-func copyDummyRedfishData(ip, health1, health2, health3 string) error {
-	fileName := "dummy_redfish_data.json"
-	fileContent, err := generateFileContent(health1, health2, health3, "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C")
-	if err != nil {
-		return err
-	}
-	_, _, err = execAtWithInput(boot0, []byte(fileContent), "dd", "of="+fileName)
-	if err != nil {
-		return err
-	}
-
-	_, _, err = execAt(boot0, "ckecli", "scp", fileName, "cybozu@"+ip+":")
-	if err != nil {
-		return err
-	}
-	_, _, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+ip, "sudo", "mv", fileName, path.Join("/etc/neco", fileName))
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func isNodeNumEqual(num int) error {
 	stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
@@ -63,9 +40,9 @@ func TestPartsFailure() {
 		Expect(err).ShouldNot(HaveOccurred())
 		targetIP = nl.Items[0].Name
 
-		By("copying dummy redfish data to" + targetIP)
+		By("copying dummy redfish data to " + targetIP)
 		Eventually(func() error {
-			return copyDummyRedfishData(targetIP, "Warning", "OK", "OK")
+			return copyDummyWarningRedfishDataToWorker(targetIP)
 		}).Should(Succeed())
 
 		By("checking machine state")
@@ -94,9 +71,9 @@ func TestPartsFailure() {
 	})
 
 	It("transition machine state to healthy", func() {
-		By("copying dummy redfish data to" + targetIP)
+		By("copying dummy redfish data to " + targetIP)
 		Eventually(func() error {
-			return copyDummyRedfishData(targetIP, "OK", "OK", "OK")
+			return copyDummyHealthyRedfishDataToWorker(targetIP)
 		}).Should(Succeed())
 
 		By("checking machine state")
@@ -119,7 +96,7 @@ func TestPartsFailure() {
 		}).Should(Succeed())
 	})
 
-	It("removes one extra node which is joined as a result of unhealthy machine", func() {
+	It("removes one extra node which is joined as a result of this test", func() {
 		By("removing one extra node")
 		_, _, err := execAt(boot0, "neco", "ipmipower", "stop", targetIP)
 		Expect(err).ShouldNot(HaveOccurred())
@@ -133,9 +110,9 @@ func TestPartsFailure() {
 		_, _, err = execAt(boot0, "neco", "ipmipower", "start", targetIP)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		By("copying dummy redfish data to" + targetIP)
+		By("copying dummy redfish data to " + targetIP)
 		Eventually(func() error {
-			return copyDummyRedfishData(targetIP, "OK", "OK", "OK")
+			return copyDummyHealthyRedfishDataToWorker(targetIP)
 		}).Should(Succeed())
 
 		By("changing mock server response")
