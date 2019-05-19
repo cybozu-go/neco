@@ -8,6 +8,7 @@ import (
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	yaml "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -32,13 +33,24 @@ func TestPartsFailure() {
 	var targetIP string
 
 	It("transition machine state to unhealthy", func() {
-		stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+		stdout, stderr, err := execAt(boot0, "ckecli",
+			"cluster", "get")
+		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+
+		cluster := new(ckeCluster)
+		err = yaml.Unmarshal(stdout, cluster)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		var nl corev1.NodeList
-		err = json.Unmarshal(stdout, &nl)
+		for _, n := range cluster.Nodes {
+			if !n.ControlPlane {
+				targetIP = n.Address
+				break
+			}
+		}
+		if targetIP == "" {
+			err = errors.New("Unable to find non controller node")
+		}
 		Expect(err).ShouldNot(HaveOccurred())
-		targetIP = nl.Items[0].Name
 
 		By("copying dummy redfish data to " + targetIP)
 		Eventually(func() error {
