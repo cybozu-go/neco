@@ -443,7 +443,7 @@ go.opencensus.io/trace/internal
 go.opencensus.io/trace/tracestate
 go.opencensus.io/resource
 go.opencensus.io
-# golang.org/x/crypto v0.0.0-20190424203555-c05e17bb3b2d
+# golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/curve25519
@@ -459,7 +459,7 @@ golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/cast5
 golang.org/x/crypto/openpgp/elgamal
-# golang.org/x/net v0.0.0-20190424112056-4829fb13d2c6
+# golang.org/x/net v0.0.0-20190514140710-3ec191127204
 golang.org/x/net/netutil
 golang.org/x/net/http2
 golang.org/x/net/context
@@ -485,7 +485,7 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20190425145619-16072639606e
+# golang.org/x/sys v0.0.0-20190516110030-61b9204099cb
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/cpu
