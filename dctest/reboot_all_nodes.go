@@ -61,19 +61,11 @@ func TestRebootAllNodes() {
 
 	It("recovers 5 nodes", func() {
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+			_, stderr, err := execAt(boot0, "ckecli", "kubernetes", "issue", ">", ".kube/config")
 			if err != nil {
-				return err
+				return fmt.Errorf("ckecli kubernetes issue failed. err: %v, stderr: %s", err, stderr)
 			}
-			var nl corev1.NodeList
-			err = json.Unmarshal(stdout, &nl)
-			if err != nil {
-				return err
-			}
-			if len(nl.Items) != 5 {
-				return fmt.Errorf("too few nodes: %d", len(nl.Items))
-			}
-			return nil
+			return isNodeNumEqual(5)
 		}).Should(Succeed())
 	})
 
