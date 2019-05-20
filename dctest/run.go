@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -198,38 +197,4 @@ func getVaultToken() string {
 	Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
 	return string(bytes.TrimSpace(stdout))
-}
-
-func copyDummyHealthyRedfishDataToWorker(ip string) error {
-	return copyDummyRedfishDataToWorker(ip, "OK", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C")
-}
-
-func copyDummyWarningRedfishDataToWorker(ip string) error {
-	return copyDummyRedfishDataToWorker(ip, "Warning", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C")
-}
-
-func copyDummyMissingRedfishDataToWorker(ip string) error {
-	return copyDummyRedfishDataToWorker(ip, "OK", "OK", "OK", "PCIeSSD.Slot.XXX", "	PCIeSSD.Slot.3-C")
-}
-
-func copyDummyRedfishDataToWorker(ip, health1, health2, health3, controller1, controller2 string) error {
-	fileName := "dummy_redfish_data.json"
-	fileContent, err := generateFileContent(health1, health2, health3, controller1, controller2)
-	if err != nil {
-		return err
-	}
-	_, _, err = execAtWithInput(boot0, []byte(fileContent), "dd", "of="+fileName)
-	if err != nil {
-		return err
-	}
-
-	_, _, err = execAt(boot0, "ckecli", "scp", fileName, "cybozu@"+ip+":")
-	if err != nil {
-		return err
-	}
-	_, _, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+ip, "sudo", "mv", fileName, filepath.Join("/etc/neco", fileName))
-	if err != nil {
-		return err
-	}
-	return nil
 }
