@@ -114,7 +114,6 @@ jobs:
             git config --global user.name "cybozu-neco"
       - run: git checkout release
       - run: git merge --no-commit ${CIRCLE_SHA1}
-      - run: cp artifacts.go artifacts_release.go
       - run:
           name: Check diff
           command: |
@@ -193,7 +192,7 @@ jobs:
       - run:
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/run-dctest-suite.sh upgrade
+            ./bin/run-dctest-suite.sh upgrade release
           no_output_timeout: 20m
   update-release:
       docker:
