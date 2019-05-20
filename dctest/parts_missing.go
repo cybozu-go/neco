@@ -29,10 +29,7 @@ func TestPartsMissing() {
 				break
 			}
 		}
-		if targetIP == "" {
-			err = errors.New("Unable to find non controller node")
-		}
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(targetIP).NotTo(Equal(""))
 
 		By("copying dummy redfish data to " + targetIP)
 		Eventually(func() error {
@@ -67,7 +64,7 @@ func TestPartsMissing() {
 	It("transition machine state to healthy", func() {
 		By("copying dummy redfish data to " + targetIP)
 		Eventually(func() error {
-			return copyDummyHealthyRedfishDataToWorker(targetIP)
+			return deleteDummyRedfishDataFromWorker(targetIP)
 		}).Should(Succeed())
 
 		By("checking machine state")
@@ -103,11 +100,6 @@ func TestPartsMissing() {
 		By("checking the state of the created machine")
 		_, _, err = execAt(boot0, "neco", "ipmipower", "start", targetIP)
 		Expect(err).ShouldNot(HaveOccurred())
-
-		By("copying dummy redfish data to " + targetIP)
-		Eventually(func() error {
-			return copyDummyHealthyRedfishDataToWorker(targetIP)
-		}).Should(Succeed())
 
 		By("changing mock server response")
 		Eventually(func() error {

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"path/filepath"
 	"text/template"
 
@@ -13,34 +12,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const dummyRedfishDataFile = "dummy_redfish_data.json"
+
 // TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter() {
 	It("is confirmed that states of all machines are healthy", func() {
-		By("copying dummy_redfish_data.json to all nodes")
-		fileName := "dummy_redfish_data.json"
-		fileContent, err := generateFileContent("OK", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C")
-		Expect(err).ShouldNot(HaveOccurred())
-		for _, boot := range []string{boot0, boot1, boot2, boot3} {
-			_, _, err = execAtWithInput(boot, []byte(fileContent), "dd", "of="+fileName)
-			Expect(err).ShouldNot(HaveOccurred())
-			_, _, err = execAt(boot, "sudo", "mv", fileName, filepath.Join("/etc/neco/", fileName))
-			Expect(err).ShouldNot(HaveOccurred())
-		}
-		machines, err := getMachinesSpecifiedRole("worker")
-		Eventually(func() error {
-			for _, m := range machines {
-				stdout, stderr, err := execAt(boot0, "ckecli", "scp", filepath.Join("/etc/neco/", fileName), "cybozu@"+m.Spec.IPv4[0]+":")
-				if err != nil {
-					return fmt.Errorf("machine: %s, stdout:%s, stderr:%s, err:%v", m.Spec.IPv4[0], stdout, stderr, err)
-				}
-				stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+m.Spec.IPv4[0], "sudo", "mv", fileName, filepath.Join("/etc/neco", fileName))
-				if err != nil {
-					return fmt.Errorf("machine: %s, stdout:%s, stderr:%s, err:%v", m.Spec.IPv4[0], stdout, stderr, err)
-				}
-			}
-			return nil
-		}).Should(Succeed())
-
 		By("checking all machine's state")
 		Eventually(func() error {
 			machines, err := getMachinesSpecifiedRole("")
@@ -65,7 +41,6 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
     {
         "path": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.1",
         "data": {
-            "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.1",
             "Status": {
                 "Health": "OK"
             }
@@ -74,7 +49,6 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
     {
         "path": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.2",
         "data": {
-            "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.2",
             "Status": {
                 "Health": "{{ .Health1 }}"
             }
@@ -83,7 +57,6 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
     {
         "path": "/redfish/v1/Systems/System.Embedded.1/Storage/AHCI.Slot.1-1",
         "data": {
-            "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Storage/AHCI.Slot.1-1",
             "Status": {
                 "Health": "OK"
             }
@@ -92,7 +65,6 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
     {
         "path": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Controller1 }}",
         "data": {
-            "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Controller1 }}",
             "Status": {
                 "Health": "{{ .Health2 }}"
             }
@@ -101,7 +73,6 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
     {
         "path": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Controller2 }}",
         "data": {
-            "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Controller2 }}",
             "Status": {
                 "Health": "{{ .Health3 }}"
             }
@@ -150,4 +121,34 @@ func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
 		return nil, err
 	}
 	return machines, nil
+}
+
+func copyDummyWarningRedfishDataToWorker(ip string) error {
+	return copyDummyRedfishDataToWorker(ip, "Warning", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C")
+}
+
+func copyDummyMissingRedfishDataToWorker(ip string) error {
+	return copyDummyRedfishDataToWorker(ip, "OK", "OK", "OK", "PCIeSSD.Slot.XXX", "	PCIeSSD.Slot.3-C")
+}
+
+func copyDummyRedfishDataToWorker(ip, health1, health2, health3, controller1, controller2 string) error {
+	fileContent, err := generateFileContent(health1, health2, health3, controller1, controller2)
+	if err != nil {
+		return err
+	}
+	_, _, err = execAtWithInput(boot0, []byte(fileContent), "dd", "of="+dummyRedfishDataFile)
+	if err != nil {
+		return err
+	}
+	_, _, err = execAt(boot0, "ckecli", "scp", dummyRedfishDataFile, "cybozu@"+ip+":")
+	if err != nil {
+		return err
+	}
+	_, _, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+ip, "sudo", "mv", dummyRedfishDataFile, filepath.Join("/etc/neco", dummyRedfishDataFile))
+	return err
+}
+
+func deleteDummyRedfishDataFromWorker(ip string) error {
+	_, _, err := execAt(boot0, "ckecli", "ssh", "cybozu@"+ip, "sudo", "rm", filepath.Join("/etc/neco", dummyRedfishDataFile))
+	return err
 }
