@@ -49,7 +49,7 @@ func TestPartsFailure() {
 		}
 		Expect(targetIP).NotTo(Equal(""))
 
-		By("copying dummy redfish data to " + targetIP)
+		By("copying dummy warning redfish data to " + targetIP)
 		Eventually(func() error {
 			return copyDummyWarningRedfishDataToWorker(targetIP)
 		}).Should(Succeed())
@@ -80,7 +80,7 @@ func TestPartsFailure() {
 	})
 
 	It("transition machine state to healthy", func() {
-		By("copying dummy redfish data to " + targetIP)
+		By("deleting dummy redfish data from " + targetIP)
 		Eventually(func() error {
 			return deleteDummyRedfishDataFromWorker(targetIP)
 		}).Should(Succeed())
