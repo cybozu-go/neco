@@ -41,10 +41,6 @@ func TestRebootAllNodes() {
 
 	It("recovers 5 nodes", func() {
 		Eventually(func() error {
-			_, stderr, err := execAt(boot0, "ckecli", "kubernetes", "issue", ">", ".kube/config")
-			if err != nil {
-				return fmt.Errorf("ckecli kubernetes issue failed. err: %v, stderr: %s", err, stderr)
-			}
 			return isNodeNumEqual(5)
 		}).Should(Succeed())
 	})
