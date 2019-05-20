@@ -39,8 +39,11 @@ func TestCKESetup() {
 
 		By("waiting for cluster.yml generation")
 		Eventually(func() error {
-			_, _, err := execAt(boot0, "ckecli", "cluster", "get")
-			return err
+			_, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
+			if err != nil {
+				return fmt.Errorf("stderr: %s, err: %v", stderr, err)
+			}
+			return nil
 		}, 20*time.Minute).Should(Succeed())
 	})
 }
