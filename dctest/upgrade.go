@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	yaml "gopkg.in/yaml.v2"
@@ -50,6 +51,23 @@ type rktManifest struct {
 
 // TestUpgrade test neco debian package upgrade scenario
 func TestUpgrade() {
+	It("should set `machine-type` label", func() {
+		stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get")
+		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+		var machines []sabakan.Machine
+		err = json.Unmarshal(stdout, &machines)
+		Expect(err).ShouldNot(HaveOccurred())
+		for _, m := range machines {
+			By("checking label: " + m.Spec.IPv4[0])
+			if val, ok := m.Spec.Labels["machine-type"]; ok && val != "" {
+				continue
+			}
+			_, stderr, err := execAt(boot0, "curl", "-sS", "-X", "PUT",
+				"-d", `{ "machine-type": "qemu" }`, "http://localhost:10080/api/v1/labels/"+m.Spec.Serial)
+			Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+		}
+	})
+
 	It("should update neco package", func() {
 		data, err := ioutil.ReadFile("../github-token")
 		switch {
