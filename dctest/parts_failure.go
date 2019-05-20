@@ -33,8 +33,7 @@ func TestPartsFailure() {
 	var targetIP string
 
 	It("transition machine state to unhealthy", func() {
-		stdout, stderr, err := execAt(boot0, "ckecli",
-			"cluster", "get")
+		stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
 		cluster := new(ckeCluster)
