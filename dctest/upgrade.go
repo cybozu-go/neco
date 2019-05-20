@@ -62,9 +62,11 @@ func TestUpgrade() {
 			if val, ok := m.Spec.Labels["machine-type"]; ok && val != "" {
 				continue
 			}
-			_, stderr, err := execAt(boot0, "curl", "-sS", "-X", "PUT",
-				"-d", `{ "machine-type": "qemu" }`, "http://localhost:10080/api/v1/labels/"+m.Spec.Serial)
+			By("setting label: " + m.Spec.IPv4[0])
+			stdout, _, err := execAt(boot0, "curl", "-sS", "--stderr", "-", "-X", "PUT",
+				"-d", `'{ "machine-type": "qemu" }'`, "http://localhost:10080/api/v1/labels/"+m.Spec.Serial)
 			Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+			Expect(string(stdout)).To(Equal(""))
 		}
 	})
 
