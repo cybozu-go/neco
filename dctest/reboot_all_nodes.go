@@ -47,9 +47,9 @@ func TestRebootAllNodes() {
 
 	It("sets all nodes' machine state to healthy", func() {
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
+			stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
 			if err != nil {
-				return err
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
 
 			var machines []sabakan.Machine
@@ -72,8 +72,11 @@ func TestRebootAllNodes() {
 
 	It("can access a pod from another pod running on different node, even after rebooting", func() {
 		Eventually(func() error {
-			_, _, err := execAt(boot0, "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
-			return err
+			stdout, stderr, err := execAt(boot0, "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			return nil
 		}).Should(Succeed())
 	})
 
@@ -84,9 +87,9 @@ func TestRebootAllNodes() {
 			"--image=quay.io/cybozu/testhttpd:0", "--image-pull-policy=Always", "--generator=run-pod/v1")
 		By("checking the pod is running")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "pod", testPod, "-o=json")
+			stdout, stderr, err := execAt(boot0, "kubectl", "get", "pod", testPod, "-o=json")
 			if err != nil {
-				return err
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
 			pod := new(corev1.Pod)
 			err = json.Unmarshal(stdout, &pod)

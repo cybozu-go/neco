@@ -39,9 +39,9 @@ func TestCKESetup() {
 
 		By("waiting for cluster.yml generation")
 		Eventually(func() error {
-			_, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
+			stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
 			if err != nil {
-				return fmt.Errorf("stderr: %s, err: %v", stderr, err)
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
 			return nil
 		}, 20*time.Minute).Should(Succeed())
@@ -53,9 +53,9 @@ func TestCKE() {
 	It("all systemd units are active", func() {
 		By("getting systemd unit statuses by serf members")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "os-name=\"Container Linux by CoreOS\"")
+			stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "os-name=\"Container Linux by CoreOS\"")
 			if err != nil {
-				return err
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
 			var m serfMemberContainer
 			err = json.Unmarshal(stdout, &m)
@@ -98,9 +98,9 @@ func TestCKE() {
 
 		By("waiting nodes")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+			stdout, stderr, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
 			if err != nil {
-				return err
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
 
 			var nl corev1.NodeList

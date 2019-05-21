@@ -175,9 +175,9 @@ func waitRequestComplete(check string) {
 	time.Sleep(time.Second * 2)
 
 	EventuallyWithOffset(1, func() error {
-		stdout, _, err := execAt(boot0, "neco", "status")
+		stdout, stderr, err := execAt(boot0, "neco", "status")
 		if err != nil {
-			return err
+			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		}
 		out := string(stdout)
 		if !strings.Contains(out, "status: completed") {
