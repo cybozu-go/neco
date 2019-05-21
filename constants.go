@@ -81,7 +81,6 @@ const (
 const (
 	SerfService = "serf"
 	SerfDir     = "/etc/serf"
-	SerfHandler = "/usr/sbin/sabakan-serf-handler"
 )
 
 // CKE params
