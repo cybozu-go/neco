@@ -12,6 +12,7 @@ type tags struct {
 type serfConfig struct {
 	Tags              tags     `json:"tags"`
 	Interface         string   `json:"interface"`
+	EventHandlers     []string `json:"event_handlers"`
 	ReconnectInterval string   `json:"reconnect_interval"`
 	ReconnectTimeout  string   `json:"reconnect_timeout"`
 	TombstoneTimeout  string   `json:"tombstone_timeout"`
@@ -39,6 +40,8 @@ ExecStart=/usr/bin/rkt run \
   --pull-policy never --net=host \
   --volume conf,kind=host,source=/etc/serf \
   --mount volume=conf,target=/etc/serf \
+  --volume handler,kind=host,source=/usr/sbin/sabakan-serf-handler \
+  --mount volume=handler,target=/usr/sbin/sabakan-serf-handler \
   --hostname %H \
   {{ .Image }} \
     --name serf \
