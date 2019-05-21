@@ -2,8 +2,6 @@ package dctest
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -56,41 +54,9 @@ func TestInit() {
 	It("should success initialize Serf", func() {
 		for _, host := range []string{boot0, boot1, boot2} {
 			execSafeAt(host, "test", "-f", neco.SerfConfFile)
+			execSafeAt(host, "test", "-x", neco.SerfHandler)
 			execSafeAt(host, "systemctl", "-q", "is-active", "serf.service")
 		}
-	})
-
-	It("should success initialize setup-serf-tags", func() {
-		for _, host := range []string{boot0, boot1, boot2} {
-			execSafeAt(host, "test", "-f", "/usr/local/bin/setup-serf-tags")
-			execSafeAt(host, "systemctl", "-q", "is-active", "setup-serf-tags.timer")
-		}
-		By("getting systemd unit statuses by serf members")
-		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "os-name=\"Ubuntu\"")
-			if err != nil {
-				return err
-			}
-			var m serfMemberContainer
-			err = json.Unmarshal(stdout, &m)
-			if err != nil {
-				return err
-			}
-			// Number of boot servers is 3
-			if len(m.Members) != 3 {
-				return fmt.Errorf("too few boot servers: %d", len(m.Members))
-			}
-			for _, member := range m.Members {
-				tag, ok := member.Tags["systemd-units-failed"]
-				if !ok {
-					return fmt.Errorf("member %s does not define tag systemd-units-failed", member.Name)
-				}
-				if tag != "" {
-					return fmt.Errorf("member %s fails systemd units: %s", member.Name, tag)
-				}
-			}
-			return nil
-		}).Should(Succeed())
 	})
 
 	It("should success initialize sabakan", func() {

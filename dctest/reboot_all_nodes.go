@@ -1,7 +1,6 @@
 package dctest
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -37,31 +36,6 @@ func TestRebootAllNodes() {
 			_, _, err = execAt(boot0, "neco", "ipmipower", "start", m.Spec.IPv4[0])
 			Expect(err).ShouldNot(HaveOccurred())
 		}
-	})
-
-	It("sets all nodes' machine state to healthy", func() {
-		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
-			if err != nil {
-				return err
-			}
-
-			var machines []sabakan.Machine
-			err = json.Unmarshal(stdout, &machines)
-			if err != nil {
-				return err
-			}
-
-			for _, m := range machines {
-				stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", m.Spec.Serial)
-				state := string(bytes.TrimSpace(stdout))
-				if state != "healthy" {
-					return fmt.Errorf("sabakan machine state of %s is not healthy: %s", m.Spec.Serial, state)
-				}
-			}
-
-			return nil
-		}).Should(Succeed())
 	})
 
 	It("recovers 5 nodes", func() {
