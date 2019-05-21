@@ -4,12 +4,33 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	yaml "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 )
+
+func fetchClusterNodes() (map[string]bool, error) {
+	stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+
+	cluster := new(ckeCluster)
+	err = yaml.Unmarshal(stdout, cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]bool)
+	for _, n := range cluster.Nodes {
+		m[n.Address] = n.ControlPlane
+	}
+	return m, nil
+}
 
 // TestRebootAllNodes tests all nodes stop scenario
 func TestRebootAllNodes() {
@@ -21,6 +42,13 @@ func TestRebootAllNodes() {
 			_, _, err := execAt(boot0, "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
 			return err
 		}).Should(Succeed())
+	})
+
+	var beforeNodes map[string]bool
+	It("fetch cluster nodes", func() {
+		var err error
+		beforeNodes, err = fetchClusterNodes()
+		Expect(err).ShouldNot(HaveOccurred())
 	})
 
 	It("reboots all nodes", func() {
@@ -42,6 +70,20 @@ func TestRebootAllNodes() {
 	It("recovers 5 nodes", func() {
 		Eventually(func() error {
 			return isNodeNumEqual(5)
+		}).Should(Succeed())
+	})
+
+	It("fetch cluster nodes", func() {
+		Eventually(func() error {
+			afterNodes, err := fetchClusterNodes()
+			if err != nil {
+				return err
+			}
+
+			if !reflect.DeepEqual(beforeNodes, afterNodes) {
+				return fmt.Errorf("cluster nodes mismatch after reboot: before=%v after=%v", beforeNodes, afterNodes)
+			}
+			return nil
 		}).Should(Succeed())
 	})
 
