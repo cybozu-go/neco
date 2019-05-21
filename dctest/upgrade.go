@@ -88,8 +88,8 @@ func TestUpgrade() {
 		}
 
 		By("Changing env for test")
-		_, _, err = execAt(boot0, "neco", "config", "set", "env", "test")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAt(boot0, "neco", "config", "set", "env", "test")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("Waiting for request to complete")
 		waitRequestComplete("version: " + debVer)
