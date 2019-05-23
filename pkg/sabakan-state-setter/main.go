@@ -12,6 +12,7 @@ import (
 	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
 	"github.com/cybozu-go/well"
 	serf "github.com/hashicorp/serf/client"
+	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/prom2json"
 	"github.com/vektah/gqlparser/gqlerror"
 )
@@ -31,9 +32,21 @@ type machineStateSource struct {
 	serfStatus  *serf.Member
 	metrics     map[string]machineMetrics
 	machineType *machineType
+	fetcher     fetcherFromMetricsServer
 }
 
 type machineMetrics []prom2json.Metric
+
+type fetcherFromMetricsServer func(context.Context, string) (chan *dto.MetricFamily, error)
+
+func connectMetricsServer(ctx context.Context, addr string) (chan *dto.MetricFamily, error) {
+	mfChan := make(chan *dto.MetricFamily, 1024)
+	err := prom2json.FetchMetricFamilies(addr, mfChan, "", "", true)
+	if err != nil {
+		return nil, err
+	}
+	return mfChan, nil
+}
 
 func main() {
 	flag.Parse()
@@ -85,7 +98,7 @@ func run(ctx context.Context) error {
 	// Construct a slice of MachineStateSource
 	mss := make([]machineStateSource, 0, len(sm.SearchMachines))
 	for _, m := range sm.SearchMachines {
-		mss = append(mss, newMachineStateSource(m, members, cfg))
+		mss = append(mss, newMachineStateSource(m, members, cfg, connectMetricsServer))
 	}
 
 	// Get machine metrics
@@ -102,7 +115,12 @@ func run(ctx context.Context) error {
 		env.Go(func(ctx context.Context) error {
 			<-smf
 			defer func() { smf <- struct{}{} }()
-			return source.getMetrics(ctx)
+			addr := "http://" + source.ipv4 + ":9105/metrics"
+			ch, err := m.fetcher(ctx, addr)
+			if err != nil {
+				return err
+			}
+			return source.readAndSetMetrics(ch)
 		})
 	}
 	env.Stop()
@@ -141,13 +159,14 @@ func run(ctx context.Context) error {
 	return nil
 }
 
-func newMachineStateSource(m machine, members []serf.Member, cfg *config) machineStateSource {
+func newMachineStateSource(m machine, members []serf.Member, cfg *config, fetcher fetcherFromMetricsServer) machineStateSource {
 	return machineStateSource{
 		serial:      m.Spec.Serial,
 		ipv4:        m.Spec.IPv4[0],
 		serfStatus:  findMember(members, m.Spec.IPv4[0]),
 		machineType: findMachineType(&m, cfg),
 		metrics:     map[string]machineMetrics{},
+		fetcher:     fetcher,
 	}
 }
 
