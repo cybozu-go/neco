@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/cybozu-go/log"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/prom2json"
@@ -11,12 +9,11 @@ import (
 func (source *machineStateSource) readAndSetMetrics(mfChan chan *dto.MetricFamily) error {
 	var result []*prom2json.Family
 	for mf := range mfChan {
-		fmt.Println(mf)
 		result = append(result, prom2json.NewFamily(mf))
 	}
 
-	var metrics machineMetrics
 	for _, r := range result {
+		var metrics machineMetrics
 		for _, item := range r.Metrics {
 			metric, ok := item.(prom2json.Metric)
 			if !ok {
@@ -27,6 +24,7 @@ func (source *machineStateSource) readAndSetMetrics(mfChan chan *dto.MetricFamil
 			}
 			metrics = append(metrics, metric)
 		}
+
 		source.metrics[r.Name] = metrics
 	}
 

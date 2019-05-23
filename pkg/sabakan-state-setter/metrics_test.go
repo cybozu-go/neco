@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cybozu-go/well"
 	dto "github.com/prometheus/client_model/go"
 )
 
@@ -24,7 +23,6 @@ func mockFetcher(ctx context.Context, addr string) (chan *dto.MetricFamily, erro
 
 // TestReadAndSetMetrics
 func TestReadAndSetMetrics(t *testing.T) {
-	t.Fatal("exit")
 	testCases := []struct {
 		input  []*dto.MetricFamily
 		expect map[string]machineMetrics
@@ -69,7 +67,7 @@ func TestReadAndSetMetrics(t *testing.T) {
 							"label11": "value11",
 							"label12": "value12",
 						},
-						Value: "0.",
+						Value: "0",
 					},
 				},
 				"name2": machineMetrics{
@@ -78,7 +76,7 @@ func TestReadAndSetMetrics(t *testing.T) {
 							"label21": "value21",
 							"label22": "value22",
 						},
-						Value: "0.",
+						Value: "0",
 					},
 				},
 			},
@@ -94,19 +92,14 @@ func TestReadAndSetMetrics(t *testing.T) {
 			machineType: nil,
 			fetcher:     mockFetcher,
 		}
-		env := well.NewEnvironment(context.Background())
-		env.Go(func(ctx context.Context) error {
-			ch, _ := s.fetcher(context.Background(), "xxx.xxx.xxx.xxx")
-			for _, ii := range tt.input {
-				ch <- ii
-			}
-			return s.readAndSetMetrics(ch)
-		})
-		env.Stop()
-		err := env.Wait()
-		if err != nil {
-			t.Fatal("error occurred when get metrics")
+
+		ch, _ := s.fetcher(context.Background(), "xxx.xxx.xxx.xxx")
+		for _, ii := range tt.input {
+			ch <- ii
 		}
+		close(ch)
+
+		s.readAndSetMetrics(ch)
 
 		if !reflect.DeepEqual(s.metrics, tt.expect) {
 			t.Errorf("metrics map mismatch: acutual=%v, expect=%v", s.metrics, tt.expect)
