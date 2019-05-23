@@ -46,6 +46,66 @@ commands:
             ./bin/watch_service neco-worker
           background: true
       - run:
+          name: Watch journalctl on boot-0
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_boot-0
+          background: true
+      - run:
+          name: Watch journalctl on boot-1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_boot-1
+          background: true
+      - run:
+          name: Watch journalctl on boot-2
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_boot-2
+          background: true
+      - run:
+          name: Watch journalctl on boot-3
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_boot-3
+          background: true
+      - run:
+          name: Watch journalctl on rack0-worker4
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_rack0-worker4
+          background: true
+      - run:
+          name: Watch journalctl on rack0-worker5
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_rack0-worker5
+          background: true
+      - run:
+          name: Watch journalctl on rack1-worker4
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_rack1-worker4
+          background: true
+      - run:
+          name: Watch journalctl on rack1-worker5
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_rack1-worker5
+          background: true
+      - run:
+          name: Watch journalctl on rack2-worker4
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_rack2-worker4
+          background: true
+      - run:
+          name: Watch journalctl on rack3-worker4
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_rack3-worker4
+          background: true
+      - run:
           command: |
             if [ -f .skip ]; then exit 0; fi
             ./bin/<<parameters.script>> <<parameters.suite>> <<parameters.datacenter>>
