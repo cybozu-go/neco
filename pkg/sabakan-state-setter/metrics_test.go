@@ -1,11 +1,12 @@
 package main
 
 import (
-	"context"
 	"reflect"
+	"strings"
 	"testing"
 
 	dto "github.com/prometheus/client_model/go"
+	"github.com/prometheus/prom2json"
 )
 
 func toPtrString(s string) *string {
@@ -16,65 +17,50 @@ func toPtrMetricType(i dto.MetricType) *dto.MetricType {
 	return &i
 }
 
-func mockFetcher(ctx context.Context, addr string) (chan *dto.MetricFamily, error) {
-	ch := make(chan *dto.MetricFamily, 1024)
-	return ch, nil
-}
-
-// TestReadAndSetMetrics
 func TestReadAndSetMetrics(t *testing.T) {
 	testCases := []struct {
-		input  []*dto.MetricFamily
+		input  string
 		expect map[string]machineMetrics
 	}{
 		{
-			input:  []*dto.MetricFamily{},
+			input:  "",
 			expect: make(map[string]machineMetrics),
 		},
 		{
-			input: []*dto.MetricFamily{
-				{
-					Name: toPtrString("name1"),
-					Help: toPtrString("help1"),
-					Type: toPtrMetricType(dto.MetricType_COUNTER),
-					Metric: []*dto.Metric{
-						{
-							Label: []*dto.LabelPair{
-								{Name: toPtrString("label11"), Value: toPtrString("value11")},
-								{Name: toPtrString("label12"), Value: toPtrString("value12")},
-							},
-						},
-					},
-				},
-				{
-					Name: toPtrString("name2"),
-					Help: toPtrString("help2"),
-					Type: toPtrMetricType(dto.MetricType_GAUGE),
-					Metric: []*dto.Metric{
-						{
-							Label: []*dto.LabelPair{
-								{Name: toPtrString("label21"), Value: toPtrString("value21")},
-								{Name: toPtrString("label22"), Value: toPtrString("value22")},
-							},
-						},
-					},
-				},
-			},
+			input: `hw_processor_status_health{processor="CPU.Socket.1",system="System.Embedded.1"} 0
+			hw_storage_controller_status_health{controller="AHCI.Embedded.1-1",system="System.Embedded.1"} -1
+			hw_storage_controller_status_health{controller="AHCI.Embedded.2-1",system="System.Embedded.1"} -1
+			hw_storage_controller_status_health{controller="AHCI.Slot.1-1",system="System.Embedded.1"} 0
+			`,
 			expect: map[string]machineMetrics{
-				"name1": machineMetrics{
+				"hw_processor_status_health": {
 					{
 						Labels: map[string]string{
-							"label11": "value11",
-							"label12": "value12",
+							"processor": "CPU.Socket.1",
+							"system":    "System.Embedded.1",
 						},
 						Value: "0",
 					},
 				},
-				"name2": machineMetrics{
+				"hw_storage_controller_status_health": {
 					{
 						Labels: map[string]string{
-							"label21": "value21",
-							"label22": "value22",
+							"controller": "AHCI.Embedded.1-1",
+							"system":     "System.Embedded.1",
+						},
+						Value: "-1",
+					},
+					{
+						Labels: map[string]string{
+							"controller": "AHCI.Embedded.2-1",
+							"system":     "System.Embedded.1",
+						},
+						Value: "-1",
+					},
+					{
+						Labels: map[string]string{
+							"controller": "AHCI.Slot.1-1",
+							"system":     "System.Embedded.1",
 						},
 						Value: "0",
 					},
@@ -90,19 +76,15 @@ func TestReadAndSetMetrics(t *testing.T) {
 			serfStatus:  nil,
 			metrics:     map[string]machineMetrics{},
 			machineType: nil,
-			fetcher:     mockFetcher,
 		}
-
-		ch, _ := s.fetcher(context.Background(), "xxx.xxx.xxx.xxx")
-		for _, ii := range tt.input {
-			ch <- ii
+		ch := make(chan *dto.MetricFamily, 1024)
+		err := prom2json.ParseReader(strings.NewReader(tt.input), ch)
+		if err != nil {
+			t.Fatal("cannot parse input", err)
 		}
-		close(ch)
-
 		s.readAndSetMetrics(ch)
-
 		if !reflect.DeepEqual(s.metrics, tt.expect) {
-			t.Errorf("metrics map mismatch: acutual=%v, expect=%v", s.metrics, tt.expect)
+			t.Errorf("metrics map mismatch: actual=%v, expect=%v", s.metrics, tt.expect)
 		}
 	}
 }

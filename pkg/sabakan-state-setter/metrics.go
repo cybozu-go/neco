@@ -2,11 +2,12 @@ package main
 
 import (
 	"github.com/cybozu-go/log"
-	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/prom2json"
+
+	dto "github.com/prometheus/client_model/go"
 )
 
-func (source *machineStateSource) readAndSetMetrics(mfChan chan *dto.MetricFamily) error {
+func (source *machineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily) error {
 	var result []*prom2json.Family
 	for mf := range mfChan {
 		result = append(result, prom2json.NewFamily(mf))
