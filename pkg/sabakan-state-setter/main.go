@@ -9,13 +9,12 @@ import (
 	"os"
 
 	"github.com/cybozu-go/log"
-	"github.com/cybozu-go/well"
-	"github.com/prometheus/prom2json"
-	"github.com/vektah/gqlparser/gqlerror"
-
 	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
+	"github.com/cybozu-go/well"
 	serf "github.com/hashicorp/serf/client"
 	dto "github.com/prometheus/client_model/go"
+	"github.com/prometheus/prom2json"
+	"github.com/vektah/gqlparser/gqlerror"
 )
 
 const machineTypeLabelName = "machine-type"
@@ -100,9 +99,9 @@ func run(ctx context.Context) error {
 	}
 
 	// Get machine metrics
-	smf := make(chan struct{}, *flagParallelSize)
+	sem := make(chan struct{}, *flagParallelSize)
 	for i := 0; i < *flagParallelSize; i++ {
-		smf <- struct{}{}
+		sem <- struct{}{}
 	}
 	env := well.NewEnvironment(ctx)
 	for _, m := range mss {
@@ -111,8 +110,8 @@ func run(ctx context.Context) error {
 		}
 		source := m
 		env.Go(func(ctx context.Context) error {
-			<-smf
-			defer func() { smf <- struct{}{} }()
+			<-sem
+			defer func() { sem <- struct{}{} }()
 			addr := "http://" + source.ipv4 + ":9105/metrics"
 			ch, err := connectMetricsServer(ctx, addr)
 			if err != nil {

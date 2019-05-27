@@ -2,9 +2,8 @@ package main
 
 import (
 	"github.com/cybozu-go/log"
-	"github.com/prometheus/prom2json"
-
 	dto "github.com/prometheus/client_model/go"
+	"github.com/prometheus/prom2json"
 )
 
 func (source *machineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily) error {
