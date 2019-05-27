@@ -12,6 +12,7 @@ import (
 	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
 	"github.com/cybozu-go/well"
 	serf "github.com/hashicorp/serf/client"
+	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/prom2json"
 	"github.com/vektah/gqlparser/gqlerror"
 )
@@ -34,6 +35,15 @@ type machineStateSource struct {
 }
 
 type machineMetrics []prom2json.Metric
+
+func connectMetricsServer(ctx context.Context, addr string) (chan *dto.MetricFamily, error) {
+	mfChan := make(chan *dto.MetricFamily, 1024)
+	err := prom2json.FetchMetricFamilies(addr, mfChan, "", "", true)
+	if err != nil {
+		return nil, err
+	}
+	return mfChan, nil
+}
 
 func main() {
 	flag.Parse()
@@ -89,9 +99,9 @@ func run(ctx context.Context) error {
 	}
 
 	// Get machine metrics
-	smf := make(chan struct{}, *flagParallelSize)
+	sem := make(chan struct{}, *flagParallelSize)
 	for i := 0; i < *flagParallelSize; i++ {
-		smf <- struct{}{}
+		sem <- struct{}{}
 	}
 	env := well.NewEnvironment(ctx)
 	for _, m := range mss {
@@ -100,9 +110,14 @@ func run(ctx context.Context) error {
 		}
 		source := m
 		env.Go(func(ctx context.Context) error {
-			<-smf
-			defer func() { smf <- struct{}{} }()
-			return source.getMetrics(ctx)
+			<-sem
+			defer func() { sem <- struct{}{} }()
+			addr := "http://" + source.ipv4 + ":9105/metrics"
+			ch, err := connectMetricsServer(ctx, addr)
+			if err != nil {
+				return err
+			}
+			return source.readAndSetMetrics(ch)
 		})
 	}
 	env.Stop()
