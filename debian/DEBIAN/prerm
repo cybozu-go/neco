@@ -1,17 +1,11 @@
 #!/bin/sh -e
 
 SERVICES="neco-updater neco-worker node-exporter"
-TIMERS="sabakan-state-setter"
 
 prerm() {
     for s in $SERVICES; do
         systemctl stop ${s}.service
         systemctl disable ${s}.service
-    done
-
-    for t in $TIMERS; do
-        systemctl stop ${t}.timer
-        systemctl disable ${t}.timer
     done
 }
 

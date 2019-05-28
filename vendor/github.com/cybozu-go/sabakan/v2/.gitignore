@@ -8,7 +8,6 @@
 *.test
 /sabakan
 /sabactl
-/sabakan-cryptsetup
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
@@ -21,7 +20,6 @@
 .*.swp
 .#*
 \#*#
-.vscode/
 
 default.etcd
 

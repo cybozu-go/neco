@@ -16,8 +16,8 @@ PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
-BIN_PKGS = ./pkg/neco ./pkg/sabakan-state-setter
-SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
+BIN_PKGS = ./pkg/neco
+SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
 
 STATIK = gcp/statik/statik.go
 
