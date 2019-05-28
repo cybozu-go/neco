@@ -29,6 +29,7 @@ func GenerateConf(w io.Writer, lrns []int, osName, osVersion, serial string) err
 			BootServer: "true",
 		},
 		Interface:         "node0",
+		EventHandlers:     []string{"member-join,member-failed,member-leave=" + neco.SerfHandler},
 		ReconnectInterval: "30s",
 		ReconnectTimeout:  "24h",
 		TombstoneTimeout:  "24h",

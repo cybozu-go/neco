@@ -20,10 +20,6 @@ var ErrNotFound = errors.New("not found")
 // A model should return this when the request is bad
 var ErrBadRequest = errors.New("bad request")
 
-// ErrEncryptionKeyExists is a special err for models.
-// A model should return this when encryption key exists.
-var ErrEncryptionKeyExists = errors.New("encryption key exists")
-
 // StorageModel is an interface for disk encryption keys.
 type StorageModel interface {
 	GetEncryptionKey(ctx context.Context, serial string, diskByPath string) ([]byte, error)
