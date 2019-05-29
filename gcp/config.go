@@ -14,8 +14,8 @@ const (
 	// DefaultPreemptible is default value for enabling preemptible
 	// https://cloud.google.com/compute/docs/instances/preemptible
 	defaultPreemptible            = false
-	defaultVmxEnabledImage        = "debian-9-stretch-v20180911"
-	defaultVmxEnabledImageProject = "debian-cloud"
+	defaultVmxEnabledImage        = "ubuntu-1804-bionic-v20190429"
+	defaultVmxEnabledImageProject = "ubuntu-os-cloud"
 )
 
 // Config is configuration for necogcp command and GAE app

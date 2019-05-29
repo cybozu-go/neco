@@ -38,7 +38,12 @@ var (
 
 // SetupVMXEnabled setup vmx-enabled instance
 func SetupVMXEnabled(ctx context.Context, project string, option []string) error {
-	err := configureApt(ctx)
+	err := configureDNS(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = configureApt(ctx)
 	if err != nil {
 		return err
 	}
@@ -102,6 +107,43 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 		}
 	}
 	return nil
+}
+
+func configureDNS(ctx context.Context) error {
+	data, err := ioutil.ReadFile("/etc/os-release")
+	if err != nil {
+		return err
+	}
+
+	for _, line := range strings.Fields(string(data)) {
+		param := strings.SplitN(line, "=", 2)
+		if param[0] != "ID" {
+			continue
+		}
+		// Skip DNS configuration if distribution is not Ubuntu
+		if param[1] != "ubuntu" {
+			return nil
+		}
+	}
+
+	err = neco.DisableService(ctx, "systemd-resolved")
+	if err != nil {
+		return err
+	}
+
+	err = neco.StopService(ctx, "systemd-resolved")
+	if err != nil {
+		return err
+	}
+
+	data, err = ioutil.ReadFile("/etc/resolv.conf")
+	if err != nil {
+		return err
+	}
+
+	newData := strings.Replace(string(data), "nameserver 127.0.0.53", "nameserver 169.254.169.254", -1)
+
+	return neco.WriteFile("/etc/resolv.conf", newData)
 }
 
 func configureApt(ctx context.Context) error {
