@@ -27,6 +27,7 @@ func TestGenerateConf(t *testing.T) {
 			BootServer: "true",
 		},
 		Interface:         "node0",
+		EventHandlers:     []string{"member-join,member-failed,member-leave=" + neco.SerfHandler},
 		ReconnectInterval: "30s",
 		ReconnectTimeout:  "24h",
 		TombstoneTimeout:  "24h",

@@ -12,24 +12,24 @@ resolver:
   type: Resolver
 models:
   Machine:
-    model: github.com/cybozu-go/sabakan/v2.Machine
+    model: github.com/cybozu-go/sabakan.Machine
   MachineSpec:
-    model: github.com/cybozu-go/sabakan/v2.MachineSpec
+    model: github.com/cybozu-go/sabakan.MachineSpec
   BMC:
-    model: github.com/cybozu-go/sabakan/v2.MachineBMC
+    model: github.com/cybozu-go/sabakan.MachineBMC
   MachineStatus:
-    model: github.com/cybozu-go/sabakan/v2.MachineStatus
+    model: github.com/cybozu-go/sabakan.MachineStatus
   MachineState:
-    model: github.com/cybozu-go/sabakan/v2/gql.MachineState
+    model: github.com/cybozu-go/sabakan/gql.MachineState
   IPAddress:
-    model: github.com/cybozu-go/sabakan/v2/gql.IPAddress
+    model: github.com/cybozu-go/sabakan/gql.IPAddress
   DateTime:
-    model: github.com/cybozu-go/sabakan/v2/gql.DateTime
+    model: github.com/cybozu-go/sabakan/gql.DateTime
   MachineInfo:
-    model: github.com/cybozu-go/sabakan/v2.MachineInfo
+    model: github.com/cybozu-go/sabakan.MachineInfo
   NetworkInfo:
-    model: github.com/cybozu-go/sabakan/v2.NetworkInfo
+    model: github.com/cybozu-go/sabakan.NetworkInfo
   BMCInfo:
-    model: github.com/cybozu-go/sabakan/v2.BMCInfo
+    model: github.com/cybozu-go/sabakan.BMCInfo
   NICConfig:
-    model: github.com/cybozu-go/sabakan/v2.NICConfig
+    model: github.com/cybozu-go/sabakan.NICConfig

@@ -3,10 +3,6 @@ type Query {
     searchMachines(having: MachineParams, notHaving: MachineParams): [Machine!]!
 }
 
-type Mutation {
-    setMachineState(serial: ID!, state: MachineState!): MachineStatus!
-}
-
 """
 MachineParams is a set of input parameters to search machines.
 """

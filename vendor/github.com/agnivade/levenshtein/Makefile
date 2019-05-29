@@ -4,10 +4,10 @@ install:
 	go install
 
 lint:
-	gofmt -l -s -w . && go vet . && golint -set_exit_status=1 .
+	gofmt -l -s -w . && go tool vet -all . && golint
 
 test:
 	go test -race -v -coverprofile=coverage.txt -covermode=atomic
 
 bench:
-	go test -run=XXX -bench=. -benchmem -count=5
+	go test -run=XXX -bench=. -benchmem

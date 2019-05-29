@@ -591,7 +591,6 @@ func (tml *Tokenmandatorylabel) Size() uint32 {
 //sys	SetThreadToken(thread *Handle, token Token) (err error) = advapi32.SetThreadToken
 //sys	LookupPrivilegeValue(systemname *uint16, name *uint16, luid *LUID) (err error) = advapi32.LookupPrivilegeValueW
 //sys	AdjustTokenPrivileges(token Token, disableAllPrivileges bool, newstate *Tokenprivileges, buflen uint32, prevstate *Tokenprivileges, returnlen *uint32) (err error) = advapi32.AdjustTokenPrivileges
-//sys	AdjustTokenGroups(token Token, resetToDefault bool, newstate *Tokengroups, buflen uint32, prevstate *Tokengroups, returnlen *uint32) (err error) = advapi32.AdjustTokenGroups
 //sys	GetTokenInformation(token Token, infoClass uint32, info *byte, infoLen uint32, returnedLen *uint32) (err error) = advapi32.GetTokenInformation
 //sys	SetTokenInformation(token Token, infoClass uint32, info *byte, infoLen uint32) (err error) = advapi32.SetTokenInformation
 //sys	DuplicateTokenEx(existingToken Token, desiredAccess uint32, tokenAttributes *SecurityAttributes, impersonationLevel uint32, tokenType uint32, newToken *Token) (err error) = advapi32.DuplicateTokenEx
@@ -691,28 +690,6 @@ func (t Token) GetUserProfileDirectory() (string, error) {
 			return "", e
 		}
 	}
-}
-
-// Returns whether the current token is elevated from a UAC perspective.
-func (token Token) IsElevated() bool {
-	var isElevated uint32
-	var outLen uint32
-	err := GetTokenInformation(token, TokenElevation, (*byte)(unsafe.Pointer(&isElevated)), uint32(unsafe.Sizeof(isElevated)), &outLen)
-	if err != nil {
-		return false
-	}
-	return outLen == uint32(unsafe.Sizeof(isElevated)) && isElevated != 0
-}
-
-// Returns the linked token, which may be an elevated UAC token.
-func (token Token) GetLinkedToken() (Token, error) {
-	var linkedToken Token
-	var outLen uint32
-	err := GetTokenInformation(token, TokenLinkedToken, (*byte)(unsafe.Pointer(&linkedToken)), uint32(unsafe.Sizeof(linkedToken)), &outLen)
-	if err != nil {
-		return Token(0), err
-	}
-	return linkedToken, nil
 }
 
 // GetSystemDirectory retrieves path to current location of the system

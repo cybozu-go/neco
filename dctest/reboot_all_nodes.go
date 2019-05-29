@@ -1,7 +1,6 @@
 package dctest
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -68,6 +67,7 @@ func TestRebootAllNodes() {
 	})
 
 	It("recovers 5 nodes", func() {
+<<<<<<< HEAD
 		Eventually(func() error {
 			return isNodeNumEqual(5)
 		}).Should(Succeed())
@@ -113,6 +113,8 @@ func TestRebootAllNodes() {
 	})
 
 	It("can access a pod from another pod running on different node, even after rebooting", func() {
+=======
+>>>>>>> master
 		Eventually(func() error {
 			stdout, stderr, err := execAt(boot0, "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
 			if err != nil {

@@ -1,11 +1,10 @@
 package client
 
 import (
-	"net"
-	"time"
-
 	"github.com/hashicorp/serf/coordinate"
 	"github.com/hashicorp/serf/serf"
+	"net"
+	"time"
 )
 
 const (

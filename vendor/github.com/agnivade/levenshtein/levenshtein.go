@@ -43,18 +43,17 @@ func ComputeDistance(a, b string) int {
 
 	// init the row
 	x := make([]int, lenS1+1)
-	for i := 0; i < len(x); i++ {
+	for i := 0; i <= lenS1; i++ {
 		x[i] = i
 	}
 
-	// make a dummy bounds check to prevent the 2 bounds check down below.
-	// The one inside the loop is particularly costly.
-	_ = x[lenS1]
 	// fill in the rest
 	for i := 1; i <= lenS2; i++ {
 		prev := i
 		var current int
+
 		for j := 1; j <= lenS1; j++ {
+
 			if s2[i-1] == s1[j-1] {
 				current = x[j-1] // match
 			} else {
