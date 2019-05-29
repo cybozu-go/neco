@@ -143,6 +143,11 @@ func configureDNS(ctx context.Context) error {
 
 	newData := strings.Replace(string(data), "nameserver 127.0.0.53", "nameserver 169.254.169.254", -1)
 
+	err = os.Remove("/etc/resolv.conf")
+	if err != nil {
+		return err
+	}
+
 	return neco.WriteFile("/etc/resolv.conf", newData)
 }
 
