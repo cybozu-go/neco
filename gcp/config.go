@@ -103,7 +103,7 @@ func NecoTestConfig() *Config {
 				Exclude: []string{
 					"neco-ops",
 				},
-				Expiration: 3600 * time.Second,
+				Expiration: 2 * time.Hour,
 			},
 		},
 		Compute: ComputeConfig{
