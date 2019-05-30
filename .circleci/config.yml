@@ -153,7 +153,7 @@ jobs:
             git config --global user.email "neco@cybozu.com"
             git config --global user.name "cybozu-neco"
       - run: git checkout release
-      - run: git merge --no-commit origin/master
+      - run: git merge --no-commit origin/${CIRCLE_BRANCH}
       - run: cp /tmp/workspace/artifacts_release.go .
       - run:
           name: Check diff
@@ -278,6 +278,12 @@ workflows:
       - dctest-upgrade-staging:
           requires:
             - hold
+      - generate-artifacts:
+          requires:
+            - hold
+      - dctest-release-reboot:
+          requires:
+            - generate-artifacts
   release:
     jobs:
       - build_release:
