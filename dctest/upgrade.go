@@ -51,6 +51,9 @@ type rktManifest struct {
 
 // TestUpgrade test neco debian package upgrade scenario
 func TestUpgrade() {
+	// It's only necessary for an upgrade from "without label version" to "with label version."
+	// This process makes no effects even if after upgrading to "with label version."
+	// However, we should delete after upgrading.
 	It("should set `machine-type` label", func() {
 		stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
