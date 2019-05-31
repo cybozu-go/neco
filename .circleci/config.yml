@@ -140,6 +140,16 @@ jobs:
           root: .
           paths:
             - "artifacts_release.go"
+  dctest-reboot:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - dctest-command:
+          script: run-dctest.sh
+          suite: ./reboot
   dctest-release-reboot:
     docker:
       - image: google/cloud-sdk
@@ -268,22 +278,18 @@ workflows:
               ignore:
                 - release
                 - master
-      - hold:
-          type: approval
+      - dctest-upgrade-staging:
           filters:
             branches:
               ignore:
                 - release
                 - master
-      - dctest-upgrade-staging:
-          requires:
-            - hold
-      - generate-artifacts:
-          requires:
-            - hold
-      - dctest-release-reboot:
-          requires:
-            - generate-artifacts
+      - dctest-reboot:
+          filters:
+            branches:
+              ignore:
+                - release
+                - master
   release:
     jobs:
       - build_release:
