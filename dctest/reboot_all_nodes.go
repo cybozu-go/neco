@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/cybozu-go/sabakan/v2"
+	serf "github.com/hashicorp/serf/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	yaml "gopkg.in/yaml.v2"
@@ -50,6 +52,12 @@ func TestRebootAllNodes() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
+	It("stop sabakan-state-setter", func() {
+		for _, h := range []string{boot0, boot1, boot2} {
+			execSafeAt(h, "systemctl", "stop", "sabakan-state-setter.service")
+		}
+	})
+
 	It("reboots all nodes", func() {
 		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
 		Expect(err).ShouldNot(HaveOccurred())
@@ -68,8 +76,42 @@ func TestRebootAllNodes() {
 
 	It("recovers 5 nodes", func() {
 		Eventually(func() error {
-			return isNodeNumEqual(5)
+			nodes, err := fetchClusterNodes()
+			if err != nil {
+				return err
+			}
+
+			serfc, err := serf.NewRPCClient(boot0 + ":7373")
+			if err != nil {
+				return err
+			}
+			members, err := serfc.Members()
+			if err != nil {
+				return err
+			}
+
+		OUTER:
+			for k := range nodes {
+				for _, m := range members {
+					if m.Addr.String() == k {
+						if m.Status != "alive" {
+							return fmt.Errorf("reboot failed: %s, %v", k, m)
+						}
+						continue OUTER
+					}
+				}
+
+				return fmt.Errorf("cannot find in serf members: %s", k)
+			}
+
+			return nil
 		}).Should(Succeed())
+	})
+
+	It("start sabakan-state-setter", func() {
+		for _, h := range []string{boot0, boot1, boot2} {
+			execSafeAt(h, "systemctl", "start", "sabakan-state-setter.service")
+		}
 	})
 
 	It("fetch cluster nodes", func() {
@@ -79,19 +121,8 @@ func TestRebootAllNodes() {
 				return err
 			}
 
-			var replaced int
-			for n, iscp := range beforeNodes {
-				if !iscp {
-					continue
-				}
-
-				cp, ok := afterNodes[n]
-				if !ok || !cp {
-					replaced++
-				}
-			}
-			if replaced >= 2 {
-				return fmt.Errorf("over half controll planes are changed: before=%v after=%v", beforeNodes, afterNodes)
+			if !reflect.DeepEqual(beforeNodes, afterNodes) {
+				return fmt.Errorf("cluster nodes mismatch after reboot: before=%v after=%v", beforeNodes, afterNodes)
 			}
 
 			return nil
