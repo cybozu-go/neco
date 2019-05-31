@@ -3,7 +3,7 @@ Description=run sabakan-state-setter
 PartOf=sabakan-state-setter.service
 
 [Timer]
-OnCalendar=minutely
+OnCalendar=*:*:0/10
 Persistent=true
 
 [Install]
