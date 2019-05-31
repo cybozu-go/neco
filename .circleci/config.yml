@@ -113,16 +113,6 @@ jobs:
           root: .
           paths:
             - "artifacts_release.go"
-  dctest-reboot:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - dctest-command:
-          script: run-dctest.sh
-          suite: ./reboot
   dctest-release-reboot:
     docker:
       - image: google/cloud-sdk
