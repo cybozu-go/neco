@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"reflect"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -80,9 +79,21 @@ func TestRebootAllNodes() {
 				return err
 			}
 
-			if !reflect.DeepEqual(beforeNodes, afterNodes) {
-				return fmt.Errorf("cluster nodes mismatch after reboot: before=%v after=%v", beforeNodes, afterNodes)
+			var replaced int
+			for n, iscp := range beforeNodes {
+				if !iscp {
+					continue
+				}
+
+				cp, ok := afterNodes[n]
+				if !ok || !cp {
+					replaced++
+				}
 			}
+			if replaced >= 2 {
+				return fmt.Errorf("over half controll planes are changed: before=%v after=%v", beforeNodes, afterNodes)
+			}
+
 			return nil
 		}).Should(Succeed())
 	})
