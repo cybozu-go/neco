@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/cybozu-go/sabakan/v2"
-	serf "github.com/hashicorp/serf/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	yaml "gopkg.in/yaml.v2"
@@ -81,19 +81,30 @@ func TestRebootAllNodes() {
 				return err
 			}
 
-			serfc, err := serf.NewRPCClient(boot0 + ":7373")
+			stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json")
 			if err != nil {
-				return err
+				return fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
 			}
-			members, err := serfc.Members()
+			var result struct {
+				Members []struct {
+					Addr   string `json:"addr"`
+					Status string `json:"status"`
+				} `json:"members"`
+			}
+			err = json.Unmarshal(stdout, &result)
 			if err != nil {
-				return err
+				return fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
 			}
 
 		OUTER:
 			for k := range nodes {
-				for _, m := range members {
-					if m.Addr.String() == k {
+				for _, m := range result.Members {
+					addrs := strings.Split(m.Addr, ":")
+					if len(addrs) != 2 {
+						return fmt.Errorf("unexpected addr: %s", m.Addr)
+					}
+					addr := addrs[0]
+					if addr == k {
 						if m.Status != "alive" {
 							return fmt.Errorf("reboot failed: %s, %v", k, m)
 						}
