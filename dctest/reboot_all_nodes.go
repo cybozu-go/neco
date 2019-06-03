@@ -54,7 +54,7 @@ func TestRebootAllNodes() {
 
 	It("stop sabakan-state-setter", func() {
 		for _, h := range []string{boot0, boot1, boot2} {
-			execSafeAt(h, "systemctl", "stop", "sabakan-state-setter.timer")
+			execSafeAt(h, "sudo", "systemctl", "stop", "sabakan-state-setter.timer")
 		}
 	})
 
@@ -110,7 +110,7 @@ func TestRebootAllNodes() {
 
 	It("start sabakan-state-setter", func() {
 		for _, h := range []string{boot0, boot1, boot2} {
-			execSafeAt(h, "systemctl", "start", "sabakan-state-setter.timer")
+			execSafeAt(h, "sudo", "systemctl", "start", "sabakan-state-setter.timer")
 		}
 	})
 
