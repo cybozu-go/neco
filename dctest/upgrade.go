@@ -3,6 +3,7 @@ package dctest
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -108,6 +109,23 @@ func TestUpgrade() {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
 		}
+
+		By("Checking version of CKE")
+		Eventually(func() error {
+			ckeVersion, _, err := execAt(boot0, "ckecli", "--version")
+			if err != nil {
+				return err
+			}
+			for _, img := range neco.CurrentArtifacts.Images {
+				if img.Name == "cke" {
+					if !bytes.Contains(ckeVersion, []byte(img.Tag)) {
+						return errors.New("cke is not updated: " + string(ckeVersion))
+					}
+					return nil
+				}
+			}
+			panic("cke image not found")
+		}).Should(Succeed())
 	})
 
 	It("should generate encryption key for CKE 1.13.17", func() {
