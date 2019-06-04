@@ -3,6 +3,7 @@ package dctest
 import (
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -94,7 +95,7 @@ func TestPartsMissing() {
 		By("checking the number of cluster nodes")
 		Eventually(func() error {
 			return isNodeNumEqual(5)
-		}).Should(Succeed())
+		}, 15*time.Minute).Should(Succeed())
 
 		By("checking the state of the created machine")
 		_, _, err = execAt(boot0, "neco", "ipmipower", "start", targetIP)
