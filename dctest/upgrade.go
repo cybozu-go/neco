@@ -12,6 +12,7 @@ import (
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/sabakan/v2"
+	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	yaml "gopkg.in/yaml.v2"
@@ -137,6 +138,24 @@ func TestUpgrade() {
 		}
 
 		_, _, err = execAt(boot0, "ckecli", "vault", "enckey")
+		Expect(err).ShouldNot(HaveOccurred())
+	})
+
+	It("should re-configure vault for CKE >= 1.14.3", func() {
+		stdout, _, err := execAt(boot0, "ckecli", "--version")
+		Expect(err).ShouldNot(HaveOccurred())
+
+		fields := strings.Fields(string(stdout))
+		Expect(fields).To(HaveLen(3))
+		ver, err := version.NewVersion(fields[2])
+		Expect(err).ShouldNot(HaveOccurred())
+
+		if ver.LessThan(version.Must(version.NewVersion("1.14.3"))) {
+			return
+		}
+
+		token := getVaultToken()
+		_, _, err = execAt(boot0, "env", "VAULT_TOKEN="+token, "ckecli", "vault", "init")
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
