@@ -127,6 +127,36 @@ func TestUpgrade() {
 			}
 			panic("cke image not found")
 		}).Should(Succeed())
+
+		By("Checking version of etcd cluster")
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key",
+				"--endpoints=10.69.0.3:2379,10.69.0.195:2379,10.69.1.131:2379",
+				"endpoint", "status")
+			Expect(err).ShouldNot(HaveOccurred())
+			var statuses []struct {
+				Endpoint string `json:"Endpoint"`
+				Status   struct {
+					Version string `json:"version"`
+				} `json:"Status"`
+			}
+
+			err = json.Unmarshal(stdout, &statuses)
+			Expect(err).ShouldNot(HaveOccurred())
+			for _, img := range neco.CurrentArtifacts.Images {
+				if img.Name == "etcd" {
+					tag := img.Tag[:strings.LastIndex(img.Tag, ".")]
+					for _, s := range statuses {
+						if s.Status.Version != tag {
+							return errors.New("etcd is not updated: " + s.Endpoint + ", " + s.Status.Version)
+						}
+					}
+					return nil
+				}
+			}
+			panic("etcd image not found")
+		}).Should(Succeed())
 	})
 
 	It("should re-configure vault for CKE >= 1.14.3", func() {
