@@ -129,18 +129,6 @@ func TestUpgrade() {
 		}).Should(Succeed())
 	})
 
-	It("should generate encryption key for CKE 1.13.17", func() {
-		stdout, _, err := execAt(boot0, "ckecli", "--version")
-		Expect(err).ShouldNot(HaveOccurred())
-
-		if !bytes.Contains(stdout, []byte("1.13.17")) {
-			return
-		}
-
-		_, _, err = execAt(boot0, "ckecli", "vault", "enckey")
-		Expect(err).ShouldNot(HaveOccurred())
-	})
-
 	It("should re-configure vault for CKE >= 1.14.3", func() {
 		stdout, _, err := execAt(boot0, "ckecli", "--version")
 		Expect(err).ShouldNot(HaveOccurred())
