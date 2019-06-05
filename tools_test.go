@@ -1,7 +1,8 @@
 // +build tools
 
-package dctest
+package neco
 
 import (
 	_ "github.com/onsi/ginkgo/ginkgo"
+	_ "github.com/rakyll/statik"
 )
