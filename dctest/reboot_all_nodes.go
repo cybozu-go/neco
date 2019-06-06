@@ -74,7 +74,7 @@ func TestRebootAllNodes() {
 		}
 	})
 
-	It("recovers 5 nodes", func() {
+	It("recovers all nodes", func() {
 		Eventually(func() error {
 			nodes, err := fetchClusterNodes()
 			if err != nil {
