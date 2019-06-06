@@ -24,8 +24,9 @@ func sabakanMachine(serial string, rack int, role string) sabakan.MachineSpec {
 	return sabakan.MachineSpec{
 		Serial: serial,
 		Labels: map[string]string{
-			"product":    "vm",
-			"datacenter": "dc1",
+			"product":      "vm",
+			"machine-type": "qemu",
+			"datacenter":   "dc1",
 		},
 		Rack: uint(rack),
 		Role: role,

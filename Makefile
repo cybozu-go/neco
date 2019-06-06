@@ -16,8 +16,8 @@ PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
-BIN_PKGS = ./pkg/neco
-SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/sabakan-serf-handler
+BIN_PKGS = ./pkg/neco ./pkg/sabakan-state-setter
+SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
 
 STATIK = gcp/statik/statik.go
 
@@ -77,7 +77,7 @@ git-neco:
 	go install ./pkg/git-neco
 
 setup:
-	GO111MODULE=off go get -u golang.org/x/lint/golint github.com/rakyll/statik
+	go install github.com/rakyll/statik
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
 	$(MAKE) -f Makefile.tools SUDO=$(SUDO) setup

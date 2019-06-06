@@ -3,6 +3,7 @@ package dctest
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,6 +11,8 @@ import (
 	"time"
 
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/sabakan/v2"
+	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	yaml "gopkg.in/yaml.v2"
@@ -50,6 +53,28 @@ type rktManifest struct {
 
 // TestUpgrade test neco debian package upgrade scenario
 func TestUpgrade() {
+	// It's only necessary for an upgrade from "without label version" to "with label version."
+	// This process makes no effects even if after upgrading to "with label version."
+	// However, we should delete after upgrading.
+	It("should set `machine-type` label", func() {
+		stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get")
+		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+		var machines []sabakan.Machine
+		err = json.Unmarshal(stdout, &machines)
+		Expect(err).ShouldNot(HaveOccurred())
+		for _, m := range machines {
+			By("checking label: " + m.Spec.IPv4[0])
+			if val, ok := m.Spec.Labels["machine-type"]; ok && val != "" {
+				continue
+			}
+			By("setting label: " + m.Spec.IPv4[0])
+			stdout, _, err := execAt(boot0, "curl", "-sS", "--stderr", "-", "-X", "PUT",
+				"-d", `'{ "machine-type": "qemu" }'`, "http://localhost:10080/api/v1/labels/"+m.Spec.Serial)
+			Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+			Expect(string(stdout)).To(Equal(""))
+		}
+	})
+
 	It("should update neco package", func() {
 		data, err := ioutil.ReadFile("../github-token")
 		switch {
@@ -68,8 +93,8 @@ func TestUpgrade() {
 		}
 
 		By("Changing env for test")
-		_, _, err = execAt(boot0, "neco", "config", "set", "env", "test")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAt(boot0, "neco", "config", "set", "env", "test")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("Waiting for request to complete")
 		waitRequestComplete("version: " + debVer)
@@ -85,17 +110,70 @@ func TestUpgrade() {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
 		}
+
+		By("Checking version of CKE")
+		Eventually(func() error {
+			ckeVersion, _, err := execAt(boot0, "ckecli", "--version")
+			if err != nil {
+				return err
+			}
+			for _, img := range neco.CurrentArtifacts.Images {
+				if img.Name == "cke" {
+					if !bytes.Contains(ckeVersion, []byte(img.Tag)) {
+						return errors.New("cke is not updated: " + string(ckeVersion))
+					}
+					return nil
+				}
+			}
+			panic("cke image not found")
+		}).Should(Succeed())
+
+		By("Checking version of etcd cluster")
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key",
+				"--endpoints=10.69.0.3:2379,10.69.0.195:2379,10.69.1.131:2379",
+				"endpoint", "status")
+			Expect(err).ShouldNot(HaveOccurred())
+			var statuses []struct {
+				Endpoint string `json:"Endpoint"`
+				Status   struct {
+					Version string `json:"version"`
+				} `json:"Status"`
+			}
+
+			err = json.Unmarshal(stdout, &statuses)
+			Expect(err).ShouldNot(HaveOccurred())
+			for _, img := range neco.CurrentArtifacts.Images {
+				if img.Name == "etcd" {
+					tag := img.Tag[:strings.LastIndex(img.Tag, ".")]
+					for _, s := range statuses {
+						if s.Status.Version != tag {
+							return errors.New("etcd is not updated: " + s.Endpoint + ", " + s.Status.Version)
+						}
+					}
+					return nil
+				}
+			}
+			panic("etcd image not found")
+		}).Should(Succeed())
 	})
 
-	It("should generate encryption key for CKE 1.13.17", func() {
+	It("should re-configure vault for CKE >= 1.14.3", func() {
 		stdout, _, err := execAt(boot0, "ckecli", "--version")
 		Expect(err).ShouldNot(HaveOccurred())
 
-		if !bytes.Contains(stdout, []byte("1.13.17")) {
+		fields := strings.Fields(string(stdout))
+		Expect(fields).To(HaveLen(3))
+		ver, err := version.NewVersion(fields[2])
+		Expect(err).ShouldNot(HaveOccurred())
+
+		if ver.LessThan(version.Must(version.NewVersion("1.14.3"))) {
 			return
 		}
 
-		_, _, err = execAt(boot0, "ckecli", "vault", "enckey")
+		token := getVaultToken()
+		_, _, err = execAt(boot0, "env", "VAULT_TOKEN="+token, "ckecli", "vault", "init")
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 

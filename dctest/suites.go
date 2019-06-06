@@ -10,6 +10,7 @@ var BootstrapSuite = func() {
 	Context("sabakan", TestSabakan)
 	Context("machines", TestMachines)
 	Context("init-data", TestInitData)
+	Context("sabakan-state-setter", TestSabakanStateSetter)
 	Context("cke", func() {
 		TestCKESetup()
 		TestCKE()
@@ -30,10 +31,16 @@ var BootstrapSuite = func() {
 var FunctionsSuite = func() {
 	BootstrapSuite()
 	Context("join/remove", TestJoinRemove)
+	Context("parts failure", TestPartsFailure)
+	Context("parts missing", TestPartsMissing)
+	Context("reboot-all-nodes", TestRebootAllNodes)
 }
 
-// RebootSuite is a test suite that tests disaster recovery scenario
-var RebootSuite = func() {
-	FunctionsSuite()
-	Context("reboot-all-nodes", TestRebootAllNodes)
+// UpgradeSuite is a test suite that tests upgrading process works correctry
+var UpgradeSuite = func() {
+	Context("upgrade", TestUpgrade)
+	Context("upgraded cke", TestCKE)
+	Context("upgraded coil", TestCoil)
+	Context("upgraded unbound", TestUnbound)
+	Context("upgraded squid", TestSquid)
 }

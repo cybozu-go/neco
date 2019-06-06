@@ -5,6 +5,34 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.4.0] - 2019-04-26
+
+### Added
+- Add GraphQL API for set machine state (#156).
+
+### Changed
+- Do not push branch tag for pre-releases (#155).
+
+## [2.3.0] - 2019-04-19
+
+### Changed
+- Refine sabakan machine state transitions (#154).
+
+## [2.2.2] - 2019-04-18
+
+### Changed
+- Run mtest using built container image, fix bug (#153).
+
+## [2.2.1] - 2019-04-17
+
+### Added
+- Build docker image by this repository instead of github.com/cybozu/neco-containers (#152).
+
+### Changed
+- Fix docker build job (#149, #150).
+- Rebuild with Go 1.12 (#148).
+- Improve mtest environment and CI (#147, #151).
+
 ## [2.2.0] - 2019-03-05
 
 ### Added
@@ -79,7 +107,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 See [CHANGELOG-0](./CHANGELOG-0.md).
 
-[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/cybozu-go/sabakan/compare/v2.3.0...v2.4.0
+[2.3.0]: https://github.com/cybozu-go/sabakan/compare/v2.2.2...v2.3.0
+[2.2.2]: https://github.com/cybozu-go/sabakan/compare/v2.2.1...v2.2.2
+[2.2.1]: https://github.com/cybozu-go/sabakan/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/cybozu-go/sabakan/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/cybozu-go/sabakan/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/cybozu-go/sabakan/compare/v2.0.0...v2.0.1

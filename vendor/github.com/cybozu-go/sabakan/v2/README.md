@@ -98,6 +98,24 @@ Examples
 An example of production usage can be found in [github.com/cybozu-go/neco](https://github.com/cybozu-go/neco).
 The repository bootstraps a full data center system using etcd, vault, sabakan, and many other tools.
 
+Usage
+-----
+
+Run sabakan with docker
+
+```console
+# create directory to store OS images
+$ sudo mkdir -p /var/lib/sabakan
+
+# -advertise-url is the canonical URL of this sabakan.
+$ docker run -d --read-only --cap-drop ALL --cap-add NET_BIND_SERVICE \
+    --network host --name sabakan \
+    --mount type=bind,source=/var/lib/sabakan,target=/var/lib/sabakan \
+    quay.io/cybozu/sabakan:2.2 \
+    -etcd-endpoints http://foo.bar:2379,http://zot.bar:2379 \
+    -advertise-url http://12.34.56.78:10080
+```
+
 License
 -------
 
