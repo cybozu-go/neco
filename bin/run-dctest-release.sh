@@ -57,8 +57,6 @@ mkdir -p \$GOPATH/src/github.com/cybozu-go/neco
 cd \$GOPATH/src/github.com/cybozu-go/neco
 tar xzf /home/cybozu/neco.tgz
 if [ -n "${DATACENTER}" ]; then
-  git add -u
-  git commit -m 'update artifacts'
   COMMIT=\$(git log -1 --format=%H)
   env GO111MODULE=on go install -mod=vendor ./pkg/find-installed-release
   RELEASE=\$(find-installed-release ${DATACENTER})

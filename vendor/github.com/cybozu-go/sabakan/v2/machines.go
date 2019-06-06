@@ -2,6 +2,7 @@ package sabakan
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -38,21 +39,53 @@ func (ms MachineState) IsValid() bool {
 	return false
 }
 
+// GQLEnum returns graphql defined enum string.
+func (ms MachineState) GQLEnum() string {
+	switch ms {
+	case StateUninitialized:
+		return "UNINITIALIZED"
+	case StateHealthy:
+		return "HEALTHY"
+	case StateUnhealthy:
+		return "UNHEALTHY"
+	case StateUnreachable:
+		return "UNREACHABLE"
+	case StateUpdating:
+		return "UPDATING"
+	case StateRetiring:
+		return "RETIRING"
+	case StateRetired:
+		return "RETIRED"
+	}
+
+	return ""
+}
+
 // Machine state definitions.
 const (
-	StateUninitialized = MachineState("uninitialized")
-	StateHealthy       = MachineState("healthy")
-	StateUnhealthy     = MachineState("unhealthy")
-	StateUnreachable   = MachineState("unreachable")
-	StateUpdating      = MachineState("updating")
-	StateRetiring      = MachineState("retiring")
-	StateRetired       = MachineState("retired")
+	StateUninitialized  = MachineState("uninitialized")
+	StateHealthy        = MachineState("healthy")
+	StateUnhealthy      = MachineState("unhealthy")
+	StateUnreachable    = MachineState("unreachable")
+	StateUpdating       = MachineState("updating")
+	StateRetiring       = MachineState("retiring")
+	StateRetired        = MachineState("retired")
+	SetStateErrorFormat = "transition from [ %s ] to [ %s ] is forbidden"
 )
 
 var (
-	reValidBmcType   = regexp.MustCompile(`^[a-z0-9A-Z-_/.]+$`)
-	reValidLabelName = regexp.MustCompile(`^[a-z0-9A-Z]([a-z0-9A-Z_.-]{0,61}[a-z0-9A-Z])?$`)
-	reValidLabelVal  = regexp.MustCompile(`^[a-z0-9A-Z]([a-z0-9A-Z_.-]{0,61}[a-z0-9A-Z])?$`)
+	reValidBmcType       = regexp.MustCompile(`^[a-z0-9A-Z-_/.]+$`)
+	reValidLabelName     = regexp.MustCompile(`^[a-z0-9A-Z]([a-z0-9A-Z_.-]{0,61}[a-z0-9A-Z])?$`)
+	reValidLabelVal      = regexp.MustCompile(`^[a-z0-9A-Z]([a-z0-9A-Z_.-]{0,61}[a-z0-9A-Z])?$`)
+	permittedTransitions = map[MachineState][]MachineState{
+		StateUninitialized: {StateHealthy, StateRetiring},
+		StateHealthy:       {StateUnhealthy, StateUnreachable, StateUpdating, StateRetiring},
+		StateUnhealthy:     {StateHealthy, StateUnreachable, StateRetiring},
+		StateUnreachable:   {StateHealthy, StateRetiring},
+		StateUpdating:      {StateUninitialized},
+		StateRetiring:      {StateRetired},
+		StateRetired:       {StateUninitialized},
+	}
 )
 
 // IsValidRole returns true if role is valid as machine role
@@ -156,41 +189,28 @@ func NewMachine(spec MachineSpec) *Machine {
 	}
 }
 
+func (m *Machine) isPermittedTransition(to MachineState) bool {
+	for _, v := range permittedTransitions[m.Status.State] {
+		if v == to {
+			return true
+		}
+	}
+	return false
+}
+
 // SetState sets the state of the machine.
 func (m *Machine) SetState(ms MachineState) error {
 	if m.Status.State == ms {
 		return nil
 	}
 
-	switch m.Status.State {
-	case StateUninitialized:
-		if ms != StateHealthy && ms != StateRetiring {
-			return errors.New("transition to state other than healthy or retiring is forbidden")
-		}
-	case StateHealthy:
-		if ms == StateUninitialized || ms == StateRetired {
-			return errors.New("transition to " + ms.String() + " is forbidden")
-		}
-	case StateUnhealthy:
-		if ms != StateUninitialized && ms != StateRetiring {
-			return errors.New("transition to " + ms.String() + " is forbidden")
-		}
-	case StateUnreachable:
-		if ms == StateUpdating || ms == StateRetired || ms == StateUnhealthy {
-			return errors.New("transition to " + ms.String() + " is forbidden")
-		}
-	case StateUpdating:
-		if ms != StateUninitialized {
-			return errors.New("transition to state other than uninitialized is forbidden")
-		}
-	case StateRetiring:
-		if ms != StateRetired {
-			return errors.New("transition to state other than retired is forbidden")
-		}
-	case StateRetired:
-		if ms != StateUninitialized {
-			return errors.New("transition to state other than uninitialized is forbidden")
-		}
+	_, ok := permittedTransitions[m.Status.State]
+	if !ok {
+		return errors.New(m.Status.State.String() + " has no permitted states")
+	}
+
+	if !m.isPermittedTransition(ms) {
+		return fmt.Errorf(SetStateErrorFormat, m.Status.State.String(), ms.String())
 	}
 
 	m.Status.State = ms

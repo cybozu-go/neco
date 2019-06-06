@@ -1,6 +1,7 @@
 package dctest
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -38,8 +39,11 @@ func TestCKESetup() {
 
 		By("waiting for cluster.yml generation")
 		Eventually(func() error {
-			_, _, err := execAt(boot0, "ckecli", "cluster", "get")
-			return err
+			stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			return nil
 		}, 20*time.Minute).Should(Succeed())
 	})
 }
@@ -49,9 +53,9 @@ func TestCKE() {
 	It("all systemd units are active", func() {
 		By("getting systemd unit statuses by serf members")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "os-name=\"Container Linux by CoreOS\"")
+			stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "os-name=\"Container Linux by CoreOS\"")
 			if err != nil {
-				return err
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
 			var m serfMemberContainer
 			err = json.Unmarshal(stdout, &m)
@@ -71,6 +75,16 @@ func TestCKE() {
 				if tag != "" {
 					return fmt.Errorf("member %s fails systemd units: %s", member.Name, tag)
 				}
+
+				serial, ok := member.Tags["serial"]
+				if !ok {
+					return fmt.Errorf("member %s does not define tag serial", member.Name)
+				}
+				stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", serial)
+				state := string(bytes.TrimSpace(stdout))
+				if state != "healthy" {
+					return fmt.Errorf("sabakan machine state of member %s is not healthy: %s", member.Name, state)
+				}
 			}
 
 			return nil
@@ -84,9 +98,9 @@ func TestCKE() {
 
 		By("waiting nodes")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+			stdout, stderr, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
 			if err != nil {
-				return err
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
 
 			var nl corev1.NodeList

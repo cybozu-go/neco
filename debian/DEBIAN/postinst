@@ -1,9 +1,15 @@
 #!/bin/sh -e
 
-SERVICES="neco-updater neco-worker node-exporter"
+SERVICES="node-exporter neco-updater neco-worker"
+TIMERS="sabakan-state-setter"
 
 configure() {
     systemctl daemon-reload
+    for t in $TIMERS; do
+        systemctl enable ${t}.timer
+        systemctl start ${t}.timer
+    done
+
     for s in $SERVICES; do
         systemctl enable ${s}.service
         systemctl start ${s}.service

@@ -1,14 +1,37 @@
 package dctest
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	yaml "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 )
+
+func fetchClusterNodes() (map[string]bool, error) {
+	stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+
+	cluster := new(ckeCluster)
+	err = yaml.Unmarshal(stdout, cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]bool)
+	for _, n := range cluster.Nodes {
+		m[n.Address] = n.ControlPlane
+	}
+	return m, nil
+}
 
 // TestRebootAllNodes tests all nodes stop scenario
 func TestRebootAllNodes() {
@@ -20,6 +43,19 @@ func TestRebootAllNodes() {
 			_, _, err := execAt(boot0, "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
 			return err
 		}).Should(Succeed())
+	})
+
+	var beforeNodes map[string]bool
+	It("fetch cluster nodes", func() {
+		var err error
+		beforeNodes, err = fetchClusterNodes()
+		Expect(err).ShouldNot(HaveOccurred())
+	})
+
+	It("stop sabakan-state-setter", func() {
+		for _, h := range []string{boot0, boot1, boot2} {
+			execSafeAt(h, "sudo", "systemctl", "stop", "sabakan-state-setter.timer")
+		}
 	})
 
 	It("reboots all nodes", func() {
@@ -38,28 +74,104 @@ func TestRebootAllNodes() {
 		}
 	})
 
-	It("recovers 5 nodes", func() {
+	It("recovers all nodes", func() {
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+			nodes, err := fetchClusterNodes()
 			if err != nil {
 				return err
 			}
-			var nl corev1.NodeList
-			err = json.Unmarshal(stdout, &nl)
+
+			stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json")
+			if err != nil {
+				return fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+			}
+			var result struct {
+				Members []struct {
+					Addr   string `json:"addr"`
+					Status string `json:"status"`
+				} `json:"members"`
+			}
+			err = json.Unmarshal(stdout, &result)
+			if err != nil {
+				return fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+			}
+
+		OUTER:
+			for k := range nodes {
+				for _, m := range result.Members {
+					addrs := strings.Split(m.Addr, ":")
+					if len(addrs) != 2 {
+						return fmt.Errorf("unexpected addr: %s", m.Addr)
+					}
+					addr := addrs[0]
+					if addr == k {
+						if m.Status != "alive" {
+							return fmt.Errorf("reboot failed: %s, %v", k, m)
+						}
+						continue OUTER
+					}
+				}
+
+				return fmt.Errorf("cannot find in serf members: %s", k)
+			}
+
+			return nil
+		}).Should(Succeed())
+	})
+
+	It("start sabakan-state-setter", func() {
+		for _, h := range []string{boot0, boot1, boot2} {
+			execSafeAt(h, "sudo", "systemctl", "start", "sabakan-state-setter.timer")
+		}
+	})
+
+	It("fetch cluster nodes", func() {
+		Eventually(func() error {
+			afterNodes, err := fetchClusterNodes()
 			if err != nil {
 				return err
 			}
-			if len(nl.Items) != 5 {
-				return fmt.Errorf("too few nodes: %d", len(nl.Items))
+
+			if !reflect.DeepEqual(beforeNodes, afterNodes) {
+				return fmt.Errorf("cluster nodes mismatch after reboot: before=%v after=%v", beforeNodes, afterNodes)
 			}
+
+			return nil
+		}).Should(Succeed())
+	})
+
+	It("sets all nodes' machine state to healthy", func() {
+		Eventually(func() error {
+			stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+
+			var machines []sabakan.Machine
+			err = json.Unmarshal(stdout, &machines)
+			if err != nil {
+				return err
+			}
+
+			for _, m := range machines {
+				stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", m.Spec.Serial)
+				state := string(bytes.TrimSpace(stdout))
+				if state != "healthy" {
+					return fmt.Errorf("sabakan machine state of %s is not healthy: %s", m.Spec.Serial, state)
+				}
+			}
+
 			return nil
 		}).Should(Succeed())
 	})
 
 	It("can access a pod from another pod running on different node, even after rebooting", func() {
 		Eventually(func() error {
-			_, _, err := execAt(boot0, "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
-			return err
+			stdout, stderr, err := execAt(boot0, "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			return nil
 		}).Should(Succeed())
 	})
 
@@ -70,9 +182,9 @@ func TestRebootAllNodes() {
 			"--image=quay.io/cybozu/testhttpd:0", "--image-pull-policy=Always", "--generator=run-pod/v1")
 		By("checking the pod is running")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "pod", testPod, "-o=json")
+			stdout, stderr, err := execAt(boot0, "kubectl", "get", "pod", testPod, "-o=json")
 			if err != nil {
-				return err
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
 			pod := new(corev1.Pod)
 			err = json.Unmarshal(stdout, &pod)

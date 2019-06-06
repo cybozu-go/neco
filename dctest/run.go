@@ -175,9 +175,9 @@ func waitRequestComplete(check string) {
 	time.Sleep(time.Second * 2)
 
 	EventuallyWithOffset(1, func() error {
-		stdout, _, err := execAt(boot0, "neco", "status")
+		stdout, stderr, err := execAt(boot0, "neco", "status")
 		if err != nil {
-			return err
+			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		}
 		out := string(stdout)
 		if !strings.Contains(out, "status: completed") {
@@ -192,9 +192,15 @@ func waitRequestComplete(check string) {
 }
 
 func getVaultToken() string {
-	stdout, stderr, err := execAtWithInput(boot0, []byte("cybozu"), "vault", "login",
-		"-token-only", "-method=userpass", "username=admin", "password=-")
-	Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
-
-	return string(bytes.TrimSpace(stdout))
+	var token string
+	Eventually(func() error {
+		stdout, stderr, err := execAtWithInput(boot0, []byte("cybozu"), "vault", "login",
+			"-token-only", "-method=userpass", "username=admin", "password=-")
+		if err != nil {
+			return errors.New(string(stderr))
+		}
+		token = string(bytes.TrimSpace(stdout))
+		return nil
+	}).Should(Succeed())
+	return token
 }
