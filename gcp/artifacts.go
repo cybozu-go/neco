@@ -1,14 +1,14 @@
 package gcp
 
 var artifacts = artifactSet{
-	goVersion:           "1.12.1",
+	goVersion:           "1.12.5",
 	rktVersion:          "1.30.0",
-	etcdVersion:         "3.3.12",
+	etcdVersion:         "3.3.13",
 	placematVersion:     "1.3.5",
 	customUbuntuVersion: "20190312",
-	coreOSVersion:       "2023.4.0",
+	coreOSVersion:       "2079.4.0",
 	ctVersion:           "0.9.0",
-	protobufVersion:     "3.7.0",
+	protobufVersion:     "3.8.0",
 	debPackages: []string{
 		"git",
 		"build-essential",
