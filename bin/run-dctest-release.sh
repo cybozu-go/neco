@@ -2,6 +2,7 @@
 
 SUITE=$1
 DATACENTER=$2
+TO_COMMIT=$3
 
 . $(dirname $0)/env
 
@@ -57,6 +58,10 @@ mkdir -p \$GOPATH/src/github.com/cybozu-go/neco
 cd \$GOPATH/src/github.com/cybozu-go/neco
 tar xzf /home/cybozu/neco.tgz
 if [ -n "${DATACENTER}" ]; then
+  if "${TO_COMMIT}"; then
+    git add -u
+    git commit -m 'update artifacts'
+  fi
   COMMIT=\$(git log -1 --format=%H)
   env GO111MODULE=on go install -mod=vendor ./pkg/find-installed-release
   RELEASE=\$(find-installed-release ${DATACENTER})

@@ -10,6 +10,9 @@ commands:
       datacenter:
         type: string
         default: ""
+      to-commit:
+        type: boolean
+        default: false
     steps:
       - run:
           name: Store Service Account
@@ -177,12 +180,11 @@ jobs:
             diffs=$(git status -s)
             if [ "$diffs" = "" ]; then touch .skip; exit 0; fi
             printf "%s\n" "$diffs"
-      - run: git add -u
-      - run: git commit -m 'update artifacts'
       - dctest-command:
           script: run-dctest-release.sh
           suite: ./bootstrap
           datacenter: staging
+          to-commit: true
       - run:
           command: |
             if [ -f .skip ]; then exit 0; fi
