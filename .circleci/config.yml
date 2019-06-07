@@ -107,19 +107,12 @@ jobs:
       - image: google/cloud-sdk
     steps:
       - checkout
-      - run:
-          name: Configure GIT
-          command: |
-            git config --global user.email "neco@cybozu.com"
-            git config --global user.name "cybozu-neco"
       - dctest-command:
           script: run-dctest-release.sh
           suite: ./bootstrap
           datacenter: staging
       - run:
-          command: |
-            if [ -f .skip ]; then exit 0; fi
-            ./bin/run-dctest-suite.sh upgrade
+          command: ./bin/run-dctest-suite.sh upgrade
           no_output_timeout: 20m
   generate-artifacts:
     docker:
@@ -171,22 +164,12 @@ jobs:
       - run: git checkout release
       - run: git merge --no-commit origin/${CIRCLE_BRANCH}
       - run: cp /tmp/workspace/artifacts_release.go .
-      - run:
-          name: Check diff
-          command: |
-            diffs=$(git status -s)
-            if [ "$diffs" = "" ]; then touch .skip; exit 0; fi
-            printf "%s\n" "$diffs"
-      - run: git add -u
-      - run: git commit -m 'update artifacts'
       - dctest-command:
           script: run-dctest-release.sh
           suite: ./bootstrap
           datacenter: staging
       - run:
-          command: |
-            if [ -f .skip ]; then exit 0; fi
-            ./bin/run-dctest-suite.sh upgrade release
+          command: ./bin/run-dctest-suite.sh upgrade release
           no_output_timeout: 20m
   update-release:
     docker:

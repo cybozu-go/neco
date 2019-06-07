@@ -56,16 +56,18 @@ export PATH
 mkdir -p \$GOPATH/src/github.com/cybozu-go/neco
 cd \$GOPATH/src/github.com/cybozu-go/neco
 tar xzf /home/cybozu/neco.tgz
+cp secrets dctest/
 if [ -n "${DATACENTER}" ]; then
-  COMMIT=\$(git log -1 --format=%H)
   env GO111MODULE=on go install -mod=vendor ./pkg/find-installed-release
   RELEASE=\$(find-installed-release ${DATACENTER})
-  git checkout release-\$RELEASE
+  git worktree add /tmp/release release-\$RELEASE
+  cp secrets /tmp/release/dctest/
+  OLD_WD=\$(pwd)
+  cd /tmp/release
 fi
 
 # Run dctest
 cd dctest
-cp ../secrets .
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
 export GO111MODULE=on
 make setup
@@ -73,7 +75,8 @@ make placemat MENU=highcpu-menu.yml TAGS=release
 sleep 3
 make test TAGS=release SUITE=${SUITE} DATACENTER=${DATACENTER}
 if [ -n "${DATACENTER}" ]; then
-  git checkout \$COMMIT
+  cd \${OLD_WD}/dctest
+  cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
 fi
 EOF
 chmod +x run.sh
