@@ -2,6 +2,8 @@ package dctest
 
 import (
 	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +19,7 @@ import (
 	. "github.com/onsi/gomega"
 	yaml "gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // ckeCluster is part of cke.Cluster in github.com/cybozu-go/cke
@@ -157,6 +160,72 @@ func TestUpgrade() {
 			}
 			panic("etcd image not found")
 		}).Should(Succeed())
+
+		By("Check sha1 veth name is attached")
+		execSafeAt(boot0, "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0")
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/testhttpd", "-o=json")
+			if err != nil {
+				return err
+			}
+
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return err
+			}
+
+			if int(deployment.Status.AvailableReplicas) != 1 {
+				return fmt.Errorf("AvailableReplicas is not 1: %d", int(deployment.Status.AvailableReplicas))
+			}
+			return nil
+		}).Should(Succeed())
+		stdout, stderr, err = execAt(boot0, "kubectl", "get", "pods", "--selector=run=testhttpd", "-o=json")
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+		podList := new(corev1.PodList)
+		err = json.Unmarshal(stdout, podList)
+		Expect(err).NotTo(HaveOccurred())
+		for _, pod := range podList.Items {
+			checkVethPeerNameIsSHA1(&pod)
+		}
+		execSafeAt(boot0, "kubectl", "delete", "deployments/testhttpd")
+
+		By("Check sha1 veth name is attached when container restarts")
+		stdout, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=k8s-app=squid", "-o=json")
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+		podList = new(corev1.PodList)
+		err = json.Unmarshal(stdout, podList)
+		Expect(err).NotTo(HaveOccurred())
+		podName := podList.Items[0].Name
+		_, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "exec", podName, "--", "/bin/bash", "-c", "'kill 1'")
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+
+		Eventually(func() error {
+			stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", podName, "-o=json")
+			if err != nil {
+				return fmt.Errorf("%v: stderr=%s", err, stderr)
+			}
+
+			pod := new(corev1.Pod)
+			err = json.Unmarshal(stdout, pod)
+			if err != nil {
+				return err
+			}
+
+			if !pod.Status.ContainerStatuses[0].Ready {
+				return errors.New("container is not ready yet")
+			}
+
+			return nil
+		}).Should(Succeed())
+
+		stdout, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", podName, "-o=json")
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+		pod := new(corev1.Pod)
+		err = json.Unmarshal(stdout, pod)
+		Expect(err).NotTo(HaveOccurred())
+
+		checkVethPeerNameIsSHA1(pod)
 	})
 
 	It("should re-configure vault for CKE >= 1.14.3", func() {
@@ -414,4 +483,11 @@ func checkVersionInDeployment(namespace, deploymentName, image string) error {
 			deploymentName, image, desired, actual)
 	}
 	return nil
+}
+
+func checkVethPeerNameIsSHA1(pod *corev1.Pod) {
+	h := sha1.New()
+	h.Write([]byte(fmt.Sprintf("%s.%s", pod.Namespace, pod.Name)))
+	peerName := fmt.Sprintf("%s%s", "veth", hex.EncodeToString(h.Sum(nil))[:11])
+	execSafeAt(boot0, "ckecli", "ssh", pod.Status.HostIP, "ip", "link", "show", peerName)
 }
