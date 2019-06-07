@@ -7,14 +7,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type metric struct {
+type targetMetric struct {
 	Name   string            `yaml:"name"`
 	Labels map[string]string `yaml:"labels,omitempty"`
 }
 
 type machineType struct {
-	Name             string   `yaml:"name"`
-	MetricsCheckList []metric `yaml:"metrics,omitempty"`
+	Name             string         `yaml:"name"`
+	MetricsCheckList []targetMetric `yaml:"metrics,omitempty"`
 }
 
 type config struct {

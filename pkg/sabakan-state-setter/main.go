@@ -46,10 +46,14 @@ func connectMetricsServer(ctx context.Context, addr string) (chan *dto.MetricFam
 }
 
 func main() {
+	err := well.LogConfig{}.Apply()
+	if err != nil {
+		log.ErrorExit(err)
+	}
 	flag.Parse()
 	well.Go(run)
 	well.Stop()
-	err := well.Wait()
+	err = well.Wait()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -131,7 +135,7 @@ func run(ctx context.Context) error {
 
 	// For each machine sources, decide its next state, then update sabakan
 	for _, ms := range mss {
-		state := decideSabakanState(ms)
+		state := ms.decideSabakanState()
 		if state == noStateTransition {
 			continue
 		}
