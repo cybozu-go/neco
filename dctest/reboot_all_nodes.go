@@ -3,6 +3,7 @@ package dctest
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -31,6 +32,26 @@ func fetchClusterNodes() (map[string]bool, error) {
 		m[n.Address] = n.ControlPlane
 	}
 	return m, nil
+}
+
+type serfMembers struct {
+	Members []struct {
+		Addr   string `json:"addr"`
+		Status string `json:"status"`
+	} `json:"members"`
+}
+
+func getSerfMembers() (*serfMembers, error) {
+	stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json")
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+	var result serfMembers
+	err = json.Unmarshal(stdout, &result)
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+	return &result, nil
 }
 
 // TestRebootAllNodes tests all nodes stop scenario
@@ -72,6 +93,32 @@ func TestRebootAllNodes() {
 			_, _, err = execAt(boot0, "neco", "ipmipower", "start", m.Spec.IPv4[0])
 			Expect(err).ShouldNot(HaveOccurred())
 		}
+		Eventually(func() error {
+			result, err := getSerfMembers()
+			if err != nil {
+				return err
+			}
+		OUTER:
+			for _, m := range machines {
+				for _, member := range result.Members {
+					addrs := strings.Split(member.Addr, ":")
+					if len(addrs) != 2 {
+						return fmt.Errorf("unexpected addr: %s", member.Addr)
+					}
+					addr := addrs[0]
+					if addr == m.Spec.IPv4[0] {
+						if member.Status != "alive" {
+							continue OUTER
+						} else {
+							return errors.New("the node is not started reboot yet: " + addr)
+						}
+					}
+				}
+				return errors.New("node not found in serf members: " + m.Spec.IPv4[0])
+			}
+			return nil
+		}).Should(Succeed())
+
 	})
 
 	It("recovers all nodes", func() {
@@ -80,20 +127,9 @@ func TestRebootAllNodes() {
 			if err != nil {
 				return err
 			}
-
-			stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json")
+			result, err := getSerfMembers()
 			if err != nil {
-				return fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
-			}
-			var result struct {
-				Members []struct {
-					Addr   string `json:"addr"`
-					Status string `json:"status"`
-				} `json:"members"`
-			}
-			err = json.Unmarshal(stdout, &result)
-			if err != nil {
-				return fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+				return err
 			}
 
 		OUTER:
