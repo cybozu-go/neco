@@ -11,7 +11,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.4.2", Private: false},
 		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.8.3.1", Private: false},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.1.2.1", Private: false},
-		{Name: "coil", Repository: "quay.io/cybozu/coil", Tag: "1.1.0", Private: false},
+		{Name: "coil", Repository: "quay.io/cybozu/coil", Tag: "1.1.1", Private: false},
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "3.5.27.1.5", Private: false},
 	},
 	Debs: []DebianPackage{
