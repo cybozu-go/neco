@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/sabakan/v2"
 	"github.com/prometheus/prom2json"
 )
@@ -14,14 +15,24 @@ const (
 	noStateTransition       = "no-transition"
 )
 
-func decideSabakanState(ms machineStateSource) string {
-	if ms.serfStatus == nil || ms.serfStatus.Status != "alive" {
+func (ms machineStateSource) decideSabakanState() string {
+	if ms.serfStatus == nil {
+		log.Info("unreachable; serf status is nil", map[string]interface{}{
+			"serial": ms.serial,
+		})
+		return sabakan.StateUnreachable.GQLEnum()
+	}
+	if ms.serfStatus.Status != "alive" {
+		log.Info("unreachable; serf status != alive", map[string]interface{}{
+			"serial": ms.serial,
+			"status": ms.serfStatus.Status,
+		})
 		return sabakan.StateUnreachable.GQLEnum()
 	}
 
 	suf, ok := ms.serfStatus.Tags[systemdUnitsFailedTag]
 	if !ok {
-		state := decideByMonitorHW(ms)
+		state := ms.decideByMonitorHW()
 		if state == sabakan.StateHealthy.GQLEnum() {
 			// Do nothing if there is no systemd-units-failed tag and no hardware failure.
 			// In this case, the machine is starting up.
@@ -31,14 +42,21 @@ func decideSabakanState(ms machineStateSource) string {
 	}
 
 	if len(suf) != 0 {
+		log.Info("unhealthy; some systemd units failed", map[string]interface{}{
+			"serial": ms.serial,
+			"failed": suf,
+		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
 
-	return decideByMonitorHW(ms)
+	return ms.decideByMonitorHW()
 }
 
-func decideByMonitorHW(ms machineStateSource) string {
+func (ms machineStateSource) decideByMonitorHW() string {
 	if ms.machineType == nil {
+		log.Info("unhealthy; machine type is nil", map[string]interface{}{
+			"serial": ms.serial,
+		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
 
@@ -47,20 +65,28 @@ func decideByMonitorHW(ms machineStateSource) string {
 	}
 
 	if ms.metrics == nil {
+		log.Info("unhealthy; metrics is nil", map[string]interface{}{
+			"serial": ms.serial,
+		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
 
 	for _, checkTarget := range ms.machineType.MetricsCheckList {
-		metrics, ok := ms.metrics[checkTarget.Name]
+		_, ok := ms.metrics[checkTarget.Name]
 		if !ok {
+			log.Info("unhealthy; metrics do not contain check target", map[string]interface{}{
+				"serial":  ms.serial,
+				"target":  checkTarget.Name,
+				"metrics": ms.metrics,
+			})
 			return sabakan.StateUnhealthy.GQLEnum()
 		}
 
 		var res string
 		if checkTarget.Labels == nil {
-			res = checkAllTarget(metrics)
+			res = ms.checkAllTarget(checkTarget)
 		} else {
-			res = checkSpecifiedTarget(metrics, checkTarget.Labels)
+			res = ms.checkSpecifiedTarget(checkTarget)
 		}
 		if res != sabakan.StateHealthy.GQLEnum() {
 			return res
@@ -70,27 +96,46 @@ func decideByMonitorHW(ms machineStateSource) string {
 	return sabakan.StateHealthy.GQLEnum()
 }
 
-func checkAllTarget(metrics machineMetrics) string {
+func (ms machineStateSource) checkAllTarget(checkTarget targetMetric) string {
+	metrics := ms.metrics[checkTarget.Name]
 	for _, m := range metrics {
 		if m.Value != monitorHWStatusHealth {
+			log.Info("unhealthy; metric is not healthy", map[string]interface{}{
+				"serial": ms.serial,
+				"name":   checkTarget.Name,
+				"labels": m.Labels,
+				"value":  m.Value,
+			})
 			return sabakan.StateUnhealthy.GQLEnum()
 		}
 	}
 	return sabakan.StateHealthy.GQLEnum()
 }
 
-func checkSpecifiedTarget(metrics machineMetrics, labels map[string]string) string {
+func (ms machineStateSource) checkSpecifiedTarget(checkTarget targetMetric) string {
 	flagExists := false
+	metrics := ms.metrics[checkTarget.Name]
 	for _, m := range metrics {
-		if !isMetricMatchedLabels(m, labels) {
+		if !isMetricMatchedLabels(m, checkTarget.Labels) {
 			continue
 		}
 		if m.Value != monitorHWStatusHealth {
+			log.Info("unhealthy; metric is not healthy", map[string]interface{}{
+				"serial": ms.serial,
+				"name":   checkTarget.Name,
+				"labels": m.Labels,
+				"value":  m.Value,
+			})
 			return sabakan.StateUnhealthy.GQLEnum()
 		}
 		flagExists = true
 	}
 	if !flagExists {
+		log.Info("unhealthy; metric with specified labels does not exist", map[string]interface{}{
+			"serial": ms.serial,
+			"name":   checkTarget.Name,
+			"labels": checkTarget.Labels,
+		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
 	return sabakan.StateHealthy.GQLEnum()
