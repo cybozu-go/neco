@@ -46,15 +46,16 @@ func connectMetricsServer(ctx context.Context, addr string) (chan *dto.MetricFam
 }
 
 func main() {
+	flag.Parse()
 	err := well.LogConfig{}.Apply()
 	if err != nil {
 		log.ErrorExit(err)
 	}
-	flag.Parse()
+
 	well.Go(run)
 	well.Stop()
 	err = well.Wait()
-	if err != nil {
+	if err != nil && !well.IsSignaled(err) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
