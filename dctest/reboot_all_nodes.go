@@ -3,10 +3,10 @@ package dctest
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -34,19 +34,12 @@ func fetchClusterNodes() (map[string]bool, error) {
 	return m, nil
 }
 
-type serfMembers struct {
-	Members []struct {
-		Addr   string `json:"addr"`
-		Status string `json:"status"`
-	} `json:"members"`
-}
-
-func getSerfMembers() (*serfMembers, error) {
+func getSerfMembers() (*serfMemberContainer, error) {
 	stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json")
 	if err != nil {
 		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
 	}
-	var result serfMembers
+	var result serfMemberContainer
 	err = json.Unmarshal(stdout, &result)
 	if err != nil {
 		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
@@ -80,6 +73,9 @@ func TestRebootAllNodes() {
 	})
 
 	It("reboots all nodes", func() {
+		prevMembers, err := getSerfMembers()
+		Expect(err).ShouldNot(HaveOccurred())
+
 		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
 		Expect(err).ShouldNot(HaveOccurred())
 		var machines []sabakan.Machine
@@ -93,35 +89,8 @@ func TestRebootAllNodes() {
 			_, _, err = execAt(boot0, "neco", "ipmipower", "start", m.Spec.IPv4[0])
 			Expect(err).ShouldNot(HaveOccurred())
 		}
-		Eventually(func() error {
-			result, err := getSerfMembers()
-			if err != nil {
-				return err
-			}
-		OUTER:
-			for _, m := range machines {
-				for _, member := range result.Members {
-					addrs := strings.Split(member.Addr, ":")
-					if len(addrs) != 2 {
-						return fmt.Errorf("unexpected addr: %s", member.Addr)
-					}
-					addr := addrs[0]
-					if addr == m.Spec.IPv4[0] {
-						if member.Status != "alive" {
-							continue OUTER
-						} else {
-							return errors.New("the node is not started reboot yet: " + addr)
-						}
-					}
-				}
-				return errors.New("node not found in serf members: " + m.Spec.IPv4[0])
-			}
-			return nil
-		}).Should(Succeed())
 
-	})
-
-	It("recovers all nodes", func() {
+		By("recover all nodes")
 		Eventually(func() error {
 			nodes, err := fetchClusterNodes()
 			if err != nil {
@@ -141,6 +110,27 @@ func TestRebootAllNodes() {
 					}
 					addr := addrs[0]
 					if addr == k {
+						var prev *serfMember
+						for _, pm := range prevMembers.Members {
+							if pm.Addr == m.Addr {
+								prev = &pm
+								break
+							}
+						}
+						if prev == nil {
+							continue
+						}
+						prevUptime, err := time.Parse("2006-01-02 15:04:05", prev.Tags["uptime"])
+						if err != nil {
+							return err
+						}
+						currUptime, err := time.Parse("2006-01-02 15:04:05", m.Tags["uptime"])
+						if err != nil {
+							return err
+						}
+						if !prevUptime.Before(currUptime) {
+							return fmt.Errorf("the node has not yet been restarted: %s, %v", k, m)
+						}
 						if m.Status != "alive" {
 							return fmt.Errorf("reboot failed: %s, %v", k, m)
 						}
