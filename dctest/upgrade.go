@@ -309,37 +309,42 @@ func TestUpgrade() {
 		err = json.Unmarshal(stdout, podList)
 		Expect(err).NotTo(HaveOccurred())
 		podName := podList.Items[0].Name
-		_, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "exec", podName, "--", "/bin/bash", "-c", "'kill 1'")
+		notTarget := podList.Items[1].Name
+		_, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "delete", "pod", podName)
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 
-		By("waiting a squid pod is ready")
+		By("waiting squid deployment is ready")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", podName, "-o=json")
+			stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "deployment", "squid", "-o=json")
 			if err != nil {
 				return fmt.Errorf("%v: stderr=%s", err, stderr)
 			}
 
-			pod := new(corev1.Pod)
-			err = json.Unmarshal(stdout, pod)
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
 			if err != nil {
 				return err
 			}
 
-			if !pod.Status.ContainerStatuses[0].Ready {
-				return errors.New("container is not ready yet")
+			if int(deployment.Status.AvailableReplicas) != 2 {
+				return errors.New("AvailableReplicas is not 2")
 			}
-
 			return nil
 		}).Should(Succeed())
 
-		stdout, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", podName, "-o=json")
+		stdout, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=k8s-app=squid", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
-		pod := new(corev1.Pod)
-		err = json.Unmarshal(stdout, pod)
-		By("checking SHA1 veth for namespace: " + pod.Namespace + ", name:" + pod.Name)
+		podList = new(corev1.PodList)
+		err = json.Unmarshal(stdout, podList)
 		Expect(err).NotTo(HaveOccurred())
 
-		checkVethPeerNameIsSHA1(pod)
+		for _, pod := range podList.Items {
+			if pod.Name != notTarget {
+				By("checking SHA1 veth for namespace: " + pod.Namespace + ", name:" + pod.Name)
+				checkVethPeerNameIsSHA1(&pod)
+				break
+			}
+		}
 	})
 }
 
