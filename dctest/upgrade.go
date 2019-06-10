@@ -268,8 +268,8 @@ func TestUpgrade() {
 		}
 	})
 
-	It("should running newer coil", func() {
-		By("Check sha1 veth name is attached")
+	It("should SHA1 veth name is attached with newer coil", func() {
+		By("deploying testhttpd")
 		execSafeAt(boot0, "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0")
 		Eventually(func() error {
 			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/testhttpd", "-o=json")
@@ -295,20 +295,24 @@ func TestUpgrade() {
 		err = json.Unmarshal(stdout, podList)
 		Expect(err).NotTo(HaveOccurred())
 		for _, pod := range podList.Items {
+			By("checking SHA1 veth for namespace: " + pod.Namespace + ", name:" + pod.Name)
 			checkVethPeerNameIsSHA1(&pod)
 		}
 		execSafeAt(boot0, "kubectl", "delete", "deployments/testhttpd")
+	})
 
-		By("Check sha1 veth name is attached when container restarts")
-		stdout, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=k8s-app=squid", "-o=json")
+	It("should SHA1 veth name is attached when container restarts with newer coil", func() {
+		By("stopping a squid pod")
+		stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=k8s-app=squid", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
-		podList = new(corev1.PodList)
+		podList := new(corev1.PodList)
 		err = json.Unmarshal(stdout, podList)
 		Expect(err).NotTo(HaveOccurred())
 		podName := podList.Items[0].Name
 		_, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "exec", podName, "--", "/bin/bash", "-c", "'kill 1'")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 
+		By("waiting a squid pod is ready")
 		Eventually(func() error {
 			stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", podName, "-o=json")
 			if err != nil {
@@ -332,6 +336,7 @@ func TestUpgrade() {
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 		pod := new(corev1.Pod)
 		err = json.Unmarshal(stdout, pod)
+		By("checking SHA1 veth for namespace: " + pod.Namespace + ", name:" + pod.Name)
 		Expect(err).NotTo(HaveOccurred())
 
 		checkVethPeerNameIsSHA1(pod)
