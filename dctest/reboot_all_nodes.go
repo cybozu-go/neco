@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -73,9 +72,7 @@ func TestRebootAllNodes() {
 	})
 
 	It("reboots all nodes", func() {
-		prevMembers, err := getSerfMembers()
-		Expect(err).ShouldNot(HaveOccurred())
-
+		By("reboot all nodes")
 		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
 		Expect(err).ShouldNot(HaveOccurred())
 		var machines []sabakan.Machine
@@ -90,6 +87,32 @@ func TestRebootAllNodes() {
 			Expect(err).ShouldNot(HaveOccurred())
 		}
 
+		By("wait for rebooting")
+		preReboot := make(map[string]bool)
+		for _, m := range machines {
+			preReboot[m.Spec.IPv4[0]] = true
+		}
+		Eventually(func() error {
+			result, err := getSerfMembers()
+			if err != nil {
+				return err
+			}
+			for _, member := range result.Members {
+				addrs := strings.Split(member.Addr, ":")
+				if len(addrs) != 2 {
+					return fmt.Errorf("unexpected addr: %s", member.Addr)
+				}
+				addr := addrs[0]
+				if preReboot[addr] && member.Status != "alive" {
+					delete(preReboot, addr)
+				}
+			}
+			if len(preReboot) > 0 {
+				return fmt.Errorf("some nodes are still starting reboot: %v", preReboot)
+			}
+			return nil
+		})
+
 		By("recover all nodes")
 		Eventually(func() error {
 			nodes, err := fetchClusterNodes()
@@ -100,7 +123,6 @@ func TestRebootAllNodes() {
 			if err != nil {
 				return err
 			}
-
 		OUTER:
 			for k := range nodes {
 				for _, m := range result.Members {
@@ -110,37 +132,14 @@ func TestRebootAllNodes() {
 					}
 					addr := addrs[0]
 					if addr == k {
-						var prev *serfMember
-						for _, pm := range prevMembers.Members {
-							if pm.Addr == m.Addr {
-								prev = &pm
-								break
-							}
-						}
-						if prev == nil {
-							continue
-						}
-						prevUptime, err := time.Parse("2006-01-02 15:04:05", prev.Tags["uptime"])
-						if err != nil {
-							return err
-						}
-						currUptime, err := time.Parse("2006-01-02 15:04:05", m.Tags["uptime"])
-						if err != nil {
-							return err
-						}
-						if !prevUptime.Before(currUptime) {
-							return fmt.Errorf("the node has not yet been restarted: %s, %v", k, m)
-						}
 						if m.Status != "alive" {
 							return fmt.Errorf("reboot failed: %s, %v", k, m)
 						}
 						continue OUTER
 					}
 				}
-
 				return fmt.Errorf("cannot find in serf members: %s", k)
 			}
-
 			return nil
 		}).Should(Succeed())
 	})
