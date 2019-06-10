@@ -130,11 +130,11 @@ func TestUpgrade() {
 
 		By("Checking version of etcd cluster")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+			stdout, stderr, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
 				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key",
 				"--endpoints=10.69.0.3:2379,10.69.0.195:2379,10.69.1.131:2379",
 				"endpoint", "status")
-			Expect(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 			var statuses []struct {
 				Endpoint string `json:"Endpoint"`
 				Status   struct {
