@@ -75,9 +75,8 @@ func (ms machineStateSource) decideByMonitorHW() string {
 		_, ok := ms.metrics[checkTarget.Name]
 		if !ok {
 			log.Info("unhealthy; metrics do not contain check target", map[string]interface{}{
-				"serial":  ms.serial,
-				"target":  checkTarget.Name,
-				"metrics": ms.metrics,
+				"serial": ms.serial,
+				"target": checkTarget.Name,
 			})
 			return sabakan.StateUnhealthy.GQLEnum()
 		}
