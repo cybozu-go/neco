@@ -33,6 +33,19 @@ func fetchClusterNodes() (map[string]bool, error) {
 	return m, nil
 }
 
+func getSerfMembers() (*serfMemberContainer, error) {
+	stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json")
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+	var result serfMemberContainer
+	err = json.Unmarshal(stdout, &result)
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+	return &result, nil
+}
+
 // TestRebootAllNodes tests all nodes stop scenario
 func TestRebootAllNodes() {
 	It("can access a pod from another pod running on different node", func() {
@@ -59,6 +72,7 @@ func TestRebootAllNodes() {
 	})
 
 	It("reboots all nodes", func() {
+		By("reboot all nodes")
 		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
 		Expect(err).ShouldNot(HaveOccurred())
 		var machines []sabakan.Machine
@@ -72,30 +86,43 @@ func TestRebootAllNodes() {
 			_, _, err = execAt(boot0, "neco", "ipmipower", "start", m.Spec.IPv4[0])
 			Expect(err).ShouldNot(HaveOccurred())
 		}
-	})
 
-	It("recovers all nodes", func() {
+		By("wait for rebooting")
+		preReboot := make(map[string]bool)
+		for _, m := range machines {
+			preReboot[m.Spec.IPv4[0]] = true
+		}
+		Eventually(func() error {
+			result, err := getSerfMembers()
+			if err != nil {
+				return err
+			}
+			for _, member := range result.Members {
+				addrs := strings.Split(member.Addr, ":")
+				if len(addrs) != 2 {
+					return fmt.Errorf("unexpected addr: %s", member.Addr)
+				}
+				addr := addrs[0]
+				if preReboot[addr] && member.Status != "alive" {
+					delete(preReboot, addr)
+				}
+			}
+			if len(preReboot) > 0 {
+				return fmt.Errorf("some nodes are still starting reboot: %v", preReboot)
+			}
+			return nil
+		})
+
+		By("recover all nodes")
 		Eventually(func() error {
 			nodes, err := fetchClusterNodes()
 			if err != nil {
 				return err
 			}
-
-			stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json")
+			result, err := getSerfMembers()
 			if err != nil {
-				return fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+				return err
 			}
-			var result struct {
-				Members []struct {
-					Addr   string `json:"addr"`
-					Status string `json:"status"`
-				} `json:"members"`
-			}
-			err = json.Unmarshal(stdout, &result)
-			if err != nil {
-				return fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
-			}
-
 		OUTER:
 			for k := range nodes {
 				for _, m := range result.Members {
@@ -111,10 +138,8 @@ func TestRebootAllNodes() {
 						continue OUTER
 					}
 				}
-
 				return fmt.Errorf("cannot find in serf members: %s", k)
 			}
-
 			return nil
 		}).Should(Succeed())
 	})

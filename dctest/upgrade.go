@@ -2,6 +2,8 @@ package dctest
 
 import (
 	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +19,7 @@ import (
 	. "github.com/onsi/gomega"
 	yaml "gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // ckeCluster is part of cke.Cluster in github.com/cybozu-go/cke
@@ -130,11 +133,11 @@ func TestUpgrade() {
 
 		By("Checking version of etcd cluster")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+			stdout, stderr, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
 				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key",
 				"--endpoints=10.69.0.3:2379,10.69.0.195:2379,10.69.1.131:2379",
 				"endpoint", "status")
-			Expect(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 			var statuses []struct {
 				Endpoint string `json:"Endpoint"`
 				Status   struct {
@@ -262,6 +265,85 @@ func TestUpgrade() {
 				}
 				return nil
 			}).Should(Succeed())
+		}
+	})
+
+	It("should SHA1 veth name is attached with newer coil", func() {
+		By("deploying testhttpd")
+		execSafeAt(boot0, "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0")
+		Eventually(func() error {
+			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/testhttpd", "-o=json")
+			if err != nil {
+				return err
+			}
+
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return err
+			}
+
+			if int(deployment.Status.AvailableReplicas) != 1 {
+				return fmt.Errorf("AvailableReplicas is not 1: %d", int(deployment.Status.AvailableReplicas))
+			}
+			return nil
+		}).Should(Succeed())
+
+		stdout, stderr, err := execAt(boot0, "kubectl", "get", "pods", "--selector=run=testhttpd", "-o=json")
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+		podList := new(corev1.PodList)
+		err = json.Unmarshal(stdout, podList)
+		Expect(err).NotTo(HaveOccurred())
+		for _, pod := range podList.Items {
+			By("checking SHA1 veth for namespace: " + pod.Namespace + ", name:" + pod.Name)
+			checkVethPeerNameIsSHA1(&pod)
+		}
+		execSafeAt(boot0, "kubectl", "delete", "deployments/testhttpd")
+	})
+
+	It("should SHA1 veth name is attached when container restarts with newer coil", func() {
+		By("stopping a squid pod")
+		stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=k8s-app=squid", "-o=json")
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+		podList := new(corev1.PodList)
+		err = json.Unmarshal(stdout, podList)
+		Expect(err).NotTo(HaveOccurred())
+		podName := podList.Items[0].Name
+		notTarget := podList.Items[1].Name
+		_, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "delete", "pod", podName)
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+
+		By("waiting squid deployment is ready")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "deployment", "squid", "-o=json")
+			if err != nil {
+				return fmt.Errorf("%v: stderr=%s", err, stderr)
+			}
+
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return err
+			}
+
+			if int(deployment.Status.AvailableReplicas) != 2 {
+				return errors.New("AvailableReplicas is not 2")
+			}
+			return nil
+		}).Should(Succeed())
+
+		stdout, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=k8s-app=squid", "-o=json")
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+		podList = new(corev1.PodList)
+		err = json.Unmarshal(stdout, podList)
+		Expect(err).NotTo(HaveOccurred())
+
+		for _, pod := range podList.Items {
+			if pod.Name != notTarget {
+				By("checking SHA1 veth for namespace: " + pod.Namespace + ", name:" + pod.Name)
+				checkVethPeerNameIsSHA1(&pod)
+				break
+			}
 		}
 	})
 }
@@ -414,4 +496,11 @@ func checkVersionInDeployment(namespace, deploymentName, image string) error {
 			deploymentName, image, desired, actual)
 	}
 	return nil
+}
+
+func checkVethPeerNameIsSHA1(pod *corev1.Pod) {
+	h := sha1.New()
+	h.Write([]byte(fmt.Sprintf("%s.%s", pod.Namespace, pod.Name)))
+	peerName := fmt.Sprintf("%s%s", "veth", hex.EncodeToString(h.Sum(nil))[:11])
+	execSafeAt(boot0, "ckecli", "ssh", pod.Status.HostIP, "ip", "link", "show", peerName)
 }
