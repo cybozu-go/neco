@@ -40,7 +40,9 @@ var artifacts = artifactSet{
 		"libdevmapper-dev",
 		"libgpgme-dev",
 		"libostree-dev",
-		// required by building containerd
-		"libseccomp-dev",
+		// docker CE
+		"docker-ce",
+		"docker-ce-cli",
+		"containerd.io",
 	},
 }

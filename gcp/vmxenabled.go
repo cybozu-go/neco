@@ -2,9 +2,11 @@ package gcp
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -47,6 +49,11 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 	}
 
 	err = configureProjectAtomic(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = configureDocker(ctx)
 	if err != nil {
 		return err
 	}
@@ -202,6 +209,30 @@ func configureProjectAtomic(ctx context.Context) error {
 	}
 
 	return well.CommandContext(ctx, "add-apt-repository", "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu bionic main").Run()
+}
+
+func configureDocker(ctx context.Context) error {
+	resp, err := http.Get("https://download.docker.com/linux/ubuntu/gpg")
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to get docker repository GPG key: %d", resp.StatusCode)
+	}
+	key, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	cmd := well.CommandContext(ctx, "apt-key", "add", "-")
+	cmd.Stdin = bytes.NewReader(key)
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return well.CommandContext(ctx, "add-apt-repository", "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable").Run()
 }
 
 func installAptPackages(ctx context.Context, optionalPackages []string) error {
