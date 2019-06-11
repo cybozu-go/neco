@@ -2,6 +2,7 @@ package gcp
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
@@ -21,9 +22,8 @@ import (
 )
 
 const (
-	assetDir   = "/assets"
-	ctPath     = "/usr/local/bin/ct"
-	protocPath = "/usr/local"
+	assetDir = "/assets"
+	ctPath   = "/usr/local/bin/ct"
 )
 
 var (
@@ -31,7 +31,9 @@ var (
 		"/etc/apt/apt.conf.d/20auto-upgrades",
 		"/etc/bash_completion.d/rktutil",
 		"/etc/containers/registries.conf",
+		"/etc/docker/daemon.json",
 		"/etc/profile.d/go.sh",
+		"/etc/systemd/system/docker.service.d/99-placemat.conf",
 		"/usr/local/bin/podenter",
 	}
 )
@@ -49,6 +51,11 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 	}
 
 	err = configureProjectAtomic(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = configureDocker(ctx)
 	if err != nil {
 		return err
 	}
@@ -81,11 +88,6 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 	}
 
 	err = installBinaryFile(ctx, client, artifacts.ctURL(), ctPath)
-	if err != nil {
-		return err
-	}
-
-	err = installProtobuf(ctx, client, artifacts.protobufURL(), artifacts.protobufVersion)
 	if err != nil {
 		return err
 	}
@@ -151,6 +153,10 @@ func configureDNS(ctx context.Context) error {
 	return neco.WriteFile("/etc/resolv.conf", newData)
 }
 
+func apt(ctx context.Context, args ...string) error {
+	return well.CommandContext(ctx, "apt-get", args...).Run()
+}
+
 func configureApt(ctx context.Context) error {
 	err := neco.StopTimer(ctx, "apt-daily-upgrade")
 	if err != nil {
@@ -193,10 +199,6 @@ func configureApt(ctx context.Context) error {
 	return nil
 }
 
-func apt(ctx context.Context, args ...string) error {
-	return well.CommandContext(ctx, "apt-get", args...).Run()
-}
-
 func configureProjectAtomic(ctx context.Context) error {
 	err := apt(ctx, "install", "-y", "software-properties-common", "dirmngr")
 	if err != nil {
@@ -209,6 +211,30 @@ func configureProjectAtomic(ctx context.Context) error {
 	}
 
 	return well.CommandContext(ctx, "add-apt-repository", "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu bionic main").Run()
+}
+
+func configureDocker(ctx context.Context) error {
+	resp, err := http.Get("https://download.docker.com/linux/ubuntu/gpg")
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to get docker repository GPG key: %d", resp.StatusCode)
+	}
+	key, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	cmd := well.CommandContext(ctx, "apt-key", "add", "-")
+	cmd.Stdin = bytes.NewReader(key)
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return well.CommandContext(ctx, "add-apt-repository", "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable").Run()
 }
 
 func installAptPackages(ctx context.Context, optionalPackages []string) error {
@@ -329,52 +355,6 @@ func installBinaryFile(ctx context.Context, client *http.Client, url, dest strin
 	defer resp.Body.Close()
 
 	return writeToFile(dest, resp.Body, 0755)
-}
-
-func installProtobuf(ctx context.Context, client *http.Client, url, version string) error {
-	resp, err := client.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	err = untargz(resp.Body, "/tmp")
-	if err != nil {
-		return err
-	}
-
-	workDir := fmt.Sprintf("/tmp/protobuf-%s", version)
-	cmd := well.CommandContext(ctx, "./autogen.sh")
-	cmd.Dir = workDir
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	cmd = well.CommandContext(ctx, "./configure")
-	cmd.Dir = workDir
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	cmd = well.CommandContext(ctx, "make")
-	cmd.Dir = workDir
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	cmd = well.CommandContext(ctx, "make", "install")
-	cmd.Dir = workDir
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	cmd = well.CommandContext(ctx, "ldconfig")
-	cmd.Dir = workDir
-	return cmd.Run()
 }
 
 func setupPodman() error {

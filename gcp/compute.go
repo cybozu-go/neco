@@ -43,7 +43,7 @@ func NewComputeClient(cfg *Config, instance string) *ComputeClient {
 		cfg:      cfg,
 		instance: instance,
 		user:     user,
-		image:    fmt.Sprintf("%s-vmx-enabled", cfg.Compute.VMXEnabled.Image),
+		image:    "vmx-enabled",
 	}
 }
 
@@ -76,8 +76,8 @@ func (cc *ComputeClient) CreateVMXEnabledInstance(ctx context.Context) error {
 	bootDiskSize := strconv.Itoa(cc.cfg.Compute.BootDiskSizeGB) + "GB"
 	gcmd = append(gcmd, "create", cc.instance,
 		"--zone", cc.cfg.Common.Zone,
-		"--image", cc.cfg.Compute.VMXEnabled.Image,
-		"--image-project", cc.cfg.Compute.VMXEnabled.ImageProject,
+		"--image", artifacts.baseImage,
+		"--image-project", artifacts.baseImageProject,
 		"--boot-disk-type", "pd-ssd",
 		"--boot-disk-size", bootDiskSize,
 		"--machine-type", cc.cfg.Compute.MachineType)

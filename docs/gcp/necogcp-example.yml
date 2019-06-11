@@ -11,10 +11,7 @@ app:
 compute:
   machine-type: n1-standard-16
   boot-disk-sizeGB: 20
-  vmx-enabled:
-    image: debian-9-stretch-v20180911
-    image-project: debian-cloud
-    optional-packages: []
+  optional-packages: ["manpages-dev", "glibc-doc"]
   host-vm:
     home-disk: true
     home-disk-sizeGB: 20
