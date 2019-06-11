@@ -32,18 +32,11 @@ Fields in `shutdown` are configuration for GAE endpoint [`/shutdown`](api.md#shu
 
 Fields are common configuration for GCE provisioning.
 
-| Field              | Type   | Default | Description                |
-| ------------------ | ------ | ------- | -------------------------- |
-| `machine-type`     | string |         | Instance machine type      |
-| `boot-disk-sizeGB` | int    | `20`    | Root filesystem size in GB |
-
-Fields in `vmx-enabled` are configuration for `vmx-enabled` image.
-
-| Field               | Type     | Default | Description                                                     |
-| ------------------- | -------- | ------- | --------------------------------------------------------------- |
-| `image`             | string   |         | Image name to to create `vmx-enabled` image                     |
-| `image-project`     | string   |         | Image project to refer `image`                                  |
-| `optional-packages` | []string |         | Optional Debian packages to be installed on `vmx-enabled` image |
+| Field               | Type     | Default | Description                   |
+| ------------------- | -------- | ------- | ----------------------------- |
+| `machine-type`      | string   |         | Instance machine type         |
+| `boot-disk-sizeGB`  | int      | `20`    | Root filesystem size in GB    |
+| `optional-packages` | []string | `[]`    | List of optional APT packages |
 
 Fields in `host-vm` are configuration for `host-vm` instance.
 

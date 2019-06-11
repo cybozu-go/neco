@@ -6,9 +6,10 @@ var artifacts = artifactSet{
 	etcdVersion:         "3.3.13",
 	placematVersion:     "1.3.5",
 	customUbuntuVersion: "20190607",
-	coreOSVersion:       "2079.4.0",
+	coreOSVersion:       "2079.5.1",
 	ctVersion:           "0.9.0",
-	protobufVersion:     "3.8.0",
+	baseImage:           "ubuntu-1804-bionic-v20190429",
+	baseImageProject:    "ubuntu-os-cloud",
 	debPackages: []string{
 		"git",
 		"build-essential",
@@ -23,10 +24,7 @@ var artifacts = artifactSet{
 		"cloud-utils",
 		"xauth",
 		"bash-completion",
-		"ansible",
-		"python-jmespath",
 		"dbus",
-		"sshpass",
 		"jq",
 		"libgpgme11",
 		"freeipmi-tools",
@@ -44,9 +42,5 @@ var artifacts = artifactSet{
 		"libostree-dev",
 		// required by building containerd
 		"libseccomp-dev",
-		// required by building protobuf
-		"autoconf",
-		"automake",
-		"libtool",
 	},
 }

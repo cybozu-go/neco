@@ -5,7 +5,6 @@ import (
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -21,9 +20,8 @@ import (
 )
 
 const (
-	assetDir   = "/assets"
-	ctPath     = "/usr/local/bin/ct"
-	protocPath = "/usr/local"
+	assetDir = "/assets"
+	ctPath   = "/usr/local/bin/ct"
 )
 
 var (
@@ -81,11 +79,6 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 	}
 
 	err = installBinaryFile(ctx, client, artifacts.ctURL(), ctPath)
-	if err != nil {
-		return err
-	}
-
-	err = installProtobuf(ctx, client, artifacts.protobufURL(), artifacts.protobufVersion)
 	if err != nil {
 		return err
 	}
@@ -151,6 +144,10 @@ func configureDNS(ctx context.Context) error {
 	return neco.WriteFile("/etc/resolv.conf", newData)
 }
 
+func apt(ctx context.Context, args ...string) error {
+	return well.CommandContext(ctx, "apt-get", args...).Run()
+}
+
 func configureApt(ctx context.Context) error {
 	err := neco.StopTimer(ctx, "apt-daily-upgrade")
 	if err != nil {
@@ -191,10 +188,6 @@ func configureApt(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func apt(ctx context.Context, args ...string) error {
-	return well.CommandContext(ctx, "apt-get", args...).Run()
 }
 
 func configureProjectAtomic(ctx context.Context) error {
@@ -329,52 +322,6 @@ func installBinaryFile(ctx context.Context, client *http.Client, url, dest strin
 	defer resp.Body.Close()
 
 	return writeToFile(dest, resp.Body, 0755)
-}
-
-func installProtobuf(ctx context.Context, client *http.Client, url, version string) error {
-	resp, err := client.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	err = untargz(resp.Body, "/tmp")
-	if err != nil {
-		return err
-	}
-
-	workDir := fmt.Sprintf("/tmp/protobuf-%s", version)
-	cmd := well.CommandContext(ctx, "./autogen.sh")
-	cmd.Dir = workDir
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	cmd = well.CommandContext(ctx, "./configure")
-	cmd.Dir = workDir
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	cmd = well.CommandContext(ctx, "make")
-	cmd.Dir = workDir
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	cmd = well.CommandContext(ctx, "make", "install")
-	cmd.Dir = workDir
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	cmd = well.CommandContext(ctx, "ldconfig")
-	cmd.Dir = workDir
-	return cmd.Run()
 }
 
 func setupPodman() error {
