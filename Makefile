@@ -80,7 +80,6 @@ setup:
 	go install github.com/rakyll/statik
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
-	$(MAKE) -f Makefile.tools SUDO=$(SUDO) setup
 
 clean:
 	$(MAKE) -f Makefile.tools clean
