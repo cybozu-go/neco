@@ -27,7 +27,11 @@ Please run this command on vmx-enabled or host-vm instance.`,
 			}
 			switch hostname {
 			case "vmx-enabled":
-				return gcp.SetupVMXEnabled(ctx, cfg.Common.Project, cfg.Compute.VMXEnabled.OptionalPackages)
+				options := cfg.Compute.OptionalPackages
+				if len(cfg.Compute.VMXEnabled.OptionalPackages) > 0 {
+					options = append(options, cfg.Compute.VMXEnabled.OptionalPackages...)
+				}
+				return gcp.SetupVMXEnabled(ctx, cfg.Common.Project, options)
 			case "host-vm":
 				return gcp.SetupHostVM(ctx)
 			}

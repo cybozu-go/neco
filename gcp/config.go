@@ -13,9 +13,7 @@ const (
 	defaultHomeDiskSizeGB = 20
 	// DefaultPreemptible is default value for enabling preemptible
 	// https://cloud.google.com/compute/docs/instances/preemptible
-	defaultPreemptible            = false
-	defaultVmxEnabledImage        = "ubuntu-1804-bionic-v20190429"
-	defaultVmxEnabledImageProject = "ubuntu-os-cloud"
+	defaultPreemptible = false
 )
 
 // Config is configuration for necogcp command and GAE app
@@ -46,17 +44,15 @@ type ShutdownConfig struct {
 
 // ComputeConfig is configuration for GCE
 type ComputeConfig struct {
-	MachineType    string           `yaml:"machine-type"`
-	BootDiskSizeGB int              `yaml:"boot-disk-sizeGB"`
-	VMXEnabled     VMXEnabledConfig `yaml:"vmx-enabled"`
-	HostVM         HostVMConfig     `yaml:"host-vm"`
-}
+	MachineType      string       `yaml:"machine-type"`
+	BootDiskSizeGB   int          `yaml:"boot-disk-sizeGB"`
+	OptionalPackages []string     `yaml:"optional-packages"`
+	HostVM           HostVMConfig `yaml:"host-vm"`
 
-// VMXEnabledConfig is configuration for vmx-enabled image
-type VMXEnabledConfig struct {
-	Image            string   `yaml:"image"`
-	ImageProject     string   `yaml:"image-project"`
-	OptionalPackages []string `yaml:"optional-packages"`
+	// backward compatibility
+	VMXEnabled struct {
+		OptionalPackages []string `yaml:"optional-packages"`
+	} `yaml:"vmx-enabled"`
 }
 
 // HostVMConfig is configuration for host-vm instance
@@ -113,10 +109,6 @@ func NecoTestConfig() *Config {
 				HomeDisk:       defaultHomeDisk,
 				HomeDiskSizeGB: defaultHomeDiskSizeGB,
 				Preemptible:    defaultPreemptible,
-			},
-			VMXEnabled: VMXEnabledConfig{
-				Image:        defaultVmxEnabledImage,
-				ImageProject: defaultVmxEnabledImageProject,
 			},
 		},
 	}

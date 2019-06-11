@@ -20,6 +20,7 @@ BIN_PKGS = ./pkg/neco ./pkg/sabakan-state-setter
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
 
 STATIK = gcp/statik/statik.go
+STATIK_FILES := $(shell find gcp/public -type f)
 
 all:
 	@echo "Specify one of these targets:"
@@ -37,7 +38,7 @@ start-etcd:
 stop-etcd:
 	systemctl --user stop neco-etcd.service
 
-$(STATIK):
+$(STATIK): $(STATIK_FILES)
 	mkdir -p $(dir $(STATIK))
 	go generate ./pkg/necogcp/...
 
@@ -80,7 +81,6 @@ setup:
 	go install github.com/rakyll/statik
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
-	$(MAKE) -f Makefile.tools SUDO=$(SUDO) setup
 
 clean:
 	$(MAKE) -f Makefile.tools clean
