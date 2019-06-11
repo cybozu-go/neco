@@ -18,7 +18,7 @@ $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} --quiet || true
 $GCLOUD compute instances create ${INSTANCE_NAME} \
   --zone ${ZONE} \
   --machine-type ${MACHINE_TYPE} \
-  --image ${IMAGE_NAME} \
+  --image vmx-enabled \
   --boot-disk-type ${DISK_TYPE} \
   --boot-disk-size ${BOOT_DISK_SIZE} \
   --local-ssd interface=scsi
