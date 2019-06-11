@@ -31,6 +31,7 @@ var (
 		"/etc/apt/apt.conf.d/20auto-upgrades",
 		"/etc/bash_completion.d/rktutil",
 		"/etc/containers/registries.conf",
+		"/etc/docker/daemon.json",
 		"/etc/profile.d/go.sh",
 		"/etc/systemd/system/docker.service.d/99-placemat.conf",
 		"/usr/local/bin/podenter",
