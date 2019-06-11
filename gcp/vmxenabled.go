@@ -32,6 +32,7 @@ var (
 		"/etc/bash_completion.d/rktutil",
 		"/etc/containers/registries.conf",
 		"/etc/profile.d/go.sh",
+		"/etc/systemd/system/docker.service.d/99-placemat.conf",
 		"/usr/local/bin/podenter",
 	}
 )
