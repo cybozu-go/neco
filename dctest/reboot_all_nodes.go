@@ -65,10 +65,8 @@ func TestRebootAllNodes() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
-	It("stop sabakan-state-setter", func() {
-		for _, h := range []string{boot0, boot1, boot2} {
-			execSafeAt(h, "sudo", "systemctl", "stop", "sabakan-state-setter.timer")
-		}
+	It("stop CKE sabakan integration", func() {
+		execSafeAt(boot0, "ckecli", "sabakan", "disable")
 	})
 
 	It("reboots all nodes", func() {
@@ -144,10 +142,8 @@ func TestRebootAllNodes() {
 		}).Should(Succeed())
 	})
 
-	It("start sabakan-state-setter", func() {
-		for _, h := range []string{boot0, boot1, boot2} {
-			execSafeAt(h, "sudo", "systemctl", "start", "sabakan-state-setter.timer")
-		}
+	It("re-enable CKE sabakan integration", func() {
+		execSafeAt(boot0, "ckecli", "sabakan", "enable")
 	})
 
 	It("fetch cluster nodes", func() {
