@@ -71,7 +71,7 @@ cd dctest
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img .
 export GO111MODULE=on
 make setup
-make placemat MENU=highcpu-menu.yml TAGS=release
+make placemat TAGS=release
 sleep 3
 make test TAGS=release SUITE=${SUITE} DATACENTER=${DATACENTER}
 if [ -n "${DATACENTER}" ]; then
