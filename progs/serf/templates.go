@@ -26,7 +26,7 @@ var serviceTmpl = template.Must(template.New("serf.service").
 	Parse(`[Unit]
 Description=Serf container on rkt
 Wants=network-online.target
-After=time-sync.target
+After=network-online.target
 ConditionPathExists=/etc/serf/serf.json
 
 [Service]
