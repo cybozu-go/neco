@@ -154,6 +154,13 @@ func TestJoinRemove() {
 			}
 			// debug
 			var results []serfMemberContainer
+
+			err = prepareSSHClients(boot3)
+			if err != nil {
+				return err
+			}
+
+			Expect(err).NotTo(HaveOccurred())
 			for _, boot := range []string{boot0, boot3} {
 				stdout, stderr, err = execAt(boot, "serf", "members", "-format", "json")
 				if err != nil {
