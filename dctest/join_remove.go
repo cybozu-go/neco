@@ -141,6 +141,41 @@ func TestJoinRemove() {
 	It("should be healthy even if boot-3 has been rebooted", func() {
 		// This test scenario is added from this bug issue https://github.com/cybozu-go/neco/issues/333
 		By("rebooting boot-3")
+		birdSystemdConf := `
+[Unit]
+Description=bird
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+ExecStartPre=/bin/sleep 30
+Slice=machine.slice
+CPUSchedulingPolicy=rr
+CPUSchedulingPriority=50
+Type=simple
+KillMode=mixed
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+OOMScoreAdjust=-1000
+ExecStart=/usr/bin/rkt run \
+  --volume run,kind=empty,readOnly=false \
+  --volume etc,kind=host,source=/etc/bird,readOnly=true \
+  --net=host \
+  quay.io/cybozu/bird:2.0 \
+    --readonly-rootfs=true \
+    --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_NET_RAW \
+    --name bird \
+    --mount volume=run,target=/run/bird \
+    --mount volume=etc,target=/etc/bird \
+  quay.io/cybozu/ubuntu-debug:18.04 \
+    --readonly-rootfs=true \
+    --name ubuntu-debug
+
+[Install]
+WantedBy=multi-user.target`
+		stdout, stderr, err := execAtWithInput(boot3, []byte(birdSystemdConf), "sudo", "tee", "/etc/systemd/system/bird.service")
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
 		serial := fmt.Sprintf("%x", sha1.Sum([]byte("boot-3")))
 		_ = execSafeAt(boot0, "neco", "ipmipower", "restart", serial)
 		Eventually(func() error {
