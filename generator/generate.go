@@ -221,7 +221,7 @@ func getLatestCoreOS(ctx context.Context) (*neco.CoreOSImage, error) {
 	}
 	sort.Sort(sort.Reverse(version.Collection(versions)))
 	if versions[0].Original() == "2135.4.0" {
-		log.Info("do not use CoreOSImage 2135.4.0 because this version's rkt is not worked", nil)
+		log.Info("do not use CoreOSImage 2135.4.0 because this version's rkt does not work", nil)
 		return &neco.CoreOSImage{Channel: "stable", Version: "2079.4.0"}, nil
 	}
 	return &neco.CoreOSImage{
