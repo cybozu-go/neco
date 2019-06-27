@@ -138,6 +138,43 @@ func TestJoinRemove() {
 		}).Should(Succeed())
 	})
 
+	It("should be healthy even if boot-3 has been rebooted", func() {
+		// This test scenario is added from this bug issue https://github.com/cybozu-go/neco/issues/333
+		By("rebooting boot-3")
+		serial := fmt.Sprintf("%x", sha1.Sum([]byte("boot-3")))
+		_ = execSafeAt(boot0, "neco", "ipmipower", "restart", serial)
+		Eventually(func() error {
+			stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get-state", serial)
+			if err != nil {
+				return fmt.Errorf("stdout=%s, stderr=%s, err=%v", stdout, stderr, err)
+			}
+			state := string(bytes.TrimSpace(stdout))
+			if state != "healthy" {
+				return errors.New("boot-3 machine state is not healthy: " + state)
+			}
+			// debug
+			var results []serfMemberContainer
+			for _, boot := range []string{boot0, boot3} {
+				stdout, stderr, err = execAt(boot, "serf", "members", "-format", "json")
+				if err != nil {
+					return fmt.Errorf("stdout=%s, stderr=%s, err=%v", stdout, stderr, err)
+				}
+
+				result := serfMemberContainer{}
+				err = json.Unmarshal(stdout, &result)
+				if err != nil {
+					return err
+				}
+				results = append(results, result)
+			}
+			if len(results[0].Members) != len(results[1].Members) {
+				return fmt.Errorf(`number of members is different between boot servers. len(results[0].Members) is %d, len(results[1].Members) is %d`,
+					len(results[0].Members), len(results[1].Members))
+			}
+			return nil
+		}).Should(Succeed())
+	})
+
 	It("should remove boot-3", func() {
 		By("Running neco leave 3")
 		token := getVaultToken()
