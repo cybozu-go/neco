@@ -1,4 +1,3 @@
-version: "2.3"
 passwd: passwd.yml
 files:
   - /etc/bird/bird.conf

@@ -1,2 +1,1 @@
-version: "2.3"
 include: ../../common/common.yml
