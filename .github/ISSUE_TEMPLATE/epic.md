@@ -21,6 +21,7 @@ Define what is a must-have for launch and in-scope. Keep this section fluid and 
 
 ## Definition of ready
 
+- [ ] The epic owner is assigned.
 - [ ] Initiatives and scopes are clearly stated.
 - [ ] All necessary issues that complete this epic are created.
 - [ ] At least three people agree on making this ready.
