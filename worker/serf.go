@@ -30,7 +30,14 @@ func (o *operator) UpdateSerf(ctx context.Context, req *neco.UpdateRequest) erro
 			return err
 		}
 	}
-	replaced, err := o.replaceSerfFiles(ctx, req.Servers)
+	var otherlrns []int
+	for _, lrn := range req.Servers {
+		if lrn == o.mylrn {
+			continue
+		}
+		otherlrns = append(otherlrns, lrn)
+	}
+	replaced, err := o.replaceSerfFiles(ctx, otherlrns)
 	if err != nil {
 		return err
 	}
