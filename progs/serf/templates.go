@@ -25,8 +25,8 @@ type serfConfig struct {
 var serviceTmpl = template.Must(template.New("serf.service").
 	Parse(`[Unit]
 Description=Serf container on rkt
-Wants=network-online.target
-After=network-online.target
+Wants=time-sync.target
+After=time-sync.target
 ConditionPathExists=/etc/serf/serf.json
 
 [Service]
