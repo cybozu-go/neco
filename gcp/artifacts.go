@@ -29,17 +29,13 @@ var artifacts = artifactSet{
 		"libgpgme11",
 		"freeipmi-tools",
 		"unzip",
-		// required by building container image
 		"skopeo",
-		"podman",
-		"cri-o-runc",
-		"cri-o-1.13",
-		"fakeroot",
-		"btrfs-tools",
 		// required by building neco
 		"libdevmapper-dev",
 		"libgpgme-dev",
 		"libostree-dev",
+		"fakeroot",
+		"btrfs-tools",
 		// docker CE
 		"docker-ce",
 		"docker-ce-cli",

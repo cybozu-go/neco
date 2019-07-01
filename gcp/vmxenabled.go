@@ -92,11 +92,6 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 		return err
 	}
 
-	err = setupPodman()
-	if err != nil {
-		return err
-	}
-
 	err = dumpStaticFiles()
 	if err != nil {
 		return err
@@ -355,10 +350,6 @@ func installBinaryFile(ctx context.Context, client *http.Client, url, dest strin
 	defer resp.Body.Close()
 
 	return writeToFile(dest, resp.Body, 0755)
-}
-
-func setupPodman() error {
-	return os.Symlink("/usr/lib/cri-o-runc/sbin/runc", "/usr/local/sbin/runc")
 }
 
 func dumpStaticFiles() error {
