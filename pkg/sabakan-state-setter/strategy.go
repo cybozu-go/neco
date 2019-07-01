@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/sabakan/v2"
 	"github.com/prometheus/prom2json"
@@ -82,7 +84,7 @@ func (ms machineStateSource) decideByMonitorHW() string {
 		}
 
 		var res string
-		if checkTarget.Labels == nil {
+		if checkTarget.Selector == nil {
 			res = ms.checkAllTarget(checkTarget)
 		} else {
 			res = ms.checkSpecifiedTarget(checkTarget)
@@ -96,7 +98,16 @@ func (ms machineStateSource) decideByMonitorHW() string {
 }
 
 func (ms machineStateSource) checkAllTarget(checkTarget targetMetric) string {
+	var healthyCount int
 	metrics := ms.metrics[checkTarget.Name]
+
+	var minCount int
+	if checkTarget.MinimumHealthyCount == nil {
+		minCount = len(metrics)
+	} else {
+		minCount = *checkTarget.MinimumHealthyCount
+	}
+
 	for _, m := range metrics {
 		if m.Value != monitorHWStatusHealth {
 			log.Info("unhealthy; metric is not healthy", map[string]interface{}{
@@ -105,35 +116,46 @@ func (ms machineStateSource) checkAllTarget(checkTarget targetMetric) string {
 				"labels": m.Labels,
 				"value":  m.Value,
 			})
-			return sabakan.StateUnhealthy.GQLEnum()
+			continue
 		}
+		healthyCount++
 	}
+
+	if healthyCount < minCount {
+		return sabakan.StateUnhealthy.GQLEnum()
+	}
+
 	return sabakan.StateHealthy.GQLEnum()
 }
 
 func (ms machineStateSource) checkSpecifiedTarget(checkTarget targetMetric) string {
 	flagExists := false
 	metrics := ms.metrics[checkTarget.Name]
+
 	for _, m := range metrics {
-		if !isMetricMatchedLabels(m, checkTarget.Labels) {
-			continue
+		if checkTarget.Selector == nil ||
+			(checkTarget.Selector.labels != nil && isMetricMatchedLabels(m, checkTarget.Selector.labels)) ||
+			(checkTarget.Selector.labelPrefix != nil && isMetricHasPrefix(m, checkTarget.Selector.labelPrefix)) {
+
+			if m.Value != monitorHWStatusHealth {
+				log.Info("unhealthy; metric is not healthy", map[string]interface{}{
+					"serial": ms.serial,
+					"name":   checkTarget.Name,
+					"labels": m.Labels,
+					"value":  m.Value,
+				})
+				return sabakan.StateUnhealthy.GQLEnum()
+			}
+			flagExists = true
 		}
-		if m.Value != monitorHWStatusHealth {
-			log.Info("unhealthy; metric is not healthy", map[string]interface{}{
-				"serial": ms.serial,
-				"name":   checkTarget.Name,
-				"labels": m.Labels,
-				"value":  m.Value,
-			})
-			return sabakan.StateUnhealthy.GQLEnum()
-		}
-		flagExists = true
 	}
+
 	if !flagExists {
 		log.Info("unhealthy; metric with specified labels does not exist", map[string]interface{}{
-			"serial": ms.serial,
-			"name":   checkTarget.Name,
-			"labels": checkTarget.Labels,
+			"serial":                ms.serial,
+			"name":                  checkTarget.Name,
+			"selector":              checkTarget.Selector,
+			"minimum-healthy-count": checkTarget.MinimumHealthyCount,
 		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
@@ -147,5 +169,16 @@ func isMetricMatchedLabels(metric prom2json.Metric, labels map[string]string) bo
 			return false
 		}
 	}
+	return true
+}
+
+func isMetricHasPrefix(metric prom2json.Metric, labelPrefix map[string]string) bool {
+	for k, prefix := range labelPrefix {
+		labelVal, ok := metric.Labels[k]
+		if !ok || !strings.HasPrefix(labelVal, prefix) {
+			return false
+		}
+	}
+
 	return true
 }

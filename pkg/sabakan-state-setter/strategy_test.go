@@ -20,8 +20,10 @@ func TestCheckSpecifyTarget(t *testing.T) {
 		},
 	}
 	checkTarget := targetMetric{
-		Name:   "m1",
-		Labels: map[string]string{"k1": "v1"},
+		Name: "m1",
+		Selector: &selector{
+			labels: map[string]string{"k1": "v1"},
+		},
 	}
 
 	if res := ms.checkSpecifiedTarget(checkTarget); res != sabakan.StateHealthy.GQLEnum() {
@@ -84,8 +86,10 @@ func TestDecideSabakanState(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   "parts1",
-						Labels: map[string]string{"aaa": "bbb"},
+						Name: "parts1",
+						Selector: &selector{
+							labels: map[string]string{"aaa": "bbb"},
+						},
 					}},
 				},
 			},
@@ -108,8 +112,10 @@ func TestDecideSabakanState(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   "parts1",
-						Labels: map[string]string{"aaa": "bbb"},
+						Name: "parts1",
+						Selector: &selector{
+							labels: map[string]string{"aaa": "bbb"},
+						},
 					}},
 				},
 			},
@@ -135,8 +141,10 @@ func TestDecideSabakanState(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   "parts1",
-						Labels: map[string]string{"aaa": "bbb"},
+						Name: "parts1",
+						Selector: &selector{
+							labels: map[string]string{"aaa": "bbb"},
+						},
 					}},
 				},
 			},
@@ -186,8 +194,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   "boot",
-						Labels: map[string]string{"aaa": "bbb"},
+						Name: "boot",
+						Selector: &selector{
+							labels: map[string]string{"aaa": "bbb"},
+						},
 					}},
 				},
 			},
@@ -208,9 +218,11 @@ func TestDecideByMonitorHW(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   parts1,
-						Labels: map[string]string{"aaa": "bbb"}},
-					},
+						Name: parts1,
+						Selector: &selector{
+							labels: map[string]string{"aaa": "bbb"},
+						},
+					}},
 				},
 			},
 		},
@@ -230,8 +242,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   parts1,
-						Labels: map[string]string{"aaa": "bbb"},
+						Name: parts1,
+						Selector: &selector{
+							labels: map[string]string{"aaa": "bbb"},
+						},
 					}},
 				},
 			},
@@ -265,12 +279,16 @@ func TestDecideByMonitorHW(t *testing.T) {
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
 						{
-							Name:   parts1,
-							Labels: map[string]string{"aaa": "bbb"},
+							Name: parts1,
+							Selector: &selector{
+								labels: map[string]string{"aaa": "bbb"},
+							},
 						},
 						{
-							Name:   parts2,
-							Labels: map[string]string{"ccc": "ddd"},
+							Name: parts2,
+							Selector: &selector{
+								labels: map[string]string{"ccc": "ddd"},
+							},
 						},
 					},
 				},
@@ -309,12 +327,16 @@ func TestDecideByMonitorHW(t *testing.T) {
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
 						{
-							Name:   parts1,
-							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+							Name: parts1,
+							Selector: &selector{
+								labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+							},
 						},
 						{
-							Name:   parts2,
-							Labels: map[string]string{"ccc": "ddd"},
+							Name: parts2,
+							Selector: &selector{
+								labels: map[string]string{"ccc": "ddd"},
+							},
 						},
 					},
 				},
@@ -341,8 +363,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
 						{
-							Name:   parts1,
-							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+							Name: parts1,
+							Selector: &selector{
+								labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+							},
 						},
 					},
 				},
@@ -365,8 +389,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
 						{
-							Name:   parts1,
-							Labels: map[string]string{"not": "existed"},
+							Name: parts1,
+							Selector: &selector{
+								labels: map[string]string{"not": "existed"},
+							},
 						},
 					},
 				},
@@ -435,12 +461,42 @@ func TestDecideByMonitorHW(t *testing.T) {
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
 						{
-							Name:   parts1,
-							Labels: map[string]string{"aaa": "bbb"},
+							Name: parts1,
+							Selector: &selector{
+								labels: map[string]string{"aaa": "bbb"},
+							},
 						},
 						{
-							Name:   parts2,
+							Name: parts2,
+							Selector: &selector{
+								labels: map[string]string{"aaa": "bbb"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			message:  "Target metric exists, and prefix is matched",
+			expected: sabakan.StateHealthy.GQLEnum(),
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
 							Labels: map[string]string{"aaa": "bbb"},
+							Value:  monitorHWStatusHealth,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []targetMetric{
+						{
+							Name: parts1,
+							Selector: &selector{
+								labelPrefix: map[string]string{"aaa": "bb"},
+							},
 						},
 					},
 				},
