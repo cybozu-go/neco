@@ -71,18 +71,27 @@ If all metrics defined in the config file are healthy, the machine is healthy. O
 
 ### `Metric`
 
-| Field                        | Default value            | Description                                                                                                    |
-| -------------------          | ------------------------ | --------------                                                                                                 |
-| `name` string                | `''`                     | Name of this metric.                                                                                           |
-| `labels` `map[string]string` | `nil`                    | Check all metrics named `name` having labels in `labels`. If `labels` is `nil`, check all metrics named `name`.  |
+| Field                       | Default value            | Description                                                                                                                                                                                                                                                     |
+| -------------------         | ------------------------ | --------------                                                                                                                                                                                                                                                  |
+| `name` string               | `''`                     | Name of this metric.                                                                                                                                                                                                                                            |
+| `selector` Selector         | nil                      |                                                                                                                                                                                                                                                                  |
+| `minimum_healthy_count` int | -1                       | If the count of matching metrics whose value is not healthy is less than `minimum_healthy_count`, the machine is unhealthy.<br/>If `minimum_healthy_count` equals -1, it means that if any one of the matching labels is not healthy, the machine is unhealthy. |
 
 The meaning of `name` and `labels` are the same as Prometheus.
-
 https://prometheus.io/docs/concepts/data_model/#metric-names-and-labels
 
 Please refer to the following link to know how to define `name` and `labels`.
-
 https://github.com/cybozu-go/setup-hw/blob/master/docs/rule.md
+
+### `Selector`
+
+| Field                             | Default value            | Description                                                     |
+| -------------------               | ------------------------ | --------------                                                  |
+| `labels` `map[string]string`      | `nil`                    | Check all `name` metrics with labels matching exactly `labels`. |
+| `labelPrefix` `map[string]string` | `nil`                    | Check all `name` metrics with labels having `labelPrefix`.      |
+
+`labels` and `labelPrefix` are OR condition. If either one matches, it is selected.
+
 
 [serf]: https://www.serf.io/
 [monitor-hw]: https://github.com/cybozu-go/setup-hw/blob/master/docs/monitor-hw.md
