@@ -90,7 +90,8 @@ https://github.com/cybozu-go/setup-hw/blob/master/docs/rule.md
 | `labels` `map[string]string`      | `nil`                    | Check all `name` metrics with labels matching exactly `labels`. |
 | `labelPrefix` `map[string]string` | `nil`                    | Check all `name` metrics with labels having `labelPrefix`.      |
 
-`labels` and `labelPrefix` are OR condition. If either one matches, it is selected.
+`labels` and `labelPrefix` are AND condition,
+i.e. a metric is selected if and only if all of the conditions are satisfied.
 
 
 [serf]: https://www.serf.io/
