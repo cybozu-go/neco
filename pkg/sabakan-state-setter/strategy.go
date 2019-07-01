@@ -83,12 +83,7 @@ func (ms machineStateSource) decideByMonitorHW() string {
 			return sabakan.StateUnhealthy.GQLEnum()
 		}
 
-		var res string
-		if checkTarget.Selector == nil {
-			res = ms.checkAllTarget(checkTarget)
-		} else {
-			res = ms.checkSpecifiedTarget(checkTarget)
-		}
+		res := ms.checkTarget(checkTarget)
 		if res != sabakan.StateHealthy.GQLEnum() {
 			return res
 		}
@@ -97,73 +92,71 @@ func (ms machineStateSource) decideByMonitorHW() string {
 	return sabakan.StateHealthy.GQLEnum()
 }
 
-func (ms machineStateSource) checkAllTarget(checkTarget targetMetric) string {
-	var healthyCount int
-	metrics := ms.metrics[checkTarget.Name]
+func (ms machineStateSource) checkTarget(target targetMetric) string {
+	var exists bool
+	metrics := ms.metrics[target.Name]
 
-	var minCount int
-	if checkTarget.MinimumHealthyCount == nil {
+	var healthyCount, minCount int
+	if target.MinimumHealthyCount == nil {
 		minCount = len(metrics)
 	} else {
-		minCount = *checkTarget.MinimumHealthyCount
+		minCount = *target.MinimumHealthyCount
 	}
 
+	slctr := target.Selector
 	for _, m := range metrics {
-		if m.Value != monitorHWStatusHealth {
-			log.Info("unhealthy; metric is not healthy", map[string]interface{}{
-				"serial": ms.serial,
-				"name":   checkTarget.Name,
-				"labels": m.Labels,
-				"value":  m.Value,
-			})
-			continue
+		var matched bool
+		switch {
+		case slctr == nil:
+			matched = true
+		case slctr.Labels != nil && slctr.LabelPrefix != nil:
+			matched = slctr.isMetricMatchedLabels(m) && slctr.isMetricHasPrefix(m)
+		case slctr.Labels != nil:
+			matched = slctr.isMetricMatchedLabels(m)
+		case slctr.LabelPrefix != nil:
+			matched = slctr.isMetricHasPrefix(m)
 		}
-		healthyCount++
-	}
 
-	if healthyCount < minCount {
-		return sabakan.StateUnhealthy.GQLEnum()
-	}
-
-	return sabakan.StateHealthy.GQLEnum()
-}
-
-func (ms machineStateSource) checkSpecifiedTarget(checkTarget targetMetric) string {
-	flagExists := false
-	metrics := ms.metrics[checkTarget.Name]
-
-	for _, m := range metrics {
-		if checkTarget.Selector == nil ||
-			(checkTarget.Selector.labels != nil && isMetricMatchedLabels(m, checkTarget.Selector.labels)) ||
-			(checkTarget.Selector.labelPrefix != nil && isMetricHasPrefix(m, checkTarget.Selector.labelPrefix)) {
-
+		if matched {
 			if m.Value != monitorHWStatusHealth {
 				log.Info("unhealthy; metric is not healthy", map[string]interface{}{
 					"serial": ms.serial,
-					"name":   checkTarget.Name,
+					"name":   target.Name,
 					"labels": m.Labels,
 					"value":  m.Value,
 				})
-				return sabakan.StateUnhealthy.GQLEnum()
+			} else {
+				healthyCount++
 			}
-			flagExists = true
 		}
+		exists = exists || matched
 	}
 
-	if !flagExists {
+	if !exists {
 		log.Info("unhealthy; metric with specified labels does not exist", map[string]interface{}{
 			"serial":                ms.serial,
-			"name":                  checkTarget.Name,
-			"selector":              checkTarget.Selector,
-			"minimum-healthy-count": checkTarget.MinimumHealthyCount,
+			"name":                  target.Name,
+			"selector":              slctr,
+			"minimum_healthy_count": target.MinimumHealthyCount,
+		})
+		return sabakan.StateUnhealthy.GQLEnum()
+	}
+
+	if healthyCount < minCount {
+		log.Info("unhealthy; minimum healthy count is not satisfied", map[string]interface{}{
+			"serial":                ms.serial,
+			"name":                  target.Name,
+			"selector":              slctr,
+			"minimum_healthy_count": target.MinimumHealthyCount,
+			"healthy_count":         healthyCount,
 		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
 	return sabakan.StateHealthy.GQLEnum()
 }
 
-func isMetricMatchedLabels(metric prom2json.Metric, labels map[string]string) bool {
-	for k, v := range labels {
+func (s *selector) isMetricMatchedLabels(metric prom2json.Metric) bool {
+	for k, v := range s.Labels {
 		labelVal, ok := metric.Labels[k]
 		if !ok || v != labelVal {
 			return false
@@ -172,13 +165,12 @@ func isMetricMatchedLabels(metric prom2json.Metric, labels map[string]string) bo
 	return true
 }
 
-func isMetricHasPrefix(metric prom2json.Metric, labelPrefix map[string]string) bool {
-	for k, prefix := range labelPrefix {
+func (s *selector) isMetricHasPrefix(metric prom2json.Metric) bool {
+	for k, prefix := range s.LabelPrefix {
 		labelVal, ok := metric.Labels[k]
 		if !ok || !strings.HasPrefix(labelVal, prefix) {
 			return false
 		}
 	}
-
 	return true
 }
