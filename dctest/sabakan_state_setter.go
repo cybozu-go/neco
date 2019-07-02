@@ -1,11 +1,9 @@
 package dctest
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"path/filepath"
-	"text/template"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -13,6 +11,7 @@ import (
 )
 
 const dummyRedfishDataFile = "dummy_redfish_data.json"
+const prefix = "/redfish/v1/Systems/System.Embedded.1/"
 
 // TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter() {
@@ -20,8 +19,17 @@ func TestSabakanStateSetter() {
 		By("copying all healthy dummy redfish data")
 		machines, err := getMachinesSpecifiedRole("")
 		Expect(err).ShouldNot(HaveOccurred())
+		state := map[string]string{
+			prefix + "Processors/CPU.Socket.1":  "OK",
+			prefix + "Processors/CPU.Socket.2":  "OK",
+			prefix + "Storage/AHCI.Slot.1-1":    "OK",
+			prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
+			prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
+			prefix + "Storage/SATAHDD.Slot.1":   "OK",
+			prefix + "Storage/SATAHDD.Slot.2":   "OK",
+		}
 		for _, m := range machines {
-			err = copyDummyRedfishDataToWorker(m.Spec.IPv4[0], "OK", "OK", "OK", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C", "SATAHDD.Slot.1", "SATAHDD.SLot.2")
+			err = copyDummyRedfishDataToWorker(m.Spec.IPv4[0], generateRedfishDummyData(state))
 			Expect(err).ShouldNot(HaveOccurred())
 		}
 
@@ -44,94 +52,24 @@ func TestSabakanStateSetter() {
 	})
 }
 
-func generateFileContent(health1, health2, health3, health4, health5, controller1, controller2, device1, device2 string) (string, error) {
-	fileContent := `[
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.1",
-        "data": {
-            "Status": {
-                "Health": "OK"
-            }
-        }
-    },
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.2",
-        "data": {
-            "Status": {
-                "Health": "{{ .Health1 }}"
-            }
-        }
-    },
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Storage/AHCI.Slot.1-1",
-        "data": {
-            "Status": {
-                "Health": "OK"
-            }
-        }
-    },
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Controller1 }}",
-        "data": {
-            "Status": {
-                "Health": "{{ .Health2 }}"
-            }
-        }
-    },
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Controller2 }}",
-        "data": {
-            "Status": {
-                "Health": "{{ .Health3 }}"
-            }
-        }
-    },
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Device1 }}",
-        "data": {
-            "Status": {
-                "Health": "{{ .Health4 }}"
-            }
-        }
-    },
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Device2 }}",
-        "data": {
-            "Status": {
-                "Health": "{{ .Health5 }}"
-            }
-        }
-    }
-]`
+func generateRedfishDummyData(data map[string]string) string {
+	var result []interface{}
 
-	tmpl := template.Must(template.New("").Parse(fileContent))
-	data := struct {
-		Health1     string
-		Health2     string
-		Health3     string
-		Health4     string
-		Health5     string
-		Controller1 string
-		Controller2 string
-		Device1     string
-		Device2     string
-	}{
-		health1,
-		health2,
-		health3,
-		health4,
-		health5,
-		controller1,
-		controller2,
-		device1,
-		device2,
+	for k, v := range data {
+		entry := map[string]interface{}{
+			"path": k,
+			"data": map[string]interface{}{
+				"Status": map[string]string{
+					"Health": v,
+				},
+			},
+		}
+		result = append(result, entry)
 	}
-	buff := new(bytes.Buffer)
-	err := tmpl.Execute(buff, data)
-	if err != nil {
-		return "", err
-	}
-	return buff.String(), nil
+
+	json, err := json.Marshal(result)
+	Expect(err).ShouldNot(HaveOccurred())
+	return string(json)
 }
 
 func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
@@ -156,23 +94,50 @@ func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
 }
 
 func copyDummyCPUWarningRedfishDataToWorker(ip string) error {
-	return copyDummyRedfishDataToWorker(ip, "Warning", "OK", "OK", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C", "SATAHDD.Slot.1", "SATAHDD.SLot.2")
+	state := map[string]string{
+		prefix + "Processors/CPU.Socket.1":  "OK",
+		prefix + "Processors/CPU.Socket.2":  "Warning",
+		prefix + "Storage/AHCI.Slot.1-1":    "OK",
+		prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
+		prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
+		prefix + "Storage/SATAHDD.Slot.1":   "OK",
+		prefix + "Storage/SATAHDD.Slot.2":   "OK",
+	}
+
+	return copyDummyRedfishDataToWorker(ip, generateRedfishDummyData(state))
 }
 
 func copyDummyHDDWarningSingleRedfishDataToWorker(ip string) error {
-	return copyDummyRedfishDataToWorker(ip, "OK", "OK", "OK", "OK", "Warning", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C", "SATAHDD.Slot.1", "SATAHDD.SLot.2")
+	state := map[string]string{
+		prefix + "Processors/CPU.Socket.1":  "OK",
+		prefix + "Processors/CPU.Socket.2":  "OK",
+		prefix + "Storage/AHCI.Slot.1-1":    "OK",
+		prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
+		prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
+		prefix + "Storage/SATAHDD.Slot.1":   "OK",
+		prefix + "Storage/SATAHDD.Slot.2":   "Warning",
+	}
+
+	return copyDummyRedfishDataToWorker(ip, generateRedfishDummyData(state))
 }
 
 func copyDummyHDDWarningAllRedfishDataToWorker(ip string) error {
-	return copyDummyRedfishDataToWorker(ip, "OK", "OK", "OK", "Warning", "Warning", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C", "SATAHDD.Slot.1", "SATAHDD.SLot.2")
+	const prefix = "/redfish/v1/Systems/System.Embedded.1/"
+	state := map[string]string{
+		prefix + "Processors/CPU.Socket.1":  "OK",
+		prefix + "Processors/CPU.Socket.2":  "OK",
+		prefix + "Storage/AHCI.Slot.1-1":    "OK",
+		prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
+		prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
+		prefix + "Storage/SATAHDD.Slot.1":   "Warning",
+		prefix + "Storage/SATAHDD.Slot.2":   "Warning",
+	}
+
+	return copyDummyRedfishDataToWorker(ip, generateRedfishDummyData(state))
 }
 
-func copyDummyRedfishDataToWorker(ip, health1, health2, health3, health4, health5, controller1, controller2, device1, device2 string) error {
-	fileContent, err := generateFileContent(health1, health2, health3, health4, health5, controller1, controller2, device1, device2)
-	if err != nil {
-		return err
-	}
-	_, _, err = execAtWithInput(boot0, []byte(fileContent), "dd", "of="+dummyRedfishDataFile)
+func copyDummyRedfishDataToWorker(ip, json string) error {
+	_, _, err := execAtWithInput(boot0, []byte(json), "dd", "of="+dummyRedfishDataFile)
 	if err != nil {
 		return err
 	}
