@@ -36,7 +36,7 @@ func TestSabakanStateSetter() {
 	})
 }
 
-func generateFileContent(health1, health2, health3, controller1, controller2 string) (string, error) {
+func generateFileContent(health1, health2, health3, health4, health5, controller1, controller2, device1, device2 string) (string, error) {
 	fileContent := `[
     {
         "path": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.1",
@@ -77,6 +77,22 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
                 "Health": "{{ .Health3 }}"
             }
         }
+    },
+    {
+        "path": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Device1 }}",
+        "data": {
+            "Status": {
+                "Health": "{{ .Health4 }}"
+            }
+        }
+    },
+    {
+        "path": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Device2 }}",
+        "data": {
+            "Status": {
+                "Health": "{{ .Health5 }}"
+            }
+        }
     }
 ]`
 
@@ -85,14 +101,22 @@ func generateFileContent(health1, health2, health3, controller1, controller2 str
 		Health1     string
 		Health2     string
 		Health3     string
+		Health4     string
+		Health5     string
 		Controller1 string
 		Controller2 string
+		Device1     string
+		Device2     string
 	}{
 		health1,
 		health2,
 		health3,
+		health4,
+		health5,
 		controller1,
 		controller2,
+		device1,
+		device2,
 	}
 	buff := new(bytes.Buffer)
 	err := tmpl.Execute(buff, data)
@@ -123,16 +147,20 @@ func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
 	return machines, nil
 }
 
-func copyDummyWarningRedfishDataToWorker(ip string) error {
-	return copyDummyRedfishDataToWorker(ip, "Warning", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C")
+func copyDummyCPUWarningRedfishDataToWorker(ip string) error {
+	return copyDummyRedfishDataToWorker(ip, "Warning", "OK", "OK", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C", "SATAHDD.Slot.1", "SATAHDD.SLot.2")
 }
 
-func copyDummyMissingRedfishDataToWorker(ip string) error {
-	return copyDummyRedfishDataToWorker(ip, "OK", "OK", "OK", "PCIeSSD.Slot.XXX", "	PCIeSSD.Slot.3-C")
+func copyDummyHDDWarningSingleRedfishDataToWorker(ip string) error {
+	return copyDummyRedfishDataToWorker(ip, "OK", "OK", "OK", "OK", "Warning", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C", "SATAHDD.Slot.1", "SATAHDD.SLot.2")
 }
 
-func copyDummyRedfishDataToWorker(ip, health1, health2, health3, controller1, controller2 string) error {
-	fileContent, err := generateFileContent(health1, health2, health3, controller1, controller2)
+func copyDummyHDDWarningAllRedfishDataToWorker(ip string) error {
+	return copyDummyRedfishDataToWorker(ip, "OK", "OK", "OK", "Warning", "Warning", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C", "SATAHDD.Slot.1", "SATAHDD.SLot.2")
+}
+
+func copyDummyRedfishDataToWorker(ip, health1, health2, health3, health4, health5, controller1, controller2, device1, device2 string) error {
+	fileContent, err := generateFileContent(health1, health2, health3, health4, health5, controller1, controller2, device1, device2)
 	if err != nil {
 		return err
 	}

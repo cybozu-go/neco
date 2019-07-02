@@ -31,51 +31,98 @@ func isNodeNumEqual(num int) error {
 
 // TestPartsFailure test parts failure scenario
 func TestPartsFailure() {
-	var targetIP string
+	It("transition machine state to unhealthy due to cpu warning", func() {
+		targetIP := getTargetNode()
 
-	It("transition machine state to unhealthy", func() {
-		stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
-		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
-
-		cluster := new(ckeCluster)
-		err = yaml.Unmarshal(stdout, cluster)
-		Expect(err).ShouldNot(HaveOccurred())
-
-		for _, n := range cluster.Nodes {
-			if !n.ControlPlane {
-				targetIP = n.Address
-				break
-			}
-		}
-		Expect(targetIP).NotTo(Equal(""))
-
-		By("copying dummy warning redfish data to " + targetIP + "@" + time.Now().String())
+		By("copying dummy cpu warning redfish data to " + targetIP + "@" + time.Now().String())
 		Eventually(func() error {
-			return copyDummyWarningRedfishDataToWorker(targetIP)
+			return copyDummyCPUWarningRedfishDataToWorker(targetIP)
 		}).Should(Succeed())
 
-		By("checking machine state" + "@" + time.Now().String())
+		By("checking machine state@" + time.Now().String())
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--ipv4", targetIP)
-			if err != nil {
-				return err
-			}
-			var machines []sabakan.Machine
-			err = json.Unmarshal(stdout, &machines)
-			if err != nil {
-				return err
-			}
-			for _, m := range machines {
-				if m.Status.State.String() != "unhealthy" {
-					return errors.New(m.Spec.Serial + " is not unhealthy:" + m.Status.State.String())
-				}
-			}
-			return nil
+			return checkHealthOfTarget(targetIP, "unhealthy")
 		}).Should(Succeed())
 
-		By("checking the number of cluster nodes" + "@" + time.Now().String())
+		By("checking the number of cluster nodes@" + time.Now().String())
 		Eventually(func() error {
 			return isNodeNumEqual(6)
 		}).Should(Succeed())
 	})
+
+	It("transition machine state to unhealthy due to warning disks become larger than one", func() {
+		targetIP := getTargetNode()
+
+		By("copying dummy cpu warning redfish data to " + targetIP + "@" + time.Now().String())
+		Eventually(func() error {
+			return copyDummyHDDWarningAllRedfishDataToWorker(targetIP)
+		}).Should(Succeed())
+
+		By("checking machine state@" + time.Now().String())
+		Eventually(func() error {
+			return checkHealthOfTarget(targetIP, "unhealthy")
+		}).Should(Succeed())
+
+		By("checking the number of cluster nodes@" + time.Now().String())
+		Eventually(func() error {
+			return isNodeNumEqual(6)
+		}).Should(Succeed())
+	})
+
+	It("transition machine state to healthy even one disk warning occurred", func() {
+		targetIP := getTargetNode()
+
+		By("copying dummy cpu warning redfish data to " + targetIP + "@" + time.Now().String())
+		Eventually(func() error {
+			return copyDummyHDDWarningSingleRedfishDataToWorker(targetIP)
+		}).Should(Succeed())
+
+		By("checking machine state@" + time.Now().String())
+		Eventually(func() error {
+			return checkHealthOfTarget(targetIP, "healthy")
+		}).Should(Succeed())
+
+		By("checking the number of cluster nodes@" + time.Now().String())
+		Eventually(func() error {
+			return isNodeNumEqual(6)
+		}).Should(Succeed())
+	})
+}
+
+func getTargetNode() string {
+	stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
+	Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+
+	cluster := new(ckeCluster)
+	err = yaml.Unmarshal(stdout, cluster)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	var targetIP string
+	for _, n := range cluster.Nodes {
+		if !n.ControlPlane {
+			targetIP = n.Address
+			break
+		}
+	}
+	Expect(targetIP).NotTo(Equal(""))
+
+	return targetIP
+}
+
+func checkHealthOfTarget(targetIP string, health string) error {
+	stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--ipv4", targetIP)
+	if err != nil {
+		return err
+	}
+	var machines []sabakan.Machine
+	err = json.Unmarshal(stdout, &machines)
+	if err != nil {
+		return err
+	}
+	for _, m := range machines {
+		if m.Status.State.String() != health {
+			return errors.New(m.Spec.Serial + " is not unhealthy:" + m.Status.State.String())
+		}
+	}
+	return nil
 }
