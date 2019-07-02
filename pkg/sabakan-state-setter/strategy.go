@@ -97,11 +97,6 @@ func (ms machineStateSource) checkTarget(target targetMetric) string {
 	metrics := ms.metrics[target.Name]
 
 	var healthyCount, minCount int
-	if target.MinimumHealthyCount == nil {
-		minCount = len(metrics)
-	} else {
-		minCount = *target.MinimumHealthyCount
-	}
 
 	slctr := target.Selector
 	for _, m := range metrics {
@@ -118,6 +113,7 @@ func (ms machineStateSource) checkTarget(target targetMetric) string {
 		}
 
 		if matched {
+			minCount++
 			if m.Value != monitorHWStatusHealth {
 				log.Info("unhealthy; metric is not healthy", map[string]interface{}{
 					"serial": ms.serial,
@@ -142,12 +138,16 @@ func (ms machineStateSource) checkTarget(target targetMetric) string {
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
 
+	if target.MinimumHealthyCount != nil {
+		minCount = *target.MinimumHealthyCount
+	}
+
 	if healthyCount < minCount {
 		log.Info("unhealthy; minimum healthy count is not satisfied", map[string]interface{}{
 			"serial":                ms.serial,
 			"name":                  target.Name,
 			"selector":              slctr,
-			"minimum_healthy_count": target.MinimumHealthyCount,
+			"minimum_healthy_count": minCount,
 			"healthy_count":         healthyCount,
 		})
 		return sabakan.StateUnhealthy.GQLEnum()

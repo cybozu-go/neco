@@ -37,6 +37,7 @@ var FunctionsSuite = func() {
 
 // UpgradeSuite is a test suite that tests upgrading process works correctry
 var UpgradeSuite = func() {
+	Context("sabakan-state-setter", TestSabakanStateSetter)
 	Context("upgrade", TestUpgrade)
 	Context("upgraded cke", TestCKE)
 	Context("upgraded coil", TestCoil)

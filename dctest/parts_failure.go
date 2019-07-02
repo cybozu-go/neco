@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -12,6 +11,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 )
+
+const prefix = "/redfish/v1/Systems/System.Embedded.1/"
 
 func isNodeNumEqual(num int) error {
 	stdout, stderr, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
@@ -34,17 +35,27 @@ func TestPartsFailure() {
 	It("transition machine state to unhealthy due to cpu warning", func() {
 		targetIP := getTargetNode()
 
-		By("copying dummy cpu warning redfish data to " + targetIP + "@" + time.Now().String())
+		By("copying dummy redfish data with cpu warning to " + targetIP)
+		state := map[string]string{
+			prefix + "Processors/CPU.Socket.1":  "OK",
+			prefix + "Processors/CPU.Socket.2":  "Warning",
+			prefix + "Storage/AHCI.Slot.1-1":    "OK",
+			prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
+			prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
+			prefix + "Storage/SATAHDD.Slot.1":   "OK",
+			prefix + "Storage/SATAHDD.Slot.2":   "OK",
+		}
+		data := generateRedfishDummyData(state)
 		Eventually(func() error {
-			return copyDummyCPUWarningRedfishDataToWorker(targetIP)
+			return copyDummyRedfishDataToWorker(targetIP, data)
 		}).Should(Succeed())
 
-		By("checking machine state@" + time.Now().String())
+		By("checking machine state")
 		Eventually(func() error {
 			return checkHealthOfTarget(targetIP, "unhealthy")
 		}).Should(Succeed())
 
-		By("checking the number of cluster nodes@" + time.Now().String())
+		By("checking the number of cluster nodes")
 		Eventually(func() error {
 			return isNodeNumEqual(6)
 		}).Should(Succeed())
@@ -53,17 +64,27 @@ func TestPartsFailure() {
 	It("transition machine state to unhealthy due to warning disks become larger than one", func() {
 		targetIP := getTargetNode()
 
-		By("copying dummy one disk warning redfish data to " + targetIP + "@" + time.Now().String())
+		By("copying dummy redfish data with two disk warnings to " + targetIP)
+		state := map[string]string{
+			prefix + "Processors/CPU.Socket.1":  "OK",
+			prefix + "Processors/CPU.Socket.2":  "OK",
+			prefix + "Storage/AHCI.Slot.1-1":    "OK",
+			prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
+			prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
+			prefix + "Storage/SATAHDD.Slot.1":   "Warning",
+			prefix + "Storage/SATAHDD.Slot.2":   "Warning",
+		}
+		data := generateRedfishDummyData(state)
 		Eventually(func() error {
-			return copyDummyHDDWarningAllRedfishDataToWorker(targetIP)
+			return copyDummyRedfishDataToWorker(targetIP, data)
 		}).Should(Succeed())
 
-		By("checking machine state@" + time.Now().String())
+		By("checking machine state")
 		Eventually(func() error {
 			return checkHealthOfTarget(targetIP, "unhealthy")
 		}).Should(Succeed())
 
-		By("checking the number of cluster nodes@" + time.Now().String())
+		By("checking the number of cluster nodes")
 		Eventually(func() error {
 			return isNodeNumEqual(6)
 		}).Should(Succeed())
@@ -72,17 +93,27 @@ func TestPartsFailure() {
 	It("transition machine state to healthy even one disk warning occurred", func() {
 		targetIP := getTargetNode()
 
-		By("copying dummy all disk warning redfish data to " + targetIP + "@" + time.Now().String())
+		By("copying dummy data with one disk warning to " + targetIP)
+		state := map[string]string{
+			prefix + "Processors/CPU.Socket.1":  "OK",
+			prefix + "Processors/CPU.Socket.2":  "OK",
+			prefix + "Storage/AHCI.Slot.1-1":    "OK",
+			prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
+			prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
+			prefix + "Storage/SATAHDD.Slot.1":   "OK",
+			prefix + "Storage/SATAHDD.Slot.2":   "Warning",
+		}
+		data := generateRedfishDummyData(state)
 		Eventually(func() error {
-			return copyDummyHDDWarningSingleRedfishDataToWorker(targetIP)
+			return copyDummyRedfishDataToWorker(targetIP, data)
 		}).Should(Succeed())
 
-		By("checking machine state@" + time.Now().String())
+		By("checking machine state")
 		Eventually(func() error {
 			return checkHealthOfTarget(targetIP, "healthy")
 		}).Should(Succeed())
 
-		By("checking the number of cluster nodes@" + time.Now().String())
+		By("checking the number of cluster nodes")
 		Eventually(func() error {
 			return isNodeNumEqual(6)
 		}).Should(Succeed())

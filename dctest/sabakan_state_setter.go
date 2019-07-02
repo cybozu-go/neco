@@ -11,14 +11,12 @@ import (
 )
 
 const dummyRedfishDataFile = "dummy_redfish_data.json"
-const prefix = "/redfish/v1/Systems/System.Embedded.1/"
 
 // TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter() {
 	It("is confirmed that states of all machines are healthy", func() {
 		By("copying all healthy dummy redfish data")
-		machines, err := getMachinesSpecifiedRole("")
-		Expect(err).ShouldNot(HaveOccurred())
+
 		state := map[string]string{
 			prefix + "Processors/CPU.Socket.1":  "OK",
 			prefix + "Processors/CPU.Socket.2":  "OK",
@@ -28,9 +26,20 @@ func TestSabakanStateSetter() {
 			prefix + "Storage/SATAHDD.Slot.1":   "OK",
 			prefix + "Storage/SATAHDD.Slot.2":   "OK",
 		}
+		json := generateRedfishDummyData(state)
+
+		for _, boot := range []string{boot0, boot1, boot2, boot3} {
+			Eventually(func() error {
+				return generateRedfishDataOnBoot(boot, json)
+			}).Should(Succeed())
+		}
+
+		machines, err := getMachinesSpecifiedRole("worker")
+		Expect(err).ShouldNot(HaveOccurred())
 		for _, m := range machines {
-			err = copyDummyRedfishDataToWorker(m.Spec.IPv4[0], generateRedfishDummyData(state))
-			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return copyDummyRedfishDataToWorker(m.Spec.IPv4[0], json)
+			}).Should(Succeed())
 		}
 
 		By("checking all machine's state")
@@ -53,7 +62,7 @@ func TestSabakanStateSetter() {
 }
 
 func generateRedfishDummyData(data map[string]string) string {
-	var result []interface{}
+	var result []map[string]interface{}
 
 	for k, v := range data {
 		entry := map[string]interface{}{
@@ -93,47 +102,14 @@ func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
 	return machines, nil
 }
 
-func copyDummyCPUWarningRedfishDataToWorker(ip string) error {
-	state := map[string]string{
-		prefix + "Processors/CPU.Socket.1":  "OK",
-		prefix + "Processors/CPU.Socket.2":  "Warning",
-		prefix + "Storage/AHCI.Slot.1-1":    "OK",
-		prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
-		prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
-		prefix + "Storage/SATAHDD.Slot.1":   "OK",
-		prefix + "Storage/SATAHDD.Slot.2":   "OK",
+func generateRedfishDataOnBoot(target, json string) error {
+	_, _, err := execAtWithInput(target, []byte(json), "dd", "of="+dummyRedfishDataFile)
+	if err != nil {
+		return err
 	}
 
-	return copyDummyRedfishDataToWorker(ip, generateRedfishDummyData(state))
-}
-
-func copyDummyHDDWarningSingleRedfishDataToWorker(ip string) error {
-	state := map[string]string{
-		prefix + "Processors/CPU.Socket.1":  "OK",
-		prefix + "Processors/CPU.Socket.2":  "OK",
-		prefix + "Storage/AHCI.Slot.1-1":    "OK",
-		prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
-		prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
-		prefix + "Storage/SATAHDD.Slot.1":   "OK",
-		prefix + "Storage/SATAHDD.Slot.2":   "Warning",
-	}
-
-	return copyDummyRedfishDataToWorker(ip, generateRedfishDummyData(state))
-}
-
-func copyDummyHDDWarningAllRedfishDataToWorker(ip string) error {
-	const prefix = "/redfish/v1/Systems/System.Embedded.1/"
-	state := map[string]string{
-		prefix + "Processors/CPU.Socket.1":  "OK",
-		prefix + "Processors/CPU.Socket.2":  "OK",
-		prefix + "Storage/AHCI.Slot.1-1":    "OK",
-		prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
-		prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
-		prefix + "Storage/SATAHDD.Slot.1":   "Warning",
-		prefix + "Storage/SATAHDD.Slot.2":   "Warning",
-	}
-
-	return copyDummyRedfishDataToWorker(ip, generateRedfishDummyData(state))
+	_, _, err = execAt(target, "sudo", "mv", dummyRedfishDataFile, filepath.Join("/etc/neco", dummyRedfishDataFile))
+	return err
 }
 
 func copyDummyRedfishDataToWorker(ip, json string) error {

@@ -11,10 +11,10 @@ machine-types:
         selector:
           labels:
             controller: PCIeSSD.Slot.3-C
-      - name: hw_storage_device_status_health
+      - name: hw_storage_controller_status_health
         selector:
           label-prefix:
-            device: "SATAHDD.Slot."
+            controller: "SATAHDD.Slot."
             system: "System.Embedded."
         minimum-healthy-count: 1
   - name: staging-dell-14g-boot
