@@ -14,8 +14,8 @@ type targetMetric struct {
 }
 
 type selector struct {
-	labels      map[string]string
-	labelPrefix map[string]string
+	Labels      map[string]string `yaml:"labels,omitempty"`
+	LabelPrefix map[string]string `yaml:"label-prefix,omitempty"`
 }
 
 type machineType struct {

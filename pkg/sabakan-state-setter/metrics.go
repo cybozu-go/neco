@@ -6,7 +6,7 @@ import (
 	"github.com/prometheus/prom2json"
 )
 
-func (source *machineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily) error {
+func (ms *machineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily) error {
 	var result []*prom2json.Family
 	for mf := range mfChan {
 		result = append(result, prom2json.NewFamily(mf))
@@ -25,7 +25,7 @@ func (source *machineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFam
 			metrics = append(metrics, metric)
 		}
 
-		source.metrics[r.Name] = metrics
+		ms.metrics[r.Name] = metrics
 	}
 
 	return nil
