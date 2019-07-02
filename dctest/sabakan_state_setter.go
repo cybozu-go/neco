@@ -17,6 +17,14 @@ const dummyRedfishDataFile = "dummy_redfish_data.json"
 // TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter() {
 	It("is confirmed that states of all machines are healthy", func() {
+		By("copying all healthy dummy redfish data")
+		machines, err := getMachinesSpecifiedRole("")
+		Expect(err).ShouldNot(HaveOccurred())
+		for _, m := range machines {
+			err = copyDummyRedfishDataToWorker(m.Spec.IPv4[0], "OK", "OK", "OK", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C", "SATAHDD.Slot.1", "SATAHDD.SLot.2")
+			Expect(err).ShouldNot(HaveOccurred())
+		}
+
 		By("checking all machine's state")
 		Eventually(func() error {
 			machines, err := getMachinesSpecifiedRole("")

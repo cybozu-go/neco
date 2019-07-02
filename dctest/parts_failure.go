@@ -53,7 +53,7 @@ func TestPartsFailure() {
 	It("transition machine state to unhealthy due to warning disks become larger than one", func() {
 		targetIP := getTargetNode()
 
-		By("copying dummy cpu warning redfish data to " + targetIP + "@" + time.Now().String())
+		By("copying dummy one disk warning redfish data to " + targetIP + "@" + time.Now().String())
 		Eventually(func() error {
 			return copyDummyHDDWarningAllRedfishDataToWorker(targetIP)
 		}).Should(Succeed())
@@ -72,7 +72,7 @@ func TestPartsFailure() {
 	It("transition machine state to healthy even one disk warning occurred", func() {
 		targetIP := getTargetNode()
 
-		By("copying dummy cpu warning redfish data to " + targetIP + "@" + time.Now().String())
+		By("copying dummy all disk warning redfish data to " + targetIP + "@" + time.Now().String())
 		Eventually(func() error {
 			return copyDummyHDDWarningSingleRedfishDataToWorker(targetIP)
 		}).Should(Succeed())
