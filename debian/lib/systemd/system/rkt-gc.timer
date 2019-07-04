@@ -1,0 +1,10 @@
+[Unit]
+Description=run rkt gc periodically
+PartOf=rkt-gc.service
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target
