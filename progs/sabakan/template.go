@@ -14,8 +14,9 @@ ConditionPathExists={{ .KeyFile }}
 Slice=machine.slice
 Type=simple
 KillMode=mixed
-Restart=always
+Restart=on-failure
 RestartSec=10s
+StartLimitInterval=10m
 ExecStart=/usr/bin/rkt run \
   --pull-policy never --net=host \
   --volume neco,kind=host,source=/etc/neco,readOnly=true \
