@@ -5,7 +5,7 @@ import "text/template"
 var serviceTmpl = template.Must(template.New("setup-hw.service").
 	Parse(`[Unit]
 Description=Setup hardware container
-StartLimitInterval=10m
+StartLimitIntervalSec=600s
 
 [Service]
 Slice=machine.slice

@@ -10,7 +10,7 @@ After=network-online.target
 ConditionPathExists={{ .ConfFile }}
 ConditionPathExists={{ .CertFile }}
 ConditionPathExists={{ .KeyFile }}
-StartLimitInterval=10m
+StartLimitIntervalSec=600s
 
 [Service]
 Slice=machine.slice

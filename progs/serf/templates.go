@@ -28,7 +28,7 @@ Description=Serf container on rkt
 Wants=time-sync.target
 After=time-sync.target
 ConditionPathExists=/etc/serf/serf.json
-StartLimitInterval=10m
+StartLimitIntervalSec=600s
 
 [Service]
 Slice=machine.slice

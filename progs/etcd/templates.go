@@ -67,7 +67,7 @@ Description=Etcd container on rkt
 Wants=network-online.target
 After=network-online.target
 Wants=etcd-backup.timer
-StartLimitInterval=10m
+StartLimitIntervalSec=600s
 
 [Service]
 Slice=machine.slice
