@@ -28,6 +28,7 @@ var serviceTmpl = template.Must(template.New("vault.service").
 Description=Vault container
 Wants=network-online.target
 After=network-online.target
+StartLimitInterval=10m
 
 [Service]
 Slice=machine.slice
@@ -35,7 +36,6 @@ Type=simple
 KillMode=mixed
 Restart=on-failure
 RestartSec=10s
-StartLimitInterval=10m
 OOMScoreAdjust=-1000
 LimitCORE=0
 LimitMEMLOCK=infinity

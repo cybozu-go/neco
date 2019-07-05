@@ -67,6 +67,7 @@ Description=Etcd container on rkt
 Wants=network-online.target
 After=network-online.target
 Wants=etcd-backup.timer
+StartLimitInterval=10m
 
 [Service]
 Slice=machine.slice
@@ -74,7 +75,6 @@ Type=simple
 KillMode=mixed
 Restart=on-failure
 RestartSec=3s
-StartLimitInterval=10m
 OOMScoreAdjust=-1000
 ExecStart=/usr/bin/rkt run \
   --pull-policy never --net=host \
