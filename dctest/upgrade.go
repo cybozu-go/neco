@@ -188,6 +188,10 @@ func TestUpgrade() {
 		err = yaml.Unmarshal(stdout, cluster)
 		Expect(err).ShouldNot(HaveOccurred())
 
+		By("generating kubeconfig for cluster admin")
+		execSafeAt(boot0, "mkdir", "-p", ".kube")
+		execSafeAt(boot0, "ckecli", "kubernetes", "issue", ">", ".kube/config")
+
 		stdout, stderr, err = execAt(boot0, "ckecli", "images")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
