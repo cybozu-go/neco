@@ -67,12 +67,13 @@ Description=Etcd container on rkt
 Wants=network-online.target
 After=network-online.target
 Wants=etcd-backup.timer
+StartLimitIntervalSec=600s
 
 [Service]
 Slice=machine.slice
 Type=simple
 KillMode=mixed
-Restart=always
+Restart=on-failure
 RestartSec=3s
 OOMScoreAdjust=-1000
 ExecStart=/usr/bin/rkt run \

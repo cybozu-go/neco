@@ -5,12 +5,13 @@ import "text/template"
 var serviceTmpl = template.Must(template.New("setup-hw.service").
 	Parse(`[Unit]
 Description=Setup hardware container
+StartLimitIntervalSec=600s
 
 [Service]
 Slice=machine.slice
 Type=simple
 KillMode=mixed
-Restart=always
+Restart=on-failure
 RestartSec=10s
 OOMScoreAdjust=-1000
 ExecStart=/usr/bin/rkt run \

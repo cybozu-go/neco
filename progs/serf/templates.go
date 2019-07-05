@@ -28,13 +28,15 @@ Description=Serf container on rkt
 Wants=time-sync.target
 After=time-sync.target
 ConditionPathExists=/etc/serf/serf.json
+StartLimitIntervalSec=600s
 
 [Service]
 Slice=machine.slice
 Type=simple
 KillMode=mixed
-Restart=always
+Restart=on-failure
 RestartSec=10s
+StartLimitInterval=10m
 ExecStart=/usr/bin/rkt run \
   --pull-policy never --net=host \
   --volume conf,kind=host,source=/etc/serf \
