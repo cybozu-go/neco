@@ -152,7 +152,7 @@ func checkHealthOfTarget(targetIP string, health string) error {
 	}
 	for _, m := range machines {
 		if m.Status.State.String() != health {
-			return errors.New(m.Spec.Serial + " is not unhealthy:" + m.Status.State.String())
+			return errors.New(m.Spec.Serial + " should be: " + health + ", but: " + m.Status.State.String())
 		}
 	}
 	return nil

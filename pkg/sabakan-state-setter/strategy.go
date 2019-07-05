@@ -128,18 +128,18 @@ func (ms machineStateSource) checkTarget(target targetMetric) string {
 		exists = exists || matched
 	}
 
+	if target.MinimumHealthyCount != nil {
+		minCount = *target.MinimumHealthyCount
+	}
+
 	if !exists {
 		log.Info("unhealthy; metric with specified labels does not exist", map[string]interface{}{
 			"serial":                ms.serial,
 			"name":                  target.Name,
 			"selector":              slctr,
-			"minimum_healthy_count": target.MinimumHealthyCount,
+			"minimum_healthy_count": minCount,
 		})
 		return sabakan.StateUnhealthy.GQLEnum()
-	}
-
-	if target.MinimumHealthyCount != nil {
-		minCount = *target.MinimumHealthyCount
 	}
 
 	if healthyCount < minCount {
@@ -152,6 +152,14 @@ func (ms machineStateSource) checkTarget(target targetMetric) string {
 		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
+
+	log.Info("healthy;", map[string]interface{}{
+		"serial":                ms.serial,
+		"name":                  target.Name,
+		"selector":              slctr,
+		"minimum_healthy_count": minCount,
+		"healthy_count":         healthyCount,
+	})
 	return sabakan.StateHealthy.GQLEnum()
 }
 

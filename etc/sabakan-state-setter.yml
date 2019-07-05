@@ -14,8 +14,8 @@ machine-types:
       - name: hw_storage_controller_status_health
         selector:
           label-prefix:
-            controller: "SATAHDD.Slot."
-            system: "System.Embedded."
+            controller: SATAHDD.Slot.
+            system: System.Embedded.
         minimum-healthy-count: 1
   - name: staging-dell-14g-boot
     metrics:
@@ -24,7 +24,7 @@ machine-types:
       - name: hw_chassis_voltage_status_health
       - name: hw_storage_device_status_health
         selector:
-          labelPrefix:
+          label-prefix:
             device: PCIeSSD.Slot.
         minimum-healthy-count: 1
   - name: staging-dell-14g-cs
@@ -34,6 +34,6 @@ machine-types:
       - name: hw_chassis_voltage_status_health
       - name: hw_storage_device_status_health
         selector:
-          labelPrefix:
+          label-prefix:
             device: PCIeSSD.Slot.
         minimum-healthy-count: 2
