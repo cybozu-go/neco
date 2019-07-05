@@ -8,8 +8,14 @@ import (
 )
 
 type targetMetric struct {
-	Name   string            `yaml:"name"`
-	Labels map[string]string `yaml:"labels,omitempty"`
+	Name                string    `yaml:"name"`
+	Selector            *selector `yaml:"selector,omitempty"`
+	MinimumHealthyCount *int      `yaml:"minimum-healthy-count,omitempty"`
+}
+
+type selector struct {
+	Labels      map[string]string `yaml:"labels,omitempty"`
+	LabelPrefix map[string]string `yaml:"label-prefix,omitempty"`
 }
 
 type machineType struct {
