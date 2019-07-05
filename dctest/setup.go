@@ -75,6 +75,8 @@ func TestSetup() {
 			execSafeAt(h, "test", "-f", "/lib/systemd/system/node-exporter.service")
 			execSafeAt(h, "test", "-f", "/lib/systemd/system/sabakan-state-setter.service")
 			execSafeAt(h, "test", "-f", "/lib/systemd/system/sabakan-state-setter.timer")
+			execSafeAt(h, "test", "-f", "/lib/systemd/system/rkt-gc.service")
+			execSafeAt(h, "test", "-f", "/lib/systemd/system/rkt-gc.timer")
 		}
 	})
 
@@ -84,6 +86,7 @@ func TestSetup() {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "sabakan-state-setter.timer")
+			execSafeAt(h, "systemctl", "-q", "is-active", "rkt-gc.timer")
 			execSafeAt(h, "systemctl", "-q", "is-active", "etcd-backup.timer")
 			execSafeAt(h, "systemctl", "-q", "is-active", neco.EtcdService+".service")
 			execSafeAt(h, "systemctl", "-q", "is-active", neco.VaultService+".service")
