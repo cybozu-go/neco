@@ -161,6 +161,11 @@ func uploadAssets(ctx context.Context, c *sabac.Client, auth *DockerAuth) error 
 		if err != nil {
 			return err
 		}
+
+		err = UploadImageAssets(ctx, img, c, auth)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Upload other images
