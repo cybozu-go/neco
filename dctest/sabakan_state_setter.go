@@ -1,11 +1,9 @@
 package dctest
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"path/filepath"
-	"text/template"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -17,6 +15,33 @@ const dummyRedfishDataFile = "dummy_redfish_data.json"
 // TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter() {
 	It("is confirmed that states of all machines are healthy", func() {
+		By("copying all healthy dummy redfish data")
+
+		state := map[string]string{
+			prefix + "Processors/CPU.Socket.1":  "OK",
+			prefix + "Processors/CPU.Socket.2":  "OK",
+			prefix + "Storage/AHCI.Slot.1-1":    "OK",
+			prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
+			prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
+			prefix + "Storage/SATAHDD.Slot.1":   "OK",
+			prefix + "Storage/SATAHDD.Slot.2":   "OK",
+		}
+		json := generateRedfishDummyData(state)
+
+		for _, boot := range []string{boot0, boot1, boot2, boot3} {
+			Eventually(func() error {
+				return generateRedfishDataOnBoot(boot, json)
+			}).Should(Succeed())
+		}
+
+		machines, err := getMachinesSpecifiedRole("worker")
+		Expect(err).ShouldNot(HaveOccurred())
+		for _, m := range machines {
+			Eventually(func() error {
+				return copyDummyRedfishDataToWorker(m.Spec.IPv4[0], json)
+			}).Should(Succeed())
+		}
+
 		By("checking all machine's state")
 		Eventually(func() error {
 			machines, err := getMachinesSpecifiedRole("")
@@ -36,70 +61,24 @@ func TestSabakanStateSetter() {
 	})
 }
 
-func generateFileContent(health1, health2, health3, controller1, controller2 string) (string, error) {
-	fileContent := `[
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.1",
-        "data": {
-            "Status": {
-                "Health": "OK"
-            }
-        }
-    },
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.2",
-        "data": {
-            "Status": {
-                "Health": "{{ .Health1 }}"
-            }
-        }
-    },
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Storage/AHCI.Slot.1-1",
-        "data": {
-            "Status": {
-                "Health": "OK"
-            }
-        }
-    },
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Controller1 }}",
-        "data": {
-            "Status": {
-                "Health": "{{ .Health2 }}"
-            }
-        }
-    },
-    {
-        "path": "/redfish/v1/Systems/System.Embedded.1/Storage/{{ .Controller2 }}",
-        "data": {
-            "Status": {
-                "Health": "{{ .Health3 }}"
-            }
-        }
-    }
-]`
+func generateRedfishDummyData(data map[string]string) string {
+	var result []map[string]interface{}
 
-	tmpl := template.Must(template.New("").Parse(fileContent))
-	data := struct {
-		Health1     string
-		Health2     string
-		Health3     string
-		Controller1 string
-		Controller2 string
-	}{
-		health1,
-		health2,
-		health3,
-		controller1,
-		controller2,
+	for k, v := range data {
+		entry := map[string]interface{}{
+			"path": k,
+			"data": map[string]interface{}{
+				"Status": map[string]string{
+					"Health": v,
+				},
+			},
+		}
+		result = append(result, entry)
 	}
-	buff := new(bytes.Buffer)
-	err := tmpl.Execute(buff, data)
-	if err != nil {
-		return "", err
-	}
-	return buff.String(), nil
+
+	json, err := json.Marshal(result)
+	Expect(err).ShouldNot(HaveOccurred())
+	return string(json)
 }
 
 func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
@@ -123,20 +102,18 @@ func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
 	return machines, nil
 }
 
-func copyDummyWarningRedfishDataToWorker(ip string) error {
-	return copyDummyRedfishDataToWorker(ip, "Warning", "OK", "OK", "PCIeSSD.Slot.2-C", "PCIeSSD.Slot.3-C")
-}
-
-func copyDummyMissingRedfishDataToWorker(ip string) error {
-	return copyDummyRedfishDataToWorker(ip, "OK", "OK", "OK", "PCIeSSD.Slot.XXX", "	PCIeSSD.Slot.3-C")
-}
-
-func copyDummyRedfishDataToWorker(ip, health1, health2, health3, controller1, controller2 string) error {
-	fileContent, err := generateFileContent(health1, health2, health3, controller1, controller2)
+func generateRedfishDataOnBoot(target, json string) error {
+	_, _, err := execAtWithInput(target, []byte(json), "dd", "of="+dummyRedfishDataFile)
 	if err != nil {
 		return err
 	}
-	_, _, err = execAtWithInput(boot0, []byte(fileContent), "dd", "of="+dummyRedfishDataFile)
+
+	_, _, err = execAt(target, "sudo", "mv", dummyRedfishDataFile, filepath.Join("/etc/neco", dummyRedfishDataFile))
+	return err
+}
+
+func copyDummyRedfishDataToWorker(ip, json string) error {
+	_, _, err := execAtWithInput(boot0, []byte(json), "dd", "of="+dummyRedfishDataFile)
 	if err != nil {
 		return err
 	}

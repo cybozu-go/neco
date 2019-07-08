@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/cybozu-go/sabakan/v2"
@@ -20,12 +21,14 @@ func TestCheckSpecifyTarget(t *testing.T) {
 		},
 	}
 	checkTarget := targetMetric{
-		Name:   "m1",
-		Labels: map[string]string{"k1": "v1"},
+		Name: "m1",
+		Selector: &selector{
+			Labels: map[string]string{"k1": "v1"},
+		},
 	}
 
-	if res := ms.checkSpecifiedTarget(checkTarget); res != sabakan.StateHealthy.GQLEnum() {
-		t.Error("ms.checkSpecifiedTarget(checkTarget) != sabakan.StateHealthy.GQLEnum()", res)
+	if res := ms.checkTarget(checkTarget); res != sabakan.StateHealthy.GQLEnum() {
+		t.Error("ms.checkTarget(checkTarget) != sabakan.StateHealthy.GQLEnum()", res)
 	}
 }
 
@@ -84,8 +87,10 @@ func TestDecideSabakanState(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   "parts1",
-						Labels: map[string]string{"aaa": "bbb"},
+						Name: "parts1",
+						Selector: &selector{
+							Labels: map[string]string{"aaa": "bbb"},
+						},
 					}},
 				},
 			},
@@ -108,8 +113,10 @@ func TestDecideSabakanState(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   "parts1",
-						Labels: map[string]string{"aaa": "bbb"},
+						Name: "parts1",
+						Selector: &selector{
+							Labels: map[string]string{"aaa": "bbb"},
+						},
 					}},
 				},
 			},
@@ -135,8 +142,10 @@ func TestDecideSabakanState(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   "parts1",
-						Labels: map[string]string{"aaa": "bbb"},
+						Name: "parts1",
+						Selector: &selector{
+							Labels: map[string]string{"aaa": "bbb"},
+						},
 					}},
 				},
 			},
@@ -186,8 +195,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   "boot",
-						Labels: map[string]string{"aaa": "bbb"},
+						Name: "boot",
+						Selector: &selector{
+							Labels: map[string]string{"aaa": "bbb"},
+						},
 					}},
 				},
 			},
@@ -208,9 +219,11 @@ func TestDecideByMonitorHW(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   parts1,
-						Labels: map[string]string{"aaa": "bbb"}},
-					},
+						Name: parts1,
+						Selector: &selector{
+							Labels: map[string]string{"aaa": "bbb"},
+						},
+					}},
 				},
 			},
 		},
@@ -230,8 +243,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
-						Name:   parts1,
-						Labels: map[string]string{"aaa": "bbb"},
+						Name: parts1,
+						Selector: &selector{
+							Labels: map[string]string{"aaa": "bbb"},
+						},
 					}},
 				},
 			},
@@ -265,12 +280,16 @@ func TestDecideByMonitorHW(t *testing.T) {
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
 						{
-							Name:   parts1,
-							Labels: map[string]string{"aaa": "bbb"},
+							Name: parts1,
+							Selector: &selector{
+								Labels: map[string]string{"aaa": "bbb"},
+							},
 						},
 						{
-							Name:   parts2,
-							Labels: map[string]string{"ccc": "ddd"},
+							Name: parts2,
+							Selector: &selector{
+								Labels: map[string]string{"ccc": "ddd"},
+							},
 						},
 					},
 				},
@@ -309,12 +328,16 @@ func TestDecideByMonitorHW(t *testing.T) {
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
 						{
-							Name:   parts1,
-							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+							Name: parts1,
+							Selector: &selector{
+								Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+							},
 						},
 						{
-							Name:   parts2,
-							Labels: map[string]string{"ccc": "ddd"},
+							Name: parts2,
+							Selector: &selector{
+								Labels: map[string]string{"ccc": "ddd"},
+							},
 						},
 					},
 				},
@@ -341,8 +364,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
 						{
-							Name:   parts1,
-							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+							Name: parts1,
+							Selector: &selector{
+								Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+							},
 						},
 					},
 				},
@@ -365,8 +390,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
 						{
-							Name:   parts1,
-							Labels: map[string]string{"not": "existed"},
+							Name: parts1,
+							Selector: &selector{
+								Labels: map[string]string{"not": "existed"},
+							},
 						},
 					},
 				},
@@ -435,12 +462,271 @@ func TestDecideByMonitorHW(t *testing.T) {
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
 						{
-							Name:   parts1,
-							Labels: map[string]string{"aaa": "bbb"},
+							Name: parts1,
+							Selector: &selector{
+								Labels: map[string]string{"aaa": "bbb"},
+							},
 						},
 						{
-							Name:   parts2,
+							Name: parts2,
+							Selector: &selector{
+								Labels: map[string]string{"aaa": "bbb"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			message:  "Target metric exists, and prefix is matched",
+			expected: sabakan.StateHealthy.GQLEnum(),
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
 							Labels: map[string]string{"aaa": "bbb"},
+							Value:  monitorHWStatusHealth,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []targetMetric{
+						{
+							Name: parts1,
+							Selector: &selector{
+								LabelPrefix: map[string]string{"aaa": "bb"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			message:  "Target metrics exist, and all prefix labels are matched",
+			expected: sabakan.StateHealthy.GQLEnum(),
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"key1": "val1", "key2": "val2"},
+							Value:  monitorHWStatusHealth,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []targetMetric{
+						{
+							Name: parts1,
+							Selector: &selector{
+								LabelPrefix: map[string]string{
+									"key1": "val",
+									"key2": "va",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			message:  "One of label prefix is not matched",
+			expected: sabakan.StateUnhealthy.GQLEnum(),
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"key1": "val1", "key2": "val2"},
+							Value:  monitorHWStatusHealth,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []targetMetric{
+						{
+							Name: parts1,
+							Selector: &selector{
+								LabelPrefix: map[string]string{
+									"key1": "val",
+									"key2": "foo",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			message:  "label prefix is matched, but the value is not healthy",
+			expected: sabakan.StateUnhealthy.GQLEnum(),
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"key1": "val1", "key2": "val2"},
+							Value:  monitorHWStatusWarning,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []targetMetric{
+						{
+							Name: parts1,
+							Selector: &selector{
+								LabelPrefix: map[string]string{
+									"key1": "val",
+									"key2": "va",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			message:  "both labels and label prefix are declared, all labels are matched but label prefix is not matched",
+			expected: sabakan.StateUnhealthy.GQLEnum(),
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{
+								"key1": "val1",
+								"key2": "val2",
+							},
+							Value: monitorHWStatusHealth,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []targetMetric{
+						{
+							Name: parts1,
+							Selector: &selector{
+								Labels: map[string]string{
+									"key1": "val1",
+								},
+								LabelPrefix: map[string]string{
+									"foo": "bar",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			message:  "both labels and label prefix are declared, all label prefix are matched but labels are not matched",
+			expected: sabakan.StateUnhealthy.GQLEnum(),
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{
+								"key1": "val1",
+								"key2": "val2",
+							},
+							Value: monitorHWStatusHealth,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []targetMetric{
+						{
+							Name: parts1,
+							Selector: &selector{
+								Labels: map[string]string{
+									"key1": "hoge",
+								},
+								LabelPrefix: map[string]string{
+									"key2": "val",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			message:  "minimum healthy count is satisfied",
+			expected: sabakan.StateHealthy.GQLEnum(),
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"device": "HDD.slot.1"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"device": "HDD.slot.2"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"device": "HDD.slot.3"},
+							Value:  monitorHWStatusWarning,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []targetMetric{
+						{
+							Name: parts1,
+							Selector: &selector{
+								LabelPrefix: map[string]string{
+									"device": "HDD.",
+								},
+							},
+							MinimumHealthyCount: intPointer(2),
+						},
+					},
+				},
+			},
+		},
+		{
+			message:  "minimum healthy count is not satisfied",
+			expected: sabakan.StateUnhealthy.GQLEnum(),
+			mss: machineStateSource{
+				serfStatus: base,
+				metrics: map[string]machineMetrics{
+					parts1: {
+						prom2json.Metric{
+							Labels: map[string]string{"device": "HDD.slot.1"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"device": "HDD.slot.2"},
+							Value:  monitorHWStatusWarning,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"device": "HDD.slot.3"},
+							Value:  monitorHWStatusWarning,
+						},
+					},
+				},
+				machineType: &machineType{
+					Name: "boot",
+					MetricsCheckList: []targetMetric{
+						{
+							Name: parts1,
+							Selector: &selector{
+								LabelPrefix: map[string]string{
+									"device": "HDD.",
+								},
+							},
+							MinimumHealthyCount: intPointer(2),
 						},
 					},
 				},
@@ -449,9 +735,16 @@ func TestDecideByMonitorHW(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		fmt.Println("TEST:", tc.message)
 		out := tc.mss.decideSabakanState()
 		if out != tc.expected {
-			t.Error(tc.message, "expected:", tc.expected, "actual:", out)
+			t.Error(tc.message, "| expected:", tc.expected, "actual:", out)
 		}
 	}
+}
+
+func intPointer(i int) *int {
+	p := new(int)
+	*p = i
+	return p
 }

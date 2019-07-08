@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 SERVICES="neco-updater neco-worker node-exporter"
-TIMERS="sabakan-state-setter"
+TIMERS="sabakan-state-setter rkt-gc"
 
 prerm() {
     for s in $SERVICES; do

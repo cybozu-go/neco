@@ -10,12 +10,13 @@ After=network-online.target
 ConditionPathExists={{ .ConfFile }}
 ConditionPathExists={{ .CertFile }}
 ConditionPathExists={{ .KeyFile }}
+StartLimitIntervalSec=600s
 
 [Service]
 Slice=machine.slice
 Type=simple
 KillMode=mixed
-Restart=always
+Restart=on-failure
 RestartSec=10s
 ExecStart=/usr/bin/rkt run \
   --pull-policy never \
