@@ -18,7 +18,7 @@ files:
   - /etc/systemd/system/docker.service.d/90-proxy.conf
   - /etc/systemd/system/docker.service.d/99-docker-opts.conf
   - /etc/systemd/system/docker.service.d/99-limitmemlock-infinity.conf
-  - /etc/systemd/system/docker.service.d/10-wait-mount.conf
+  - /etc/systemd/system/docker.service.d/10-override-unit.conf
   - /etc/systemd/system/rkt-gc.timer.d/10-wait-mount.conf
   - /opt/bin/podenter
   - /opt/bin/load-docker-image
