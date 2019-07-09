@@ -6,6 +6,7 @@ var serviceTmpl = template.Must(template.New("setup-hw.service").
 	Parse(`[Unit]
 Description=Setup hardware container
 StartLimitIntervalSec=600s
+ConditionPathExists=/etc/neco/bmc-address.json
 
 [Service]
 Slice=machine.slice

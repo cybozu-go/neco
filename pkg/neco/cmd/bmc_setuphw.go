@@ -70,6 +70,11 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
+	err = neco.RestartService(ctx, "setup-hw")
+	if err != nil {
+		return err
+	}
+
 	c, err := neco.EnterContainerAppCommand(ctx, "setup-hw", []string{"setup-hw"})
 	if err != nil {
 		return err
