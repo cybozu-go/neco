@@ -1,10 +1,8 @@
 [Unit]
 Description=Serf container on docker
 Wants=network-online.target exec-setup-hw.service
-After=network-online.target  exec-setup-hw.service
-Requires=setup-serf.service docker.socket
-After=setup-serf.service docker.socket
-After=cke-images.service coil-image.service squid-image.service
+Requires=setup-serf.service docker.socket time-sync.target
+After=setup-serf.service docker.socket cke-images.service coil-image.service squid-image.service network-online.target exec-setup-hw.service time-sync.target
 ConditionPathExists=/etc/serf/serf.json
 
 [Service]

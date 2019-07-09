@@ -16,9 +16,8 @@ files:
   - /etc/systemd/system.conf.d/50-cybozu.conf
   - /etc/systemd/system/systemd-journald.service.d/oom_score_adj.conf
   - /etc/systemd/system/docker.service.d/90-proxy.conf
-  - /etc/systemd/system/docker.service.d/99-kubernetes-network.conf
-  - /etc/systemd/system/docker.service.d/99-run-after-time-sync.conf
-  - /etc/systemd/system/docker.socket.d/99-run-after-time-sync.conf
+  - /etc/systemd/system/docker.service.d/99-docker-opts.conf
+  - /etc/systemd/system/docker.service.d/99-limitmemlock-infinity.conf
   - /etc/systemd/system/docker.service.d/10-wait-mount.conf
   - /etc/systemd/system/rkt-gc.timer.d/10-wait-mount.conf
   - /opt/bin/podenter
@@ -37,7 +36,6 @@ files:
   - /opt/sbin/setup-serf-conf
   - /opt/sbin/setup-serf-tags
   - /opt/sbin/setup-var
-  - /opt/sbin/tune-rt-runtime
 systemd:
   - name: update-engine.service
     mask: true
@@ -63,7 +61,6 @@ systemd:
     enabled: true
   - name: setup-var.service
     enabled: true
-  - name: tune-rt-runtime.service
   - name: setup-network.service
   - name: bird.service
     enabled: true

@@ -1,34 +1,36 @@
 [Unit]
 Description=Chrony container
-Requires=var-lib-rkt.mount
-Wants=network-online.target tune-rt-runtime.service
-After=network-online.target var-lib-rkt.mount tune-rt-runtime.service
+Requires=docker.socket
+Wants=network-online.target
+After=network-online.target docker.socket
 Conflicts=systemd-timesyncd.service ntpd.service
 
 [Service]
-Slice=machine.slice
-CPUSchedulingPolicy=rr
-CPUSchedulingPriority=99
 Type=simple
 KillMode=mixed
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
-OOMScoreAdjust=-1000
-LimitMEMLOCK=infinity
-ExecStartPre=/opt/sbin/fetch-chrony-image
-ExecStart=/usr/bin/rkt run \
-  --insecure-options=seccomp,image \
-  --volume etc,kind=host,source=/etc/chrony.conf,readOnly=true \
-  --volume run,kind=empty,readOnly=false,mode=0700 \
-  --volume volume-var-lib-chrony,kind=empty,readOnly=false,mode=0755 \
+ExecStartPre=-/usr/bin/docker kill chrony
+ExecStartPre=-/usr/bin/docker rm chrony
+ExecStartPre=/opt/bin/load-docker-image {{ MyURL }}/api/v1/assets/{{ Metadata "chrony.img" }} {{ Metadata "chrony.ref" }}
+ExecStart=/usr/bin/docker run \
+  --name chrony \
+  --log-driver=journald \
   --net=host \
-  {{ Metadata "chrony.ref" }} \
-    --name chrony --user-label name=chrony \
-    --readonly-rootfs=true \
-    --caps-retain=CAP_NET_BIND_SERVICE,CAP_SYS_TIME,CAP_SYS_NICE \
-    --mount volume=etc,target=/etc/chrony.conf \
-    --mount volume=run,target=/run/chrony \
-    --mount volume=volume-var-lib-chrony,target=/var/lib/chrony
+  --privileged \
+  --cap-drop=all \
+  --cap-add=NET_BIND_SERVICE \
+  --cap-add=SYS_TIME \
+  --cap-add=SYS_NICE \
+  --ulimit memlock=-1 \
+  --oom-kill-disable \
+  --cpu-rt-runtime=950000 \
+  --ulimit rtprio=99 \
+  --read-only \
+  -v /etc/chrony.conf:/etc/chrony.conf:ro \
+  --mount type=tmpfs,destination=/run/chrony,tmpfs-mode=0700 \
+  --mount type=tmpfs,destination=/var/lib/chrony,tmpfs-mode=0755 \
+   {{ Metadata "chrony.ref" }}
 
 [Install]
 WantedBy=multi-user.target
