@@ -157,12 +157,7 @@ func uploadOSImages(ctx context.Context, c *sabac.Client, p *http.Client) error 
 func uploadAssets(ctx context.Context, c *sabac.Client, auth *DockerAuth) error {
 	// Upload bird and chrony with ubuntu-debug
 	for _, img := range neco.SystemContainers {
-		err := uploadSystemImageAssets(ctx, img, c)
-		if err != nil {
-			return err
-		}
-
-		err = UploadImageAssets(ctx, img, c, auth)
+		err := UploadImageAssets(ctx, img, c, auth)
 		if err != nil {
 			return err
 		}
