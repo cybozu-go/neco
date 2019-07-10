@@ -10,7 +10,6 @@ Restart=on-failure
 RestartForceExitStatus=SIGPIPE
 ExecStartPre=-/usr/bin/docker kill bird
 ExecStartPre=-/usr/bin/docker rm bird
-ExecStartPre=/usr/bin/docker load -i /tmp/{{ Metadata "bird.img" }}
 ExecStart=/usr/bin/docker run \
   --name bird \
   --label name=bird \

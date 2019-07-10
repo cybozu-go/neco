@@ -109,7 +109,7 @@ func TestCKE() {
 				return err
 			}
 
-			if len(nl.Items) != 5 {
+			if len(nl.Items) != 6 {
 				return fmt.Errorf("too few nodes: %d", len(nl.Items))
 			}
 			return nil

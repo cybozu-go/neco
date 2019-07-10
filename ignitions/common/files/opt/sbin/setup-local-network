@@ -10,6 +10,7 @@ for i in $(seq 20); do
         exit 1
     fi
     if curl -sfSL -o "$filename" "$img"; then
+        /usr/bin/docker load -i /tmp/{{ Metadata "bird.img" }}
         break
     fi
     rm -f "$filename"
