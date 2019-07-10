@@ -1,6 +1,6 @@
 #!/bin/sh
 
-while ! /opt/bin/podenter bird bird birdc show route for 0.0.0.0/0 | grep -q 'tor[12]'; do
+while ! docker exec bird birdc show route for 0.0.0.0/0 | grep -q 'tor[12]'; do
     sleep 1
 done
 
