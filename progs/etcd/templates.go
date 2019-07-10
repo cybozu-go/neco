@@ -17,6 +17,9 @@ listen-peer-urls: https://0.0.0.0:2380
 # List of comma separated URLs to listen on for client traffic.
 listen-client-urls: https://0.0.0.0:2379
 
+# List of comma separated URLs to expose prometheus metrics.
+listen-metrics-urls: http://0.0.0.0:2381
+
 # List of this member's peer URLs to advertise to the rest of the cluster.
 # The URLs needed to be a comma-separated list.
 initial-advertise-peer-urls: {{.InitialAdvertisePeerURLs}}
