@@ -1,7 +1,7 @@
 [Unit]
 Description=BIRD container
-Requires=setup-network.service docker.socket
-After=setup-network.service docker.socket
+Requires=setup-network.service docker.service
+After=setup-network.service docker.service
 
 [Service]
 Type=simple

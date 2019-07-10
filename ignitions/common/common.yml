@@ -15,11 +15,6 @@ files:
   - /etc/systemd/resolved.conf
   - /etc/systemd/system.conf.d/50-cybozu.conf
   - /etc/systemd/system/systemd-journald.service.d/oom_score_adj.conf
-  - /etc/systemd/system/docker.service.d/90-proxy.conf
-  - /etc/systemd/system/docker.service.d/99-docker-opts.conf
-  - /etc/systemd/system/docker.service.d/99-limitmemlock-infinity.conf
-  - /etc/systemd/system/docker.service.d/10-override-unit.conf
-  - /etc/systemd/system/rkt-gc.timer.d/10-wait-mount.conf
   - /opt/bin/podenter
   - /opt/bin/load-docker-image
   - /opt/bin/load-containerd-image
@@ -47,10 +42,8 @@ systemd:
     mask: true
   - name: systemd-timesyncd.service
     mask: true
-  - name: rkt-metadata.service
-    mask: true
-  - name: rkt-metadata.socket
-    mask: true
+  - name: docker.service
+    enabled: true
   - name: disable-transparent-hugepage.service
     enabled: true
   - name: neco-wait-dhcp-online.service
