@@ -1,7 +1,7 @@
 [Unit]
 Description=Setup network
-Requires=var-lib-rkt.mount
-After=var-lib-rkt.mount
+Requires=docker.service
+After=docker.service
 
 [Service]
 Type=oneshot

@@ -18,5 +18,5 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.7"},
 		{Name: "neco", Owner: "cybozu-go", Repository: "neco", Release: "release-2019.01.17-1"},
 	},
-	CoreOS: CoreOSImage{Channel: "stable", Version: "2079.4.0"},
+	CoreOS: CoreOSImage{Channel: "stable", Version: "2135.5.0"},
 }

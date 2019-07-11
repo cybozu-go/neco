@@ -1,15 +1,19 @@
 #!/bin/sh -e
 
-i=0
 # This "fetch" must be separated from "run" because "fetch" uses the DHCP-configured network.
 # "setup-local-network" reconfigures network, and "run" starts bird to manage the reconfigured network.
-while ! rkt fetch --insecure-options=image {{ MyURL }}/api/v1/assets/{{ Metadata "bird.aci" }}; do
-    i=$((i+1))
-    if [ $i -ge 20 ]; then
-        echo "'rkt fetch bird.aci' failed.  Give up."
+img={{ MyURL }}/api/v1/assets/{{ Metadata "bird.img" }}
+filename=/tmp/{{ Metadata "bird.img" }}
+for i in $(seq 20); do
+    if [ $i -gt 20 ]; then
+        echo "'curl -sfSL -o bird.img' failed. Giveup."
         exit 1
     fi
-    echo "'rkt fetch bird.aci' failed.  Retrying..."
+    if curl -sfSL -o "$filename" "$img"; then
+        /usr/bin/docker load -i /tmp/{{ Metadata "bird.img" }}
+        break
+    fi
+    rm -f "$filename"
     sleep 5
 done
 

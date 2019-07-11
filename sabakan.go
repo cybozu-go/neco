@@ -16,11 +16,6 @@ var SystemContainers = []ContainerImage{
 		Repository: "quay.io/cybozu/chrony",
 		Tag:        "3.3",
 	},
-	{
-		Name:       "ubuntu-debug",
-		Repository: "quay.io/cybozu/ubuntu-debug",
-		Tag:        "18.04",
-	},
 }
 
 // SystemImagePath returns path of ACI file for the system container img
