@@ -13,6 +13,7 @@ EOF
 
 env http_proxy=$http_proxy apt-get update -o Acquire::Retries=5
 env http_proxy=$http_proxy apt-get install -o Acquire::Retries=5 -y --no-install-recommends jq ca-certificates freeipmi-tools
+apt-get -y purge --auto-remove apport unattended-upgrades software-properties-common python3-software-properties
 apt-get clean
 
 touch /tmp/auto-config-done
