@@ -20,7 +20,10 @@ K8S_VERSION = 1.14.3
 ### for lvmd
 TOPOLVM_VERSION = 0.1.0
 
-all: node_exporter containerd crictl argocd kubectl lvmd
+### for stern
+STERN_VERSION = 1.11.0
+
+all: node_exporter containerd crictl argocd kubectl lvmd stern
 
 node_exporter:
 	rm -f $(LIBEXECDIR)/node_exporter
@@ -67,7 +70,14 @@ lvmd:
 	$(CURL) https://github.com/cybozu-go/topolvm/releases/download/v$(TOPOLVM_VERSION)/lvmd-$(TOPOLVM_VERSION).tar.gz | \
 	tar xzf - -C $(LIBEXECDIR)
 
+stern:
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	$(CURL) -o $(BINDIR)/stern https://github.com/wercker/stern/releases/download/$(STERN_VERSION)/stern_linux_amd64
+	chmod +x $(BINDIR)/stern
+	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/wercker/stern/1.11.0/LICENSE
+	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/wercker/stern/1.11.0/README.md
+
 clean:
 	rm -rf $(BUILDDIR)
 
-.PHONY:	all setup clean node_exporter containerd crictl argocd kubectl lvmd
+.PHONY:	all setup clean node_exporter containerd crictl argocd kubectl lvmd stern
