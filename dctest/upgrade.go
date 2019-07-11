@@ -137,7 +137,9 @@ func TestUpgrade() {
 				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key",
 				"--endpoints=10.69.0.3:2379,10.69.0.195:2379,10.69.1.131:2379",
 				"endpoint", "status")
-			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+			if err != nil {
+				return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
+			}
 			var statuses []struct {
 				Endpoint string `json:"Endpoint"`
 				Status   struct {
@@ -146,7 +148,9 @@ func TestUpgrade() {
 			}
 
 			err = json.Unmarshal(stdout, &statuses)
-			Expect(err).ShouldNot(HaveOccurred())
+			if err != nil {
+				return err
+			}
 			for _, img := range neco.CurrentArtifacts.Images {
 				if img.Name == "etcd" {
 					tag := img.Tag[:strings.LastIndex(img.Tag, ".")]
