@@ -1,1 +1,7 @@
 include: ../../common/common.yml
+files:
+  - /opt/sbin/setup-lvmd
+systemd:
+  - name: setup-lvmd.service
+  - name: lvmd.service
+    enabled: true
