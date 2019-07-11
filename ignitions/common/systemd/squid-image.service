@@ -1,7 +1,7 @@
 [Unit]
 Description=Load Squid container image
 Wants=network-online.target
-Requires=docker.socket
+Requires=docker.service
 After=network-online.target wait-k8s-containerd-socket.service
 
 [Service]

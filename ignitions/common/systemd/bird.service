@@ -1,29 +1,31 @@
 [Unit]
 Description=BIRD container
-After=setup-network.service tune-rt-runtime.service
-Requires=setup-network.service tune-rt-runtime.service
+Requires=setup-network.service docker.service
+After=setup-network.service docker.service
 
 [Service]
-Slice=machine.slice
-CPUSchedulingPolicy=rr
-CPUSchedulingPriority=50
 Type=simple
 KillMode=mixed
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
-OOMScoreAdjust=-1000
-ExecStart=/usr/bin/rkt run \
-  --insecure-options=image \
-  --volume run,kind=empty,readOnly=false \
-  --volume etc,kind=host,source=/etc/bird,readOnly=true \
-  --net=host \
-  {{ Metadata "bird.ref" }} \
-    --readonly-rootfs=true \
-    --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_NET_RAW \
-    --name bird \
-    --user-label name=bird \
-    --mount volume=run,target=/run/bird \
-    --mount volume=etc,target=/etc/bird
+ExecStartPre=-/usr/bin/docker kill bird
+ExecStartPre=-/usr/bin/docker rm bird
+ExecStart=/usr/bin/docker run \
+  --name bird \
+  --label name=bird \
+  --network=host \
+  --cap-drop=all \
+  --cap-add=NET_ADMIN \
+  --cap-add=NET_BIND_SERVICE \
+  --cap-add=NET_RAW \
+  --ulimit memlock=-1 \
+  --oom-kill-disable \
+  --cpu-rt-runtime=475000 \
+  --ulimit rtprio=99 \
+  --read-only \
+  -v /etc/bird:/etc/bird:ro \
+  --mount type=tmpfs,destination=/run/bird,tmpfs-mode=0700 \
+  {{ Metadata "bird.ref" }}
 
 [Install]
 WantedBy=multi-user.target

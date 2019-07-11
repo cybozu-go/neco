@@ -1,7 +1,0 @@
-#!/bin/sh
-
-RT_RUNTIME=/sys/fs/cgroup/cpu/machine.slice/cpu.rt_runtime_us
-
-if [ -e $RT_RUNTIME ]; then
-    echo 950000 >$RT_RUNTIME
-fi
