@@ -67,7 +67,7 @@ func TestCoilSetup() {
 		}).Should(Succeed())
 
 		By("creating IP address pool")
-		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=k8s-app=coil-controllers", "-o=json")
+		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=app.kubernetes.io/name=coil-controllers", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		podList := new(corev1.PodList)
@@ -91,7 +91,7 @@ func TestCoil() {
 		checkCoilControllersDeployment()
 
 		By("listing pools")
-		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=k8s-app=coil-controllers", "-o=json")
+		stdout, stderr, err := execAt(boot0, "kubectl", "--namespace=kube-system", "get", "pods", "--selector=app.kubernetes.io/name=coil-controllers", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		podList := new(corev1.PodList)

@@ -173,11 +173,11 @@ spec:
       maxUnavailable: 1
   selector:
     matchLabels:
-      k8s-app: unbound
+      app.kubernetes.io/name: unbound
   template:
     metadata:
       labels:
-        k8s-app: unbound
+        app.kubernetes.io/name: unbound
     spec:
       # system priority class cannot be specified for pods in namespaces
       # other than kube-system as of k8s 1.12.
@@ -195,7 +195,7 @@ spec:
             podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: k8s-app
+                - key: app.kubernetes.io/name
                   operator: In
                   values:
                   - unbound
@@ -261,7 +261,7 @@ metadata:
   namespace: internet-egress
 spec:
   selector:
-    k8s-app: unbound
+    app.kubernetes.io/name: unbound
   ports:
     - name: dns
       port: 53

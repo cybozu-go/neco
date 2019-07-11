@@ -307,7 +307,7 @@ func TestUpgrade() {
 
 	It("should SHA1 veth name is attached when container restarts with newer coil", func() {
 		By("stopping a squid pod")
-		stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=k8s-app=squid", "-o=json")
+		stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 		podList := new(corev1.PodList)
 		err = json.Unmarshal(stdout, podList)
@@ -336,7 +336,7 @@ func TestUpgrade() {
 			return nil
 		}).Should(Succeed())
 
-		stdout, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=k8s-app=squid", "-o=json")
+		stdout, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 		podList = new(corev1.PodList)
 		err = json.Unmarshal(stdout, podList)
