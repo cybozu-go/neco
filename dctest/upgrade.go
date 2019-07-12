@@ -307,14 +307,26 @@ func TestUpgrade() {
 
 	It("should SHA1 veth name is attached when container restarts with newer coil", func() {
 		By("stopping a squid pod")
-		stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
-		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
-		podList := new(corev1.PodList)
-		err = json.Unmarshal(stdout, podList)
-		Expect(err).NotTo(HaveOccurred())
-		podName := podList.Items[0].Name
-		notTarget := podList.Items[1].Name
-		_, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "delete", "pod", podName)
+		var podName, notTarget string
+		Eventually(func() error {
+			stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
+			if err != nil {
+				return fmt.Errorf("err: %v, stdout:%s, stderr: %s", err, stdout, stderr)
+			}
+			podList := new(corev1.PodList)
+			err = json.Unmarshal(stdout, podList)
+			if err != nil {
+				return err
+			}
+			if len(podList.Items) < 2 {
+				return fmt.Errorf("len(podList.Items) < 2, actual: %d", len(podList.Items))
+			}
+			podName = podList.Items[0].Name
+			notTarget = podList.Items[1].Name
+			return nil
+		}).Should(Succeed())
+
+		_, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "delete", "pod", podName)
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 
 		By("waiting squid deployment is ready")
@@ -336,9 +348,9 @@ func TestUpgrade() {
 			return nil
 		}).Should(Succeed())
 
-		stdout, stderr, err = execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
+		stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
-		podList = new(corev1.PodList)
+		podList := new(corev1.PodList)
 		err = json.Unmarshal(stdout, podList)
 		Expect(err).NotTo(HaveOccurred())
 
