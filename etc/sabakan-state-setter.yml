@@ -19,20 +19,20 @@ machine-types:
         minimum-healthy-count: 1
   - name: staging-dell-14g-boot
     metrics:
-      - name: hw_processor_status_health
-      - name: hw_system_memory_summary_status_health
-      - name: hw_chassis_voltage_status_health
-      - name: hw_storage_device_status_health
+      - name: hw_systems_processors_status_health
+      - name: hw_systems_memorysummary_status_health
+      - name: hw_chassis_power_voltages_status_health
+      - name: hw_systems_storage_drives_status_health
         selector:
           label-prefix:
             device: PCIeSSD.Slot.
         minimum-healthy-count: 1
   - name: staging-dell-14g-cs
     metrics:
-      - name: hw_processor_status_health
-      - name: hw_system_memory_summary_status_health
-      - name: hw_chassis_voltage_status_health
-      - name: hw_storage_device_status_health
+      - name: hw_systems_processors_status_health
+      - name: hw_systems_memorysummary_status_health
+      - name: hw_chassis_power_voltages_status_health
+      - name: hw_systems_storage_drives_status_health
         selector:
           label-prefix:
             device: PCIeSSD.Slot.
