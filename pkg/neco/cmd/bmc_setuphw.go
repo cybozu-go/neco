@@ -87,7 +87,7 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 
 	err = neco.RetryWithSleep(ctx, 240, time.Second,
 		func(ctx context.Context) error {
-			c, err := neco.EnterContainerAppCommand(ctx, "setup-hw", []string{":"})
+			c, err := neco.EnterContainerAppCommand(ctx, "setup-hw", []string{"echo", "hello"})
 			if err != nil {
 				return err
 			}
