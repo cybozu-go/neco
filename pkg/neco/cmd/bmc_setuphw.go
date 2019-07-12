@@ -76,9 +76,21 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
-	err = neco.RetryWithSleep(ctx, 60, time.Second,
+	c := well.CommandContext(ctx, "systemctl", "is-active", "setup-hw")
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	err = c.Run()
+	if err != nil {
+		return err
+	}
+
+	err = neco.RetryWithSleep(ctx, 240, time.Second,
 		func(ctx context.Context) error {
-			c := well.CommandContext(ctx, "systemctl", "is-active", "setup-hw")
+			c, err := neco.EnterContainerAppCommand(ctx, "setup-hw", []string{":"})
+			if err != nil {
+				return err
+			}
 			c.Stdin = os.Stdin
 			c.Stdout = os.Stdout
 			c.Stderr = os.Stderr
@@ -94,7 +106,7 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
-	c, err := neco.EnterContainerAppCommand(ctx, "setup-hw", []string{"setup-hw"})
+	c, err = neco.EnterContainerAppCommand(ctx, "setup-hw", []string{"setup-hw"})
 	if err != nil {
 		return err
 	}
