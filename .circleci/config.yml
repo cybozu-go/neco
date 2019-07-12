@@ -46,6 +46,12 @@ commands:
             ./bin/watch_service neco-worker
           background: true
       - run:
+          name: Watch all pod logs
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_podlogs
+          background: true
+      - run:
           command: |
             if [ -f .skip ]; then exit 0; fi
             ./bin/<<parameters.script>> <<parameters.suite>> <<parameters.datacenter>>
