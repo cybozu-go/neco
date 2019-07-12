@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -71,6 +72,24 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 	}
 
 	err = neco.RestartService(ctx, "setup-hw")
+	if err != nil {
+		return err
+	}
+
+	err = neco.RetryWithSleep(ctx, 60, time.Second,
+		func(ctx context.Context) error {
+			c := well.CommandContext(ctx, "systemctl", "is-active", "setup-hw")
+			c.Stdin = os.Stdin
+			c.Stdout = os.Stdout
+			c.Stderr = os.Stderr
+			return c.Run()
+		},
+		func(err error) {
+			log.Error("setup-hw is not active", map[string]interface{}{
+				log.FnError: err,
+			})
+		},
+	)
 	if err != nil {
 		return err
 	}
