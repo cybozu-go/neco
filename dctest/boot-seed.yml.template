@@ -20,4 +20,3 @@ runcmd:
   - "cd /extras/setup; ./setup-rkt"
   - "cd /extras/setup; ./setup-neco-network --dns 8.8.8.8 {{.Rack.Index}}"
   - "sh /mnt/auto-config"
-  - [ apt-get, -y, purge, --auto-remove, apport, unattended-upgrades, software-properties-common, python3-software-properties ]

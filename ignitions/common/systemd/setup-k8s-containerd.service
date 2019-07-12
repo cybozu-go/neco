@@ -1,7 +1,7 @@
 [Unit]
 Description=Setup containerd for kubernetes
-Wants=data.mount
-After=data.mount
+Wants=var-lib-k8s\x2dcontainerd.mount
+After=var-lib-k8s\x2dcontainerd.mount
 
 [Service]
 Type=oneshot
