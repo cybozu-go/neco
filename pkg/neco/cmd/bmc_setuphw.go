@@ -76,11 +76,7 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
-	c := well.CommandContext(ctx, "systemctl", "is-active", "setup-hw")
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-	err = c.Run()
+	err = well.CommandContext(ctx, "systemctl", "is-active", "setup-hw").Run()
 	if err != nil {
 		return err
 	}
@@ -91,22 +87,17 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 			if err != nil {
 				return err
 			}
-			c.Stdin = os.Stdin
-			c.Stdout = os.Stdout
-			c.Stderr = os.Stderr
 			return c.Run()
 		},
 		func(err error) {
-			log.Error("setup-hw is not active", map[string]interface{}{
-				log.FnError: err,
-			})
+			//	set no logger because EnterContainerAppCommand logs own errors implicitly
 		},
 	)
 	if err != nil {
 		return err
 	}
 
-	c, err = neco.EnterContainerAppCommand(ctx, "setup-hw", []string{"setup-hw"})
+	c, err := neco.EnterContainerAppCommand(ctx, "setup-hw", []string{"setup-hw"})
 	if err != nil {
 		return err
 	}
