@@ -21,6 +21,7 @@ delete_instance() {
 $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} --quiet || true
 $GCLOUD compute instances create ${INSTANCE_NAME} \
   --zone ${ZONE} \
+  --min-cpu-platform "Intel Skylake" \
   --machine-type ${MACHINE_TYPE} \
   --image vmx-enabled \
   --boot-disk-type ${DISK_TYPE} \

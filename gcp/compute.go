@@ -76,6 +76,7 @@ func (cc *ComputeClient) CreateVMXEnabledInstance(ctx context.Context) error {
 	bootDiskSize := strconv.Itoa(cc.cfg.Compute.BootDiskSizeGB) + "GB"
 	gcmd = append(gcmd, "create", cc.instance,
 		"--zone", cc.cfg.Common.Zone,
+		"--min-cpu-platform", "Intel Skylake",
 		"--image", artifacts.baseImage,
 		"--image-project", artifacts.baseImageProject,
 		"--boot-disk-type", "pd-ssd",
@@ -94,6 +95,7 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 	bootDiskSize := strconv.Itoa(cc.cfg.Compute.BootDiskSizeGB) + "GB"
 	gcmd = append(gcmd, "create", cc.instance,
 		"--zone", cc.cfg.Common.Zone,
+		"--min-cpu-platform", "Intel Skylake",
 		"--image", cc.image,
 		"--boot-disk-type", "pd-ssd",
 		"--boot-disk-size", bootDiskSize,
