@@ -68,10 +68,11 @@ spec:
       maxUnavailable: 1
   selector:
     matchLabels:
-      k8s-app: squid
+      app.kubernetes.io/name: squid
   template:
     metadata:
       labels:
+        app.kubernetes.io/name: squid
         k8s-app: squid
     spec:
       # system priority class cannot be specified for pods in namespaces
@@ -93,7 +94,7 @@ spec:
             podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: k8s-app
+                - key: app.kubernetes.io/name
                   operator: In
                   values:
                   - squid
@@ -196,7 +197,7 @@ metadata:
 spec:
   type: NodePort
   selector:
-    k8s-app: squid
+    app.kubernetes.io/name: squid
   ports:
     - protocol: TCP
       nodePort: 30128
