@@ -1,8 +1,8 @@
 [Unit]
 Description=Load container images for CKE
 Wants=network-online.target
-Requires=docker.socket
-After=network-online.target docker.socket wait-k8s-containerd-socket.service
+Requires=docker.service
+After=network-online.target docker.service wait-k8s-containerd-socket.service
 
 [Service]
 Type=oneshot

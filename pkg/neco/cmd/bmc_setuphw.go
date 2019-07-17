@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -71,6 +72,27 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 	}
 
 	err = neco.RestartService(ctx, "setup-hw")
+	if err != nil {
+		return err
+	}
+
+	err = well.CommandContext(ctx, "systemctl", "is-active", "setup-hw").Run()
+	if err != nil {
+		return err
+	}
+
+	err = neco.RetryWithSleep(ctx, 240, time.Second,
+		func(ctx context.Context) error {
+			c, err := neco.EnterContainerAppCommand(ctx, "setup-hw", []string{"echo", "hello"})
+			if err != nil {
+				return err
+			}
+			return c.Run()
+		},
+		func(err error) {
+			//	set no logger because EnterContainerAppCommand logs own errors implicitly
+		},
+	)
 	if err != nil {
 		return err
 	}
