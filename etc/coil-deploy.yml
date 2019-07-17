@@ -51,11 +51,11 @@ metadata:
   name: coil-node
   namespace: kube-system
   labels:
-    k8s-app: coil-node
+    app.kubernetes.io/name: coil-node
 spec:
   selector:
     matchLabels:
-      k8s-app: coil-node
+      app.kubernetes.io/name: coil-node
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
@@ -63,7 +63,7 @@ spec:
   template:
     metadata:
       labels:
-        k8s-app: coil-node
+        app.kubernetes.io/name: coil-node
     spec:
       priorityClassName: system-node-critical
       nodeSelector:
@@ -165,13 +165,13 @@ metadata:
   name: coil-controllers
   namespace: kube-system
   labels:
-    k8s-app: coil-controllers
+    app.kubernetes.io/name: coil-controllers
 spec:
   # coil-controller can only have a single active instance.
   replicas: 1
   selector:
     matchLabels:
-      k8s-app: coil-controllers
+      app.kubernetes.io/name: coil-controllers
   strategy:
     type: Recreate
   template:
@@ -179,7 +179,7 @@ spec:
       name: coil-controllers
       namespace: kube-system
       labels:
-        k8s-app: coil-controllers
+        app.kubernetes.io/name: coil-controllers
     spec:
       priorityClassName: system-cluster-critical
       nodeSelector:
