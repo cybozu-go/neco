@@ -28,16 +28,16 @@ Description=Teleport node
 Wants=network-online.target
 After=network-online.target
 StartLimitIntervalSec=600s
-ConditionPathExists={{ .TokenDropIn }}
-ConditionPathExists={{ .AuthServerDropIn }}
+ConditionPathExists={{ .TokenFile }}
 
 [Service]
 Slice=system.slice
 Type=simple
+# SSH processes should be maintained even if main process is killed
 KillMode=process
 Restart=on-failure
 RestartSec=10s
-ExecStartPre=???
+ExecStartPre=/usr/bin/neco teleport set-config
 ExecStart=/usr/local/bin/teleport start --roles=node
 
 [Install]
