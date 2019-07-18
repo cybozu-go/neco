@@ -54,12 +54,12 @@ func (o *operator) replaceTeleportFiles(ctx context.Context) (bool, error) {
 	}
 
 	buf.Reset()
-	err = teleport.GenerateConf(buf, o.mylrn)
+	err = teleport.GenerateConfBase(buf, o.mylrn)
 	if err != nil {
 		return false, err
 	}
 
-	r2, err := replaceFile(neco.TeleportConfFile, buf.Bytes(), 0644)
+	r2, err := replaceFile(neco.TeleportConfFileBase, buf.Bytes(), 0644)
 	if err != nil {
 		return false, err
 	}

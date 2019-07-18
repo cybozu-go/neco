@@ -8,8 +8,7 @@ teleport:
   data_dir: /var/lib/teleport
   auth_token: %AUTH_TOKEN%
   advertise_ip: {{ .AdvertiseIP }}
-  auth_servers:
-    - %AUTH_SERVER%
+  auth_servers: %AUTH_SERVERS%
   log:
     output: stderr
     severity: INFO
@@ -37,7 +36,7 @@ Type=simple
 KillMode=process
 Restart=on-failure
 RestartSec=10s
-ExecStartPre=/usr/bin/neco teleport set-config
+ExecStartPre=/usr/bin/neco teleport config
 ExecStart=/usr/local/bin/teleport start --roles=node
 
 [Install]

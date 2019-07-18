@@ -117,16 +117,19 @@ func getToken(ctx context.Context, vc *api.Client, path string, filename string)
 		return fmt.Errorf("reading secret/%s returned nil or empty secret", path)
 	}
 
-	token, ok := secret.Data["token"]
-	if !ok || len(token) == 0 {
-		return fmt.Errorf("secret/%s does not contain token field, or contains but empty", path)
+	tokenData, ok := secret.Data["token"]
+	if !ok {
+		return fmt.Errorf("secret/%s does not contain token field", path)
 	}
 
-	token_string, ok := token.(string)
+	token, ok := tokenData.(string)
 	if !ok {
 		return fmt.Errorf("secret/%s contains non-string token field", path)
 	}
+	if len(token) == 0 {
+		return fmt.Errorf("secret/%s contains empty token string", path)
+	}
 
-	err = ioutil.WriteFile(filename, []byte(token_string), 0600)
+	err = ioutil.WriteFile(filename, []byte(token), 0600)
 	return err
 }

@@ -6,8 +6,8 @@ import (
 	"github.com/cybozu-go/neco"
 )
 
-// GenerateConf generates teleport.yaml.template from template.
-func GenerateConf(w io.Writer, mylrn int) error {
+// GenerateConfBase generates teleport.yaml.base from template.
+func GenerateConfBase(w io.Writer, mylrn int) error {
 	return confTmpl.Execute(w, struct {
 		AdvertiseIP string
 	}{
