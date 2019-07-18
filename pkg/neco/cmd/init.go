@@ -88,6 +88,6 @@ func generateAndSetToken(vc *api.Client, path string, bytes int) error {
 	}
 	token := hex.EncodeToString(buf)
 	_, err = vc.Logical().Write(fmt.Sprintf("secret/%s", path),
-		map[string]interface{}{"auth_token": token})
+		map[string]interface{}{"token": token})
 	return err
 }

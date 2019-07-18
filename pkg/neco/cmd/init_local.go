@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io/ioutil"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -48,6 +50,8 @@ new a application NAME.`,
 			switch initLocalParams.name {
 			case "etcdpasswd":
 				err = issueCerts(ctx, vc, "etcdpasswd", neco.EtcdpasswdCertFile, neco.EtcdpasswdKeyFile)
+			case "teleport":
+				err = getToken(ctx, vc, "teleport", neco.TeleportTokenFile)
 			case "sabakan":
 				err = issueCerts(ctx, vc, "sabakan", neco.SabakanCertFile, neco.SabakanKeyFile)
 				if err != nil {
@@ -66,6 +70,8 @@ new a application NAME.`,
 			switch initLocalParams.name {
 			case "etcdpasswd":
 				err = neco.StartService(ctx, neco.EtcdpasswdService)
+			case "teleport":
+				err = neco.StartService(ctx, neco.TeleportService)
 			case "sabakan":
 				err = neco.StartService(ctx, neco.SabakanService)
 			case "cke":
@@ -100,4 +106,27 @@ func issueCerts(ctx context.Context, vc *api.Client, commonName, cert, key strin
 	}
 	return neco.WriteFile(key, secret.Data["private_key"].(string))
 
+}
+
+func getToken(ctx context.Context, vc *api.Client, path string, filename string) error {
+	secret, err := vc.Logical().Read(fmt.Sprintf("secret/%s", path))
+	if err != nil {
+		return err
+	}
+	if secret == nil || len(secret.Data) == 0 {
+		return fmt.Errorf("reading secret/%s returned nil or empty secret", path)
+	}
+
+	token, ok := secret.Data["token"]
+	if !ok || len(token) == 0 {
+		return fmt.Errorf("secret/%s does not contain token field, or contains but empty", path)
+	}
+
+	token_string, ok := token.(string)
+	if !ok {
+		return fmt.Errorf("secret/%s contains non-string token field", path)
+	}
+
+	err = ioutil.WriteFile(filename, []byte(token_string), 0600)
+	return err
 }
