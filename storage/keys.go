@@ -40,6 +40,7 @@ const (
 	KeyBMCIPMIUser           = "bmc/ipmi-user"
 	KeyBMCIPMIPassword       = "bmc/ipmi-password"
 	KeyTeleportAuthServers   = "teleport/auth-servers"
+	KeyTeleportAuthToken     = "teleport/auth-token"
 )
 
 func keyBootServer(lrn int) string {

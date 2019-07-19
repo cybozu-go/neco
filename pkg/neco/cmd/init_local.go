@@ -3,12 +3,13 @@ package cmd
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io/ioutil"
 
+	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/sabakan"
+	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
 	"github.com/hashicorp/vault/api"
 	"github.com/spf13/cobra"
@@ -44,6 +45,11 @@ new a application NAME.`,
 		if err != nil {
 			log.ErrorExit(err)
 		}
+		ce, err := neco.EtcdClient()
+		if err != nil {
+			log.ErrorExit(err)
+		}
+		defer ce.Close()
 
 		well.Go(func(ctx context.Context) error {
 			var err error
@@ -51,7 +57,7 @@ new a application NAME.`,
 			case "etcdpasswd":
 				err = issueCerts(ctx, vc, "etcdpasswd", neco.EtcdpasswdCertFile, neco.EtcdpasswdKeyFile)
 			case "teleport":
-				err = getToken(ctx, vc, "teleport", neco.TeleportTokenFile)
+				err = getToken(ctx, ce, neco.TeleportTokenFile)
 			case "sabakan":
 				err = issueCerts(ctx, vc, "sabakan", neco.SabakanCertFile, neco.SabakanKeyFile)
 				if err != nil {
@@ -108,26 +114,14 @@ func issueCerts(ctx context.Context, vc *api.Client, commonName, cert, key strin
 
 }
 
-func getToken(ctx context.Context, vc *api.Client, path string, filename string) error {
-	secret, err := vc.Logical().Read(fmt.Sprintf("secret/%s", path))
+func getToken(ctx context.Context, ce *clientv3.Client, filename string) error {
+	st := storage.NewStorage(ce)
+	token, err := st.GetTeleportAuthToken(ctx)
 	if err != nil {
 		return err
 	}
-	if secret == nil || len(secret.Data) == 0 {
-		return fmt.Errorf("reading secret/%s returned nil or empty secret", path)
-	}
-
-	tokenData, ok := secret.Data["token"]
-	if !ok {
-		return fmt.Errorf("secret/%s does not contain token field", path)
-	}
-
-	token, ok := tokenData.(string)
-	if !ok {
-		return fmt.Errorf("secret/%s contains non-string token field", path)
-	}
 	if len(token) == 0 {
-		return fmt.Errorf("secret/%s contains empty token string", path)
+		return errors.New("teleport/auth-token is empty")
 	}
 
 	err = ioutil.WriteFile(filename, []byte(token), 0600)

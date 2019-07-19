@@ -5,13 +5,13 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
-	"fmt"
 
+	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/etcd"
+	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
-	"github.com/hashicorp/vault/api"
 	"github.com/spf13/cobra"
 )
 
@@ -36,40 +36,29 @@ executed more than once.`,
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if initParams.name == "teleport" {
-			mylrn, err := neco.MyLRN()
-			if err != nil {
-				log.ErrorExit(err)
-			}
-			vc, err := neco.VaultClient(mylrn)
-			if err != nil {
-				log.ErrorExit(err)
-			}
-			well.Go(func(ctx context.Context) error {
-				return generateAndSetToken(vc, "teleport", 32)
-			})
-		} else {
-			ce, err := neco.EtcdClient()
-			if err != nil {
-				log.ErrorExit(err)
-			}
-			defer ce.Close()
-
-			well.Go(func(ctx context.Context) error {
-				switch initParams.name {
-				case "etcdpasswd":
-					return etcd.UserAdd(ctx, ce, "etcdpasswd", neco.EtcdpasswdPrefix)
-				case "sabakan":
-					return etcd.UserAdd(ctx, ce, "sabakan", neco.SabakanPrefix)
-				case "cke":
-					return etcd.UserAdd(ctx, ce, "cke", neco.CKEPrefix)
-				default:
-					return errors.New("unknown service name: " + initParams.name)
-				}
-			})
+		ce, err := neco.EtcdClient()
+		if err != nil {
+			log.ErrorExit(err)
 		}
+		defer ce.Close()
+
+		well.Go(func(ctx context.Context) error {
+			switch initParams.name {
+			case "etcdpasswd":
+				return etcd.UserAdd(ctx, ce, "etcdpasswd", neco.EtcdpasswdPrefix)
+			case "sabakan":
+				return etcd.UserAdd(ctx, ce, "sabakan", neco.SabakanPrefix)
+			case "cke":
+				return etcd.UserAdd(ctx, ce, "cke", neco.CKEPrefix)
+			case "teleport":
+				return generateAndSetToken(ctx, ce, 32)
+			default:
+				return errors.New("unknown service name: " + initParams.name)
+			}
+		})
+
 		well.Stop()
-		err := well.Wait()
+		err = well.Wait()
 		if err != nil {
 			log.ErrorExit(err)
 		}
@@ -80,14 +69,14 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 }
 
-func generateAndSetToken(vc *api.Client, path string, bytes int) error {
+func generateAndSetToken(ctx context.Context, ce *clientv3.Client, bytes int) error {
 	buf := make([]byte, bytes)
 	_, err := rand.Read(buf)
 	if err != nil {
 		return err
 	}
 	token := hex.EncodeToString(buf)
-	_, err = vc.Logical().Write(fmt.Sprintf("secret/%s", path),
-		map[string]interface{}{"token": token})
-	return err
+
+	st := storage.NewStorage(ce)
+	return st.PutTeleportAuthToken(ctx, token)
 }
