@@ -3,6 +3,8 @@ package worker
 import (
 	"bytes"
 	"context"
+	"os"
+	"path/filepath"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -47,13 +49,16 @@ func (o *operator) replaceTeleportFiles(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-
 	r1, err := replaceFile(neco.ServiceFile(neco.TeleportService), buf.Bytes(), 0644)
 	if err != nil {
 		return false, err
 	}
-
 	buf.Reset()
+
+	err = os.MkdirAll(filepath.Dir(neco.TeleportConfFile), 0755)
+	if err != nil {
+		return false, err
+	}
 	err = teleport.GenerateConfBase(buf, o.mylrn)
 	if err != nil {
 		return false, err

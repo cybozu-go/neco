@@ -56,7 +56,7 @@ func TestInit() {
 	It("should initialize teleport", func() {
 		token := getVaultToken()
 
-		execSafeAt(boot0, "neco", "init", "teleport")
+		execSafeAt(boot0, "env", "VAULT_TOKEN="+token, "neco", "init", "teleport")
 
 		for _, host := range []string{boot0, boot1, boot2} {
 			stdout, stderr, err := execAt(
@@ -71,6 +71,7 @@ func TestInit() {
 			}
 			execSafeAt(host, "test", "-f", neco.TeleportConfFileBase)
 			execSafeAt(host, "test", "-f", neco.TeleportTokenFile)
+			execSafeAt(host, "test", "-f", "/usr/local/bin/teleport")
 
 			execSafeAt(host, "systemctl", "--no-pager", "cat", neco.TeleportService)
 		}
