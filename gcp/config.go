@@ -98,6 +98,8 @@ func NecoTestConfig() *Config {
 			Shutdown: ShutdownConfig{
 				Exclude: []string{
 					"neco-ops",
+					"neco-apps-release",
+					"neco-apps-master",
 				},
 				Expiration: 2 * time.Hour,
 			},
