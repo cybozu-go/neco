@@ -21,6 +21,7 @@ var artifacts = artifactSet{
 		"qemu-kvm",
 		"socat",
 		"picocom",
+		"swtpm",
 		"cloud-utils",
 		"xauth",
 		"bash-completion",
