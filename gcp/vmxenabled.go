@@ -50,6 +50,16 @@ func SetupVMXEnabled(ctx context.Context, project string, option []string) error
 		return err
 	}
 
+	err = apt(ctx, "install", "-y", "software-properties-common", "dirmngr")
+	if err != nil {
+		return err
+	}
+
+	err = configureSWTPM(ctx)
+	if err != nil {
+		return err
+	}
+
 	err = configureProjectAtomic(ctx)
 	if err != nil {
 		return err
@@ -194,13 +204,12 @@ func configureApt(ctx context.Context) error {
 	return nil
 }
 
-func configureProjectAtomic(ctx context.Context) error {
-	err := apt(ctx, "install", "-y", "software-properties-common", "dirmngr")
-	if err != nil {
-		return err
-	}
+func configureSWTPM(ctx context.Context) error {
+	return well.CommandContext(ctx, "add-apt-repository", "ppa:smoser/swtpm").Run()
+}
 
-	err = well.CommandContext(ctx, "apt-key", "adv", "--keyserver", "keyserver.ubuntu.com", "--recv", "7AD8C79D").Run()
+func configureProjectAtomic(ctx context.Context) error {
+	err := well.CommandContext(ctx, "apt-key", "adv", "--keyserver", "keyserver.ubuntu.com", "--recv", "7AD8C79D").Run()
 	if err != nil {
 		return err
 	}
