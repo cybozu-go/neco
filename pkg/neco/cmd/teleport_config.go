@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
@@ -32,39 +33,19 @@ and dynamic info in etcd.`,
 		if err != nil {
 			log.ErrorExit(err)
 		}
-
-		var authServers []string
-		well.Go(func(ctx context.Context) error {
-			return neco.RetryWithSleep(ctx, math.MaxInt32, 30*time.Second,
-				func(ctx context.Context) error {
-					var err error
-					authServers, err = getTeleportAuthServers(ctx)
-					return err
-				},
-				func(err error) {
-					return
-				},
-			)
-		})
-		well.Stop()
-		err = well.Wait()
-		if err != nil {
-			log.ErrorExit(err)
-		}
-
-		authServersJSON, err := json.Marshal(authServers)
-		if err != nil {
-			log.ErrorExit(err)
-		}
-
 		confBase, err := ioutil.ReadFile(neco.TeleportConfFileBase)
 		if err != nil {
 			log.ErrorExit(err)
 		}
+		authServers, err := getAuthServers(30*time.Second, neco.EtcdClient)
+		if err != nil {
+			log.ErrorExit(err)
+		}
 
-		conf := bytes.ReplaceAll(confBase, []byte("%AUTH_TOKEN%"), token)
-		conf = bytes.ReplaceAll(conf, []byte("%AUTH_SERVERS%"), authServersJSON)
-
+		conf, err := generateConfig(token, authServers, confBase)
+		if err != nil {
+			log.ErrorExit(err)
+		}
 		err = ioutil.WriteFile(neco.TeleportConfFile, conf, 0600)
 		if err != nil {
 			log.ErrorExit(err)
@@ -76,24 +57,52 @@ func init() {
 	teleportCmd.AddCommand(teleportConfigCmd)
 }
 
-func getTeleportAuthServers(ctx context.Context) ([]string, error) {
-	ce, err := neco.EtcdClient()
+func generateConfig(token []byte, authServers []string, base []byte) ([]byte, error) {
+	authServersJSON, err := json.Marshal(authServers)
 	if err != nil {
-		log.Warn("failed to create etcd client", map[string]interface{}{
-			log.FnError: err,
-		})
 		return nil, err
 	}
-	defer ce.Close()
-	st := storage.NewStorage(ce)
 
-	authServers, err := st.GetTeleportAuthServers(ctx)
+	conf := bytes.ReplaceAll(base, []byte("%AUTH_TOKEN%"), token)
+	conf = bytes.ReplaceAll(conf, []byte("%AUTH_SERVERS%"), authServersJSON)
+
+	return conf, nil
+}
+
+func getAuthServers(interval time.Duration, getEC func() (*clientv3.Client, error)) ([]string, error) {
+	var authServers []string
+	well.Go(func(ctx context.Context) error {
+		return neco.RetryWithSleep(ctx, math.MaxInt32, interval,
+			func(ctx context.Context) error {
+				ce, err := getEC()
+				if err != nil {
+					log.Warn("failed to create etcd client", map[string]interface{}{
+						log.FnError: err,
+					})
+					return err
+				}
+				defer ce.Close()
+				st := storage.NewStorage(ce)
+
+				authServers, err = st.GetTeleportAuthServers(ctx)
+				if err != nil {
+					if err != storage.ErrNotFound {
+						log.Warn("unexpected error in getting auth servers info", map[string]interface{}{
+							log.FnError: err,
+						})
+					}
+					return err
+				}
+				return err
+			},
+			func(err error) {
+				return
+			},
+		)
+	})
+	well.Stop()
+	err := well.Wait()
 	if err != nil {
-		if err != storage.ErrNotFound {
-			log.Warn("unexpected error in getting auth servers info", map[string]interface{}{
-				log.FnError: err,
-			})
-		}
 		return nil, err
 	}
 

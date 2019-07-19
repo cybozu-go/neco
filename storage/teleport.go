@@ -18,3 +18,13 @@ func (s Storage) GetTeleportAuthServers(ctx context.Context) ([]string, error) {
 	}
 	return servers, nil
 }
+
+// PutTeleportAuthServers stores auth servers' addresses
+func (s Storage) PutTeleportAuthServers(ctx context.Context, servers []string) error {
+	serversJSON, err := json.Marshal(servers)
+	if err != nil {
+		return err
+	}
+
+	return s.put(ctx, KeyTeleportAuthServers, string(serversJSON))
+}
