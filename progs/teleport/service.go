@@ -9,9 +9,9 @@ import (
 // GenerateService generates systemd service unit contents.
 func GenerateService(w io.Writer) error {
 	return serviceTmpl.Execute(w, struct {
-		TokenFile string
+		ConfigFile string
 	}{
-		TokenFile: neco.TeleportTokenFile,
+		ConfigFile: neco.TeleportConfFile,
 	})
 
 }

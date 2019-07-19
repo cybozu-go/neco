@@ -6,11 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"math"
 	"os"
-	"time"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
@@ -37,7 +34,15 @@ and dynamic info in etcd.`,
 		if err != nil {
 			log.ErrorExit(err)
 		}
-		authServers, err := getAuthServers(30*time.Second, neco.EtcdClient)
+
+		ce, err := neco.EtcdClient()
+		if err != nil {
+			log.ErrorExit(err)
+		}
+		defer ce.Close()
+		st := storage.NewStorage(ce)
+
+		authServers, err := getAuthServers(st)
 		if err != nil {
 			log.ErrorExit(err)
 		}
@@ -69,36 +74,17 @@ func generateConfig(token []byte, authServers []string, base []byte) ([]byte, er
 	return conf, nil
 }
 
-func getAuthServers(interval time.Duration, getEC func() (*clientv3.Client, error)) ([]string, error) {
+func getAuthServers(st storage.Storage) ([]string, error) {
 	var authServers []string
 	well.Go(func(ctx context.Context) error {
-		return neco.RetryWithSleep(ctx, math.MaxInt32, interval,
-			func(ctx context.Context) error {
-				ce, err := getEC()
-				if err != nil {
-					log.Warn("failed to create etcd client", map[string]interface{}{
-						log.FnError: err,
-					})
-					return err
-				}
-				defer ce.Close()
-				st := storage.NewStorage(ce)
-
-				authServers, err = st.GetTeleportAuthServers(ctx)
-				if err != nil {
-					if err != storage.ErrNotFound {
-						log.Warn("unexpected error in getting auth servers info", map[string]interface{}{
-							log.FnError: err,
-						})
-					}
-					return err
-				}
-				return err
-			},
-			func(err error) {
-				return
-			},
-		)
+		var err error
+		authServers, err = st.GetTeleportAuthServers(ctx)
+		if err != nil && err != storage.ErrNotFound {
+			log.Warn("unexpected error in getting auth servers info", map[string]interface{}{
+				log.FnError: err,
+			})
+		}
+		return err
 	})
 	well.Stop()
 	err := well.Wait()

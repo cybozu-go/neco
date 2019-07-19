@@ -3,12 +3,9 @@ package cmd
 import (
 	"context"
 	"testing"
-	"time"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/neco/storage/test"
-	"github.com/cybozu-go/well"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -16,20 +13,19 @@ func TestGetAuthServers(t *testing.T) {
 	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	st := storage.NewStorage(etcd)
+	ctx := context.Background()
 
 	expect := []string{
 		"10.10.10.1",
 		"10.10.10.2",
 	}
-	well.Go(func(ctx context.Context) error {
-		time.Sleep(3 * time.Second)
-		return st.PutTeleportAuthServers(ctx, expect)
-	})
 
-	actual, err := getAuthServers(time.Second, func() (*clientv3.Client, error) {
-		ec := test.NewEtcdClient(t)
-		return ec, nil
-	})
+	err := st.PutTeleportAuthServers(ctx, expect)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual, err := getAuthServers(st)
 	if err != nil {
 		t.Fatal(err)
 	}

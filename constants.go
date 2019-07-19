@@ -8,7 +8,7 @@ const systemdDir = "/etc/systemd/system"
 var SabakanImages = []string{"setup-hw", "serf", "coil", "squid"}
 
 // RktImages is the list of container image names to be run as rkt containers.
-var RktImages = []string{"cke", "etcd", "setup-hw", "sabakan", "serf", "vault"}
+var RktImages = []string{"cke", "etcd", "setup-hw", "sabakan", "serf", "teleport", "vault"}
 
 // Neco params
 const (

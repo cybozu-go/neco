@@ -27,7 +27,7 @@ Description=Teleport node
 Wants=network-online.target
 After=network-online.target
 StartLimitIntervalSec=600s
-ConditionPathExists={{ .TokenFile }}
+ConditionPathExists={{ .ConfigFile }}
 
 [Service]
 Slice=system.slice
@@ -36,7 +36,6 @@ Type=simple
 KillMode=process
 Restart=on-failure
 RestartSec=10s
-ExecStartPre=/usr/bin/neco teleport config
 ExecStart=/usr/local/bin/teleport start --roles=node
 
 [Install]

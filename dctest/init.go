@@ -53,6 +53,29 @@ func TestInit() {
 		}
 	})
 
+	It("should initialize teleport", func() {
+		token := getVaultToken()
+
+		execSafeAt(boot0, "neco", "init", "teleport")
+
+		for _, host := range []string{boot0, boot1, boot2} {
+			stdout, stderr, err := execAt(
+				host, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "teleport")
+			if err != nil {
+				log.Error("neco init-local teleport", map[string]interface{}{
+					"host":   host,
+					"stdout": string(stdout),
+					"stderr": string(stderr),
+				})
+				Expect(err).NotTo(HaveOccurred())
+			}
+			execSafeAt(host, "test", "-f", neco.TeleportConfFileBase)
+			execSafeAt(host, "test", "-f", neco.TeleportTokenFile)
+
+			execSafeAt(host, "systemctl", "--no-pager", "cat", neco.TeleportService)
+		}
+	})
+
 	It("should success initialize Serf", func() {
 		for _, host := range []string{boot0, boot1, boot2} {
 			execSafeAt(host, "test", "-f", neco.SerfConfFile)
