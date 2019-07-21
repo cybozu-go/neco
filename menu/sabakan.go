@@ -43,10 +43,10 @@ func exportMachinesJSON(dst string, ta *TemplateArgs) error {
 		ms = append(ms, sabakanMachine(rack.BootNode.Serial, rack.Index, "boot"))
 
 		for _, cs := range rack.CSList {
-			ms = append(ms, sabakanMachine(cs.Serial, rack.Index, "worker"))
+			ms = append(ms, sabakanMachine(cs.Serial, rack.Index, "cs"))
 		}
 		for _, ss := range rack.SSList {
-			ms = append(ms, sabakanMachine(ss.Serial, rack.Index, "worker"))
+			ms = append(ms, sabakanMachine(ss.Serial, rack.Index, "ss"))
 		}
 	}
 
