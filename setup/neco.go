@@ -14,6 +14,9 @@ func setupNecoFiles(ctx context.Context, vc *api.Client, lrns []int) error {
 		"common_name":          "neco",
 		"exclude_cn_from_sans": true,
 	})
+	if err != nil {
+		return err
+	}
 	err = dumpCertFiles(secret, "", neco.NecoCertFile, neco.NecoKeyFile)
 	if err != nil {
 		return err

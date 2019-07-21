@@ -12,7 +12,7 @@ func TestGetDebianVersion(t *testing.T) {
 
 	t.Log(v)
 
-	v, err = GetDebianVersion("no-such-package")
+	_, err = GetDebianVersion("no-such-package")
 	if err == nil {
 		t.Error("GetDebianVersion succeeded for non-existing package")
 	}
