@@ -307,6 +307,12 @@ volumes:
 - kind: raw
   name: data2
   size: 30G
+- kind: raw
+  name: data3
+  size: 30G
+- kind: raw
+  name: data4
+  size: 30G
 - kind: image
   name: extra0
   image: docker-image
@@ -327,6 +333,12 @@ volumes:
   size: 30G
 - kind: raw
   name: data2
+  size: 30G
+- kind: raw
+  name: data3
+  size: 30G
+- kind: raw
+  name: data4
   size: 30G
 - kind: image
   name: extra0
