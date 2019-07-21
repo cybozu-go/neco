@@ -84,6 +84,9 @@ func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
 		"ip_sans":              []string{myip.String(), bip.String()},
 		"exclude_cn_from_sans": true,
 	})
+	if err != nil {
+		return err
+	}
 	err = dumpCertFiles(secret, neco.EtcdPeerCAFile, neco.EtcdPeerCertFile, neco.EtcdPeerKeyFile)
 	if err != nil {
 		return err
@@ -94,6 +97,9 @@ func setupLocalCerts(ctx context.Context, vault *api.Client, lrn int) error {
 		"common_name":          "vault",
 		"exclude_cn_from_sans": true,
 	})
+	if err != nil {
+		return err
+	}
 	err = dumpCertFiles(secret, neco.EtcdClientCAFile, neco.VaultCertFile, neco.VaultKeyFile)
 	if err != nil {
 		return err

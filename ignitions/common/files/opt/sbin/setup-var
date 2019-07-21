@@ -64,7 +64,7 @@ find_boss() {
 
 if ls /dev/mapper/crypt-vd* >/dev/null 2>&1; then
     # for qemu
-    PVS=$(ls /dev/mapper/crypt-vd*)
+    PVS="/dev/mapper/crypt-vda /dev/mapper/crypt-vdb"
     prepare_lv
 elif ls /dev/mapper/crypt-nvme* >/dev/null 2>&1; then
     # for compute node

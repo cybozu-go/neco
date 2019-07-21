@@ -233,18 +233,12 @@ func bootNode(rack *Rack, resource *VMResource) *placemat.NodeSpec {
 	}
 }
 
-func emptyNode(rackName, rackShortName, nodeName, serial string, resource *VMResource) *placemat.NodeSpec {
-	volumes := []placemat.NodeVolumeSpec{
-		{
-			Kind: "raw",
-			Name: "data1",
-			Size: "30G",
-		},
-		{
-			Kind: "raw",
-			Name: "data2",
-			Size: "30G",
-		},
+func emptyNode(rackName, rackShortName, nodeName, serial string, disks int, resource *VMResource) *placemat.NodeSpec {
+	volumes := make([]placemat.NodeVolumeSpec, disks)
+	for i := 0; i < disks; i++ {
+		volumes[i].Kind = "raw"
+		volumes[i].Name = fmt.Sprintf("data%d", i+1)
+		volumes[i].Size = "30G"
 	}
 
 	for i, dataImg := range resource.Data {
@@ -278,10 +272,10 @@ func (c *cluster) appendNodes(ta *TemplateArgs) {
 		c.nodes = append(c.nodes, bootNode(&rack, &ta.Boot))
 
 		for _, cs := range rack.CSList {
-			c.nodes = append(c.nodes, emptyNode(rack.Name, rack.ShortName, cs.Name, cs.Serial, &ta.CS))
+			c.nodes = append(c.nodes, emptyNode(rack.Name, rack.ShortName, cs.Name, cs.Serial, 2, &ta.CS))
 		}
 		for _, ss := range rack.SSList {
-			c.nodes = append(c.nodes, emptyNode(rack.Name, rack.ShortName, ss.Name, ss.Serial, &ta.SS))
+			c.nodes = append(c.nodes, emptyNode(rack.Name, rack.ShortName, ss.Name, ss.Serial, 4, &ta.SS))
 		}
 	}
 }
