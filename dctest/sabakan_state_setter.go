@@ -34,9 +34,12 @@ func TestSabakanStateSetter() {
 			}).Should(Succeed())
 		}
 
-		machines, err := getMachinesSpecifiedRole("worker")
+		machines, err := getMachinesSpecifiedRole("")
 		Expect(err).ShouldNot(HaveOccurred())
 		for _, m := range machines {
+			if m.Spec.Role == "boot" {
+				continue
+			}
 			Eventually(func() error {
 				return copyDummyRedfishDataToWorker(m.Spec.IPv4[0], json)
 			}).Should(Succeed())
