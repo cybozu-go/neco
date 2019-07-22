@@ -264,6 +264,12 @@ func TestUpgrade() {
 					return checkVersionInDeployment("kube-system", "coil-controllers", newImage)
 				case "squid":
 					return checkVersionInDeployment("internet-egress", "squid", newImage)
+				case "teleport":
+					for _, h := range []string{boot0, boot1, boot2} {
+						if err := checkVersionOfTeleport(h, newImage); err != nil {
+							return err
+						}
+					}
 				default:
 					for _, h := range []string{boot0, boot1, boot2} {
 						if err := checkVersionByRkt(h, newImage); err != nil {
@@ -373,6 +379,27 @@ func checkVersionByDocker(address, name, image string) error {
 			return fmt.Errorf("desired image: %s, actual image: %s", image, di.Config.Image)
 		}
 	}
+	return nil
+}
+
+func checkVersionOfTeleport(host, image string) error {
+	// this returns a string like "Teleport v4.0.2 git:v4.0.2-0-gb7e0e872 go1.12.5"
+	stdout, stderr, err := execAt(host, "teleport", "version")
+	if err != nil {
+		return fmt.Errorf("host: %s, stderr: %s, err: %v", host, stderr, err)
+	}
+
+	var version, s1, s2 string
+	n, err := fmt.Sscanf(string(stdout), "Teleport v%s %s %s", &version, &s1, &s2)
+	if err != nil || n != 3 {
+		return fmt.Errorf("unexpected version format: %s", stdout)
+	}
+
+	expected := strings.Split(image, ":")[1]
+	if !strings.HasPrefix(expected, version+".") {
+		return fmt.Errorf("unexpected version: %s", version)
+	}
+
 	return nil
 }
 
