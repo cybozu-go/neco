@@ -72,7 +72,6 @@ const (
 	TeleportDir = "/etc/teleport"
 
 	TeleportService = "teleport-node"
-	TeleportPrefix  = "/teleport/"
 )
 
 // Sabakan params

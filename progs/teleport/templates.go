@@ -36,7 +36,7 @@ Type=simple
 KillMode=process
 Restart=on-failure
 RestartSec=10s
-ExecStart=/usr/local/bin/teleport start --roles=node -c /etc/teleport/teleport.yaml
+ExecStart=/usr/local/bin/teleport start --roles=node -c {{ .ConfigFile }}
 
 [Install]
 WantedBy=multi-user.target
