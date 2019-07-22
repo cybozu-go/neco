@@ -71,12 +71,15 @@ func TestRebootAllNodes() {
 
 	It("reboots all nodes", func() {
 		By("reboot all nodes")
-		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
+		stdout, _, err := execAt(boot0, "sabactl", "machines", "get")
 		Expect(err).ShouldNot(HaveOccurred())
 		var machines []sabakan.Machine
 		err = json.Unmarshal(stdout, &machines)
 		Expect(err).ShouldNot(HaveOccurred())
 		for _, m := range machines {
+			if m.Spec.Role == "boot" {
+				continue
+			}
 			_, _, err = execAt(boot0, "neco", "ipmipower", "stop", m.Spec.IPv4[0])
 			Expect(err).ShouldNot(HaveOccurred())
 		}
@@ -163,7 +166,7 @@ func TestRebootAllNodes() {
 
 	It("sets all nodes' machine state to healthy", func() {
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get", "--role", "worker")
+			stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
@@ -175,6 +178,9 @@ func TestRebootAllNodes() {
 			}
 
 			for _, m := range machines {
+				if m.Spec.Role == "boot" {
+					continue
+				}
 				stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", m.Spec.Serial)
 				state := string(bytes.TrimSpace(stdout))
 				if state != "healthy" {

@@ -58,6 +58,9 @@ func setupEtcdBackup(ctx context.Context, vc *api.Client) error {
 		"common_name":          "backup",
 		"exclude_cn_from_sans": true,
 	})
+	if err != nil {
+		return err
+	}
 	err = dumpCertFiles(secret, "", neco.EtcdBackupCertFile, neco.EtcdBackupKeyFile)
 	if err != nil {
 		return err
