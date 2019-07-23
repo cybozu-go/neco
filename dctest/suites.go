@@ -6,10 +6,10 @@ import . "github.com/onsi/ginkgo"
 var BootstrapSuite = func() {
 	Context("setup", TestSetup)
 	Context("initialize", TestInit)
-	Context("etcdpasswd", TestEtcdpasswd)
 	Context("sabakan", TestSabakan)
 	Context("machines", TestMachines)
 	Context("init-data", TestInitData)
+	Context("etcdpasswd", TestEtcdpasswd)
 	Context("sabakan-state-setter", TestSabakanStateSetter)
 	Context("cke", func() {
 		TestCKESetup()
