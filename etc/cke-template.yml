@@ -24,6 +24,21 @@ dns_service: internet-egress/unbound
 options:
   kube-api:
     extra_args: ["--enable-admission-plugins=PodSecurityPolicy"]
+  kube-scheduler:
+    extenders:
+    - |
+      {
+        "urlPrefix": "http://127.0.0.1:9251",
+        "filterVerb": "predicate",
+        "prioritizeVerb": "prioritize",
+        "nodeCacheCapable": false,
+        "weight": 1,
+        "managedResources":
+        [{
+          "name": "topolvm.cybozu.com/capacity",
+          "ignoredByScheduler": true
+        }]
+      }
   kubelet:
     boot_taints:
       - key: coil.cybozu.com/bootstrap
