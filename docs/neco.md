@@ -157,6 +157,10 @@ Synopsis
 
     Show docker image URL of `NAME` (e.g. "etcd", "coil", "squid").
 
+* `neco teleport config`
+
+    Generate config for teleport by filling template with secret in file and dynamic info in etcd.
+
 * `neco completion`
 
     Dump bash completion rules for `neco` command.
