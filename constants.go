@@ -8,7 +8,7 @@ const systemdDir = "/etc/systemd/system"
 var SabakanImages = []string{"setup-hw", "serf", "coil", "squid"}
 
 // RktImages is the list of container image names to be run as rkt containers.
-var RktImages = []string{"cke", "etcd", "setup-hw", "sabakan", "serf", "vault"}
+var RktImages = []string{"cke", "etcd", "setup-hw", "sabakan", "serf", "teleport", "vault"}
 
 // Neco params
 const (
@@ -65,6 +65,13 @@ const (
 
 	EtcdpasswdService = "ep-agent"
 	EtcdpasswdPrefix  = "/passwd/"
+)
+
+// Teleport params
+const (
+	TeleportDir = "/etc/teleport"
+
+	TeleportService = "teleport-node"
 )
 
 // Sabakan params
@@ -127,6 +134,10 @@ var (
 	EtcdpasswdKeyFile  = filepath.Join(EtcdpasswdDir, "etcd.key")
 	EtcdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
 	EtcdpasswdDropIn   = "/etc/systemd/system/ep-agent.service.d/10-check-certificate.conf"
+
+	TeleportTokenFile    = filepath.Join(TeleportDir, "token")
+	TeleportConfFileBase = filepath.Join(TeleportDir, "teleport.yaml.base")
+	TeleportConfFile     = filepath.Join(TeleportDir, "teleport.yaml")
 
 	SabakanCertFile           = filepath.Join(SabakanDir, "etcd.crt")
 	SabakanKeyFile            = filepath.Join(SabakanDir, "etcd.key")

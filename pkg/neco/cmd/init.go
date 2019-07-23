@@ -2,11 +2,15 @@ package cmd
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 
+	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/etcd"
+	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
@@ -46,6 +50,8 @@ executed more than once.`,
 				return etcd.UserAdd(ctx, ce, "sabakan", neco.SabakanPrefix)
 			case "cke":
 				return etcd.UserAdd(ctx, ce, "cke", neco.CKEPrefix)
+			case "teleport":
+				return generateAndSetToken(ctx, ce, 32)
 			default:
 				return errors.New("unknown service name: " + initParams.name)
 			}
@@ -61,4 +67,16 @@ executed more than once.`,
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+}
+
+func generateAndSetToken(ctx context.Context, ce *clientv3.Client, bytes int) error {
+	buf := make([]byte, bytes)
+	_, err := rand.Read(buf)
+	if err != nil {
+		return err
+	}
+	token := hex.EncodeToString(buf)
+
+	st := storage.NewStorage(ce)
+	return st.PutTeleportAuthToken(ctx, token)
 }
