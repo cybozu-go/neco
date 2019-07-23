@@ -3,6 +3,7 @@ package dctest
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path/filepath"
 
 	"github.com/cybozu-go/sabakan/v2"
@@ -14,6 +15,26 @@ const dummyRedfishDataFile = "dummy_redfish_data.json"
 
 // TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter() {
+	It("all members are active", func() {
+		Eventually(func() error {
+			stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "os-name=\"Container Linux by CoreOS\"")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			var m serfMemberContainer
+			err = json.Unmarshal(stdout, &m)
+			if err != nil {
+				return err
+			}
+			// Number of worker node is 6
+			if len(m.Members) != 6 {
+				return fmt.Errorf("too few serf members: %d", len(m.Members))
+			}
+
+			return nil
+		}).Should(Succeed())
+	})
+
 	It("is confirmed that states of all machines are healthy", func() {
 		By("copying all healthy dummy redfish data")
 
@@ -29,9 +50,7 @@ func TestSabakanStateSetter() {
 		json := generateRedfishDummyData(state)
 
 		for _, boot := range []string{boot0, boot1, boot2, boot3} {
-			Eventually(func() error {
-				return generateRedfishDataOnBoot(boot, json)
-			}).Should(Succeed())
+			Expect(generateRedfishDataOnBoot(boot, json)).ShouldNot(HaveOccurred())
 		}
 
 		machines, err := getMachinesSpecifiedRole("")
@@ -40,9 +59,7 @@ func TestSabakanStateSetter() {
 			if m.Spec.Role == "boot" {
 				continue
 			}
-			Eventually(func() error {
-				return copyDummyRedfishDataToWorker(m.Spec.IPv4[0], json)
-			}).Should(Succeed())
+			Expect(copyDummyRedfishDataToWorker(m.Spec.IPv4[0], json)).ShouldNot(HaveOccurred())
 		}
 
 		By("checking all machine's state")
