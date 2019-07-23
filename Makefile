@@ -16,6 +16,7 @@ PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
+DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco ./pkg/sabakan-state-setter
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
 
@@ -69,7 +70,7 @@ $(DEB):
 	cp -a ignitions $(SHAREDIR)
 	cp README.md LICENSE $(DOCDIR)/neco
 	chmod -R g-w $(WORKDIR)
-	$(FAKEROOT) dpkg-deb --build $(WORKDIR) $(DEST)
+	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(WORKDIR) $(DEST)
 
 necogcp: $(STATIK)
 	go install ./pkg/necogcp

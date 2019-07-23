@@ -66,9 +66,9 @@ jobs:
     resource_class: xlarge
     steps:
       - checkout
-      - run: make SUDO="" setup
-      - run: make test
-      - run: make deb SUDO="" FAKEROOT=
+      - run: time make SUDO="" setup
+      - run: time make test
+      - run: time make deb SUDO="" FAKEROOT=
   build_release:
     docker:
       - image: quay.io/cybozu/golang:1.12-bionic
@@ -77,13 +77,13 @@ jobs:
     resource_class: xlarge
     steps:
       - checkout
-      - run: make SUDO="" setup
-      - run: make test
+      - run: time make SUDO="" setup
+      - run: time make test
       - run:
           name: Build deb package
           command: |
             VERSION=$(echo $CIRCLE_TAG | sed 's/^release-//')
-            make deb SUDO="" VERSION="$VERSION" TAGS=release FAKEROOT=
+            time make deb SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
       - persist_to_workspace:
           root: .
           paths:
@@ -217,8 +217,8 @@ jobs:
     working_directory: /work
     steps:
       - checkout
-      - run: make SUDO="" setup
-      - run: make necogcp
+      - run: time make SUDO="" setup
+      - run: time make necogcp
       - persist_to_workspace:
           root: /go/bin
           paths:
