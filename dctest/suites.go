@@ -31,6 +31,7 @@ var BootstrapSuite = func() {
 var FunctionsSuite = func() {
 	Context("join/remove", TestJoinRemove)
 	Context("parts failure", TestPartsFailure)
+	Context("reboot-all-boot-servers", TestRebootAllBootServers)
 	Context("reboot-all-nodes", TestRebootAllNodes)
 }
 

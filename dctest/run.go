@@ -204,3 +204,24 @@ func getVaultToken() string {
 	}).Should(Succeed())
 	return token
 }
+
+func checkSystemdServicesOnBoot() {
+	services := []string{
+		"bird.service",
+		"systemd-networkd.service",
+		"chronyd.service",
+		// chrony-wait.service can be started after reboot
+		"chrony-wait.service",
+	}
+	Eventually(func() error {
+		for _, host := range []string{boot0, boot1, boot2, boot3} {
+			for _, service := range services {
+				_, _, err := execAt(host, "systemctl", "-q", "is-active", service)
+				if err != nil {
+					return fmt.Errorf("%s is not active on %s", service, host)
+				}
+			}
+		}
+		return nil
+	}).Should(Succeed())
+}
