@@ -15,7 +15,8 @@ const dummyRedfishDataFile = "dummy_redfish_data.json"
 
 // TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter() {
-	It("all members are active", func() {
+	It("should active all serf members", func() {
+		By("checking all serf members are active")
 		Eventually(func() error {
 			stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "os-name=\"Container Linux by CoreOS\"")
 			if err != nil {

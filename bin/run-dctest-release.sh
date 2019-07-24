@@ -5,18 +5,6 @@ DATACENTER=$2
 
 . $(dirname $0)/env
 
-delete_instance() {
-  if [ $RET -ne 0 ]; then
-    # do not delete GCP instance upon test failure to help debugging.
-    return
-  fi
-  if [ -n "${DATACENTER}" ]; then
-    # do not delete GCP instance because it is used by subsequent upgrading test.
-    return
-  fi
-  $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} || true
-}
-
 # Create GCE instance
 $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} --quiet || true
 $GCLOUD compute instances create ${INSTANCE_NAME} \
@@ -26,9 +14,6 @@ $GCLOUD compute instances create ${INSTANCE_NAME} \
   --boot-disk-type ${DISK_TYPE} \
   --boot-disk-size ${BOOT_DISK_SIZE} \
   --local-ssd interface=scsi
-
-RET=0
-trap delete_instance INT QUIT TERM 0
 
 # Run data center test
 for i in $(seq 300); do
@@ -86,6 +71,4 @@ $GCLOUD compute scp --zone=${ZONE} /tmp/neco.tgz cybozu@${INSTANCE_NAME}:
 $GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
 set +e
 $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo -H /home/cybozu/run.sh'
-RET=$?
-
-exit $RET
+exit $?
