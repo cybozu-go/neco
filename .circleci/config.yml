@@ -10,6 +10,9 @@ commands:
       datacenter:
         type: string
         default: ""
+      delete:
+        type: string
+        default: "true"
     steps:
       - run:
           name: Store Service Account
@@ -54,7 +57,7 @@ commands:
       - run:
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/<<parameters.script>> <<parameters.suite>> <<parameters.datacenter>>
+            ./bin/<<parameters.script>> <<parameters.suite>> <<parameters.datacenter>> <<parameters.delete>>
           no_output_timeout: 20m
 
 jobs:
@@ -104,6 +107,7 @@ jobs:
       - dctest-command:
           script: run-dctest.sh
           suite: ./bootstrap
+          delete: "false"
       - run:
           command: ./bin/run-dctest-suite.sh functions
           no_output_timeout: 20m

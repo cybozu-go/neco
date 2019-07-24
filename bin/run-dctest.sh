@@ -2,12 +2,16 @@
 
 SUITE=$1
 DATACENTER=$2
+DELETE=$3
 
 . $(dirname $0)/env
 
 delete_instance() {
   if [ $RET -ne 0 ]; then
     # do not delete GCP instance upon test failure to help debugging.
+    return
+  fi
+  if [ "${DELETE}" = "false" ]; then
     return
   fi
   $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} || true
