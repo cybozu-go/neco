@@ -18,6 +18,9 @@ const (
 )
 
 func (ms machineStateSource) decideSabakanState() string {
+	// We should modify this function as follows
+	// - decide the new state with considering the grace period of setting problematic state
+	// - Record problematic machine's information to file
 	if ms.serfStatus == nil {
 		log.Info("unreachable; serf status is nil", map[string]interface{}{
 			"serial": ms.serial,

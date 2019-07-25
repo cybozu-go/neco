@@ -21,6 +21,7 @@ type selector struct {
 type machineType struct {
 	Name             string         `yaml:"name"`
 	MetricsCheckList []targetMetric `yaml:"metrics,omitempty"`
+	GracePeriod      string         `yaml:"grace-period-of-setting-problematic-state,omitempty"`
 }
 
 type config struct {
@@ -36,6 +37,11 @@ func parseConfig(reader io.Reader) (*config, error) {
 
 	if len(cfg.MachineTypes) == 0 {
 		return nil, errors.New("machine-types are not defined")
+	}
+	for _, t := range cfg.MachineTypes {
+		if len(t.GracePeriod) == 0 {
+			t.GracePeriod = "1m"
+		}
 	}
 	return cfg, nil
 }

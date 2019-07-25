@@ -44,8 +44,8 @@ The others are not listed in this JSON.
 
 ```json
 [
-   { "name": "rack0-cs1", "address":  "10.69.0.4", "state":  "unhealthy", "first_detection":  "2019-07-10 23:00:00 +0000 UTC"},
-   { "name": "rack0-cs3", "address":  "10.69.0.6", "state":  "unreachable", "first_detection":  "2019-07-10 23:01:02 +0000 UTC"},
+   { "name": "rack0-cs1", "serial":  "XXXX", "state":  "unhealthy", "first_detection":  "2019-07-10 23:00:00 +0000 UTC"},
+   { "name": "rack0-cs3", "serial":  "YYYY", "state":  "unreachable", "first_detection":  "2019-07-10 23:01:02 +0000 UTC"},
    ...
 ]
 ```
@@ -54,12 +54,12 @@ The others are not listed in this JSON.
 
 The format of `problematic-machine` is following:
 
-| Key                 | Type                     | Description                                         |
-| ------------------- | ------------------------ | --------------                                      |
-| `name`              | string                   | Server's name                                       |
-| `address`           | string                   | Server's address                                    |
-| `state`             | string                   | Server's state(`unhealthy` or `unreachable`)        |
-| `first_detection`   | string (UTC timestamp)   | UTC timestamp of the server was judged as the state |
+| Key               | Type                   | Description                                         |
+| ----------------- | ---------------------- | --------------------------------------------------- |
+| `name`            | string                 | Server's name                                       |
+| `serial`          | string                 | Server's serial ID                                  |
+| `state`           | string                 | Server's state(`unhealthy` or `unreachable`)        |
+| `first_detection` | string (UTC timestamp) | UTC timestamp of the server was judged as the state |
 
 Target machine peripherals
 --------------------------
@@ -81,7 +81,7 @@ sabakan-state-setter [OPTIONS]
 ```
 
 | Option                        | Default value                                         | Description                                               |
-| -------------------           | ------------------------                              | --------------                                            |
+| ----------------------------- | ----------------------------------------------------- | --------------------------------------------------------- |
 | `--sabakan-address`           | `http://localhost:10080`                              | URL of sabakan                                            |
 | `--config-file`               | `''`                                                  | Path of config file                                       |
 | `--problematic-machines-file` | `/run/sabakan-state-setter/problematic-machines.json` | Path of the machines whose state is problematic list JSON |
@@ -97,26 +97,26 @@ Settings of target machine peripherals
 The set of metrics used for health checking depends on its machine type.
 You can configure a set of metrics to scrape for each machine type.
 
-| Field                                             | Default value            | Description                                                                                           |
-| -------------------                               | ------------------------ | --------------                                                                                        |
-| `machine-types` [MachineType](#MachineType) array | `nil`                    | Machine types is a list of `MachineType`. You should list all machine types used in your data center. |
+| Field                                             | Default value | Description                                                                                           |
+| ------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------- |
+| `machine-types` [MachineType](#MachineType) array | `nil`         | Machine types is a list of `MachineType`. You should list all machine types used in your data center. |
 
 If all metrics defined in the config file are healthy, the machine is healthy. Otherwise, it's unhealthy.
 
 ### `MachineType`
-| Field                                              | Default value            | Description                                                                                                                                               |
-| -------------------                                | ------------------------ | --------------                                                                                                                                            |
-| `name` string                                      | `''`                     | Name of this machine type. It is expected that this field is unique in setting file.                                                                      |
-| `metrics` [Metric](#Metric) array                  | `nil`                    | Metrics is an array of `Metric` to be checked.                                                                                                            |
-| `grace-period-of-setting-problematic-state` string | `'1m'`                   | Time to wait for updating machine state to problematic one. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
+| Field                                              | Default value | Description                                                                                                                                               |
+| -------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name` string                                      | `''`          | Name of this machine type. It is expected that this field is unique in setting file.                                                                      |
+| `metrics` [Metric](#Metric) array                  | `nil`         | Metrics is an array of `Metric` to be checked.                                                                                                            |
+| `grace-period-of-setting-problematic-state` string | `'1m'`        | Time to wait for updating machine state to problematic one. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
 
 ### `Metric`
 
-| Field                        | Default value            | Description                                                                                                                                                                                                                                                    |
-| -------------------          | ------------------------ | --------------                                                                                                                                                                                                                                                 |
-| `name` string                | `''`                     | Name of this metric.                                                                                                                                                                                                                                           |
-| `selector` Selector          | nil                      |                                                                                                                                                                                                                                                                |
-| `minimum-healthy-count` *int | nil                      | If the count of matching metrics whose value is not healthy is less than `minimum_healthy_count`, the machine is unhealthy.<br/>If `minimum_healthy_count` is `nil`, it means that if any one of the matching labels is not healthy, the machine is unhealthy. |
+| Field                        | Default value | Description                                                                                                                                                                                                                                                    |
+| ---------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name` string                | `''`          | Name of this metric.                                                                                                                                                                                                                                           |
+| `selector` Selector          | nil           |                                                                                                                                                                                                                                                                |
+| `minimum-healthy-count` *int | nil           | If the count of matching metrics whose value is not healthy is less than `minimum_healthy_count`, the machine is unhealthy.<br/>If `minimum_healthy_count` is `nil`, it means that if any one of the matching labels is not healthy, the machine is unhealthy. |
 
 The meaning of `name` and `labels` are the same as Prometheus.
 https://prometheus.io/docs/concepts/data_model/#metric-names-and-labels
@@ -126,10 +126,10 @@ https://github.com/cybozu-go/setup-hw/blob/master/docs/rule.md
 
 ### `Selector`
 
-| Field                              | Default value            | Description                                                     |
-| -------------------                | ------------------------ | --------------                                                  |
-| `labels` `map[string]string`       | `nil`                    | Check all `name` metrics with labels matching exactly `labels`. |
-| `label-prefix` `map[string]string` | `nil`                    | Check all `name` metrics with labels having `labelPrefix`.      |
+| Field                              | Default value | Description                                                     |
+| ---------------------------------- | ------------- | --------------------------------------------------------------- |
+| `labels` `map[string]string`       | `nil`         | Check all `name` metrics with labels matching exactly `labels`. |
+| `label-prefix` `map[string]string` | `nil`         | Check all `name` metrics with labels having `labelPrefix`.      |
 
 `labels` and `label-prefix` are AND condition,
 i.e. a metric is selected if and only if all of the conditions are satisfied.

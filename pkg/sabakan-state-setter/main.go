@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/cybozu-go/log"
 	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
@@ -20,18 +22,21 @@ import (
 const machineTypeLabelName = "machine-type"
 
 var (
-	flagSabakanAddress = flag.String("sabakan-address", "http://localhost:10080", "sabakan address")
-	flagConfigFile     = flag.String("config-file", "", "path of config file")
-	flagParallelSize   = flag.Int("parallel", 30, "parallel size")
+	flagSabakanAddress          = flag.String("sabakan-address", "http://localhost:10080", "sabakan address")
+	flagConfigFile              = flag.String("config-file", "", "path of config file")
+	flagParallelSize            = flag.Int("parallel", 30, "parallel size")
+	flagProblematicMachinesFile = flag.String("problematic-machines-file", "/run/sabakan-state-setter/problematic-machines.json", "the path of JSON file that consists of the machines having problematic state")
 )
 
 type machineStateSource struct {
 	serial string
 	ipv4   string
 
-	serfStatus  *serf.Member
-	metrics     map[string]machineMetrics
-	machineType *machineType
+	serfStatus              *serf.Member
+	metrics                 map[string]machineMetrics
+	machineType             *machineType
+	lastState               string
+	lastStateFirstDetection time.Time
 }
 
 type machineMetrics []prom2json.Metric
@@ -73,6 +78,29 @@ func run(ctx context.Context) error {
 		return err
 	}
 
+	pms := []problematicMachine{}
+	_, err = os.Stat(*flagProblematicMachinesFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err := os.MkdirAll(filepath.Dir(*flagProblematicMachinesFile), 0755)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	} else {
+		f, err := os.Open(*flagProblematicMachinesFile)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		pms, err = parseProblematicMachinesFile(f)
+		if err != nil {
+			return err
+		}
+	}
+
 	sm := new(searchMachineResponse)
 	gql, err := newGQLClient(*flagSabakanAddress)
 	if err != nil {
@@ -100,7 +128,11 @@ func run(ctx context.Context) error {
 	// Construct a slice of MachineStateSource
 	mss := make([]machineStateSource, 0, len(sm.SearchMachines))
 	for _, m := range sm.SearchMachines {
-		mss = append(mss, newMachineStateSource(m, members, cfg))
+		ms, err := newMachineStateSource(m, members, cfg, pms)
+		if err != nil {
+			return err
+		}
+		mss = append(mss, *ms)
 	}
 
 	// Get machine metrics
@@ -164,14 +196,25 @@ func run(ctx context.Context) error {
 	return nil
 }
 
-func newMachineStateSource(m machine, members []serf.Member, cfg *config) machineStateSource {
-	return machineStateSource{
+func newMachineStateSource(m machine, members []serf.Member, cfg *config, pms []problematicMachine) (*machineStateSource, error) {
+	mss := machineStateSource{
 		serial:      m.Spec.Serial,
 		ipv4:        m.Spec.IPv4[0],
 		serfStatus:  findMember(members, m.Spec.IPv4[0]),
 		machineType: findMachineType(&m, cfg),
 		metrics:     map[string]machineMetrics{},
 	}
+	for _, pm := range pms {
+		if mss.serial == pm.Serial {
+			mss.lastState = pm.State
+			t, err := time.Parse("2009-11-10 23:00:00 +0000 UTC", pm.FirstDetection)
+			if err != nil {
+				return nil, err
+			}
+			mss.lastStateFirstDetection = t
+		}
+	}
+	return &mss, nil
 }
 
 func findMember(members []serf.Member, addr string) *serf.Member {
