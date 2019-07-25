@@ -30,6 +30,6 @@ func TestInitData() {
 		}
 
 		By("initialize data for sabakan and CKE")
-		execSafeAt(boot0, "env", "GOMAXPROCS=$(($(nproc) * 2))", "neco", "init-data")
+		execSafeAt(boot0, "neco", "init-data")
 	})
 }

@@ -50,13 +50,13 @@ func getSerfMembers() (*serfMemberContainer, error) {
 func TestRebootAllBootServers() {
 	It("runs systemd service on all boot servers after reboot", func() {
 		By("rebooting all boot servers")
-		for _, host := range []string{boot0, boot1, boot2, boot3} {
+		for _, host := range []string{boot0, boot1, boot2} {
 			// Exit code is 255 when ssh is disconnected
 			execAt(host, "sudo", "reboot")
 		}
 
 		By("waiting all boot servers are online")
-		err := prepareSSHClients(boot0, boot1, boot2, boot3)
+		err := prepareSSHClients(boot0, boot1, boot2)
 		Expect(err).NotTo(HaveOccurred())
 
 		By("checking services on the boot servers are running after reboot")

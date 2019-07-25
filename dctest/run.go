@@ -214,7 +214,7 @@ func checkSystemdServicesOnBoot() {
 		"chrony-wait.service",
 	}
 	Eventually(func() error {
-		for _, host := range []string{boot0, boot1, boot2, boot3} {
+		for _, host := range []string{boot0, boot1, boot2} {
 			for _, service := range services {
 				_, _, err := execAt(host, "systemctl", "-q", "is-active", service)
 				if err != nil {
