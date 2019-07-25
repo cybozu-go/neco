@@ -17,9 +17,9 @@ const (
 	noStateTransition       = "no-transition"
 )
 
-func (ms machineStateSource) decideSabakanState() string {
+func (ms machineStateSource) decideMachineStateCandidate() string {
 	// We should modify this function as follows
-	// - decide the new state with considering the grace period of setting problematic state
+	// - Decide the new state with considering the grace period of setting problematic state
 	// - Record problematic machine's information to file
 	if ms.serfStatus == nil {
 		log.Info("unreachable; serf status is nil", map[string]interface{}{

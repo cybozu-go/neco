@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"time"
 
 	"github.com/cybozu-go/neco/ext"
 	"github.com/vektah/gqlparser/gqlerror"
@@ -114,7 +115,7 @@ func (g *gqlClient) getSabakanMachines(ctx context.Context) (*searchMachineRespo
 	return resp, nil
 }
 
-func (g *gqlClient) setSabakanState(ctx context.Context, ms machineStateSource, state string) error {
+func (g *gqlClient) updateSabakanState(ctx context.Context, ms machineStateSource, state string) error {
 	greq := graphQLRequest{
 		Query: fmt.Sprintf(`mutation {
   setMachineState(serial: "%s", state: %s) {
@@ -125,4 +126,20 @@ func (g *gqlClient) setSabakanState(ctx context.Context, ms machineStateSource, 
 
 	_, err := g.requestGQL(ctx, greq)
 	return err
+}
+
+func (ms *machineStateSource) needUpdateState(newState string, now time.Time) bool {
+	if newState == noStateTransition {
+		return false
+	}
+	if ms.stateCandidate != newState {
+		return false
+	}
+
+	// Updating to non-problematic states does not have to wait
+	if !isProblematicState(newState) {
+		return true
+	}
+
+	return now.Sub(ms.stateCandidateFirstDetection) > ms.machineType.GracePeriod.Duration
 }

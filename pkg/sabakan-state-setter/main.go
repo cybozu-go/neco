@@ -26,17 +26,19 @@ var (
 	flagConfigFile              = flag.String("config-file", "", "path of config file")
 	flagParallelSize            = flag.Int("parallel", 30, "parallel size")
 	flagProblematicMachinesFile = flag.String("problematic-machines-file", "/run/sabakan-state-setter/problematic-machines.json", "the path of JSON file that consists of the machines having problematic state")
+	problematicStates           = []string{"unreachable", "unhealthy"}
 )
 
 type machineStateSource struct {
 	serial string
 	ipv4   string
 
-	serfStatus              *serf.Member
-	metrics                 map[string]machineMetrics
-	machineType             *machineType
-	lastState               string
-	lastStateFirstDetection time.Time
+	serfStatus  *serf.Member
+	metrics     map[string]machineMetrics
+	machineType *machineType
+
+	stateCandidate               string
+	stateCandidateFirstDetection time.Time
 }
 
 type machineMetrics []prom2json.Metric
@@ -78,9 +80,10 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	pms := []problematicMachine{}
+	var pms []problematicMachine
 	_, err = os.Stat(*flagProblematicMachinesFile)
 	if err != nil {
+		// When the first time, this file does not exist
 		if os.IsNotExist(err) {
 			err := os.MkdirAll(filepath.Dir(*flagProblematicMachinesFile), 0755)
 			if err != nil {
@@ -166,13 +169,25 @@ func run(ctx context.Context) error {
 		})
 	}
 
-	// For each machine sources, decide its next state, then update sabakan
+	var newProblematicMachineStates []problematicMachine
 	for _, ms := range mss {
-		state := ms.decideSabakanState()
-		if state == noStateTransition {
+		newState := ms.decideMachineStateCandidate()
+
+		if isProblematicState(newState) {
+			newPM := problematicMachine{Serial: ms.serial, State: newState}
+			if ms.stateCandidate == newState {
+				newPM.FirstDetection = ms.stateCandidateFirstDetection.UTC().String()
+			} else {
+				newPM.FirstDetection = time.Now().String()
+			}
+			newProblematicMachineStates = append(newProblematicMachineStates, newPM)
+		}
+
+		if !ms.needUpdateState(newState, time.Now()) {
 			continue
 		}
-		err = gql.setSabakanState(ctx, ms, state)
+
+		err = gql.updateSabakanState(ctx, ms, newState)
 		if err != nil {
 			switch e := err.(type) {
 			case *gqlerror.Error:
@@ -193,7 +208,8 @@ func run(ctx context.Context) error {
 			}
 		}
 	}
-	return nil
+
+	return writeProblematicMachines(*flagProblematicMachinesFile, newProblematicMachineStates)
 }
 
 func newMachineStateSource(m machine, members []serf.Member, cfg *config, pms []problematicMachine) (*machineStateSource, error) {
@@ -206,12 +222,12 @@ func newMachineStateSource(m machine, members []serf.Member, cfg *config, pms []
 	}
 	for _, pm := range pms {
 		if mss.serial == pm.Serial {
-			mss.lastState = pm.State
+			mss.stateCandidate = pm.State
 			t, err := time.Parse("2009-11-10 23:00:00 +0000 UTC", pm.FirstDetection)
 			if err != nil {
 				return nil, err
 			}
-			mss.lastStateFirstDetection = t
+			mss.stateCandidateFirstDetection = t
 		}
 	}
 	return &mss, nil
@@ -236,7 +252,7 @@ func findMachineType(m *machine, config *config) *machineType {
 	}
 	for _, mt := range config.MachineTypes {
 		if mt.Name == mtLabel.Value {
-			return &mt
+			return mt
 		}
 	}
 
