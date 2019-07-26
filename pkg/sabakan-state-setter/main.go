@@ -23,6 +23,7 @@ const machineTypeLabelName = "machine-type"
 var (
 	flagSabakanAddress = flag.String("sabakan-address", "http://localhost:10080", "sabakan address")
 	flagConfigFile     = flag.String("config-file", "", "path of config file")
+	flagInterval       = flag.String("interval", "1m", "interval of scraping metrics")
 	flagParallelSize   = flag.Int("parallel", 30, "parallel size")
 	problematicStates  = []string{"unreachable", "unhealthy"}
 )
@@ -56,13 +57,43 @@ func main() {
 	if err != nil {
 		log.ErrorExit(err)
 	}
+	interval, err := time.ParseDuration(*flagInterval)
+	if err != nil {
+		log.ErrorExit(err)
+	}
 
-	well.Go(run)
+	well.Go(func(ctx context.Context) error {
+		return runPeriodically(ctx, interval)
+	})
 	well.Stop()
 	err = well.Wait()
 	if err != nil && !well.IsSignaled(err) {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+}
+
+func runPeriodically(ctx context.Context, interval time.Duration) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+		}
+		err := run(ctx)
+		if err != nil {
+			return err
+		}
 	}
 }
 

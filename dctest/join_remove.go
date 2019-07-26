@@ -56,7 +56,6 @@ func TestJoinRemove() {
 		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/neco-worker.service")
 		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/node-exporter.service")
 		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/sabakan-state-setter.service")
-		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/sabakan-state-setter.timer")
 		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/rkt-gc.service")
 		execSafeAt(boot3, "test", "-f", "/lib/systemd/system/rkt-gc.timer")
 

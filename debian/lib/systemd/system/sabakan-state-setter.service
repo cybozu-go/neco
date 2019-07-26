@@ -4,5 +4,5 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-Type=oneshot
+Type=simple
 ExecStart=/usr/bin/sabakan-state-setter -config-file=/usr/share/neco/sabakan-state-setter.yml
