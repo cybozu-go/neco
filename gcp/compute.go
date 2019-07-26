@@ -150,9 +150,6 @@ func (cc *ComputeClient) AttachHomeDisk(ctx context.Context) error {
 		"--zone", cc.cfg.Common.Zone,
 		"--disk", "home",
 		"--device-name", "home")
-	if cc.cfg.Compute.HostVM.Preemptible {
-		gcmd = append(gcmd, "--preemptible")
-	}
 	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
