@@ -62,7 +62,7 @@ func TestJoinRemove() {
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-updater.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-worker.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "node-exporter.service")
-		execSafeAt(boot3, "systemctl", "-q", "is-active", "sabakan-state-setter.timer")
+		execSafeAt(boot3, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "rkt-gc.timer")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "etcd-backup.timer")
 	})

@@ -87,7 +87,7 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 }
 
 func (o *operator) FinalStep() int {
-	return 18
+	return 19
 }
 
 func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error {
@@ -102,32 +102,34 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 4:
 		return o.UpdateVault(ctx, req)
 	case 5:
-		return o.UpdateSetupHW(ctx, req)
+		return o.UpdateSabakanStateSetter(ctx, req)
 	case 6:
-		return o.UpdateSerf(ctx, req)
+		return o.UpdateSetupHW(ctx, req)
 	case 7:
-		return o.UpdateSetupSerfTags(ctx, req)
+		return o.UpdateSerf(ctx, req)
 	case 8:
-		return o.UpdateEtcdpasswd(ctx, req)
+		return o.UpdateSetupSerfTags(ctx, req)
 	case 9:
-		return o.UpdateTeleport(ctx, req)
+		return o.UpdateEtcdpasswd(ctx, req)
 	case 10:
-		return o.UpdateSabakan(ctx, req)
+		return o.UpdateTeleport(ctx, req)
 	case 11:
-		return o.StopCKE(ctx, req)
+		return o.UpdateSabakan(ctx, req)
 	case 12:
-		return o.UpdateCKE(ctx, req)
+		return o.StopCKE(ctx, req)
 	case 13:
-		return o.UpdateCKEContents(ctx, req)
+		return o.UpdateCKE(ctx, req)
 	case 14:
-		return o.UpdateSabakanContents(ctx, req)
+		return o.UpdateCKEContents(ctx, req)
 	case 15:
-		return o.UpdateDHCPJSON(ctx, req)
+		return o.UpdateSabakanContents(ctx, req)
 	case 16:
-		return o.UpdateCKETemplate(ctx, req)
+		return o.UpdateDHCPJSON(ctx, req)
 	case 17:
-		return o.UpdateUserResources(ctx, req)
+		return o.UpdateCKETemplate(ctx, req)
 	case 18:
+		return o.UpdateUserResources(ctx, req)
+	case 19:
 		// THIS MUST BE THE FINAL STEP!!!!!
 		// to synchronize before restarting etcd.
 		return nil

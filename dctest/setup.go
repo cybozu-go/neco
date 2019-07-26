@@ -84,6 +84,7 @@ func TestSetup() {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
+			execSafeAt(h, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "rkt-gc.timer")
 			execSafeAt(h, "systemctl", "-q", "is-active", "etcd-backup.timer")
 			execSafeAt(h, "systemctl", "-q", "is-active", neco.EtcdService+".service")
