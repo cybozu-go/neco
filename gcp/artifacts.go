@@ -4,7 +4,7 @@ var artifacts = artifactSet{
 	goVersion:           "1.12.5",
 	rktVersion:          "1.30.0",
 	etcdVersion:         "3.3.13",
-	placematVersion:     "1.3.6",
+	placematVersion:     "1.3.7",
 	customUbuntuVersion: "20190607",
 	coreOSVersion:       "2135.5.0",
 	ctVersion:           "0.9.0",
