@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -22,11 +21,10 @@ import (
 const machineTypeLabelName = "machine-type"
 
 var (
-	flagSabakanAddress          = flag.String("sabakan-address", "http://localhost:10080", "sabakan address")
-	flagConfigFile              = flag.String("config-file", "", "path of config file")
-	flagParallelSize            = flag.Int("parallel", 30, "parallel size")
-	flagProblematicMachinesFile = flag.String("problematic-machines-file", "/run/sabakan-state-setter/problematic-machines.json", "the path of JSON file that consists of the machines having problematic state")
-	problematicStates           = []string{"unreachable", "unhealthy"}
+	flagSabakanAddress = flag.String("sabakan-address", "http://localhost:10080", "sabakan address")
+	flagConfigFile     = flag.String("config-file", "", "path of config file")
+	flagParallelSize   = flag.Int("parallel", 30, "parallel size")
+	problematicStates  = []string{"unreachable", "unhealthy"}
 )
 
 type machineStateSource struct {
@@ -81,28 +79,6 @@ func run(ctx context.Context) error {
 	}
 
 	var pms []problematicMachine
-	_, err = os.Stat(*flagProblematicMachinesFile)
-	if err != nil {
-		// When the first time, this file does not exist
-		if os.IsNotExist(err) {
-			err := os.MkdirAll(filepath.Dir(*flagProblematicMachinesFile), 0755)
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	} else {
-		f, err := os.Open(*flagProblematicMachinesFile)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-		pms, err = parseProblematicMachinesFile(f)
-		if err != nil {
-			return err
-		}
-	}
 
 	sm := new(searchMachineResponse)
 	gql, err := newGQLClient(*flagSabakanAddress)
@@ -209,7 +185,7 @@ func run(ctx context.Context) error {
 		}
 	}
 
-	return writeProblematicMachines(*flagProblematicMachinesFile, newProblematicMachineStates)
+	return nil
 }
 
 func newMachineStateSource(m machine, members []serf.Member, cfg *config, pms []problematicMachine) (*machineStateSource, error) {

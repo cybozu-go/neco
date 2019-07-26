@@ -1,8 +1,7 @@
 sabakan-state-setter
 ====================
 
-This command set sabakan machine states according to [serf][] status and [monitor-hw][] metrics.
-It runs by systemd oneshot service which is executed periodically by `systemd.timer`.
+sabakan-state-setter set sabakan machine states according to [serf][] status and [monitor-hw][] metrics.
 
 Machine state selection
 -----------------------
@@ -35,32 +34,6 @@ sabakan-state-setter waits a grace period before updating a machine's state to `
 sabakan-state-setter updates the machine state
 if and only if it judges the machine's state as `(unhealthy|unreachable)` for the time specified in this value. 
 
-To save when the machine has been `(unhealthy|unreachable)`, sabakan-state-setter writes JSON on local path.
-The path can be configured by option `--problematic-machines-file`.
-
-The JSON consists of `problematic-machine` array.
-`problematic-machine` is a machine whose state is `(unhealthy|unreachable)`.
-The others are not listed in this JSON.
-
-```json
-[
-   { "name": "rack0-cs1", "serial":  "XXXX", "state":  "unhealthy", "first_detection":  "2019-07-10 23:00:00 +0000 UTC"},
-   { "name": "rack0-cs3", "serial":  "YYYY", "state":  "unreachable", "first_detection":  "2019-07-10 23:01:02 +0000 UTC"},
-   ...
-]
-```
-
-### `problematic-machine`
-
-The format of `problematic-machine` is following:
-
-| Key               | Type                   | Description                                         |
-| ----------------- | ---------------------- | --------------------------------------------------- |
-| `name`            | string                 | Server's name                                       |
-| `serial`          | string                 | Server's serial ID                                  |
-| `state`           | string                 | Server's state(`unhealthy` or `unreachable`)        |
-| `first_detection` | string (UTC timestamp) | UTC timestamp of the server was judged as the state |
-
 Target machine peripherals
 --------------------------
 
@@ -69,7 +42,7 @@ Target machine peripherals
 - Storage controllers
 - NVMe SSD
 - [Dell BOSS][]
-- **Planned:** Hard drive on the storage servers
+- Hard drives on the storage servers
 
 Describe in the configuration file the metrics names with labels.
 
@@ -80,16 +53,11 @@ Usage
 sabakan-state-setter [OPTIONS]
 ```
 
-| Option                        | Default value                                         | Description                                               |
-| ----------------------------- | ----------------------------------------------------- | --------------------------------------------------------- |
-| `--sabakan-address`           | `http://localhost:10080`                              | URL of sabakan                                            |
-| `--config-file`               | `''`                                                  | Path of config file                                       |
-| `--problematic-machines-file` | `/run/sabakan-state-setter/problematic-machines.json` | Path of the machines whose state is problematic list JSON |
-
-Problematic state means:
-- `unhealthy`
-- `unreachable`
-
+| Option                        | Default value                                         | Description                                                                                                                 |
+| ----------------------------- | ----------------------------------------------------- | ---------------------------------------------------------                                                                   |
+| `--sabakan-address`           | `http://localhost:10080`                              | URL of sabakan                                                                                                              |
+| `--config-file`               | `''`                                                  | Path of config file                                                                                                         |
+| `--interval`                  | `1m`                                                  | Interval of scraping metrics. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
 
 Settings of target machine peripherals
 --------------------------------------
