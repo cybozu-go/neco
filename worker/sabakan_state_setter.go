@@ -25,5 +25,10 @@ func (o *operator) UpdateSabakanStateSetter(ctx context.Context, req *neco.Updat
 	if err != nil {
 		return err
 	}
-	return os.Remove(filename)
+	err = os.Remove(filename)
+	if err != nil {
+		return err
+	}
+
+	return neco.RestartService(ctx, neco.SabakanStateSetterService)
 }
