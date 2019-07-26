@@ -1,4 +1,4 @@
-package main
+package sss
 
 import (
 	"context"
@@ -13,39 +13,79 @@ import (
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
-type controller struct {
+// Controller is sabakan-state-setter controller
+type Controller struct {
 	interval            time.Duration
+	parallelSize        int
 	sabakanClient       *gqlClient
+	prom                *PrometheusClient
 	machineTypes        []*machineType
-	machineStateSources []*machineStateSource
+	machineStateSources []*MachineStateSource
 }
 
-func newController(intervalStr string, sabakanAddress string, configFile string) (*controller, error) {
-	interval, err := time.ParseDuration(intervalStr)
+// Params is sabakan-state-setter parameters
+type Params struct {
+	SabakanAddress string
+	ConfigFile     string
+	Interval       string
+	ParallelSize   int
+}
+
+// NewController returns controller for sabakan-state-setter
+func NewController(ctx context.Context, params Params) (*Controller, error) {
+	interval, err := time.ParseDuration(params.Interval)
 	if err != nil {
 		return nil, err
 	}
-	confFile, err := os.Open(configFile)
+	cf, err := os.Open(params.ConfigFile)
 	if err != nil {
 		return nil, err
 	}
-	defer confFile.Close()
-	cfg, err := parseConfig(confFile)
+	defer cf.Close()
+	cfg, err := parseConfig(cf)
 	if err != nil {
 		return nil, err
 	}
-	gql, err := newGQLClient(sabakanAddress)
+	gqlc, err := newGQLClient(params.SabakanAddress)
 	if err != nil {
 		return nil, err
 	}
-	return &controller{
+	sm, err := gqlc.GetSabakanMachines(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(sm.SearchMachines) == 0 {
+		return nil, errors.New("no machines found")
+	}
+
+	// Get serf members
+	serfc, err := serf.NewRPCClient("127.0.0.1:7373")
+	if err != nil {
+		return nil, err
+	}
+	members, err := getSerfMembers(serfc)
+	if err != nil {
+		return nil, err
+	}
+
+	// Construct a slice of machineStateSource
+	mssSlice := make([]*MachineStateSource, len(sm.SearchMachines))
+	for _, m := range sm.SearchMachines {
+		mssSlice = append(mssSlice, newMachineStateSource(m, members, cfg.MachineTypes))
+	}
+
+	return &Controller{
 		interval:            interval,
-		sabakanClient:       gql,
+		parallelSize:        params.ParallelSize,
+		sabakanClient:       gqlc,
+		prom:                &PrometheusClient{},
 		machineTypes:        cfg.MachineTypes,
-		machineStateSources: []*machineStateSource{}}, nil
+		machineStateSources: mssSlice,
+	}, nil
 }
 
-func (c *controller) runPeriodically(ctx context.Context) error {
+// RunPeriodically runs state management periodically
+func (c *Controller) RunPeriodically(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	select {
@@ -69,51 +109,14 @@ func (c *controller) runPeriodically(ctx context.Context) error {
 	}
 }
 
-func (c *controller) run(ctx context.Context) error {
-
-	var pms []problematicMachine
-
-	sm := new(searchMachineResponse)
-	gql, err := newGQLClient(*flagSabakanAddress)
-	if err != nil {
-		return err
-	}
-
-	sm, err = gql.getSabakanMachines(ctx)
-	if err != nil {
-		return err
-	}
-	if len(sm.SearchMachines) == 0 {
-		return errors.New("no machines found")
-	}
-
-	// Get serf members
-	serfc, err := serf.NewRPCClient("127.0.0.1:7373")
-	if err != nil {
-		return err
-	}
-	members, err := getSerfMembers(serfc)
-	if err != nil {
-		return err
-	}
-
-	// Construct a slice of MachineStateSource
-	mss := make([]machineStateSource, 0, len(sm.SearchMachines))
-	for _, m := range sm.SearchMachines {
-		ms, err := newMachineStateSource(m, members, c.machineTypes, pms)
-		if err != nil {
-			return err
-		}
-		mss = append(mss, *ms)
-	}
-
+func (c *Controller) run(ctx context.Context) error {
 	// Get machine metrics
-	sem := make(chan struct{}, *flagParallelSize)
-	for i := 0; i < *flagParallelSize; i++ {
+	sem := make(chan struct{}, c.parallelSize)
+	for i := 0; i < c.parallelSize; i++ {
 		sem <- struct{}{}
 	}
 	env := well.NewEnvironment(ctx)
-	for _, m := range mss {
+	for _, m := range c.machineStateSources {
 		if m.machineType == nil || len(m.machineType.MetricsCheckList) == 0 {
 			continue
 		}
@@ -122,7 +125,7 @@ func (c *controller) run(ctx context.Context) error {
 			<-sem
 			defer func() { sem <- struct{}{} }()
 			addr := "http://" + source.ipv4 + ":9105/metrics"
-			ch, err := connectMetricsServer(ctx, addr)
+			ch, err := c.prom.ConnectMetricsServer(ctx, addr)
 			if err != nil {
 				return err
 			}
@@ -130,7 +133,7 @@ func (c *controller) run(ctx context.Context) error {
 		})
 	}
 	env.Stop()
-	err = env.Wait()
+	err := env.Wait()
 	if err != nil {
 		// do not exit
 		log.Warn("error occurred when get metrics", map[string]interface{}{
@@ -138,25 +141,19 @@ func (c *controller) run(ctx context.Context) error {
 		})
 	}
 
-	var newProblematicMachineStates []problematicMachine
-	for _, ms := range mss {
-		newState := ms.decideMachineStateCandidate()
+	for _, mss := range c.machineStateSources {
+		newState := mss.decideMachineStateCandidate()
 
-		if isProblematicState(newState) {
-			newPM := problematicMachine{Serial: ms.serial, State: newState}
-			if ms.stateCandidate == newState {
-				newPM.FirstDetection = ms.stateCandidateFirstDetection.UTC().String()
-			} else {
-				newPM.FirstDetection = time.Now().String()
-			}
-			newProblematicMachineStates = append(newProblematicMachineStates, newPM)
-		}
-
-		if !ms.needUpdateState(newState, time.Now()) {
+		if !mss.needUpdateState(newState, time.Now()) {
 			continue
 		}
 
-		err = gql.updateSabakanState(ctx, ms, newState)
+		if mss.stateCandidate != newState {
+			mss.stateCandidate = newState
+			mss.stateCandidateFirstDetection = time.Now()
+		}
+
+		err := c.sabakanClient.UpdateSabakanState(ctx, mss, newState)
 		if err != nil {
 			switch e := err.(type) {
 			case *gqlerror.Error:
@@ -167,12 +164,12 @@ func (c *controller) run(ctx context.Context) error {
 				}
 				log.Warn("gql error occurred when set state", map[string]interface{}{
 					log.FnError: err.Error(),
-					"serial":    ms.serial,
+					"serial":    mss.serial,
 				})
 			default:
 				log.Warn("error occurred when set state", map[string]interface{}{
 					log.FnError: err.Error(),
-					"serial":    ms.serial,
+					"serial":    mss.serial,
 				})
 			}
 		}

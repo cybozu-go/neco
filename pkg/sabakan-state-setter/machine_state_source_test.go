@@ -1,4 +1,4 @@
-package main
+package sss
 
 import (
 	"reflect"
@@ -70,7 +70,7 @@ func TestReadAndSetMetrics(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		s := &machineStateSource{
+		s := &MachineStateSource{
 			serial:      "serial",
 			ipv4:        "ipv4",
 			serfStatus:  nil,

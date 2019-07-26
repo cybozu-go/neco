@@ -1,4 +1,4 @@
-package main
+package sss
 
 import (
 	"testing"
@@ -57,14 +57,14 @@ func TestNeedUpdateState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ms := &machineStateSource{
+			ms := &MachineStateSource{
 				stateCandidate:               tt.fields.stateCandidate,
 				stateCandidateFirstDetection: tt.fields.stateCandidateFirstDetection,
 				machineType:                  tt.fields.machineType,
 			}
 
 			if got := ms.needUpdateState(tt.args.newState, tt.args.now); got != tt.want {
-				t.Errorf("machineStateSource.needUpdateState() = %v, want %v", got, tt.want)
+				t.Errorf("MachineStateSource.needUpdateState() = %v, want %v", got, tt.want)
 			}
 		})
 	}

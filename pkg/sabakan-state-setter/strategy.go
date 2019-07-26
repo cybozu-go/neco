@@ -1,4 +1,4 @@
-package main
+package sss
 
 import (
 	"strings"
@@ -17,7 +17,7 @@ const (
 	noStateTransition       = "no-transition"
 )
 
-func (ms machineStateSource) decideMachineStateCandidate() string {
+func (ms MachineStateSource) decideMachineStateCandidate() string {
 	// We should modify this function as follows
 	// - Decide the new state with considering the grace period of setting problematic state
 	// - Record problematic machine's information to file
@@ -57,7 +57,7 @@ func (ms machineStateSource) decideMachineStateCandidate() string {
 	return ms.decideByMonitorHW()
 }
 
-func (ms machineStateSource) decideByMonitorHW() string {
+func (ms MachineStateSource) decideByMonitorHW() string {
 	if ms.machineType == nil {
 		log.Info("unhealthy; machine type is nil", map[string]interface{}{
 			"serial": ms.serial,
@@ -95,7 +95,7 @@ func (ms machineStateSource) decideByMonitorHW() string {
 	return sabakan.StateHealthy.GQLEnum()
 }
 
-func (ms machineStateSource) checkTarget(target targetMetric) string {
+func (ms MachineStateSource) checkTarget(target targetMetric) string {
 	var exists bool
 	metrics := ms.metrics[target.Name]
 

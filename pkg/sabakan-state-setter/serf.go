@@ -1,4 +1,4 @@
-package main
+package sss
 
 import serf "github.com/hashicorp/serf/client"
 

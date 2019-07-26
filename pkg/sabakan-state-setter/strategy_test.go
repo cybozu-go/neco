@@ -1,4 +1,4 @@
-package main
+package sss
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ func TestCheckSpecifyTarget(t *testing.T) {
 		Labels: map[string]string{"k1": "v1", "k2": "v2"},
 		Value:  monitorHWStatusHealth,
 	}}
-	ms := machineStateSource{
+	ms := MachineStateSource{
 		serial: "1234",
 		metrics: map[string]machineMetrics{
 			"m1": metrics,
@@ -36,19 +36,19 @@ func TestDecideSabakanState(t *testing.T) {
 	testCases := []struct {
 		message  string
 		expected string
-		mss      machineStateSource
+		mss      MachineStateSource
 	}{
 		{
 			message:  "cannot get serf status",
 			expected: sabakan.StateUnreachable.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: nil,
 			},
 		},
 		{
 			message:  "failed",
 			expected: sabakan.StateUnreachable.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: &serf.Member{
 					Status: "failed",
 					Tags: map[string]string{
@@ -60,7 +60,7 @@ func TestDecideSabakanState(t *testing.T) {
 		{
 			message:  "alive, but units failed",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: &serf.Member{
 					Status: "alive",
 					Tags: map[string]string{
@@ -72,7 +72,7 @@ func TestDecideSabakanState(t *testing.T) {
 		{
 			message:  "alive, but `systemd-units-failed` is not set, and metrics are healthy",
 			expected: noStateTransition,
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: &serf.Member{
 					Status: "alive",
 				},
@@ -98,7 +98,7 @@ func TestDecideSabakanState(t *testing.T) {
 		{
 			message:  "alive, but `systemd-units-failed` is not set, and metrics are null",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: &serf.Member{
 					Status: "alive",
 				},
@@ -124,7 +124,7 @@ func TestDecideSabakanState(t *testing.T) {
 		{
 			message:  "failed, and metrics are warning",
 			expected: sabakan.StateUnreachable.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: &serf.Member{
 					Status: "failed",
 					Tags: map[string]string{
@@ -172,12 +172,12 @@ func TestDecideByMonitorHW(t *testing.T) {
 	testCases := []struct {
 		message  string
 		expected string
-		mss      machineStateSource
+		mss      MachineStateSource
 	}{
 		{
 			message:  "If checklist is empty, returns healthy",
 			expected: sabakan.StateHealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics:    nil,
 				machineType: &machineType{
@@ -189,7 +189,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "If metrics is nil, returns unhealthy",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics:    nil,
 				machineType: &machineType{
@@ -206,7 +206,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "Target metric exists, and it is healthy",
 			expected: sabakan.StateHealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -230,7 +230,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "Target metrics exist, and it is warning",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -254,7 +254,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "Target metrics exist, and they are healthy",
 			expected: sabakan.StateHealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -298,7 +298,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "Target metrics exist, and they are healthy (multiple labels)",
 			expected: sabakan.StateHealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -346,7 +346,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "There are multiple matching metrics, and the one of them is broken",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -376,7 +376,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "Target metric exists, but label is not matched",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -402,7 +402,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "Target label is not specified, and the all of metrics is healthy",
 			expected: sabakan.StateHealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -425,7 +425,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "Target's label is not specified, and there is an unhealthy metric",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -448,7 +448,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "parts2 is not found",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -480,7 +480,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "Target metric exists, and prefix is matched",
 			expected: sabakan.StateHealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -506,7 +506,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "Target metrics exist, and all prefix labels are matched",
 			expected: sabakan.StateHealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -535,7 +535,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "One of label prefix is not matched",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -564,7 +564,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "label prefix is matched, but the value is not healthy",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -593,7 +593,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "both labels and label prefix are declared, all labels are matched but label prefix is not matched",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -627,7 +627,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "both labels and label prefix are declared, all label prefix are matched but labels are not matched",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -661,7 +661,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "minimum healthy count is satisfied",
 			expected: sabakan.StateHealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
@@ -698,7 +698,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 		{
 			message:  "minimum healthy count is not satisfied",
 			expected: sabakan.StateUnhealthy.GQLEnum(),
-			mss: machineStateSource{
+			mss: MachineStateSource{
 				serfStatus: base,
 				metrics: map[string]machineMetrics{
 					parts1: {
