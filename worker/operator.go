@@ -102,19 +102,19 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 4:
 		return o.UpdateVault(ctx, req)
 	case 5:
-		return o.UpdateSabakanStateSetter(ctx, req)
-	case 6:
 		return o.UpdateSetupHW(ctx, req)
-	case 7:
+	case 6:
 		return o.UpdateSerf(ctx, req)
-	case 8:
+	case 7:
 		return o.UpdateSetupSerfTags(ctx, req)
-	case 9:
+	case 8:
 		return o.UpdateEtcdpasswd(ctx, req)
-	case 10:
+	case 9:
 		return o.UpdateTeleport(ctx, req)
-	case 11:
+	case 10:
 		return o.UpdateSabakan(ctx, req)
+	case 11:
+		return o.UpdateSabakanStateSetter(ctx, req)
 	case 12:
 		return o.StopCKE(ctx, req)
 	case 13:
