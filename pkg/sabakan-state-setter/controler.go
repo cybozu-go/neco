@@ -62,8 +62,8 @@ func NewController(ctx context.Context, sabakanAddress, configFile, interval str
 
 	// Construct a slice of machineStateSource
 	mssSlice := make([]*MachineStateSource, len(sm.SearchMachines))
-	for _, m := range sm.SearchMachines {
-		mssSlice = append(mssSlice, newMachineStateSource(m, members, cfg.MachineTypes))
+	for i, m := range sm.SearchMachines {
+		mssSlice[i] = newMachineStateSource(m, members, cfg.MachineTypes)
 	}
 
 	return &Controller{
