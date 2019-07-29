@@ -16,7 +16,7 @@ func newMockPromClient() PrometheusClient {
 }
 
 func (g *promMockClient) ConnectMetricsServer(ctx context.Context, addr string) (chan *dto.MetricFamily, error) {
-	input := `parts1_status_health{aaa="bbb"} 0
+	input := `hw_systems_processors_status_health{processor="CPU.Socket.1"} 0
 	`
 	ch := make(chan *dto.MetricFamily, 1024)
 	err := prom2json.ParseReader(strings.NewReader(input), ch)

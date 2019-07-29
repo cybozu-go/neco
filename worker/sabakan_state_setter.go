@@ -12,22 +12,22 @@ func (o *operator) UpdateSabakanStateSetter(ctx context.Context, req *neco.Updat
 	filename := neco.TimerFile("sabakan-state-setter")
 	_, err := os.Stat(filename)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
+		if !os.IsNotExist(err) {
+			return err
 		}
-		return err
-	}
-	err = neco.StopTimer(ctx, "sabakan-state-setter")
-	if err != nil {
-		return err
-	}
-	err = neco.DisableTimer(ctx, "sabakan-state-setter")
-	if err != nil {
-		return err
-	}
-	err = os.Remove(filename)
-	if err != nil {
-		return err
+	} else {
+		err = neco.StopTimer(ctx, "sabakan-state-setter")
+		if err != nil {
+			return err
+		}
+		err = neco.DisableTimer(ctx, "sabakan-state-setter")
+		if err != nil {
+			return err
+		}
+		err = os.Remove(filename)
+		if err != nil {
+			return err
+		}
 	}
 
 	return neco.RestartService(ctx, neco.SabakanStateSetterService)

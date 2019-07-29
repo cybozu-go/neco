@@ -18,9 +18,33 @@ func TestControllerRun(t *testing.T) {
 		Name: "boot",
 		MetricsCheckList: []targetMetric{
 			{
-				Name: "parts1",
+				Name: "hw_systems_processors_status_health",
 				Selector: &selector{
-					Labels: map[string]string{"aaa": "bbb"},
+					Labels: map[string]string{"processor": "CPU.Socket.1"},
+				},
+			},
+			{
+				Name: "hw_systems_processors_status_health",
+				Selector: &selector{
+					Labels: map[string]string{"processor": "CPU.Socket.2"},
+				},
+			},
+			{
+				Name: "hw_systems_storage_drives_status_health",
+				Selector: &selector{
+					Labels: map[string]string{"device": "Disk.Direct.1-1:AHCI.Slot.1-1"},
+				},
+			},
+			{
+				Name: "hw_systems_storage_drives_status_health",
+				Selector: &selector{
+					Labels: map[string]string{"device": "PCIeSSD.Slot.2-1"},
+				},
+			},
+			{
+				Name: "hw_systems_storage_drives_status_health",
+				Selector: &selector{
+					Labels: map[string]string{"device": "PCIeSSD.Slot.3-1"},
 				},
 			},
 		},
@@ -45,9 +69,27 @@ func TestControllerRun(t *testing.T) {
 				},
 				machineType: machineType1,
 				metrics: map[string]machineMetrics{
-					"parts1": {
+					"hw_systems_processors_status_health": {
 						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
+							Labels: map[string]string{"processor": "CPU.Socket.1"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"processor": "CPU.Socket.2"},
+							Value:  monitorHWStatusWarning,
+						},
+					},
+					"hw_systems_storage_drives_status_health": {
+						prom2json.Metric{
+							Labels: map[string]string{"device": "Disk.Direct.1-1:AHCI.Slot.1-1"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"device": "PCIeSSD.Slot.2-1"},
+							Value:  monitorHWStatusHealth,
+						},
+						prom2json.Metric{
+							Labels: map[string]string{"device": "PCIeSSD.Slot.3-1"},
 							Value:  monitorHWStatusHealth,
 						},
 					},
@@ -60,7 +102,7 @@ func TestControllerRun(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if gql.machines[0].Status.State != sabakan.MachineState(sabakan.StateHealthy.GQLEnum()) {
-		t.Errorf("machine is not healthy: %s", gql.machines[0].Status.State)
+	if gql.machines[0].Status.State != sabakan.MachineState(sabakan.StateUnhealthy.GQLEnum()) {
+		t.Errorf("machine is not unhealthy: %s", gql.machines[0].Status.State)
 	}
 }
