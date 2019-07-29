@@ -168,7 +168,10 @@ jobs:
             printf "%s\n" "$diffs"
       - dctest-command:
           script: run-dctest-release.sh
-          suite: ./functions
+          suite: ./bootstrap
+      - run:
+          command: ./bin/run-dctest-suite.sh functions release
+          no_output_timeout: 20m
       - run:
           name: delete instance
           command: |
