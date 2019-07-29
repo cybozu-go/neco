@@ -15,37 +15,17 @@ func TestControllerRun(t *testing.T) {
 	t.Parallel()
 
 	machineType1 := &machineType{
-		Name: "boot",
+		Name: "cs",
 		MetricsCheckList: []targetMetric{
 			{
 				Name: "hw_systems_processors_status_health",
-				Selector: &selector{
-					Labels: map[string]string{"processor": "CPU.Socket.1"},
-				},
-			},
-			{
-				Name: "hw_systems_processors_status_health",
-				Selector: &selector{
-					Labels: map[string]string{"processor": "CPU.Socket.2"},
-				},
 			},
 			{
 				Name: "hw_systems_storage_drives_status_health",
 				Selector: &selector{
-					Labels: map[string]string{"device": "Disk.Direct.1-1:AHCI.Slot.1-1"},
+					LabelPrefix: map[string]string{"device": "PCIeSSD.Slot."},
 				},
-			},
-			{
-				Name: "hw_systems_storage_drives_status_health",
-				Selector: &selector{
-					Labels: map[string]string{"device": "PCIeSSD.Slot.2-1"},
-				},
-			},
-			{
-				Name: "hw_systems_storage_drives_status_health",
-				Selector: &selector{
-					Labels: map[string]string{"device": "PCIeSSD.Slot.3-1"},
-				},
+				MinimumHealthyCount: intPointer(2),
 			},
 		},
 	}

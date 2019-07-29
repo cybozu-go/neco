@@ -16,6 +16,9 @@ func newMockGQLClient() *gqlMockClient {
 			{
 				Spec: sabakan.MachineSpec{
 					Serial: "00000001",
+					Labels: map[string]string{
+						"machine-type": "cs",
+					},
 				},
 				Status: sabakan.MachineStatus{
 					State: sabakan.StateUninitialized,
