@@ -8,19 +8,18 @@ import (
 	"github.com/prometheus/prom2json"
 )
 
-type promMockClient struct{}
+type promMockClient struct {
+	input string
+}
 
 // NewMockPromClient is returns a mock sabakan GraphQL client
-func newMockPromClient() PrometheusClient {
-	return &promMockClient{}
+func newMockPromClient(input string) PrometheusClient {
+	return &promMockClient{input: input}
 }
 
 func (g *promMockClient) ConnectMetricsServer(ctx context.Context, addr string) (chan *dto.MetricFamily, error) {
-	input := `hw_systems_processors_status_health{processor="CPU.Socket.1"} 0
-	hw_systems_processors_status_health{processor="CPU.Socket.2"} 1
-	`
 	ch := make(chan *dto.MetricFamily, 1024)
-	err := prom2json.ParseReader(strings.NewReader(input), ch)
+	err := prom2json.ParseReader(strings.NewReader(g.input), ch)
 	if err != nil {
 		return nil, err
 	}
