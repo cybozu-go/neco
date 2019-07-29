@@ -4,17 +4,6 @@
 SUITE_NAME=$1
 TAG_NAME=$2
 
-delete_instance() {
-  if [ $RET -ne 0 ]; then
-    # do not delete GCP instance upon test failure to help debugging.
-    return
-  fi
-  $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} || true
-}
-
-RET=0
-trap delete_instance INT QUIT TERM 0
-
 # Run data center test
 cat >run.sh <<EOF
 #!/bin/sh -e
@@ -34,6 +23,4 @@ chmod +x run.sh
 $GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
 set +e
 $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo -H /home/cybozu/run.sh'
-RET=$?
-
-exit $RET
+exit $?

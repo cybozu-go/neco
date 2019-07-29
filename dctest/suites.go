@@ -6,10 +6,10 @@ import . "github.com/onsi/ginkgo"
 var BootstrapSuite = func() {
 	Context("setup", TestSetup)
 	Context("initialize", TestInit)
-	Context("etcdpasswd", TestEtcdpasswd)
 	Context("sabakan", TestSabakan)
 	Context("machines", TestMachines)
 	Context("init-data", TestInitData)
+	Context("etcdpasswd", TestEtcdpasswd)
 	Context("sabakan-state-setter", TestSabakanStateSetter)
 	Context("cke", func() {
 		TestCKESetup()
@@ -29,9 +29,9 @@ var BootstrapSuite = func() {
 
 // FunctionsSuite is a test suite that tests a full set of functions of Neco in a single version
 var FunctionsSuite = func() {
-	BootstrapSuite()
 	Context("join/remove", TestJoinRemove)
 	Context("parts failure", TestPartsFailure)
+	Context("reboot-all-boot-servers", TestRebootAllBootServers)
 	Context("reboot-all-nodes", TestRebootAllNodes)
 }
 

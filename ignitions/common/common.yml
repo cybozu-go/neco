@@ -70,7 +70,17 @@ systemd:
     enabled: true
   - name: exec-setup-hw.service
     enabled: true
-  - name: cke-images.service
+  - name: cke-image-cke-tools.service
+    enabled: true
+  - name: cke-image-coredns.service
+    enabled: true
+  - name: cke-image-etcd.service
+    enabled: true
+  - name: cke-image-hyperkube.service
+    enabled: true
+  - name: cke-image-pause.service
+    enabled: true
+  - name: cke-image-unbound.service
     enabled: true
   - name: squid-image.service
     enabled: true
