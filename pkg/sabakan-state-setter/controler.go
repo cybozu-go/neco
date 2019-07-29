@@ -17,8 +17,8 @@ import (
 type Controller struct {
 	interval            time.Duration
 	parallelSize        int
-	sabakanClient       *gqlClient
-	prom                *PrometheusClient
+	sabakanClient       SabakanGQLClient
+	prom                PrometheusClient
 	machineTypes        []*machineType
 	machineStateSources []*MachineStateSource
 }
@@ -70,7 +70,7 @@ func NewController(ctx context.Context, sabakanAddress, configFile, interval str
 		interval:            i,
 		parallelSize:        parallelSize,
 		sabakanClient:       gqlc,
-		prom:                &PrometheusClient{},
+		prom:                newPromClient(),
 		machineTypes:        cfg.MachineTypes,
 		machineStateSources: mssSlice,
 	}, nil

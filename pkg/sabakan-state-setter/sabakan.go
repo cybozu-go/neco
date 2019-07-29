@@ -53,7 +53,7 @@ type SabakanGQLClient interface {
 	UpdateSabakanState(ctx context.Context, ms *MachineStateSource, state string) error
 }
 
-func newGQLClient(address string) (*gqlClient, error) {
+func newGQLClient(address string) (SabakanGQLClient, error) {
 	baseURL, err := url.Parse(address)
 	if err != nil {
 		return nil, err

@@ -7,21 +7,20 @@ import (
 	"github.com/prometheus/prom2json"
 )
 
-// PrometheusClient is prometheus client
-type PrometheusClient struct{}
+type promClient struct{}
 
-// Prometheus is interface for prometheus client
-type Prometheus interface {
+// PrometheusClient is interface for prometheus client
+type PrometheusClient interface {
 	ConnectMetricsServer(ctx context.Context, addr string) (chan *dto.MetricFamily, error)
 }
 
-// NewPrometheusClient returns PrometheusClient
-func NewPrometheusClient() *PrometheusClient {
-	return &PrometheusClient{}
+// newPromClient returns PrometheusClient
+func newPromClient() PrometheusClient {
+	return &promClient{}
 }
 
 // ConnectMetricsServer returns metrics from give exporter address
-func (p *PrometheusClient) ConnectMetricsServer(ctx context.Context, addr string) (chan *dto.MetricFamily, error) {
+func (p *promClient) ConnectMetricsServer(ctx context.Context, addr string) (chan *dto.MetricFamily, error) {
 	mfChan := make(chan *dto.MetricFamily, 1024)
 	err := prom2json.FetchMetricFamilies(addr, mfChan, "", "", true)
 	if err != nil {
