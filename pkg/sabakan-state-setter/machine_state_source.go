@@ -75,7 +75,7 @@ func findLabel(labels []label, key string) *label {
 	return nil
 }
 
-func (ms *MachineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily) error {
+func (mss *MachineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily) error {
 	var result []*prom2json.Family
 	for mf := range mfChan {
 		result = append(result, prom2json.NewFamily(mf))
@@ -94,17 +94,17 @@ func (ms *MachineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily)
 			metrics = append(metrics, metric)
 		}
 
-		ms.metrics[r.Name] = metrics
+		mss.metrics[r.Name] = metrics
 	}
 
 	return nil
 }
 
-func (ms *MachineStateSource) needUpdateState(newState string, now time.Time) bool {
+func (mss *MachineStateSource) needUpdateState(newState string, now time.Time) bool {
 	if newState == noStateTransition {
 		return false
 	}
-	if ms.stateCandidate != newState {
+	if mss.stateCandidate != newState {
 		return false
 	}
 
@@ -113,5 +113,5 @@ func (ms *MachineStateSource) needUpdateState(newState string, now time.Time) bo
 		return true
 	}
 
-	return now.Sub(ms.stateCandidateFirstDetection) > ms.machineType.GracePeriod.Duration
+	return now.Sub(mss.stateCandidateFirstDetection) > mss.machineType.GracePeriod.Duration
 }

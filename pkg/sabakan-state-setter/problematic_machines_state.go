@@ -1,6 +1,6 @@
 package sss
 
-var	problematicStates  = []string{"unreachable", "unhealthy"}
+var problematicStates = []string{"unreachable", "unhealthy"}
 
 func isProblematicState(target string) bool {
 	for _, s := range problematicStates {

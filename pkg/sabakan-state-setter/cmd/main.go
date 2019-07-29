@@ -26,14 +26,7 @@ func main() {
 		log.ErrorExit(err)
 	}
 
-	params := sss.Params{
-		SabakanAddress: *flagSabakanAddress,
-		ConfigFile:     *flagConfigFile,
-		Interval:       *flagInterval,
-		ParallelSize:   *flagParallelSize,
-	}
-
-	ctr, err := sss.NewController(context.Background(), params)
+	ctr, err := sss.NewController(context.Background(), *flagSabakanAddress, *flagConfigFile, *flagInterval, *flagParallelSize)
 	if err != nil {
 		log.ErrorExit(err)
 	}

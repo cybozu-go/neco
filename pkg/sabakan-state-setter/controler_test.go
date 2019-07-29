@@ -8,7 +8,6 @@ import (
 	"github.com/prometheus/prom2json"
 )
 
-
 func TestControllerRun(t *testing.T) {
 	machineType1 := &machineType{
 		Name: "boot",
@@ -20,15 +19,15 @@ func TestControllerRun(t *testing.T) {
 				},
 			},
 		},
-    }
+	}
 
 	_ = &Controller{
 		interval:     time.Minute,
 		parallelSize: 2,
 		//sabakanClient: ,
 		machineTypes: []*machineType{machineType1},
-		machineStateSources: []*machineStateSource{
-			&machineStateSource{
+		machineStateSources: []*MachineStateSource{
+			{
 				serial: "00000001",
 				ipv4:   "10.0.0.100",
 				serfStatus: &serf.Member{

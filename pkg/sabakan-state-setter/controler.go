@@ -23,21 +23,13 @@ type Controller struct {
 	machineStateSources []*MachineStateSource
 }
 
-// Params is sabakan-state-setter parameters
-type Params struct {
-	SabakanAddress string
-	ConfigFile     string
-	Interval       string
-	ParallelSize   int
-}
-
 // NewController returns controller for sabakan-state-setter
-func NewController(ctx context.Context, params Params) (*Controller, error) {
-	interval, err := time.ParseDuration(params.Interval)
+func NewController(ctx context.Context, sabakanAddress, configFile, interval string, parallelSize int) (*Controller, error) {
+	i, err := time.ParseDuration(interval)
 	if err != nil {
 		return nil, err
 	}
-	cf, err := os.Open(params.ConfigFile)
+	cf, err := os.Open(configFile)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +38,7 @@ func NewController(ctx context.Context, params Params) (*Controller, error) {
 	if err != nil {
 		return nil, err
 	}
-	gqlc, err := newGQLClient(params.SabakanAddress)
+	gqlc, err := newGQLClient(sabakanAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +67,8 @@ func NewController(ctx context.Context, params Params) (*Controller, error) {
 	}
 
 	return &Controller{
-		interval:            interval,
-		parallelSize:        params.ParallelSize,
+		interval:            i,
+		parallelSize:        parallelSize,
 		sabakanClient:       gqlc,
 		prom:                &PrometheusClient{},
 		machineTypes:        cfg.MachineTypes,
