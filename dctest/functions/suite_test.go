@@ -20,7 +20,6 @@ func TestDCtest(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	dctest.RunBeforeSuite()
-	dctest.RunBeforeSuiteInstall()
 })
 
 // This must be the only top-level test container.

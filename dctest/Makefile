@@ -90,7 +90,7 @@ $(BMC_USER): bmc-user.json $(DHCP_JSON)
 # Other contents
 $(GENERATED_DEB):
 	mkdir -p $(OUTPUT)
-	cd ..; $(MAKE) clean; $(MAKE) deb VERSION=$(DEBVER) DEST=$(abspath $(OUTPUT)) TAGS=$(TAGS)
+	cd ..; $(MAKE) clean; time -p $(MAKE) deb VERSION=$(DEBVER) DEST=$(abspath $(OUTPUT)) TAGS=$(TAGS)
 
 $(DOWNLOADED_DEB):
 	mkdir -p $(OUTPUT)
@@ -121,7 +121,7 @@ fullclean: clean
 	rm -rf $(CUSTOM_UBUNTU)
 
 setup:
-	cd ../ && $(MAKE) setup
+	cd ../ && time -p $(MAKE) setup
 	go install github.com/onsi/ginkgo/ginkgo
 
 .PHONY:	all test placemat stop clean fullclean setup

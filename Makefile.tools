@@ -1,5 +1,7 @@
 include Makefile.common
 
+MAKEFLAGS += -j$(shell nproc)
+
 ### for containerd
 CONTAINERD_VERSION = 1.2.6
 CURL=curl -Lsf

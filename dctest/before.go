@@ -43,35 +43,17 @@ func RunBeforeSuiteInstall() {
 		return nil
 	}).Should(Succeed())
 
-	By("rebooting all boot servers")
+	By("restarting chrony-wait.service on the boot servers")
+	// cloud-init reaches time-sync.target before starting chrony-wait.service
+	// Hence, restart chrony-wait.service to faster bootstrap
+	// Actually, chrony-wait.service should be started after boot and is tested by TestRebootAllBootServers
 	for _, host := range []string{boot0, boot1, boot2, boot3} {
-		// Exit code is 255 when ssh is disconnected
-		execAt(host, "sudo", "reboot")
+		execSafeAt(host, "sudo", "systemctl", "restart", "chrony-wait.service")
+		execSafeAt(host, "sudo", "systemctl", "reset-failed")
 	}
 
-	By("waiting all boot servers are online")
-	err := prepareSSHClients(boot0, boot1, boot2, boot3)
-	Expect(err).NotTo(HaveOccurred())
-
-	By("checking services on the boot servers are running after reboot")
-	services := []string{
-		"bird.service",
-		"systemd-networkd.service",
-		"chronyd.service",
-		// chrony-wait.service can be started after reboot
-		"chrony-wait.service",
-	}
-	Eventually(func() error {
-		for _, host := range []string{boot0, boot1, boot2, boot3} {
-			for _, service := range services {
-				_, _, err := execAt(host, "systemctl", "-q", "is-active", service)
-				if err != nil {
-					return fmt.Errorf("%s is not active on %s", service, host)
-				}
-			}
-		}
-		return nil
-	}).Should(Succeed())
+	By("checking services on the boot servers are running")
+	checkSystemdServicesOnBoot()
 
 	// copy and install Neco deb package
 	fmt.Println("installing Neco")

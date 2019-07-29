@@ -7,10 +7,6 @@ import (
 
 // TestMachines tests machine control functions.
 func TestMachines() {
-	It("should register machines to sabakan", func() {
-		execSafeAt(boot0, "sabactl", "machines", "create", "-f", "/mnt/machines.json")
-	})
-
 	It("should put BMC/IPMI settings", func() {
 		execSafeAt(boot0, "neco", "bmc", "config", "set", "bmc-user", "/mnt/bmc-user.json")
 		execSafeAt(boot0, "neco", "bmc", "config", "set", "ipmi-user", "cybozu")
