@@ -17,7 +17,7 @@ VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 DEBBUILD_FLAGS = -Znone
-BIN_PKGS = ./pkg/neco ./pkg/sabakan-state-setter
+BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
 
 STATIK = gcp/statik/statik.go
@@ -65,6 +65,7 @@ $(DEB):
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
 	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
+	go build -o $(BINDIR)/sabakan-state-setter -tags='$(GOTAGS)' ./pkg/sabakan-state-setter/cmd
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
 	cp etc/* $(SHAREDIR)
 	cp -a ignitions $(SHAREDIR)
