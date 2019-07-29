@@ -104,13 +104,14 @@ func (mss *MachineStateSource) needUpdateState(newState string, now time.Time) b
 	if newState == noStateTransition {
 		return false
 	}
-	if mss.stateCandidate != newState {
-		return false
-	}
 
 	// Updating to non-problematic states does not have to wait
 	if !isProblematicState(newState) {
 		return true
+	}
+
+	if mss.stateCandidate != newState {
+		return false
 	}
 
 	return now.Sub(mss.stateCandidateFirstDetection) > mss.machineType.GracePeriod.Duration
