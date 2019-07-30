@@ -7,7 +7,8 @@ import (
 )
 
 type gqlMockClient struct {
-	machine *sabakan.Machine
+	machine          *sabakan.Machine
+	labelMachineType string
 }
 
 func newMockGQLClient(labelMachineType string) *gqlMockClient {
@@ -23,11 +24,27 @@ func newMockGQLClient(labelMachineType string) *gqlMockClient {
 				State: sabakan.StateUninitialized,
 			},
 		},
+		labelMachineType: labelMachineType,
 	}
 }
 
 func (g *gqlMockClient) GetSabakanMachines(ctx context.Context) (*SearchMachineResponse, error) {
-	return nil, nil
+	return &SearchMachineResponse{
+		SearchMachines: []machine{
+			{
+				Spec: spec{
+					Serial: "00000001",
+					IPv4:   []string{"10.0.0.100"},
+					Labels: []label{
+						{
+							Name:  "machine-type",
+							Value: g.labelMachineType,
+						},
+					},
+				},
+			},
+		},
+	}, nil
 }
 
 func (g *gqlMockClient) UpdateSabakanState(ctx context.Context, ms *MachineStateSource, state string) error {

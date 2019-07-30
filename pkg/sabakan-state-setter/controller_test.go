@@ -6,33 +6,17 @@ import (
 	"time"
 
 	sabakan "github.com/cybozu-go/sabakan/v2"
-
-	serf "github.com/hashicorp/serf/client"
 )
 
-func newMockController(gql *gqlMockClient, metricsInput string, mt *machineType) *Controller {
+func newMockController(gql *gqlMockClient, metricsInput string, serf *serfMockClient, mt *machineType) *Controller {
 	return &Controller{
 		interval:      time.Minute,
 		parallelSize:  2,
 		sabakanClient: gql,
-		prom:          newMockPromClient(metricsInput),
+		promClient:    newMockPromClient(metricsInput),
+		serfClient:    serf,
 		machineTypes:  []*machineType{mt},
-		machineStateSources: []*MachineStateSource{
-			{
-				serial: "00000001",
-				ipv4:   "10.0.0.100",
-				serfStatus: &serf.Member{
-					Status: "alive",
-					Tags: map[string]string{
-						systemdUnitsFailedTag: "",
-					},
-				},
-				machineType: mt,
-				metrics:     map[string]machineMetrics{},
-			},
-		},
 	}
-
 }
 
 func TestControllerRun(t *testing.T) {
@@ -74,11 +58,12 @@ func TestControllerRun(t *testing.T) {
 
 	// transition machine state to unhealthy due to cpu warning
 	gql := newMockGQLClient("qemu")
+	serf, _ := newMockSerfClient()
 	metricsInput := `
 	hw_processor_status_health{processor="CPU.Socket.1"} 0
 	hw_processor_status_health{processor="CPU.Socket.2"} 1
 	`
-	ctr := newMockController(gql, metricsInput, machineTypeQEMU)
+	ctr := newMockController(gql, metricsInput, serf, machineTypeQEMU)
 	err := ctr.run(context.Background())
 	if err != nil {
 		t.Error(err)
@@ -89,13 +74,14 @@ func TestControllerRun(t *testing.T) {
 
 	// transition machine state to unhealthy due to warning disks become larger than one
 	gql = newMockGQLClient("qemu")
+	serf, _ = newMockSerfClient()
 	metricsInput = `
 	hw_processor_status_health{processor="CPU.Socket.1"} 0
 	hw_processor_status_health{processor="CPU.Socket.2"} 0
 	hw_storage_controller_status_health{controller="SATAHDD.Slot.1"} 1
 	hw_storage_controller_status_health{controller="SATAHDD.Slot.2"} 1
 	`
-	ctr = newMockController(gql, metricsInput, machineTypeQEMU)
+	ctr = newMockController(gql, metricsInput, serf, machineTypeQEMU)
 	err = ctr.run(context.Background())
 	if err != nil {
 		t.Error(err)
@@ -106,6 +92,7 @@ func TestControllerRun(t *testing.T) {
 
 	// transition machine state to healthy even one disk warning occurred
 	gql = newMockGQLClient("qemu")
+	serf, _ = newMockSerfClient()
 	metricsInput = `
 	hw_processor_status_health{processor="CPU.Socket.1"} 0
 	hw_processor_status_health{processor="CPU.Socket.2"} 0
@@ -114,7 +101,7 @@ func TestControllerRun(t *testing.T) {
 	hw_storage_controller_status_health{controller="SATAHDD.Slot.1", system="System.Embedded.1"} 0
 	hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.Embedded.1"} 1
 	`
-	ctr = newMockController(gql, metricsInput, machineTypeQEMU)
+	ctr = newMockController(gql, metricsInput, serf, machineTypeQEMU)
 	err = ctr.run(context.Background())
 	if err != nil {
 		t.Error(err)
