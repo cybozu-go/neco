@@ -1,5 +1,6 @@
 machine-types:
   - name: qemu
+    grace-period-of-setting-problematic-state: 5s
     metrics:
       - name: hw_processor_status_health
       - name: hw_storage_controller_status_health

@@ -1,4 +1,4 @@
-package main
+package sss
 
 import (
 	"bytes"
@@ -13,15 +13,7 @@ import (
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
-type graphQLRequest struct {
-	Query string `json:"query"`
-}
-
-type graphQLResponse struct {
-	Data   json.RawMessage  `json:"data"`
-	Errors []gqlerror.Error `json:"errors,omitempty"`
-}
-
+// searchMachineResponse is a machine struct of response from the sabakan
 type searchMachineResponse struct {
 	SearchMachines []machine `json:"searchMachines"`
 }
@@ -41,12 +33,27 @@ type label struct {
 	Value string `json:"value"`
 }
 
+type graphQLRequest struct {
+	Query string `json:"query"`
+}
+
+type graphQLResponse struct {
+	Data   json.RawMessage  `json:"data"`
+	Errors []gqlerror.Error `json:"errors,omitempty"`
+}
+
 type gqlClient struct {
 	httpClient *http.Client
 	endpoint   string
 }
 
-func newGQLClient(address string) (*gqlClient, error) {
+// SabakanGQLClient is interface of the sabakan client of GraphQL
+type SabakanGQLClient interface {
+	GetSabakanMachines(ctx context.Context) (*searchMachineResponse, error)
+	UpdateSabakanState(ctx context.Context, ms *machineStateSource, state string) error
+}
+
+func newSabakanGQLClient(address string) (SabakanGQLClient, error) {
 	baseURL, err := url.Parse(address)
 	if err != nil {
 		return nil, err
@@ -85,7 +92,8 @@ func (g *gqlClient) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte
 	return []byte(gresp.Data), nil
 }
 
-func (g *gqlClient) getSabakanMachines(ctx context.Context) (*searchMachineResponse, error) {
+// GetSabakanMachines returns all machines
+func (g *gqlClient) GetSabakanMachines(ctx context.Context) (*searchMachineResponse, error) {
 	greq := graphQLRequest{
 		Query: `{
   searchMachines(having: null, notHaving: null) {
@@ -114,7 +122,8 @@ func (g *gqlClient) getSabakanMachines(ctx context.Context) (*searchMachineRespo
 	return resp, nil
 }
 
-func (g *gqlClient) setSabakanState(ctx context.Context, ms machineStateSource, state string) error {
+// UpdateSabakanState updates given machine's state
+func (g *gqlClient) UpdateSabakanState(ctx context.Context, ms *machineStateSource, state string) error {
 	greq := graphQLRequest{
 		Query: fmt.Sprintf(`mutation {
   setMachineState(serial: "%s", state: %s) {

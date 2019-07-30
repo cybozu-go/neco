@@ -112,6 +112,14 @@ func TestUpgrade() {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
+			execSafeAt(h, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
+		}
+
+		By("Checking obsoleted files or services are deleted")
+		for _, h := range []string{boot0, boot1, boot2} {
+			_, _, err := execAt(h, "systemctl", "-q", "is-active", "sabakan-state-setter.timer")
+			Expect(err).To(HaveOccurred())
+			execSafeAt(h, "test", "!", "-f", neco.TimerFile("sabakan-state-setter"))
 		}
 
 		By("Checking version of CKE")

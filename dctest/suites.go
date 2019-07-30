@@ -30,7 +30,6 @@ var BootstrapSuite = func() {
 // FunctionsSuite is a test suite that tests a full set of functions of Neco in a single version
 var FunctionsSuite = func() {
 	Context("join/remove", TestJoinRemove)
-	Context("parts failure", TestPartsFailure)
 	Context("reboot-all-boot-servers", TestRebootAllBootServers)
 	Context("reboot-all-nodes", TestRebootAllNodes)
 }

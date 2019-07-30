@@ -1,4 +1,4 @@
-package main
+package sss
 
 import (
 	"fmt"
@@ -153,7 +153,7 @@ func TestDecideSabakanState(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		out := tc.mss.decideSabakanState()
+		out := tc.mss.decideMachineStateCandidate()
 		if out != tc.expected {
 			t.Error(tc.message, "expected:", tc.expected, "actual:", out)
 		}
@@ -736,7 +736,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 
 	for _, tc := range testCases {
 		fmt.Println("TEST:", tc.message)
-		out := tc.mss.decideSabakanState()
+		out := tc.mss.decideMachineStateCandidate()
 		if out != tc.expected {
 			t.Error(tc.message, "| expected:", tc.expected, "actual:", out)
 		}

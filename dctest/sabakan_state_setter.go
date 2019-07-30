@@ -11,7 +11,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-const dummyRedfishDataFile = "dummy_redfish_data.json"
+const (
+	dummyRedfishDataFile = "dummy_redfish_data.json"
+	prefix               = "/redfish/v1/Systems/System.Embedded.1/"
+)
 
 // TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter() {
