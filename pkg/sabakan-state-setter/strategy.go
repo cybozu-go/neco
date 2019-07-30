@@ -1,4 +1,4 @@
-package main
+package sss
 
 import (
 	"strings"
@@ -17,24 +17,24 @@ const (
 	noStateTransition       = "no-transition"
 )
 
-func (ms machineStateSource) decideSabakanState() string {
-	if ms.serfStatus == nil {
+func (mss *machineStateSource) decideMachineStateCandidate() string {
+	if mss.serfStatus == nil {
 		log.Info("unreachable; serf status is nil", map[string]interface{}{
-			"serial": ms.serial,
+			"serial": mss.serial,
 		})
 		return sabakan.StateUnreachable.GQLEnum()
 	}
-	if ms.serfStatus.Status != "alive" {
+	if mss.serfStatus.Status != "alive" {
 		log.Info("unreachable; serf status != alive", map[string]interface{}{
-			"serial": ms.serial,
-			"status": ms.serfStatus.Status,
+			"serial": mss.serial,
+			"status": mss.serfStatus.Status,
 		})
 		return sabakan.StateUnreachable.GQLEnum()
 	}
 
-	suf, ok := ms.serfStatus.Tags[systemdUnitsFailedTag]
+	suf, ok := mss.serfStatus.Tags[systemdUnitsFailedTag]
 	if !ok {
-		state := ms.decideByMonitorHW()
+		state := mss.decideByMonitorHW()
 		if state == sabakan.StateHealthy.GQLEnum() {
 			// Do nothing if there is no systemd-units-failed tag and no hardware failure.
 			// In this case, the machine is starting up.
@@ -45,45 +45,45 @@ func (ms machineStateSource) decideSabakanState() string {
 
 	if len(suf) != 0 {
 		log.Info("unhealthy; some systemd units failed", map[string]interface{}{
-			"serial": ms.serial,
+			"serial": mss.serial,
 			"failed": suf,
 		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
 
-	return ms.decideByMonitorHW()
+	return mss.decideByMonitorHW()
 }
 
-func (ms machineStateSource) decideByMonitorHW() string {
-	if ms.machineType == nil {
+func (mss *machineStateSource) decideByMonitorHW() string {
+	if mss.machineType == nil {
 		log.Info("unhealthy; machine type is nil", map[string]interface{}{
-			"serial": ms.serial,
+			"serial": mss.serial,
 		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
 
-	if len(ms.machineType.MetricsCheckList) == 0 {
+	if len(mss.machineType.MetricsCheckList) == 0 {
 		return sabakan.StateHealthy.GQLEnum()
 	}
 
-	if ms.metrics == nil {
+	if mss.metrics == nil {
 		log.Info("unhealthy; metrics is nil", map[string]interface{}{
-			"serial": ms.serial,
+			"serial": mss.serial,
 		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
 
-	for _, checkTarget := range ms.machineType.MetricsCheckList {
-		_, ok := ms.metrics[checkTarget.Name]
+	for _, checkTarget := range mss.machineType.MetricsCheckList {
+		_, ok := mss.metrics[checkTarget.Name]
 		if !ok {
 			log.Info("unhealthy; metrics do not contain check target", map[string]interface{}{
-				"serial": ms.serial,
+				"serial": mss.serial,
 				"target": checkTarget.Name,
 			})
 			return sabakan.StateUnhealthy.GQLEnum()
 		}
 
-		res := ms.checkTarget(checkTarget)
+		res := mss.checkTarget(checkTarget)
 		if res != sabakan.StateHealthy.GQLEnum() {
 			return res
 		}
@@ -92,9 +92,9 @@ func (ms machineStateSource) decideByMonitorHW() string {
 	return sabakan.StateHealthy.GQLEnum()
 }
 
-func (ms machineStateSource) checkTarget(target targetMetric) string {
+func (mss *machineStateSource) checkTarget(target targetMetric) string {
 	var exists bool
-	metrics := ms.metrics[target.Name]
+	metrics := mss.metrics[target.Name]
 
 	var healthyCount, minCount int
 
@@ -116,7 +116,7 @@ func (ms machineStateSource) checkTarget(target targetMetric) string {
 			minCount++
 			if m.Value != monitorHWStatusHealth {
 				log.Info("unhealthy; metric is not healthy", map[string]interface{}{
-					"serial": ms.serial,
+					"serial": mss.serial,
 					"name":   target.Name,
 					"labels": m.Labels,
 					"value":  m.Value,
@@ -134,7 +134,7 @@ func (ms machineStateSource) checkTarget(target targetMetric) string {
 
 	if !exists {
 		log.Info("unhealthy; metric with specified labels does not exist", map[string]interface{}{
-			"serial":                ms.serial,
+			"serial":                mss.serial,
 			"name":                  target.Name,
 			"selector":              slctr,
 			"minimum_healthy_count": minCount,
@@ -144,7 +144,7 @@ func (ms machineStateSource) checkTarget(target targetMetric) string {
 
 	if healthyCount < minCount {
 		log.Info("unhealthy; minimum healthy count is not satisfied", map[string]interface{}{
-			"serial":                ms.serial,
+			"serial":                mss.serial,
 			"name":                  target.Name,
 			"selector":              slctr,
 			"minimum_healthy_count": minCount,
@@ -154,7 +154,7 @@ func (ms machineStateSource) checkTarget(target targetMetric) string {
 	}
 
 	log.Info("healthy;", map[string]interface{}{
-		"serial":                ms.serial,
+		"serial":                mss.serial,
 		"name":                  target.Name,
 		"selector":              slctr,
 		"minimum_healthy_count": minCount,

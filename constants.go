@@ -84,6 +84,11 @@ const (
 	SabakanLocalEndpoint = "http://127.0.0.1:10080"
 )
 
+// SabakanStateSetter params
+const (
+	SabakanStateSetterService = "sabakan-state-setter"
+)
+
 // Serf params
 const (
 	SerfService = "serf"

@@ -1,8 +1,14 @@
 [Unit]
 Description=Sabakan state setter
-After=network-online.target
-Wants=network-online.target
+After=network-online.target sabakan.service setup-hw.service serf.service
+Wants=network-online.target sabakan.service setup-hw.service serf.service
+StartLimitIntervalSec=600s
 
 [Service]
-Type=oneshot
+Type=simple
+Restart=on-failure
+RestartSec=10s
 ExecStart=/usr/bin/sabakan-state-setter -config-file=/usr/share/neco/sabakan-state-setter.yml
+
+[Install]
+WantedBy=multi-user.target
