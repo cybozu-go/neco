@@ -140,6 +140,7 @@ func TestInit() {
 			execSafeAt(host, "test", "-f", neco.SabactlBashCompletionFile)
 
 			execSafeAt(host, "systemctl", "-q", "is-active", "sabakan.service")
+			execSafeAt(host, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
 		}
 	})
 

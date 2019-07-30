@@ -62,7 +62,6 @@ func TestJoinRemove() {
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-updater.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "neco-worker.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "node-exporter.service")
-		execSafeAt(boot3, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "rkt-gc.timer")
 		execSafeAt(boot3, "systemctl", "-q", "is-active", "etcd-backup.timer")
 	})
@@ -95,6 +94,14 @@ func TestJoinRemove() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 		}
+		execSafeAt(boot3, "test", "-d", neco.SabakanDataDir)
+		execSafeAt(boot3, "test", "-f", neco.SabakanConfFile)
+		execSafeAt(boot3, "test", "-f", neco.SabakanKeyFile)
+		execSafeAt(boot3, "test", "-f", neco.SabakanCertFile)
+		execSafeAt(boot3, "test", "-f", neco.SabactlBashCompletionFile)
+
+		execSafeAt(boot3, "systemctl", "-q", "is-active", "sabakan.service")
+		execSafeAt(boot3, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
 	})
 
 	It("should setup boot-3 hardware", func() {
