@@ -111,7 +111,7 @@ func (c *Controller) run(ctx context.Context) error {
 	}
 
 	// Construct a slice of machineStateSource
-	machineStateSources := make([]*MachineStateSource, len(sm.SearchMachines))
+	machineStateSources := make([]*machineStateSource, len(sm.SearchMachines))
 	for i, m := range sm.SearchMachines {
 		machineStateSources[i] = newMachineStateSource(m, members, c.machineTypes)
 	}

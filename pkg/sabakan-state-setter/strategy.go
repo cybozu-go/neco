@@ -17,10 +17,7 @@ const (
 	noStateTransition       = "no-transition"
 )
 
-func (mss *MachineStateSource) decideMachineStateCandidate() string {
-	// We should modify this function as follows
-	// - Decide the new state with considering the grace period of setting problematic state
-	// - Record problematic machine's information to file
+func (mss *machineStateSource) decideMachineStateCandidate() string {
 	if mss.serfStatus == nil {
 		log.Info("unreachable; serf status is nil", map[string]interface{}{
 			"serial": mss.serial,
@@ -57,7 +54,7 @@ func (mss *MachineStateSource) decideMachineStateCandidate() string {
 	return mss.decideByMonitorHW()
 }
 
-func (mss *MachineStateSource) decideByMonitorHW() string {
+func (mss *machineStateSource) decideByMonitorHW() string {
 	if mss.machineType == nil {
 		log.Info("unhealthy; machine type is nil", map[string]interface{}{
 			"serial": mss.serial,
@@ -95,7 +92,7 @@ func (mss *MachineStateSource) decideByMonitorHW() string {
 	return sabakan.StateHealthy.GQLEnum()
 }
 
-func (mss *MachineStateSource) checkTarget(target targetMetric) string {
+func (mss *machineStateSource) checkTarget(target targetMetric) string {
 	var exists bool
 	metrics := mss.metrics[target.Name]
 

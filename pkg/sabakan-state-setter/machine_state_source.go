@@ -12,8 +12,8 @@ import (
 
 const machineTypeLabelName = "machine-type"
 
-// MachineStateSource is a struct of machine state collection
-type MachineStateSource struct {
+// machineStateSource is a struct of machine state collection
+type machineStateSource struct {
 	serial string
 	ipv4   string
 
@@ -27,8 +27,8 @@ type MachineStateSource struct {
 
 type machineMetrics []prom2json.Metric
 
-func newMachineStateSource(m machine, members []serf.Member, machineTypes []*machineType) *MachineStateSource {
-	return &MachineStateSource{
+func newMachineStateSource(m machine, members []serf.Member, machineTypes []*machineType) *machineStateSource {
+	return &machineStateSource{
 		serial:      m.Spec.Serial,
 		ipv4:        m.Spec.IPv4[0],
 		serfStatus:  findMember(members, m.Spec.IPv4[0]),
@@ -75,7 +75,7 @@ func findLabel(labels []label, key string) *label {
 	return nil
 }
 
-func (mss *MachineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily) error {
+func (mss *machineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily) error {
 	var result []*prom2json.Family
 	for mf := range mfChan {
 		result = append(result, prom2json.NewFamily(mf))
@@ -100,7 +100,7 @@ func (mss *MachineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily
 	return nil
 }
 
-func (mss *MachineStateSource) needUpdateState(newState string, now time.Time) bool {
+func (mss *machineStateSource) needUpdateState(newState string, now time.Time) bool {
 	if newState == noStateTransition {
 		return false
 	}

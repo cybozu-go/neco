@@ -28,8 +28,8 @@ func newMockGQLClient(labelMachineType string) *gqlMockClient {
 	}
 }
 
-func (g *gqlMockClient) GetSabakanMachines(ctx context.Context) (*SearchMachineResponse, error) {
-	return &SearchMachineResponse{
+func (g *gqlMockClient) GetSabakanMachines(ctx context.Context) (*searchMachineResponse, error) {
+	return &searchMachineResponse{
 		SearchMachines: []machine{
 			{
 				Spec: spec{
@@ -47,7 +47,7 @@ func (g *gqlMockClient) GetSabakanMachines(ctx context.Context) (*SearchMachineR
 	}, nil
 }
 
-func (g *gqlMockClient) UpdateSabakanState(ctx context.Context, ms *MachineStateSource, state string) error {
+func (g *gqlMockClient) UpdateSabakanState(ctx context.Context, ms *machineStateSource, state string) error {
 	g.machine.Status.State = sabakan.MachineState(state)
 	return nil
 }

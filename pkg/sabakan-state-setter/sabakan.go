@@ -13,8 +13,8 @@ import (
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
-// SearchMachineResponse is a machine struct of response from the sabakan
-type SearchMachineResponse struct {
+// searchMachineResponse is a machine struct of response from the sabakan
+type searchMachineResponse struct {
 	SearchMachines []machine `json:"searchMachines"`
 }
 
@@ -49,8 +49,8 @@ type gqlClient struct {
 
 // SabakanGQLClient is interface of the sabakan client of GraphQL
 type SabakanGQLClient interface {
-	GetSabakanMachines(ctx context.Context) (*SearchMachineResponse, error)
-	UpdateSabakanState(ctx context.Context, ms *MachineStateSource, state string) error
+	GetSabakanMachines(ctx context.Context) (*searchMachineResponse, error)
+	UpdateSabakanState(ctx context.Context, ms *machineStateSource, state string) error
 }
 
 func newSabakanGQLClient(address string) (SabakanGQLClient, error) {
@@ -93,7 +93,7 @@ func (g *gqlClient) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte
 }
 
 // GetSabakanMachines returns all machines
-func (g *gqlClient) GetSabakanMachines(ctx context.Context) (*SearchMachineResponse, error) {
+func (g *gqlClient) GetSabakanMachines(ctx context.Context) (*searchMachineResponse, error) {
 	greq := graphQLRequest{
 		Query: `{
   searchMachines(having: null, notHaving: null) {
@@ -113,7 +113,7 @@ func (g *gqlClient) GetSabakanMachines(ctx context.Context) (*SearchMachineRespo
 		return nil, err
 	}
 
-	resp := new(SearchMachineResponse)
+	resp := new(searchMachineResponse)
 	err = json.Unmarshal(gdata, resp)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (g *gqlClient) GetSabakanMachines(ctx context.Context) (*SearchMachineRespo
 }
 
 // UpdateSabakanState updates given machine's state
-func (g *gqlClient) UpdateSabakanState(ctx context.Context, ms *MachineStateSource, state string) error {
+func (g *gqlClient) UpdateSabakanState(ctx context.Context, ms *machineStateSource, state string) error {
 	greq := graphQLRequest{
 		Query: fmt.Sprintf(`mutation {
   setMachineState(serial: "%s", state: %s) {

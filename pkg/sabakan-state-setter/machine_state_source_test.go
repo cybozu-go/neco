@@ -70,7 +70,7 @@ func TestReadAndSetMetrics(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		s := &MachineStateSource{
+		s := &machineStateSource{
 			serial:      "serial",
 			ipv4:        "ipv4",
 			serfStatus:  nil,
