@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	sss "github.com/cybozu-go/neco/pkg/sabakan-state-setter"
-
 	"github.com/cybozu-go/log"
+	sss "github.com/cybozu-go/neco/pkg/sabakan-state-setter"
 	"github.com/cybozu-go/well"
 )
 

@@ -10,7 +10,7 @@ import (
 func TestParseConfigFile(t *testing.T) {
 	fileContent := `machine-types:
   - name: qemu
-    grace-period-of-setting-problematic-state: 10s
+    grace-period: 10s
   - name: boot
     metrics:
       - name: a
@@ -28,7 +28,7 @@ func TestParseConfigFile(t *testing.T) {
 	if cfg.MachineTypes[0].GracePeriod.Duration != 10*time.Second {
 		t.Error("GracePeriod is not set")
 	}
-	if cfg.MachineTypes[1].GracePeriod.Duration != time.Minute {
+	if cfg.MachineTypes[1].GracePeriod.Duration != time.Hour {
 		t.Error("default value of GracePeriod is not set")
 	}
 
