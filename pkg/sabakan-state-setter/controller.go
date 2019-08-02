@@ -22,6 +22,25 @@ type Controller struct {
 	serfClient    SerfClient
 
 	machineTypes []*machineType
+
+	unhealthyMachines map[string]time.Time
+}
+
+// registerUnhealthy registers unhealthy machine and returns true
+// if the machine has been unhealthy longer than the GracePeriod
+// specified in its machine type.
+func (c *Controller) registerUnhealthy(mss *machineStateSource, now time.Time) bool {
+	startTime, ok := c.unhealthyMachines[mss.serial]
+	if !ok {
+		c.unhealthyMachines[mss.serial] = now
+		return false
+	}
+
+	return startTime.Add(mss.machineType.GracePeriod.Duration).Before(now)
+}
+
+func (c *Controller) clearUnhealthy(mss *machineStateSource) {
+	delete(c.unhealthyMachines, mss.serial)
 }
 
 // NewController returns controller for sabakan-state-setter
@@ -54,25 +73,18 @@ func NewController(ctx context.Context, sabakanAddress, configFile, interval str
 	promClient := newPromClient()
 
 	return &Controller{
-		interval:      i,
-		parallelSize:  parallelSize,
-		sabakanClient: sabakanClient,
-		serfClient:    serfClient,
-		promClient:    promClient,
-		machineTypes:  cfg.MachineTypes,
+		interval:          i,
+		parallelSize:      parallelSize,
+		sabakanClient:     sabakanClient,
+		serfClient:        serfClient,
+		promClient:        promClient,
+		machineTypes:      cfg.MachineTypes,
+		unhealthyMachines: make(map[string]time.Time),
 	}, nil
 }
 
 // RunPeriodically runs state management periodically
 func (c *Controller) RunPeriodically(ctx context.Context) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-	}
-
 	ticker := time.NewTicker(c.interval)
 	defer ticker.Stop()
 	for {
@@ -81,8 +93,7 @@ func (c *Controller) RunPeriodically(ctx context.Context) error {
 			return nil
 		case <-ticker.C:
 		}
-		err := c.run(ctx)
-		if err != nil {
+		if err := c.run(ctx); err != nil {
 			return err
 		}
 	}
@@ -147,16 +158,21 @@ func (c *Controller) run(ctx context.Context) error {
 		})
 	}
 
+	now := time.Now()
+
 	for _, mss := range machineStateSources {
 		newState := mss.decideMachineStateCandidate()
 
-		if !mss.needUpdateState(newState, time.Now()) {
+		if newState == noStateTransition {
 			continue
 		}
 
-		if mss.stateCandidate != newState {
-			mss.stateCandidate = newState
-			mss.stateCandidateFirstDetection = time.Now()
+		if newState == "unhealthy" {
+			if ok := c.registerUnhealthy(mss, now); !ok {
+				continue
+			}
+		} else {
+			c.clearUnhealthy(mss)
 		}
 
 		err := c.sabakanClient.UpdateSabakanState(ctx, mss, newState)

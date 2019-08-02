@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/ghodss/yaml"
+	"sigs.k8s.io/yaml"
 )
 
 type targetMetric struct {
@@ -24,7 +24,7 @@ type selector struct {
 type machineType struct {
 	Name             string         `json:"name"`
 	MetricsCheckList []targetMetric `json:"metrics,omitempty"`
-	GracePeriod      duration       `json:"grace-period-of-setting-problematic-state"`
+	GracePeriod      duration       `json:"grace-period"`
 }
 
 type config struct {
@@ -46,12 +46,12 @@ func (d *duration) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	switch v.(type) {
+	switch v := v.(type) {
 	case float64:
-		d.Duration = time.Duration(v.(float64))
+		d.Duration = time.Duration(v)
 		return nil
 	case string:
-		duration, err := time.ParseDuration(v.(string))
+		duration, err := time.ParseDuration(v)
 		if err != nil {
 			return err
 		}
@@ -77,8 +77,8 @@ func parseConfig(reader io.Reader) (*config, error) {
 		return nil, errors.New("machine-types are not defined")
 	}
 	for _, t := range cfg.MachineTypes {
-		if t.GracePeriod.Duration == time.Duration(0) {
-			t.GracePeriod.Duration = time.Minute
+		if t.GracePeriod.Duration == 0 {
+			t.GracePeriod.Duration = time.Hour
 		}
 	}
 	return cfg, nil

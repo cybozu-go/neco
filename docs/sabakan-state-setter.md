@@ -25,14 +25,14 @@ See machine state types at [Sabakan lifecycle management](https://github.com/cyb
 - Nothing to judge machine state
   - `sabakan-state-setter` can not access to `serf.service` of the same boot server.
   
-Grace period of setting problematic state
------------------------------------------
+Grace period of setting unhealthy state
+--------------------------------------
 
-In order not to be too sensitive to temporary unavailable of machines' metrics,
-sabakan-state-setter waits a grace period before updating a machine's state to `(unhealthy|unreachable)`.
+In order not to be too sensitive to temporary problem of machines' metrics,
+sabakan-state-setter waits a grace period before updating a machine's state to `unhealthy`.
 
 sabakan-state-setter updates the machine state
-if and only if it judges the machine's state as `(unhealthy|unreachable)` for the time specified in this value. 
+if and only if it judges the machine's state as `unhealthy` for the time specified in this value. 
 
 Target machine peripherals
 --------------------------
@@ -53,11 +53,11 @@ Usage
 sabakan-state-setter [OPTIONS]
 ```
 
-| Option                        | Default value                                         | Description                                                                                                                 |
-| ----------------------------- | ----------------------------------------------------- | ---------------------------------------------------------                                                                   |
-| `--sabakan-address`           | `http://localhost:10080`                              | URL of sabakan                                                                                                              |
-| `--config-file`               | `''`                                                  | Path of config file                                                                                                         |
-| `--interval`                  | `1m`                                                  | Interval of scraping metrics. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
+| Option              | Default value            | Description                                                                                                                 |
+| ------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `--sabakan-address` | `http://localhost:10080` | URL of sabakan                                                                                                              |
+| `--config-file`     | `''`                     | Path of config file                                                                                                         |
+| `--interval`        | `1m`                     | Interval of scraping metrics. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
 
 Settings of target machine peripherals
 --------------------------------------
@@ -72,11 +72,11 @@ You can configure a set of metrics to scrape for each machine type.
 If all metrics defined in the config file are healthy, the machine is healthy. Otherwise, it's unhealthy.
 
 ### `MachineType`
-| Field                                              | Default value | Description                                                                                                                                               |
-| -------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name` string                                      | `''`          | Name of this machine type. It is expected that this field is unique in setting file.                                                                      |
-| `metrics` [Metric](#Metric) array                  | `nil`         | Metrics is an array of `Metric` to be checked.                                                                                                            |
-| `grace-period-of-setting-problematic-state` string | `'1m'`        | Time to wait for updating machine state to problematic one. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
+| Field                             | Default value | Description                                                                                                                                               |
+| --------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name` string                     |               | Name of this machine type. It is expected that this field is unique in setting file.                                                                      |
+| `metrics` [Metric](#Metric) array | `nil`         | Metrics is an array of `Metric` to be checked.                                                                                                            |
+| `grace-period` string             | `1h`          | Time to wait for updating machine state to problematic one. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
 
 ### `Metric`
 
