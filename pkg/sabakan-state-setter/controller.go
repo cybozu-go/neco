@@ -26,10 +26,10 @@ type Controller struct {
 	unhealthyMachines map[string]time.Time
 }
 
-// registerUnhealthy registers unhealthy machine and returns true
+// RegisterUnhealthy registers unhealthy machine and returns true
 // if the machine has been unhealthy longer than the GracePeriod
 // specified in its machine type.
-func (c *Controller) registerUnhealthy(mss *machineStateSource, now time.Time) bool {
+func (c *Controller) RegisterUnhealthy(mss *machineStateSource, now time.Time) bool {
 	startTime, ok := c.unhealthyMachines[mss.serial]
 	if !ok {
 		c.unhealthyMachines[mss.serial] = now
@@ -39,7 +39,8 @@ func (c *Controller) registerUnhealthy(mss *machineStateSource, now time.Time) b
 	return startTime.Add(mss.machineType.GracePeriod.Duration).Before(now)
 }
 
-func (c *Controller) clearUnhealthy(mss *machineStateSource) {
+// ClearUnhealthy removes machine from unhealthy registry.
+func (c *Controller) ClearUnhealthy(mss *machineStateSource) {
 	delete(c.unhealthyMachines, mss.serial)
 }
 
@@ -168,11 +169,11 @@ func (c *Controller) run(ctx context.Context) error {
 		}
 
 		if newState == "unhealthy" {
-			if ok := c.registerUnhealthy(mss, now); !ok {
+			if ok := c.RegisterUnhealthy(mss, now); !ok {
 				continue
 			}
 		} else {
-			c.clearUnhealthy(mss)
+			c.ClearUnhealthy(mss)
 		}
 
 		err := c.sabakanClient.UpdateSabakanState(ctx, mss, newState)
