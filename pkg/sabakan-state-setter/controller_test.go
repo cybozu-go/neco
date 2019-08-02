@@ -10,16 +10,17 @@ import (
 
 func newMockController(gql *gqlMockClient, metricsInput string, serf *serfMockClient, mt *machineType) *Controller {
 	return &Controller{
-		interval:      time.Minute,
-		parallelSize:  2,
-		sabakanClient: gql,
-		promClient:    newMockPromClient(metricsInput),
-		serfClient:    serf,
-		machineTypes:  []*machineType{mt},
+		interval:          time.Minute,
+		parallelSize:      2,
+		sabakanClient:     gql,
+		promClient:        newMockPromClient(metricsInput),
+		serfClient:        serf,
+		machineTypes:      []*machineType{mt},
+		unhealthyMachines: make(map[string]time.Time),
 	}
 }
 
-func TestControllerRun(t *testing.T) {
+func testControllerRun(t *testing.T) {
 	t.Parallel()
 
 	machineTypeQEMU := &machineType{
@@ -109,4 +110,58 @@ func TestControllerRun(t *testing.T) {
 	if gql.machine.Status.State != sabakan.MachineState(sabakan.StateHealthy.GQLEnum()) {
 		t.Errorf("machine is not healthy: %s", gql.machine.Status.State)
 	}
+}
+
+func testControllerUnhealthy(t *testing.T) {
+	t.Parallel()
+
+	mt := &machineType{
+		GracePeriod: duration{
+			Duration: time.Minute * 60,
+		},
+	}
+	mss1 := &machineStateSource{
+		serial:      "1",
+		machineType: mt,
+	}
+	mss2 := &machineStateSource{
+		serial:      "2",
+		machineType: mt,
+	}
+	baseTime := time.Now()
+
+	ctr := newMockController(nil, "", nil, mt)
+
+	exceeded := ctr.RegisterUnhealthy(mss1, baseTime)
+	if exceeded {
+		t.Error("machine is misjudged as long-term unhealthy at the first registration")
+	}
+
+	exceeded = ctr.RegisterUnhealthy(mss1, baseTime.Add(time.Minute*30))
+	if exceeded {
+		t.Error("machine is misjudged as long-term unhealthy during grace period")
+	}
+
+	exceeded = ctr.RegisterUnhealthy(mss1, baseTime.Add(time.Minute*70)) // 60 < 70 < 30+60
+	if !exceeded {
+		t.Error("machine is not judged as long-term unhealthy after grace period")
+	}
+
+	ctr.ClearUnhealthy(mss1)
+
+	exceeded = ctr.RegisterUnhealthy(mss1, baseTime.Add(time.Minute*80))
+	if exceeded {
+		t.Error("machine is misjudged as long-term unhealthy after clearing registry")
+	}
+
+	exceeded = ctr.RegisterUnhealthy(mss2, baseTime.Add(time.Minute*150)) // 150 > 80+60
+	if exceeded {
+		t.Error("machine is misjudged as long-term unhealthy by confusion")
+	}
+}
+
+func TestController(t *testing.T) {
+	t.Run("Run", testControllerRun)
+	t.Run("Unhealthy", testControllerUnhealthy)
+
 }

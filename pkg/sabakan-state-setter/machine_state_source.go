@@ -2,7 +2,6 @@ package sss
 
 import (
 	"net"
-	"time"
 
 	"github.com/cybozu-go/log"
 	serf "github.com/hashicorp/serf/client"
@@ -20,9 +19,6 @@ type machineStateSource struct {
 	serfStatus  *serf.Member
 	metrics     map[string]machineMetrics
 	machineType *machineType
-
-	stateCandidate               string
-	stateCandidateFirstDetection time.Time
 }
 
 type machineMetrics []prom2json.Metric
@@ -98,21 +94,4 @@ func (mss *machineStateSource) readAndSetMetrics(mfChan <-chan *dto.MetricFamily
 	}
 
 	return nil
-}
-
-func (mss *machineStateSource) needUpdateState(newState string, now time.Time) bool {
-	if newState == noStateTransition {
-		return false
-	}
-
-	// Updating to non-problematic states does not have to wait
-	if !isProblematicState(newState) {
-		return true
-	}
-
-	if mss.stateCandidate != newState {
-		return false
-	}
-
-	return now.Sub(mss.stateCandidateFirstDetection) > mss.machineType.GracePeriod.Duration
 }
