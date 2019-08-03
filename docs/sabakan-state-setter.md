@@ -72,11 +72,11 @@ You can configure a set of metrics to scrape for each machine type.
 If all metrics defined in the config file are healthy, the machine is healthy. Otherwise, it's unhealthy.
 
 ### `MachineType`
-| Field                             | Default value | Description                                                                                                                                               |
-| --------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name` string                     |               | Name of this machine type. It is expected that this field is unique in setting file.                                                                      |
-| `metrics` [Metric](#Metric) array | `nil`         | Metrics is an array of `Metric` to be checked.                                                                                                            |
-| `grace-period` string             | `1h`          | Time to wait for updating machine state to problematic one. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
+| Field                             | Default value | Description                                                                                                                                           |
+| --------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name` string                     |               | Name of this machine type. It is expected that this field is unique in setting file.                                                                  |
+| `metrics` [Metric](#Metric) array | `nil`         | Metrics is an array of `Metric` to be checked.                                                                                                        |
+| `grace-period` string             | `1h`          | Time to wait for updating machine state to `unhealthy`. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
 
 ### `Metric`
 
