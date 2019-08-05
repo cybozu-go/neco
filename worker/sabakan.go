@@ -103,6 +103,7 @@ func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRe
 		})
 		return err
 	}
+	defer sess.Close()
 	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
 	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
 	if err != nil {
@@ -205,6 +206,7 @@ func (o *operator) UpdateDHCPJSON(ctx context.Context, req *neco.UpdateRequest) 
 		})
 		return err
 	}
+	defer sess.Close()
 	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
 	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
 	if err != nil {
