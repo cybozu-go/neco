@@ -170,11 +170,15 @@ jobs:
           script: run-dctest-release.sh
           suite: ./bootstrap
       - run:
-          command: ./bin/run-dctest-suite.sh functions release
+          name: Run tests
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/run-dctest-suite.sh functions release
           no_output_timeout: 20m
       - run:
-          name: delete instance
+          name: Delete instance
           command: |
+            if [ -f .skip ]; then exit 0; fi
             . ./bin/env
             $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE}
   dctest-upgrade-release:
