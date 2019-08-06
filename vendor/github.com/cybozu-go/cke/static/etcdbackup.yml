@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cke-etcdbackup
+  namespace: kube-system
+  annotations:
+    cke.cybozu.com/revision: "1"
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:etcdbackup
+  namespace: kube-system
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  annotations:
+    cke.cybozu.com/revision: "1"
+    # turn on auto-reconciliation
+    # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#auto-reconciliation
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+rules:
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
+    resourceNames: ["cke-restricted"]
+---
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:etcdbackup
+  namespace: kube-system
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  annotations:
+    cke.cybozu.com/revision: "1"
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: system:etcdbackup
+subjects:
+- kind: ServiceAccount
+  name: cke-etcdbackup
+  namespace: kube-system
