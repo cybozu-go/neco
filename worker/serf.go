@@ -52,6 +52,7 @@ func (o *operator) UpdateSerf(ctx context.Context, req *neco.UpdateRequest) erro
 		})
 		return err
 	}
+	defer sess.Close()
 	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
 	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
 	if err != nil {

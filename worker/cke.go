@@ -105,6 +105,7 @@ func (o *operator) UpdateCKEContents(ctx context.Context, req *neco.UpdateReques
 		})
 		return err
 	}
+	defer sess.Close()
 	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
 	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
 	if err != nil {
@@ -175,6 +176,7 @@ func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateReques
 		})
 		return err
 	}
+	defer sess.Close()
 	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
 	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
 	if err != nil {
@@ -245,6 +247,7 @@ func (o *operator) UpdateUserResources(ctx context.Context, req *neco.UpdateRequ
 		})
 		return err
 	}
+	defer sess.Close()
 	e := concurrency.NewElection(sess, storage.KeyWorkerLeader)
 	err = e.Campaign(ctx, strconv.Itoa(o.mylrn))
 	if err != nil {
