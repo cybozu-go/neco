@@ -153,19 +153,21 @@ Synopsis
 
 ### CKE related functions
 
+The weight is values of each role for **overriding** `labels["cke.cybozu.com/weight"]` values in [cke-template.yml](../etc/cke-template.yml).
+When `neco-worker` and `neco init-data` run `ckecli sabakan set-template` internally, read etcd saved weight values and then generate `cke-template.yml`.
+See details [Role and weights](https://github.com/cybozu-go/cke/blob/master/docs/sabakan-integration.md#roles-and-weights).
+
 * `neco cke weight list`
 
-    List current machine weight of roles.
-    See details [Role and weights](https://github.com/cybozu-go/cke/blob/master/docs/sabakan-integration.md#roles-and-weights).
+    List current weight of roles.
 
 * `neco cke weight get ROLE`
 
-    Get given role of the weight.
+    Get current weight of given role.
 
 * `neco cke weight set ROLE WEIGHT`
 
-    Set given weight to the role. The weight is used as `labels["cke.cybozu.com/weight"]` in `cke-template.yml`
-    when `neco-worker` and `neco init-data` run `ckecli sabakan set-template` internally.
+    Set given weight to the role.
 
 ### Miscellaneous
 
@@ -256,7 +258,7 @@ Use case
     12. Add etcd key `<prefix>/bootservers/LRN` on the finished boot server.
 2. Run `neco init NAME` on one of boot servers. etcd user/role has created.
 3. Run `neco init-local NAME` on each boot server. Client certificates for `NAME` have issued.
-4. Run `neco cke weight` on one of boot servers for generating `cke-template.yml`.
+4. (Optional) Run `neco cke weight` on one of boot servers for generating `cke-template.yml`.
 5. Run `neco init-data` on one of boot servers.
 
 ### Add a new boot server
