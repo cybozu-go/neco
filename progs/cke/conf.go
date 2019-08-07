@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/cybozu-go/cke"
 	"github.com/cybozu-go/cke/sabakan"
@@ -28,33 +27,27 @@ func GenerateConf(w io.Writer, lrns []int) error {
 	return yaml.NewEncoder(w).Encode(data)
 }
 
-// GenerateCKETemplate generates cke-template.yml from template.
-func GenerateCKETemplate(ctx context.Context, w io.Writer, st storage.Storage) error {
-	r, err := os.Open(neco.CKETemplateFile)
-	if err != nil {
-		return err
-	}
-	defer r.Close()
-
+// GenerateCKETemplate generates cke-template.yml using role and weights.
+func GenerateCKETemplate(ctx context.Context, st storage.Storage, ckeTemplate []byte) ([]byte, error) {
 	tmpl := cke.NewCluster()
-	err = yaml.NewDecoder(r).Decode(tmpl)
+	err := yaml.Unmarshal(ckeTemplate, tmpl)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	weights, err := st.GetCKEWeight(ctx)
 	if err != nil && err != storage.ErrNotFound {
-		return err
+		return nil, err
 	}
 
 	for role, weight := range weights {
 		for _, n := range tmpl.Nodes {
-			if n.Labels[sabakan.CKELabelRole] == role {
+			if !n.ControlPlane && n.Labels[sabakan.CKELabelRole] == role {
 				n.Labels[sabakan.CKELabelWeight] = fmt.Sprintf("%f", weight)
 				break
 			}
 		}
 	}
 
-	return yaml.NewEncoder(w).Encode(tmpl)
+	return yaml.Marshal(tmpl)
 }
