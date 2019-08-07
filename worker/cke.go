@@ -224,6 +224,7 @@ func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateReques
 		return err
 	}
 	defer f.Close()
+
 	_, err = f.Write(newCkeTemplate)
 	if err != nil {
 		return err
