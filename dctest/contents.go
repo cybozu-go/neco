@@ -30,6 +30,16 @@ func TestInitData() {
 		}
 
 		By("initialize data for sabakan and CKE")
+		execSafeAt(boot0, "neco", "cke", "weight", "set", "cs", "2")
+		execSafeAt(boot0, "neco", "cke", "weight", "set", "ss", "1")
+		stdout, stderr, err := execAt(boot0, "neco", "cke", "weight", "list")
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		stdout, stderr, err = execAt(boot0, "neco", "cke", "weight", "get", "cs")
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		Expect(string(stdout)).To(Equal("2.000000"))
+		stdout, stderr, err = execAt(boot0, "neco", "cke", "weight", "get", "ss")
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		Expect(string(stdout)).To(Equal("1.000000"))
 		execSafeAt(boot0, "neco", "init-data")
 	})
 }
