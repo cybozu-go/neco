@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -208,7 +209,27 @@ func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateReques
 		}
 	}
 
-	err = well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", neco.CKETemplateFile).Run()
+	ckeTemplate, err := ioutil.ReadFile(neco.CKETemplateFile)
+	if err != nil {
+		return err
+	}
+
+	newCkeTemplate, err := cke.GenerateCKETemplate(ctx, o.storage, ckeTemplate)
+	if err != nil {
+		return err
+	}
+
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.Write(newCkeTemplate)
+	if err != nil {
+		return err
+	}
+
+	err = well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", f.Name()).Run()
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,
