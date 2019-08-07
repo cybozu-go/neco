@@ -26,11 +26,11 @@ func (s Storage) GetCKEWeight(ctx context.Context) (map[string]float64, error) {
 		return nil, ErrNotFound
 	}
 
-	rw := new(map[string]float64)
-	err = json.Unmarshal(resp.Kvs[0].Value, rw)
+	var rw map[string]float64
+	err = json.Unmarshal(resp.Kvs[0].Value, &rw)
 	if err != nil {
 		return nil, err
 	}
 
-	return *rw, nil
+	return rw, nil
 }

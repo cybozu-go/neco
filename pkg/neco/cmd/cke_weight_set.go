@@ -28,6 +28,9 @@ var ckeWeightSetCmd = &cobra.Command{
 			if err != nil && err != storage.ErrNotFound {
 				return err
 			}
+			if err == storage.ErrNotFound {
+				data = map[string]float64{}
+			}
 
 			weight, err := strconv.ParseFloat(args[1], 64)
 			if err != nil {

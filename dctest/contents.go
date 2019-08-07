@@ -36,10 +36,10 @@ func TestInitData() {
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		stdout, stderr, err = execAt(boot0, "neco", "cke", "weight", "get", "cs")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		Expect(string(stdout)).To(Equal("2.000000"))
+		Expect(string(bytes.TrimSpace(stdout))).To(Equal("2"))
 		stdout, stderr, err = execAt(boot0, "neco", "cke", "weight", "get", "ss")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		Expect(string(stdout)).To(Equal("1.000000"))
+		Expect(string(bytes.TrimSpace(stdout))).To(Equal("1"))
 		execSafeAt(boot0, "neco", "init-data")
 	})
 }
