@@ -48,4 +48,4 @@ kind: Node
 type: ss
 spec:
   cpu: 2
-  memory: 4G
+  memory: 6G
