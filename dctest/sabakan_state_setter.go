@@ -17,7 +17,7 @@ const (
 )
 
 // TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
-func TestSabakanStateSetter() {
+func TestSabakanStateSetter(availableNodes int) {
 	It("should active all serf members", func() {
 		By("checking all serf members are active")
 		Eventually(func() error {
@@ -30,8 +30,7 @@ func TestSabakanStateSetter() {
 			if err != nil {
 				return err
 			}
-			// Number of worker node is 7
-			if len(m.Members) != 7 {
+			if len(m.Members) != availableNodes {
 				return fmt.Errorf("too few serf members: %d", len(m.Members))
 			}
 

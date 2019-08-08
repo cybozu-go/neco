@@ -18,10 +18,10 @@ machine-types:
             controller: SATAHDD.Slot.
             system: System.Embedded.
         minimum-healthy-count: 1
-      - name: systems_simplestorage_controllers_status_health
+      - name: hw_storage_controller_status_health
         selector:
           labels:
-            device: NonRAID.Integrated.1-1
+            controller: NonRAID.Integrated.1-1
       - name: hw_storage_controller_status_health
         selector:
           labels:
