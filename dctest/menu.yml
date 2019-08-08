@@ -21,6 +21,7 @@ spec:
   spine: 2
   rack:
     - cs: 2
+      ss: 1
     - cs: 2
     - cs: 1
     - cs: 1
@@ -42,3 +43,9 @@ type: cs
 spec:
   cpu: 4
   memory: 6G
+---
+kind: Node
+type: ss
+spec:
+  cpu: 2
+  memory: 4G

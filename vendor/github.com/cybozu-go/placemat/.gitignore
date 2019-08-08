@@ -31,3 +31,10 @@ tags
 
 # ignore go.sum
 /go.sum
+
+# Editors
+*~
+.*.swp
+.#*
+\#*#
+.vscode/

@@ -236,6 +236,12 @@ func (c *Cluster) Start(ctx context.Context, r *Runtime) error {
 	env := well.NewEnvironment(ctx)
 	for _, n := range c.Nodes {
 		n := n
+		if n.TPM {
+			err := n.StartSWTPM(ctx, r)
+			if err != nil {
+				return err
+			}
+		}
 		env.Go(func(ctx2 context.Context) error {
 			// reference the original context because ctx2 will soon be cancelled.
 			vm, err := n.Start(ctx, r, nodeCh)
