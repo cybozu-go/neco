@@ -121,8 +121,8 @@ func checkCoilNodeDaemonSet() {
 			return err
 		}
 
-		if int(daemonset.Status.NumberReady) != 5 {
-			return errors.New("NumberReady is not 5")
+		if int(daemonset.Status.NumberReady) != 6 {
+			return errors.New("NumberReady is not 6")
 		}
 		return nil
 	}).Should(Succeed())
