@@ -344,8 +344,14 @@ func TestUpgrade() {
 			return nil
 		}).Should(Succeed())
 
-		_, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "delete", "pod", podName)
-		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+		// Eventually() will be no longer needed by https://github.com/cybozu-go/neco/issues/429
+		Eventually(func() error {
+			stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "delete", "pod", podName)
+			if err != nil {
+				return fmt.Errorf("err: %v, stdout:%s, stderr: %s", err, stdout, stderr)
+			}
+			return nil
+		}).Should(Succeed())
 
 		By("waiting squid deployment is ready")
 		Eventually(func() error {
