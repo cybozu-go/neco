@@ -68,3 +68,8 @@ machine-types:
           labels:
             device: NonRAID.Integrated.1-1
         minimum-healthy-count: 10
+      - name: hw_systems_storage_drives_status_health
+        selector:
+          label-prefix:
+            device: Disk.Direct.
+        minimum-healthy-count: 2
