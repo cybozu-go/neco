@@ -44,7 +44,7 @@ func TestInitData() {
 		stdout, stderr, err = execAt(boot0, "neco", "cke", "weight", "get", "ss")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		Expect(string(bytes.TrimSpace(stdout))).To(Equal("1"))
-		execSafeAt(boot0, "neco", "init-data")
+		execSafeAt(boot0, "neco", "cke", "update")
 		stdout, stderr, err = execAt(boot0, "ckecli", "sabakan", "get-template")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		ckeTemplate := cke.NewCluster()
@@ -57,5 +57,6 @@ func TestInitData() {
 		//weight, err = strconv.ParseFloat(ckeTemplate.Nodes[2].Labels[sabakan.CKELabelWeight], 64)
 		//Expect(err).NotTo(HaveOccurred())
 		//Expect(weight).To(BeNumerically("==", 1.000000))
+		execSafeAt(boot0, "neco", "init-data")
 	})
 }

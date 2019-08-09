@@ -154,7 +154,12 @@ Synopsis
 ### CKE related functions
 
 The weight is values of each role for **overriding** `labels["cke.cybozu.com/weight"]` values in [cke-template.yml](../etc/cke-template.yml).
-When `neco-worker` and `neco init-data` run `ckecli sabakan set-template` internally, read etcd saved weight values and then generate `cke-template.yml`.
+When commands as follows run `ckecli sabakan set-template` internally, read etcd saved weight values and then generate `cke-template.yml`.
+
+- `neco-worker`
+- `neco init-data`
+- `neco cke update`
+
 See details [Role and weights](https://github.com/cybozu-go/cke/blob/master/docs/sabakan-integration.md#roles-and-weights).
 
 * `neco cke weight list`
@@ -168,6 +173,10 @@ See details [Role and weights](https://github.com/cybozu-go/cke/blob/master/docs
 * `neco cke weight set ROLE WEIGHT`
 
     Set given weight to the role.
+
+* `neco cke update`
+
+    Update cke template using overriding weights. This is useful if administrator updates role and weights in the running Kubernetes cluster.
 
 ### Miscellaneous
 
