@@ -85,7 +85,10 @@ func initData(ctx context.Context, st storage.Storage) error {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
+		defer func() {
+			f.Close()
+			os.Remove(f.Name())
+		}()
 
 		_, err = f.Write(newCkeTemplate)
 		if err != nil {

@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	"github.com/cybozu-go/cke"
 	"github.com/cybozu-go/cke/sabakan"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 // TestInitData executes "neco init-data"
@@ -49,8 +50,12 @@ func TestInitData() {
 		ckeTemplate := cke.NewCluster()
 		err = yaml.Unmarshal(stdout, ckeTemplate)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(ckeTemplate.Nodes[1].Labels[sabakan.CKELabelWeight]).To(Equal("2.000000"))
+		weight, err := strconv.ParseFloat(ckeTemplate.Nodes[1].Labels[sabakan.CKELabelWeight], 64)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(weight).To(BeNumerically("==", 2.000000))
 		// TODO: enable it after merge https://github.com/cybozu-go/neco/pull/430
-		//Expect(ckeTemplate.Nodes[2].Labels[sabakan.CKELabelWeight]).To(Equal("1.000000"))
+		//weight, err = strconv.ParseFloat(ckeTemplate.Nodes[2].Labels[sabakan.CKELabelWeight], 64)
+		//Expect(err).NotTo(HaveOccurred())
+		//Expect(weight).To(BeNumerically("==", 1.000000))
 	})
 }

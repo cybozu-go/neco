@@ -9,7 +9,7 @@ import (
 	"github.com/cybozu-go/cke/sabakan"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 // GenerateConf generates config.yml from template.
@@ -24,7 +24,12 @@ func GenerateConf(w io.Writer, lrns []int) error {
 		"tls-cert-file": neco.CKECertFile,
 		"tls-key-file":  neco.CKEKeyFile,
 	}
-	return yaml.NewEncoder(w).Encode(data)
+	conf, err := yaml.Marshal(data)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(conf)
+	return err
 }
 
 // GenerateCKETemplate generates cke-template.yml using role and weights.
