@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -15,7 +14,6 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/cke"
 	"github.com/cybozu-go/neco/storage"
-	"github.com/cybozu-go/well"
 )
 
 func (o *operator) StopCKE(ctx context.Context, req *neco.UpdateRequest) error {
@@ -209,28 +207,11 @@ func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateReques
 		}
 	}
 
-	ckeTemplate, err := ioutil.ReadFile(neco.CKETemplateFile)
+	err = cke.SetCKETemplate(ctx, o.storage)
 	if err != nil {
 		return err
 	}
 
-	newCkeTemplate, err := cke.GenerateCKETemplate(ctx, o.storage, ckeTemplate)
-	if err != nil {
-		return err
-	}
-
-	f, err := ioutil.TempFile("", "")
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	_, err = f.Write(newCkeTemplate)
-	if err != nil {
-		return err
-	}
-
-	err = well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", f.Name()).Run()
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 
 	"github.com/cybozu-go/log"
@@ -71,35 +70,9 @@ func initData(ctx context.Context, st storage.Storage) error {
 		return sabakan.UploadDHCPJSON(ctx, localClient)
 	})
 	env.Go(func(ctx context.Context) error {
-		ckeTemplate, err := ioutil.ReadFile(neco.CKETemplateFile)
-		if err != nil {
-			return err
-		}
-
-		newCkeTemplate, err := cke.GenerateCKETemplate(ctx, st, ckeTemplate)
-		if err != nil {
-			return err
-		}
-
-		f, err := ioutil.TempFile("", "")
-		if err != nil {
-			return err
-		}
-		defer func() {
-			f.Close()
-			os.Remove(f.Name())
-		}()
-
-		_, err = f.Write(newCkeTemplate)
-		if err != nil {
-			return err
-		}
-
-		return well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", f.Name()).Run()
+		return cke.SetCKETemplate(ctx, st)
 	})
-	env.Go(func(ctx context.Context) error {
-		return cke.UpdateResources(ctx)
-	})
+	env.Go(cke.UpdateResources)
 	env.Stop()
 	return env.Wait()
 }
