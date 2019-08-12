@@ -20,9 +20,11 @@ DEB = placemat_$(VERSION)_amd64.deb
 DEST = .
 SBIN_PKGS = ./pkg/placemat ./pkg/pmctl
 
+all: test
+
 test:
 	test -z "$$(gofmt -s -l . | grep -v '^vendor' | tee /dev/stderr)"
-	golint -set_exit_status $$(go list ./... | grep -v /vendor/)
+	test -z "$$(golint $$(go list ./... | grep -v /vendor/) | grep -v '/mtest/.*: should not use dot imports' | tee /dev/stderr)"
 	go build ./...
 	go test -race -v ./...
 	go vet ./...
@@ -31,7 +33,7 @@ mod:
 	go mod tidy
 	go mod vendor
 	git add -f vendor
-	git add go.mod go.sum
+	git add go.mod
 
 deb: $(DEB)
 

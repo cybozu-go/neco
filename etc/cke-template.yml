@@ -9,15 +9,15 @@ nodes:
   labels:
     cke.cybozu.com/role: "cs"
     cke.cybozu.com/weight: "18"
-# - user: cybozu
-#   control_plane: false
-#   labels:
-#     cke.cybozu.com/role: "ss"
-#     cke.cybozu.com/weight: "10"
-#   taints:
-#   - key: cke.cybozu.com/role
-#     value: storage
-#     effect: NoExecute
+- user: cybozu
+  control_plane: false
+  labels:
+    cke.cybozu.com/role: "ss"
+    cke.cybozu.com/weight: "10"
+  taints:
+  - key: cke.cybozu.com/role
+    value: storage
+    effect: NoExecute
 service_subnet: 10.68.0.0/16
 pod_subnet: 10.64.0.0/14
 dns_service: internet-egress/unbound

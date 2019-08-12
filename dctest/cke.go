@@ -49,7 +49,7 @@ func TestCKESetup() {
 }
 
 // TestCKE tests CKE
-func TestCKE() {
+func TestCKE(availableNodes int) {
 	It("all systemd units are active", func() {
 		By("getting systemd unit statuses by serf members")
 		Eventually(func() error {
@@ -62,8 +62,7 @@ func TestCKE() {
 			if err != nil {
 				return err
 			}
-			// Number of worker node is 6
-			if len(m.Members) != 6 {
+			if len(m.Members) != availableNodes {
 				return fmt.Errorf("too few serf members: %d", len(m.Members))
 			}
 
@@ -109,6 +108,8 @@ func TestCKE() {
 				return err
 			}
 
+			// control-plane-count + minimum-workers = 5
+			// https://github.com/cybozu-go/cke/blob/master/docs/sabakan-integration.md#initialization
 			if len(nl.Items) != 5 {
 				return fmt.Errorf("too few nodes: %d", len(nl.Items))
 			}

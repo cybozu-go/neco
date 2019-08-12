@@ -4,16 +4,19 @@ import . "github.com/onsi/ginkgo"
 
 // BootstrapSuite is a test suite that tests initial setup of Neco
 var BootstrapSuite = func() {
+	availableNodes := 7
 	Context("setup", TestSetup)
 	Context("initialize", TestInit)
 	Context("sabakan", TestSabakan)
 	Context("machines", TestMachines)
 	Context("init-data", TestInitData)
 	Context("etcdpasswd", TestEtcdpasswd)
-	Context("sabakan-state-setter", TestSabakanStateSetter)
+	Context("sabakan-state-setter", func() {
+		TestSabakanStateSetter(availableNodes)
+	})
 	Context("cke", func() {
 		TestCKESetup()
-		TestCKE()
+		TestCKE(availableNodes)
 	})
 	Context("coil", func() {
 		TestCoilSetup()
@@ -36,9 +39,15 @@ var FunctionsSuite = func() {
 
 // UpgradeSuite is a test suite that tests upgrading process works correctry
 var UpgradeSuite = func() {
-	Context("sabakan-state-setter", TestSabakanStateSetter)
+	// TODO: Please update it to 7 after merge branch ignition-for-SS
+	availableNodes := 6
+	Context("sabakan-state-setter", func() {
+		TestSabakanStateSetter(availableNodes)
+	})
 	Context("upgrade", TestUpgrade)
-	Context("upgraded cke", TestCKE)
+	Context("upgraded cke", func() {
+		TestCKE(availableNodes)
+	})
 	Context("upgraded coil", TestCoil)
 	Context("upgraded unbound", TestUnbound)
 	Context("upgraded squid", TestSquid)

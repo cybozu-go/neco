@@ -264,6 +264,7 @@ func emptyNode(rackName, rackShortName, nodeName, serial string, disks int, reso
 		SMBIOS: placemat.SMBIOSConfig{
 			Serial: serial,
 		},
+		TPM: true,
 	}
 }
 

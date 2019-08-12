@@ -41,7 +41,7 @@ Bump version
     ```console
     $ git commit -a -m "Bump version to $VERSION"
     $ git tag v$VERSION
-    $ git push origin master --tags
+    $ git push origin master v$VERSION
     ```
 
 The release will be automatically published by the CircleCI job.

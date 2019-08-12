@@ -17,7 +17,7 @@ const (
 )
 
 // TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
-func TestSabakanStateSetter() {
+func TestSabakanStateSetter(availableNodes int) {
 	It("should active all serf members", func() {
 		By("checking all serf members are active")
 		Eventually(func() error {
@@ -30,8 +30,7 @@ func TestSabakanStateSetter() {
 			if err != nil {
 				return err
 			}
-			// Number of worker node is 6
-			if len(m.Members) != 6 {
+			if len(m.Members) != availableNodes {
 				return fmt.Errorf("too few serf members: %d", len(m.Members))
 			}
 
@@ -43,13 +42,14 @@ func TestSabakanStateSetter() {
 		By("copying all healthy dummy redfish data")
 
 		state := map[string]string{
-			prefix + "Processors/CPU.Socket.1":  "OK",
-			prefix + "Processors/CPU.Socket.2":  "OK",
-			prefix + "Storage/AHCI.Slot.1-1":    "OK",
-			prefix + "Storage/PCIeSSD.Slot.2-C": "OK",
-			prefix + "Storage/PCIeSSD.Slot.3-C": "OK",
-			prefix + "Storage/SATAHDD.Slot.1":   "OK",
-			prefix + "Storage/SATAHDD.Slot.2":   "OK",
+			prefix + "Processors/CPU.Socket.1":        "OK",
+			prefix + "Processors/CPU.Socket.2":        "OK",
+			prefix + "Storage/AHCI.Slot.1-1":          "OK",
+			prefix + "Storage/PCIeSSD.Slot.2-C":       "OK",
+			prefix + "Storage/PCIeSSD.Slot.3-C":       "OK",
+			prefix + "Storage/SATAHDD.Slot.1":         "OK",
+			prefix + "Storage/SATAHDD.Slot.2":         "OK",
+			prefix + "Storage/NonRAID.Integrated.1-1": "OK",
 		}
 		json := generateRedfishDummyData(state)
 

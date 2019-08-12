@@ -41,6 +41,8 @@ systemd:
     mask: true
   - name: systemd-timesyncd.service
     mask: true
+  - name: tcsd.service
+    mask: true
   - name: docker.service
     enabled: true
   - name: disable-transparent-hugepage.service

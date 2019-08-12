@@ -121,6 +121,8 @@ func checkCoilNodeDaemonSet() {
 			return err
 		}
 
+		// control-plane-count + minimum-workers = 5
+		// https://github.com/cybozu-go/cke/blob/master/docs/sabakan-integration.md#initialization
 		if int(daemonset.Status.NumberReady) != 5 {
 			return errors.New("NumberReady is not 5")
 		}

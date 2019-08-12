@@ -63,24 +63,24 @@ process (by sending a signal or Control-C).
 $ placemat [OPTIONS] YAML [YAML ...]
 
 Options:
-  -graphic
-        run QEMU with graphical console
-  -enable-virtfs
-        enable VirtFS to share files between the guest and the host OS.
-  -shared-dir
-        shared directory between the guest and the host OS (default "/mnt/placemat")
-  -run-dir string
-        run directory (default "/tmp")
   -cache-dir string
-        directory for cache data.
+        directory for cache data
   -data-dir string
         directory to store data (default "/var/scratch/placemat")
-  -listen-addr string
-        listen address of API endpoint to control placemat. (default "127.0.0.1:10808")
   -debug
-        show QEMU's and Pod's stdout and stderr        
+        show QEMU's and Pod's stdout and stderr
+  -enable-virtfs
+        enable VirtFS to share files between guest and host OS.
   -force
         force run with removal of garbage
+  -graphic
+        run QEMU with graphical console
+  -listen-addr string
+        listen address (default "127.0.0.1:10808")
+  -run-dir string
+        run directory (default "/tmp")
+  -shared-dir string
+        shared directory (default "/mnt/placemat")
 ```
 
 If `-cache-dir` is not specified, the default will be `/home/${SUDO_USER}/placemat_data`
@@ -103,6 +103,8 @@ Getting started
 - [OVMF][] for UEFI.
 - [picocom](https://github.com/npat-efault/picocom) for `pmctl`.
 - [rkt][] for `Pod` resource.
+- [socat](http://www.dest-unreach.org/socat/) for `pmctl`.
+- *(Optional)* [swtpm](https://github.com/stefanberger/swtpm) for providing TPM of `Node` resource.
 
 For Ubuntu or Debian, you can install them as follows:
 
