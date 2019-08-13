@@ -1,0 +1,37 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:kube-apiserver-to-kubelet
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  annotations:
+    cke.cybozu.com/revision: "1"
+    # turn on auto-reconciliation
+    # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#auto-reconciliation
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes/proxy
+      - nodes/stats
+      - nodes/log
+      - nodes/spec
+      - nodes/metrics
+    verbs: ["*"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:kube-apiserver
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  annotations:
+    cke.cybozu.com/revision: "1"
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kube-apiserver-to-kubelet
+subjects:
+- kind: User
+  name: kubernetes

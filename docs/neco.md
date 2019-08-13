@@ -62,7 +62,7 @@ Synopsis
 * `neco init-data`
 
     Initialize data for sabakan and CKE. If uploaded versions are up to date, do nothing.
-    This command must be invoked only once in the cluster after `neco init` and 
+    This command must be invoked only once in the cluster after `neco init` and
     `neco init-local` completed.
 
 * `neco status`
@@ -150,6 +150,33 @@ Synopsis
 * `neco reboot-worker`
 
     Reboot all worker nodes.
+
+### CKE related functions
+
+The weight is values of each role for **overriding** `labels["cke.cybozu.com/weight"]` values in [cke-template.yml](../etc/cke-template.yml).
+When commands as follows run `ckecli sabakan set-template` internally, read etcd saved weight values and then generate `cke-template.yml`.
+
+- `neco-worker`
+- `neco init-data`
+- `neco cke update`
+
+See details [Role and weights](https://github.com/cybozu-go/cke/blob/master/docs/sabakan-integration.md#roles-and-weights).
+
+* `neco cke weight list`
+
+    List current weight of roles.
+
+* `neco cke weight get ROLE`
+
+    Get current weight of given role.
+
+* `neco cke weight set ROLE WEIGHT`
+
+    Set given weight to the role.
+
+* `neco cke update`
+
+    Update cke template using overriding weights. This is useful if administrator updates role and weights in the running Kubernetes cluster.
 
 ### Miscellaneous
 
@@ -240,7 +267,8 @@ Use case
     12. Add etcd key `<prefix>/bootservers/LRN` on the finished boot server.
 2. Run `neco init NAME` on one of boot servers. etcd user/role has created.
 3. Run `neco init-local NAME` on each boot server. Client certificates for `NAME` have issued.
-4. Run `neco init-data` on one of boot servers.
+4. (Optional) Run `neco cke weight` on one of boot servers for generating `cke-template.yml`.
+5. Run `neco init-data` on one of boot servers.
 
 ### Add a new boot server
 
