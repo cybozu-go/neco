@@ -7,10 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"time"
-
-	sabakan "github.com/cybozu-go/sabakan/v2"
 
 	"github.com/cybozu-go/log"
 )
@@ -25,16 +22,18 @@ func main() {
 		usage()
 	}
 
-	var machineTypeBoot, machineTypeCS, machineTypeSS string
+	var machineTypeBoot, machineTypeCS, machineTypeSS, bmcType string
 	switch os.Args[1] {
 	case "stage0":
 		machineTypeBoot = "r640-boot-1"
 		machineTypeCS = "r640-cs-1"
 		machineTypeSS = "r740xd-ss-2"
+		bmcType = "iDRAC"
 	case "tokyo0", "osaka0":
 		machineTypeBoot = "r640-boot-2"
 		machineTypeCS = "r640-cs-2"
 		machineTypeSS = "r740xd-ss-2"
+		bmcType = "iDRAC"
 	default:
 		log.ErrorExit(errors.New("specify valid datacenter"))
 	}
@@ -45,7 +44,7 @@ func main() {
 	}
 	defer f.Close()
 
-	ms := []sabakan.MachineSpec{}
+	ms := []map[string]interface{}{}
 	r := csv.NewReader(f)
 	for l := 0; ; l++ {
 		record, err := r.Read()
@@ -92,32 +91,27 @@ func main() {
 					datacenter, rack, serial, product, role))
 		}
 
-		rackInt, err := strconv.ParseInt(rack, 10, 64)
-		if err != nil {
-			log.ErrorExit(err)
-		}
-
 		supportDate, err := time.Parse("2006/1/02", supportDateString)
 		if err != nil {
 			log.ErrorExit(err)
 		}
+		// retireDate = support date + 5 years
+		retireDate := supportDate.Add(time.Hour * 24 * 365 * 5)
 
-		m := sabakan.MachineSpec{
-			Serial: serial,
-			Labels: map[string]string{
-				"machine-type": machineType,
+		m := map[string]interface{}{
+			"serial": serial,
+			"labels": map[string]string{
 				"datacenter":   datacenter,
+				"machine-type": machineType,
 				"product":      product,
 			},
-			Rack: uint(rackInt),
-			Role: role,
-			// RetireDate is support date + 5 years
-			RetireDate: supportDate.Add(time.Hour * 24 * 365 * 5),
-			BMC: sabakan.MachineBMC{
-				Type: "IPMI-2.0",
+			"rack":        rack,
+			"role":        role,
+			"retire-date": retireDate.Format(time.RFC3339),
+			"bmc": map[string]string{
+				"type": bmcType,
 			},
 		}
-
 		ms = append(ms, m)
 	}
 
