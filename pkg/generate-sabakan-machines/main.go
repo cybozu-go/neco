@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"time"
 
 	sabakan "github.com/cybozu-go/sabakan/v2"
 
@@ -71,6 +72,7 @@ func main() {
 		serial := record[3]
 		product := record[4]
 		role := record[5]
+		supportDateString := record[6]
 
 		var machineType string
 		switch role {
@@ -83,13 +85,19 @@ func main() {
 		default:
 			log.ErrorExit(errors.New("unknown role " + role))
 		}
-		if len(datacenter) == 0 || len(rack) == 0 || len(serial) == 0 || len(product) == 0 || len(role) == 0 {
+		if len(datacenter) == 0 || len(rack) == 0 || len(serial) == 0 ||
+			len(product) == 0 || len(role) == 0 || len(supportDateString) == 0 {
 			log.ErrorExit(
 				fmt.Errorf("some colmuns are missing in csv, datacenter: %s, rack: %s, serial: %s, product: %s, role: %s",
 					datacenter, rack, serial, product, role))
 		}
 
 		rackInt, err := strconv.ParseInt(rack, 10, 64)
+		if err != nil {
+			log.ErrorExit(err)
+		}
+
+		supportDate, err := time.Parse("2006/1/02", supportDateString)
 		if err != nil {
 			log.ErrorExit(err)
 		}
@@ -103,6 +111,8 @@ func main() {
 			},
 			Rack: uint(rackInt),
 			Role: role,
+			// RetireDate is support date + 5 years
+			RetireDate: supportDate.Add(time.Hour * 24 * 365 * 5),
 			BMC: sabakan.MachineBMC{
 				Type: "IPMI-2.0",
 			},
