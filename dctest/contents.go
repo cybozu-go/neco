@@ -2,6 +2,7 @@ package dctest
 
 import (
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -38,6 +39,15 @@ func TestInitData() {
 		execSafeAt(boot0, "neco", "cke", "weight", "set", "ss", "1")
 		stdout, stderr, err := execAt(boot0, "neco", "cke", "weight", "list")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		var result map[string]int
+		err = json.Unmarshal(stdout, &result)
+		Expect(err).NotTo(HaveOccurred())
+		v, ok := result["cs"]
+		Expect(ok).To(BeTrue())
+		Expect(v).To(Equal(2))
+		v, ok = result["ss"]
+		Expect(ok).To(BeTrue())
+		Expect(v).To(Equal(1))
 		stdout, stderr, err = execAt(boot0, "neco", "cke", "weight", "get", "cs")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		Expect(string(bytes.TrimSpace(stdout))).To(Equal("2"))
