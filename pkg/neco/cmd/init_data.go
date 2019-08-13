@@ -70,11 +70,9 @@ func initData(ctx context.Context, st storage.Storage) error {
 		return sabakan.UploadDHCPJSON(ctx, localClient)
 	})
 	env.Go(func(ctx context.Context) error {
-		return well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", neco.CKETemplateFile).Run()
+		return cke.SetCKETemplate(ctx, st)
 	})
-	env.Go(func(ctx context.Context) error {
-		return cke.UpdateResources(ctx)
-	})
+	env.Go(cke.UpdateResources)
 	env.Stop()
 	return env.Wait()
 }

@@ -168,3 +168,20 @@ Teleport auth servers in a JSON array.
 ## `<prefix>/teleport/auth-token`
 
 Token for accessing to teleport auth server
+
+## `<prefix>/cke/weight`
+
+A JSON object with these fields:
+
+Name     | Type  | Description
+----     | ----  | -----------
+`<ROLE>` | float | A role of weight.
+
+This is used when `neco-worker` and `neco init-data` run `ckecli sabakan set-template`.
+
+```json
+{
+    "cs": 18,
+    "ss": 10
+}
+```

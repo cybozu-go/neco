@@ -4,11 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 
 	"github.com/cybozu-go/neco"
 	saba "github.com/cybozu-go/neco/progs/sabakan"
+	"github.com/cybozu-go/neco/storage"
 	sabakan "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/cybozu-go/well"
 )
@@ -57,4 +60,33 @@ func GetCKEImages() ([]neco.ContainerImage, error) {
 		return nil, err
 	}
 	return images, nil
+}
+
+// SetCKETemplate set cke template with overriding weights
+func SetCKETemplate(ctx context.Context, st storage.Storage) error {
+	ckeTemplate, err := ioutil.ReadFile(neco.CKETemplateFile)
+	if err != nil {
+		return err
+	}
+
+	newCkeTemplate, err := GenerateCKETemplate(ctx, st, ckeTemplate)
+	if err != nil {
+		return err
+	}
+
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		f.Close()
+		os.Remove(f.Name())
+	}()
+
+	_, err = f.Write(newCkeTemplate)
+	if err != nil {
+		return err
+	}
+
+	return well.CommandContext(ctx, neco.CKECLIBin, "sabakan", "set-template", f.Name()).Run()
 }
