@@ -157,3 +157,11 @@ func (r *Runtime) guestSocketPath(host string) string {
 func (r *Runtime) nvramPath(host string) string {
 	return filepath.Join(r.dataDir, "nvram", host+".fd")
 }
+
+func (r *Runtime) swtpmSocketDirPath(host string) string {
+	return filepath.Join(r.runDir, host)
+}
+
+func (r *Runtime) swtpmSocketPath(host string) string {
+	return filepath.Join(r.runDir, host, "swtpm.socket")
+}

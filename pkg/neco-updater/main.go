@@ -37,6 +37,7 @@ func main() {
 	if err != nil {
 		log.ErrorExit(err)
 	}
+	defer session.Close()
 
 	st := storage.NewStorage(etcd)
 

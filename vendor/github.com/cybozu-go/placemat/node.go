@@ -40,6 +40,7 @@ type NodeSpec struct {
 	CPU          int              `yaml:"cpu,omitempty"`
 	Memory       string           `yaml:"memory,omitempty"`
 	UEFI         bool             `yaml:"uefi,omitempty"`
+	TPM          bool             `yaml:"tpm,omitempty"`
 	SMBIOS       SMBIOSConfig     `yaml:"smbios,omitempty"`
 }
 
@@ -126,17 +127,34 @@ func CleanupNodes(r *Runtime, nodes []*Node) {
 			r.monitorSocketPath(d.Name),
 			r.socketPath(d.Name),
 		}
+		dirs := []string{
+			r.swtpmSocketDirPath(d.Name),
+		}
 		for _, f := range files {
 			_, err := os.Stat(f)
 			if err == nil {
 				err = os.Remove(f)
 				if err != nil {
-					log.Warn("failed to clean file", map[string]interface{}{
-						"filename": f,
+					log.Warn("failed to clean", map[string]interface{}{
+						"filename":  f,
+						log.FnError: err,
 					})
 				}
 			}
 		}
+		for _, d := range dirs {
+			_, err := os.Stat(d)
+			if err == nil {
+				err = os.RemoveAll(d)
+				if err != nil {
+					log.Warn("failed to clean", map[string]interface{}{
+						"directory": d,
+						log.FnError: err,
+					})
+				}
+			}
+		}
+
 	}
 }
 
@@ -242,6 +260,12 @@ func (n *Node) Start(ctx context.Context, r *Runtime, nodeCh chan<- bmcInfo) (*N
 		}
 	}
 
+	if n.TPM {
+		params = append(params, "-chardev", "socket,id=chrtpm,path="+r.swtpmSocketPath(n.Name))
+		params = append(params, "-tpmdev", "emulator,id=tpm0,chardev=chrtpm")
+		params = append(params, "-device", "tpm-tis,tpmdev=tpm0")
+	}
+
 	if r.enableVirtFS {
 		p := path.Join(r.sharedDir, n.Name)
 		err := os.MkdirAll(p, 0755)
@@ -260,6 +284,10 @@ func (n *Node) Start(ctx context.Context, r *Runtime, nodeCh chan<- bmcInfo) (*N
 
 	monitor := r.monitorSocketPath(n.Name)
 	params = append(params, "-monitor", "unix:"+monitor+",server,nowait")
+
+	// Random generator passthrough for fast boot
+	params = append(params, "-object", "rng-random,id=rng0,filename=/dev/urandom")
+	params = append(params, "-device", "virtio-rng-pci,rng=rng0")
 
 	log.Info("Starting VM", map[string]interface{}{"name": n.Name})
 	qemuCommand := well.CommandContext(ctx, "qemu-system-x86_64", params...)
@@ -309,6 +337,7 @@ func (n *Node) Start(ctx context.Context, r *Runtime, nodeCh chan<- bmcInfo) (*N
 		os.Remove(guest)
 		os.Remove(monitor)
 		os.Remove(r.socketPath(n.Name))
+		os.RemoveAll(r.swtpmSocketDirPath(n.Name))
 	}
 
 	vm := &NodeVM{
@@ -333,4 +362,47 @@ func createNVRAM(ctx context.Context, p string) error {
 		return nil
 	}
 	return well.CommandContext(ctx, "cp", defaultOVMFVarsPath, p).Run()
+}
+
+// StartSWTPM starts swtpm with software TPM socket
+func (n *Node) StartSWTPM(ctx context.Context, r *Runtime) error {
+	err := os.Mkdir(r.swtpmSocketDirPath(n.Name), 0755)
+	if err != nil {
+		return err
+	}
+
+	log.Info("Starting swtpm for node", map[string]interface{}{
+		"name":   n.Name,
+		"socket": r.swtpmSocketPath(n.Name),
+	})
+	c := well.CommandContext(ctx, "swtpm", "socket",
+		"--tpmstate", "dir="+r.swtpmSocketDirPath(n.Name),
+		"--tpm2",
+		"--ctrl",
+		"type=unixio,path="+r.swtpmSocketPath(n.Name),
+	)
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	err = c.Start()
+	if err != nil {
+		return err
+	}
+
+	for {
+		_, err := os.Stat(r.swtpmSocketPath(n.Name))
+		if err != nil && !os.IsNotExist(err) {
+			return err
+		}
+		if err == nil {
+			break
+		}
+
+		select {
+		case <-time.After(100 * time.Millisecond):
+		case <-ctx.Done():
+			return nil
+		}
+	}
+
+	return nil
 }

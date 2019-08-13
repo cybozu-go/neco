@@ -18,7 +18,15 @@ machine-types:
             controller: SATAHDD.Slot.
             system: System.Embedded.
         minimum-healthy-count: 1
-  - name: staging-dell-14g-boot
+      - name: hw_storage_controller_status_health
+        selector:
+          labels:
+            controller: NonRAID.Integrated.1-1
+      - name: hw_storage_controller_status_health
+        selector:
+          labels:
+            controller: AHCI.Slot.1-1
+  - name: r640-boot-1
     metrics:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
@@ -28,7 +36,7 @@ machine-types:
           label-prefix:
             device: PCIeSSD.Slot.
         minimum-healthy-count: 1
-  - name: staging-dell-14g-cs
+  - name: r640-boot-2
     metrics:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
@@ -37,4 +45,39 @@ machine-types:
         selector:
           label-prefix:
             device: PCIeSSD.Slot.
+        minimum-healthy-count: 1
+  - name: r640-cs-1
+    metrics:
+      - name: hw_systems_processors_status_health
+      - name: hw_systems_memorysummary_status_health
+      - name: hw_chassis_power_voltages_status_health
+      - name: hw_systems_storage_drives_status_health
+        selector:
+          label-prefix:
+            device: PCIeSSD.Slot.
+        minimum-healthy-count: 2
+  - name: r640-cs-2
+    metrics:
+      - name: hw_systems_processors_status_health
+      - name: hw_systems_memorysummary_status_health
+      - name: hw_chassis_power_voltages_status_health
+      - name: hw_systems_storage_drives_status_health
+        selector:
+          label-prefix:
+            device: PCIeSSD.Slot.
+        minimum-healthy-count: 2
+  - name: r740xd-ss-2
+    metrics:
+      - name: hw_systems_processors_status_health
+      - name: hw_systems_memorysummary_status_health
+      - name: hw_chassis_power_voltages_status_health
+      - name: hw_systems_simplestorage_controllers_devices_status_health
+        selector:
+          labels:
+            device: NonRAID.Integrated.1-1
+        minimum-healthy-count: 10
+      - name: hw_systems_storage_drives_status_health
+        selector:
+          label-prefix:
+            device: Disk.Direct.
         minimum-healthy-count: 2
