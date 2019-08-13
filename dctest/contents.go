@@ -53,10 +53,9 @@ func TestInitData() {
 		weight, err := strconv.ParseFloat(ckeTemplate.Nodes[1].Labels[sabakan.CKELabelWeight], 64)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(weight).To(BeNumerically("==", 2.000000))
-		// TODO: enable it after merge https://github.com/cybozu-go/neco/pull/430
-		//weight, err = strconv.ParseFloat(ckeTemplate.Nodes[2].Labels[sabakan.CKELabelWeight], 64)
-		//Expect(err).NotTo(HaveOccurred())
-		//Expect(weight).To(BeNumerically("==", 1.000000))
+		weight, err = strconv.ParseFloat(ckeTemplate.Nodes[2].Labels[sabakan.CKELabelWeight], 64)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(weight).To(BeNumerically("==", 1.000000))
 		execSafeAt(boot0, "neco", "init-data")
 	})
 }
