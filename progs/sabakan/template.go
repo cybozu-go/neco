@@ -4,8 +4,8 @@ import "text/template"
 
 var serviceTmpl = template.Must(template.New("sabakan.service").Parse(`[Unit]
 Description=Sabakan container on rkt
-Wants=network-online.target
-After=network-online.target
+Wants=network-online.target etcd-container.service
+After=network-online.target etcd-container.service
 ConditionPathExists={{ .ConfFile }}
 ConditionPathExists={{ .CertFile }}
 ConditionPathExists={{ .KeyFile }}
@@ -16,7 +16,7 @@ Slice=machine.slice
 Type=simple
 KillMode=mixed
 Restart=on-failure
-RestartSec=10s
+RestartSec=30s
 ExecStart=/usr/bin/rkt run \
   --pull-policy never --net=host \
   --volume neco,kind=host,source=/etc/neco,readOnly=true \

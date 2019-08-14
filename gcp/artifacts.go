@@ -1,12 +1,12 @@
 package gcp
 
 var artifacts = artifactSet{
-	goVersion:           "1.12.5",
+	goVersion:           "1.12.8",
 	rktVersion:          "1.30.0",
 	etcdVersion:         "3.3.13",
 	placematVersion:     "1.3.7",
 	customUbuntuVersion: "20190607",
-	coreOSVersion:       "2135.5.0",
+	coreOSVersion:       "2135.6.0",
 	ctVersion:           "0.9.0",
 	baseImage:           "ubuntu-1804-bionic-v20190628",
 	baseImageProject:    "ubuntu-os-cloud",

@@ -3,10 +3,11 @@ commands:
   dctest-command:
     description: "datacenter test"
     parameters:
-      script:
-        type: string
       suite:
         type: string
+      tag:
+        type: string
+        default: ""
       datacenter:
         type: string
         default: ""
@@ -54,7 +55,7 @@ commands:
       - run:
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/<<parameters.script>> <<parameters.suite>> <<parameters.datacenter>>
+            ./bin/run-dctest.sh "<<parameters.suite>>" "<<parameters.tag>>" "<<parameters.datacenter>>"
           no_output_timeout: 20m
 
 jobs:
@@ -102,7 +103,6 @@ jobs:
     steps:
       - checkout
       - dctest-command:
-          script: run-dctest.sh
           suite: ./bootstrap
       - run:
           name: run dctest functions
@@ -123,8 +123,8 @@ jobs:
     steps:
       - checkout
       - dctest-command:
-          script: run-dctest-release.sh
           suite: ./bootstrap
+          tag: release
           datacenter: staging
       - run:
           command: ./bin/run-dctest-suite.sh upgrade
@@ -166,9 +166,10 @@ jobs:
             diffs=$(git status -s)
             if [ "$diffs" = "" ]; then touch .skip; exit 0; fi
             printf "%s\n" "$diffs"
+        # Skip the following steps if there is no difference.
       - dctest-command:
-          script: run-dctest-release.sh
           suite: ./bootstrap
+          tag: release
       - run:
           name: Run tests
           command: |
@@ -197,8 +198,8 @@ jobs:
       - run: git merge --no-commit origin/${CIRCLE_BRANCH}
       - run: cp /tmp/workspace/artifacts_release.go .
       - dctest-command:
-          script: run-dctest-release.sh
           suite: ./bootstrap
+          tag: release
           datacenter: staging
       - run:
           command: ./bin/run-dctest-suite.sh upgrade release
@@ -212,6 +213,9 @@ jobs:
     docker:
       - image: quay.io/cybozu/golang:1.12-bionic
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "d7:2a:c8:5d:c4:32:7e:20:6f:bc:20:7c:ab:c4:24:88"
       - checkout
       - attach_workspace:
           at: /tmp/workspace
@@ -229,9 +233,7 @@ jobs:
             diffs=$(git status -s)
             if [ "$diffs" = "" ]; then touch .skip; exit 0; fi
             printf "%s\n" "$diffs"
-      - add_ssh_keys:
-          fingerprints:
-            - "d7:2a:c8:5d:c4:32:7e:20:6f:bc:20:7c:ab:c4:24:88"
+        # Skip the following steps if there is no difference.
       - run:
           name: Store github-token
           command: |
