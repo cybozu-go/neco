@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"regexp"
 	"syscall"
 	"time"
@@ -150,48 +149,7 @@ func formatHomeDisk(ctx context.Context) error {
 		return err
 	}
 
-	render := func(srcFile, destFile string) error {
-		f, err := os.Open(srcFile)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-
-		data, err := ioutil.ReadAll(f)
-		if err != nil {
-			return err
-		}
-
-		st, err := f.Stat()
-		if err != nil {
-			return err
-		}
-		return ioutil.WriteFile(destFile, []byte(data), st.Mode())
-	}
-
-	src := homeMountPoint
-	dest := "/mnt"
-	err = filepath.Walk(src, func(p string, info os.FileInfo, walkErr error) error {
-		if walkErr != nil {
-			return walkErr
-		}
-
-		rel, err := filepath.Rel(src, p)
-		if err != nil {
-			return err
-		}
-
-		target := filepath.Join(dest, rel)
-		_, err = os.Stat(target)
-		if err == nil {
-			return nil
-		}
-		if info.IsDir() {
-			return os.Mkdir(target, 0755)
-		}
-
-		return render(p, target)
-	})
+	err = well.CommandContext(ctx, "/bin/cp", "-a", "/home/.", "/mnt").Run()
 	if err != nil {
 		return err
 	}
