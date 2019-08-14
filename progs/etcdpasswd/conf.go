@@ -31,6 +31,10 @@ Wants=etcd-container.service
 After=etcd-container.service
 ConditionPathExists=%s
 ConditionPathExists=%s
+StartLimitIntervalSec=600s
+
+[Service]
+RestartSec=30s
 `
 	_, err := fmt.Fprintf(w, tmpl, neco.EtcdpasswdCertFile, neco.EtcdpasswdKeyFile)
 	return err

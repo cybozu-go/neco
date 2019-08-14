@@ -5,8 +5,8 @@ import "text/template"
 var serviceTmpl = template.Must(template.New("cke.service").
 	Parse(`[Unit]
 Description=CKE container
-Wants=network-online.target etcd-container.service
-After=network-online.target etcd-container.service
+Wants=network-online.target etcd-container.service vault.service
+After=network-online.target etcd-container.service vault.service
 ConditionPathExists={{ .ConfFile }}
 ConditionPathExists={{ .CertFile }}
 ConditionPathExists={{ .KeyFile }}
@@ -17,7 +17,7 @@ Slice=machine.slice
 Type=simple
 KillMode=mixed
 Restart=on-failure
-RestartSec=10s
+RestartSec=30s
 ExecStart=/usr/bin/rkt run \
   --pull-policy never \
   --net=host \
