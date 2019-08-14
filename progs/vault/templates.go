@@ -26,8 +26,8 @@ storage "etcd" {
 var serviceTmpl = template.Must(template.New("vault.service").
 	Parse(`[Unit]
 Description=Vault container
-Wants=network-online.target
-After=network-online.target
+Wants=network-online.target etcd-container.service
+After=network-online.target etcd-container.service
 StartLimitIntervalSec=600s
 
 [Service]
