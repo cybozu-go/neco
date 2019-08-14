@@ -188,13 +188,21 @@ func (c *Controller) run(ctx context.Context) error {
 				log.Warn("gql error occurred when set state", map[string]interface{}{
 					log.FnError: err.Error(),
 					"serial":    mss.serial,
+					"ipv4":      mss.ipv4,
 				})
 			default:
 				log.Warn("error occurred when set state", map[string]interface{}{
 					log.FnError: err.Error(),
 					"serial":    mss.serial,
+					"ipv4":      mss.ipv4,
 				})
 			}
+		} else {
+			log.Info("change state", map[string]interface{}{
+				"serial": mss.serial,
+				"ipv4":   mss.ipv4,
+				"state":  newState,
+			})
 		}
 	}
 
