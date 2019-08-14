@@ -8,14 +8,16 @@ TAG_NAME=$2
 cat >run.sh <<EOF
 #!/bin/sh -e
 
-GOPATH=\$HOME/go
+# Set environment variables
+GO111MODULE=on
+export GO111MODULE
+GOPATH=\${HOME}/go
 export GOPATH
-PATH=/usr/local/go/bin:\$GOPATH/bin:\$PATH
+PATH=/usr/local/go/bin:\${GOPATH}/bin:\${PATH}
 export PATH
 
 # Run dctest
-cd \$GOPATH/src/github.com/cybozu-go/neco/dctest
-export GO111MODULE=on
+cd \${GOPATH}/src/github.com/cybozu-go/neco/dctest
 exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME}
 EOF
 chmod +x run.sh
