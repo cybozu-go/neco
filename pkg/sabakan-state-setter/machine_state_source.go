@@ -47,6 +47,7 @@ func findMachineType(m *machine, machineTypes []*machineType) *machineType {
 	if mtLabel == nil {
 		log.Warn(machineTypeLabelName+" is not set", map[string]interface{}{
 			"serial": m.Spec.Serial,
+			"ipv4":   m.Spec.IPv4,
 		})
 		return nil
 	}
@@ -58,6 +59,7 @@ func findMachineType(m *machine, machineTypes []*machineType) *machineType {
 
 	log.Warn(machineTypeLabelName+"["+mtLabel.Value+"] is not defined", map[string]interface{}{
 		"serial": m.Spec.Serial,
+		"ipv4":   m.Spec.IPv4,
 	})
 	return nil
 }

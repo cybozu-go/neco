@@ -21,12 +21,14 @@ func (mss *machineStateSource) decideMachineStateCandidate() string {
 	if mss.serfStatus == nil {
 		log.Info("unreachable; serf status is nil", map[string]interface{}{
 			"serial": mss.serial,
+			"ipv4":   mss.ipv4,
 		})
 		return sabakan.StateUnreachable.GQLEnum()
 	}
 	if mss.serfStatus.Status != "alive" {
 		log.Info("unreachable; serf status != alive", map[string]interface{}{
 			"serial": mss.serial,
+			"ipv4":   mss.ipv4,
 			"status": mss.serfStatus.Status,
 		})
 		return sabakan.StateUnreachable.GQLEnum()
@@ -46,6 +48,7 @@ func (mss *machineStateSource) decideMachineStateCandidate() string {
 	if len(suf) != 0 {
 		log.Info("unhealthy; some systemd units failed", map[string]interface{}{
 			"serial": mss.serial,
+			"ipv4":   mss.ipv4,
 			"failed": suf,
 		})
 		return sabakan.StateUnhealthy.GQLEnum()
@@ -58,6 +61,7 @@ func (mss *machineStateSource) decideByMonitorHW() string {
 	if mss.machineType == nil {
 		log.Info("unhealthy; machine type is nil", map[string]interface{}{
 			"serial": mss.serial,
+			"ipv4":   mss.ipv4,
 		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
@@ -69,6 +73,7 @@ func (mss *machineStateSource) decideByMonitorHW() string {
 	if mss.metrics == nil {
 		log.Info("unhealthy; metrics is nil", map[string]interface{}{
 			"serial": mss.serial,
+			"ipv4":   mss.ipv4,
 		})
 		return sabakan.StateUnhealthy.GQLEnum()
 	}
@@ -78,6 +83,7 @@ func (mss *machineStateSource) decideByMonitorHW() string {
 		if !ok {
 			log.Info("unhealthy; metrics do not contain check target", map[string]interface{}{
 				"serial": mss.serial,
+				"ipv4":   mss.ipv4,
 				"target": checkTarget.Name,
 			})
 			return sabakan.StateUnhealthy.GQLEnum()
@@ -117,6 +123,7 @@ func (mss *machineStateSource) checkTarget(target targetMetric) string {
 			if m.Value != monitorHWStatusHealth {
 				log.Info("unhealthy; metric is not healthy", map[string]interface{}{
 					"serial": mss.serial,
+					"ipv4":   mss.ipv4,
 					"name":   target.Name,
 					"labels": m.Labels,
 					"value":  m.Value,
@@ -135,6 +142,7 @@ func (mss *machineStateSource) checkTarget(target targetMetric) string {
 	if !exists {
 		log.Info("unhealthy; metric with specified labels does not exist", map[string]interface{}{
 			"serial":                mss.serial,
+			"ipv4":                  mss.ipv4,
 			"name":                  target.Name,
 			"selector":              slctr,
 			"minimum_healthy_count": minCount,
@@ -145,6 +153,7 @@ func (mss *machineStateSource) checkTarget(target targetMetric) string {
 	if healthyCount < minCount {
 		log.Info("unhealthy; minimum healthy count is not satisfied", map[string]interface{}{
 			"serial":                mss.serial,
+			"ipv4":                  mss.ipv4,
 			"name":                  target.Name,
 			"selector":              slctr,
 			"minimum_healthy_count": minCount,
@@ -155,6 +164,7 @@ func (mss *machineStateSource) checkTarget(target targetMetric) string {
 
 	log.Info("healthy;", map[string]interface{}{
 		"serial":                mss.serial,
+		"ipv4":                  mss.ipv4,
 		"name":                  target.Name,
 		"selector":              slctr,
 		"minimum_healthy_count": minCount,
