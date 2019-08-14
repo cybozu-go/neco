@@ -5,10 +5,10 @@ commands:
     parameters:
       suite:
         type: string
-      datacenter:
+      tag:
         type: string
         default: ""
-      tag:
+      datacenter:
         type: string
         default: ""
     steps:
@@ -55,7 +55,7 @@ commands:
       - run:
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/run-dctest.sh <<parameters.suite>> <<parameters.datacenter>> <<parameters.tag>>
+            ./bin/run-dctest.sh "<<parameters.suite>>" "<<parameters.tag>>" "<<parameters.datacenter>>"
           no_output_timeout: 20m
 
 jobs:
@@ -124,8 +124,8 @@ jobs:
       - checkout
       - dctest-command:
           suite: ./bootstrap
-          datacenter: staging
           tag: release
+          datacenter: staging
       - run:
           command: ./bin/run-dctest-suite.sh upgrade
           no_output_timeout: 20m
@@ -199,8 +199,8 @@ jobs:
       - run: cp /tmp/workspace/artifacts_release.go .
       - dctest-command:
           suite: ./bootstrap
-          datacenter: staging
           tag: release
+          datacenter: staging
       - run:
           command: ./bin/run-dctest-suite.sh upgrade release
           no_output_timeout: 20m
