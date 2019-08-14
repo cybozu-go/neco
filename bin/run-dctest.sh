@@ -33,12 +33,15 @@ mount -t ext4 /dev/disk/by-id/google-local-ssd-0 /var/scratch
 chmod 1777 /var/scratch
 
 # Set environment variables
-export GO111MODULE=on
-export GOPATH=\${HOME}/go
-export PATH=/usr/local/go/bin:\${GOPATH}/bin:\${PATH}
+GO111MODULE=on
+export GO111MODULE
+GOPATH=\${HOME}/go
+export GOPATH
+PATH=/usr/local/go/bin:\${GOPATH}/bin:\${PATH}
+export PATH
 
-NECO_DIR=\$GOPATH/src/github.com/cybozu-go/neco
-TEMP_DIR=/tme/release
+NECO_DIR=\${GOPATH}/src/github.com/cybozu-go/neco
+TEMP_DIR=/tmp/release
 
 # Prepare neco repository
 mkdir -p \${NECO_DIR}

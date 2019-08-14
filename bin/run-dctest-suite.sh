@@ -9,12 +9,15 @@ cat >run.sh <<EOF
 #!/bin/sh -e
 
 # Set environment variables
-export GO111MODULE=on
-export GOPATH=\$HOME/go
-export PATH=/usr/local/go/bin:\$GOPATH/bin:\$PATH
+GO111MODULE=on
+export GO111MODULE
+GOPATH=\${HOME}/go
+export GOPATH
+PATH=/usr/local/go/bin:\${GOPATH}/bin:\${PATH}
+export PATH
 
 # Run dctest
-cd \$GOPATH/src/github.com/cybozu-go/neco/dctest
+cd \${GOPATH}/src/github.com/cybozu-go/neco/dctest
 exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME}
 EOF
 chmod +x run.sh
