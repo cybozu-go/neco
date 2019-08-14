@@ -4,8 +4,8 @@ import "text/template"
 
 var serviceTmpl = template.Must(template.New("sabakan.service").Parse(`[Unit]
 Description=Sabakan container on rkt
-Wants=network-online.target
-After=network-online.target
+Wants=network-online.target etcd-container.service
+After=network-online.target etcd-container.service
 ConditionPathExists={{ .ConfFile }}
 ConditionPathExists={{ .CertFile }}
 ConditionPathExists={{ .KeyFile }}

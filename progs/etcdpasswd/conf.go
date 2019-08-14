@@ -27,6 +27,8 @@ func GenerateConf(w io.Writer, lrns []int) error {
 func GenerateSystemdDropIn(w io.Writer) error {
 	tmpl := `
 [Unit]
+Wants=etcd-container.service
+After=etcd-container.service
 ConditionPathExists=%s
 ConditionPathExists=%s
 `
