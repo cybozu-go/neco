@@ -2,8 +2,8 @@
 
 . $(dirname $0)/env
 SUITE_NAME=$1
-DATACENTER=$2
-TAG_NAME=$3
+TAG_NAME=$2
+DATACENTER=$3
 
 # Create GCE instance
 $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} --quiet || true
