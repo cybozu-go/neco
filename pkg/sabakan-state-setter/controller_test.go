@@ -69,7 +69,7 @@ func testControllerRun(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if gql.machine.Status.State != sabakan.MachineState(sabakan.StateUnhealthy.GQLEnum()) {
+	if gql.machine.Status.State != sabakan.StateUnhealthy {
 		t.Errorf("machine is not unhealthy: %s", gql.machine.Status.State)
 	}
 
@@ -87,7 +87,7 @@ func testControllerRun(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if gql.machine.Status.State != sabakan.MachineState(sabakan.StateUnhealthy.GQLEnum()) {
+	if gql.machine.Status.State != sabakan.StateUnhealthy {
 		t.Errorf("machine is not unhealthy: %s", gql.machine.Status.State)
 	}
 
@@ -107,7 +107,7 @@ func testControllerRun(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if gql.machine.Status.State != sabakan.MachineState(sabakan.StateHealthy.GQLEnum()) {
+	if gql.machine.Status.State != sabakan.StateHealthy {
 		t.Errorf("machine is not healthy: %s", gql.machine.Status.State)
 	}
 }
