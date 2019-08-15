@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -67,7 +68,7 @@ func main() {
 		// 5: role
 		// 6: support date
 		datacenter := record[0]
-		rack := record[1]
+		rackString := record[1]
 		serial := record[3]
 		product := record[4]
 		role := record[5]
@@ -84,11 +85,16 @@ func main() {
 		default:
 			log.ErrorExit(errors.New("unknown role " + role))
 		}
-		if len(datacenter) == 0 || len(rack) == 0 || len(serial) == 0 ||
+		if len(datacenter) == 0 || len(rackString) == 0 || len(serial) == 0 ||
 			len(product) == 0 || len(role) == 0 || len(supportDateString) == 0 {
 			log.ErrorExit(
 				fmt.Errorf("some colmuns are missing in csv, datacenter: %s, rack: %s, serial: %s, product: %s, role: %s",
-					datacenter, rack, serial, product, role))
+					datacenter, rackString, serial, product, role))
+		}
+
+		rack, err := strconv.ParseInt(rackString, 30, 64)
+		if err != nil {
+			log.ErrorExit(err)
 		}
 
 		supportDate, err := time.Parse("2006/1/02", supportDateString)
