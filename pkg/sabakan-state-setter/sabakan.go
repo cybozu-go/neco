@@ -10,6 +10,7 @@ import (
 	"path"
 
 	"github.com/cybozu-go/neco/ext"
+	"github.com/cybozu-go/sabakan/v2"
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
@@ -50,7 +51,7 @@ type gqlClient struct {
 // SabakanGQLClient is interface of the sabakan client of GraphQL
 type SabakanGQLClient interface {
 	GetSabakanMachines(ctx context.Context) (*searchMachineResponse, error)
-	UpdateSabakanState(ctx context.Context, ms *machineStateSource, state string) error
+	UpdateSabakanState(ctx context.Context, ms *machineStateSource, state sabakan.MachineState) error
 }
 
 func newSabakanGQLClient(address string) (SabakanGQLClient, error) {
@@ -123,13 +124,16 @@ func (g *gqlClient) GetSabakanMachines(ctx context.Context) (*searchMachineRespo
 }
 
 // UpdateSabakanState updates given machine's state
-func (g *gqlClient) UpdateSabakanState(ctx context.Context, ms *machineStateSource, state string) error {
+func (g *gqlClient) UpdateSabakanState(ctx context.Context, ms *machineStateSource, state sabakan.MachineState) error {
+	if !state.IsValid() {
+		return fmt.Errorf("invalid state: %s", state)
+	}
 	greq := graphQLRequest{
 		Query: fmt.Sprintf(`mutation {
   setMachineState(serial: "%s", state: %s) {
     state
   }
-}`, ms.serial, state),
+}`, ms.serial, state.GQLEnum()),
 	}
 
 	_, err := g.requestGQL(ctx, greq)
