@@ -5,6 +5,14 @@ This project employs a versioning scheme described in [RELEASE.md](RELEASE.md#ve
 
 ## [Unreleased]
 
+## [1.14.14] - 2019-08-15
+
+### Changed
+- Fix ineffassign errors (#205)
+- Close etcd session and enable ineffassign check (#207)
+- [ckecli] add options to `ckecli kubernetes issue` command (#206)
+- [vault] Check secret before SetToken() (#209)
+
 ## [1.14.13] - 2019-08-01
 
 ### Changed
@@ -237,7 +245,8 @@ No user-visible changes since RC 1.
 
 See [CHANGELOG-1.12](./CHANGELOG-1.12.md).
 
-[Unreleased]: https://github.com/cybozu-go/cke/compare/v1.14.13...HEAD
+[Unreleased]: https://github.com/cybozu-go/cke/compare/v1.14.14...HEAD
+[1.14.14]: https://github.com/cybozu-go/cke/compare/v1.14.13...v1.14.14
 [1.14.13]: https://github.com/cybozu-go/cke/compare/v1.14.12...v1.14.13
 [1.14.12]: https://github.com/cybozu-go/cke/compare/v1.14.11...v1.14.12
 [1.14.11]: https://github.com/cybozu-go/cke/compare/v1.14.10...v1.14.11

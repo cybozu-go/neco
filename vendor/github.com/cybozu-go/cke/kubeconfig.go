@@ -26,9 +26,8 @@ func Kubeconfig(cluster, user, ca, clientCrt, clientKey string) *api.Config {
 	return cfg
 }
 
-// AdminKubeconfig makes kubeconfig for admin user
-func AdminKubeconfig(cluster, ca, clientCrt, clientKey, server string) *api.Config {
-	user := "admin"
+// UserKubeconfig makes kubeconfig for users
+func UserKubeconfig(cluster, userName, ca, clientCrt, clientKey, server string) *api.Config {
 	cfg := api.NewConfig()
 	c := api.NewCluster()
 	c.Server = server
@@ -38,10 +37,10 @@ func AdminKubeconfig(cluster, ca, clientCrt, clientKey, server string) *api.Conf
 	auth := api.NewAuthInfo()
 	auth.ClientCertificateData = []byte(clientCrt)
 	auth.ClientKeyData = []byte(clientKey)
-	cfg.AuthInfos[user] = auth
+	cfg.AuthInfos[userName] = auth
 
 	ctx := api.NewContext()
-	ctx.AuthInfo = user
+	ctx.AuthInfo = userName
 	ctx.Cluster = cluster
 	cfg.Contexts["default"] = ctx
 	cfg.CurrentContext = "default"

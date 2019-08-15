@@ -133,7 +133,7 @@ func (i *ckeInfrastructure) init(ctx context.Context) error {
 
 	i.once.Do(func() {
 		issue := func() (cert, key []byte, err error) {
-			c, k, e := KubernetesCA{}.IssueAdminCert(ctx, i, "25h")
+			c, k, e := KubernetesCA{}.IssueUserCert(ctx, i, RoleAdmin, AdminGroup, "25h")
 			if e != nil {
 				return nil, nil, e
 			}
