@@ -5,31 +5,6 @@ metadata:
   namespace: internet-egress
 automountServiceAccountToken: false
 ---
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  namespace: internet-egress
-  name: psp:unbound
-rules:
-  - apiGroups: ["policy"]
-    resources: ["podsecuritypolicies"]
-    verbs: ["use"]
-    resourceNames: ["unbound"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  namespace: internet-egress
-  name: unbound:psp:unbound
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: psp:unbound
-subjects:
-- kind: ServiceAccount
-  name: unbound
-  namespace: internet-egress
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -40,6 +15,7 @@ data:
     server:
       do-daemonize: no
       interface: 0.0.0.0
+      port: 1053
       interface-automatic: yes
       access-control: 10.64.0.0/12 allow
       chroot: ""
@@ -216,20 +192,16 @@ spec:
             - name: temporary-volume
               mountPath: /tmp
           ports:
-            - containerPort: 53
+            - containerPort: 1053
               name: dns
               protocol: UDP
-            - containerPort: 53
+            - containerPort: 1053
               name: dns-tcp
               protocol: TCP
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              add:
-                - NET_BIND_SERVICE
-              drop:
-                - all
             readOnlyRootFilesystem: true
+            runAsUser: 10000
+            runAsGroup: 10000
           resources:
             limits:
               memory: 1024Mi
@@ -238,7 +210,7 @@ spec:
               memory: 256Mi
           livenessProbe:
             tcpSocket:
-              port: 53
+              port: 1053
               host: 127.0.0.1
             periodSeconds: 1
             initialDelaySeconds: 1
@@ -266,7 +238,9 @@ spec:
   ports:
     - name: dns
       port: 53
+      targetPort: 1053
       protocol: UDP
     - name: dns-tcp
       port: 53
+      targetPort: 1053
       protocol: TCP
