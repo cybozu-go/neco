@@ -24,7 +24,7 @@ for i in $(seq 300); do
 done
 
 cat >run.sh <<EOF
-#!/bin/sh -e
+#!/bin/sh -ex
 
 # mkfs and mount local SSD on /var/scratch
 mkfs -t ext4 -F /dev/disk/by-id/google-local-ssd-0
