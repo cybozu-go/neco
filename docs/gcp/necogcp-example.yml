@@ -9,7 +9,7 @@ app:
     - my-instance-1
     - my-instance-2
 compute:
-  machine-type: n1-highcpu-64
+  machine-type: n1-standard-32
   boot-disk-sizeGB: 20
   optional-packages: ["manpages-dev", "glibc-doc"]
   host-vm:

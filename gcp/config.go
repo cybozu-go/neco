@@ -105,7 +105,7 @@ func NecoTestConfig() *Config {
 			},
 		},
 		Compute: ComputeConfig{
-			MachineType:    "n1-highcpu-64",
+			MachineType:    "n1-standard-32",
 			BootDiskSizeGB: defaultBootDiskSizeGB,
 			HostVM: HostVMConfig{
 				HomeDisk:       defaultHomeDisk,
