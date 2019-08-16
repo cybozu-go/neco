@@ -28,3 +28,15 @@ There are two artifacts files.
 When generating neco binaries and the neco deb package, `artifacts.go` is used
 in default.  A CI job uses `artifacts_release.go` by specifying `TAGS=release`
 for `make` command after checking-out the `release` branch.
+
+As described above, you should not edit artifacts files manually in general.
+One of the exceptions is to use an RC version of a component, e.g. cke 1.15.0-rc1,
+to prepare for the update of the component.
+A component with prerelease version information, i.e. x.y.z-\<prerelease\>,
+does not get included in artifacts files by `generate-artifacts`.
+So if you want to use such a component, include it manually.
+Though you can edit `artifacts.go` in this case, you must not merge it into
+the master branch anyway, because that component does not get included in
+`artifacts_release.go` and CI on `release` branch will fail.
+Instead, after you confirm that neco can accept a component of x.y.z-\<prerelease\>,
+release the component as x.y.z and include it in artifacts files by `generate-artifacts`.

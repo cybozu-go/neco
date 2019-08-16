@@ -5,7 +5,7 @@ package neco
 
 var CurrentArtifacts = ArtifactSet{
 	Images: []ContainerImage{
-		{Name: "cke", Repository: "quay.io/cybozu/cke", Tag: "1.14.13", Private: false},
+		{Name: "cke", Repository: "quay.io/cybozu/cke", Tag: "1.14.14", Private: false},
 		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.3.13.2", Private: false},
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.6.6", Private: true},
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.4.4", Private: false},
@@ -17,7 +17,7 @@ var CurrentArtifacts = ArtifactSet{
 	},
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.7"},
-		{Name: "neco", Owner: "cybozu-go", Repository: "neco", Release: "release-2019.01.17-1"},
+		{Name: "neco", Owner: "cybozu-go", Repository: "neco", Release: "release-2019.08.14-5916"},
 	},
 	CoreOS: CoreOSImage{Channel: "stable", Version: "2135.6.0"},
 }

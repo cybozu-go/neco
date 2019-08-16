@@ -4,6 +4,7 @@ import . "github.com/onsi/ginkgo"
 
 // BootstrapSuite is a test suite that tests initial setup of Neco
 var BootstrapSuite = func() {
+	// cs x 6 + ss x 1 = 7
 	availableNodes := 7
 	Context("setup", TestSetup)
 	Context("initialize", TestInit)
@@ -39,8 +40,8 @@ var FunctionsSuite = func() {
 
 // UpgradeSuite is a test suite that tests upgrading process works correctry
 var UpgradeSuite = func() {
-	// TODO: Please update it to 7 after merge branch ignition-for-SS
-	availableNodes := 6
+	// cs x 6 + ss x 1 = 7
+	availableNodes := 7
 	Context("sabakan-state-setter", func() {
 		TestSabakanStateSetter(availableNodes)
 	})

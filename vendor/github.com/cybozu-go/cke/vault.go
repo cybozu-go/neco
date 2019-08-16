@@ -123,6 +123,13 @@ func VaultClient(cfg *VaultConfig) (*vault.Client, *vault.Secret, error) {
 		})
 		return nil, nil, err
 	}
+	// If cke accesses while vault is initializing, then vault returns io.EOF and the secret is nil
+	if secret == nil {
+		log.Error("failed to get secret", anyMap{
+			"endpoint": cfg.Endpoint,
+		})
+		return nil, nil, errors.New("failed to get secret")
+	}
 
 	client.SetToken(secret.Auth.ClientToken)
 	return client, secret, nil

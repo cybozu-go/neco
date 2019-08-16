@@ -43,6 +43,9 @@ const (
 	RoleServiceAccount        = "service-account"
 )
 
+// AdminGroup is the group name of cluster admin users
+const AdminGroup = "system:masters"
+
 // IssueResponse is cli output format.
 type IssueResponse struct {
 	Cert   string `json:"certificate"`
@@ -70,6 +73,18 @@ func addRole(client *vault.Client, ca, role string, data map[string]interface{})
 			"ca":        ca,
 			"role":      role,
 		})
+	}
+	return err
+}
+
+// deleteRole deletes a role of CA.
+func deleteRole(client *vault.Client, ca, role string) error {
+	l := client.Logical()
+	rpath := path.Join(ca, "roles", role)
+	l.Delete(rpath)
+	_, err := l.Read(rpath)
+	if err != nil {
+		return err
 	}
 	return err
 }
@@ -183,19 +198,19 @@ func IssueEtcdClientCertificate(inf Infrastructure, username, ttl string) (cert,
 // KubernetesCA is a certificate authority for k8s cluster.
 type KubernetesCA struct{}
 
-// IssueAdminCert issues client certificate for cluster admin user.
-func (k KubernetesCA) IssueAdminCert(ctx context.Context, inf Infrastructure, ttl string) (crt, key string, err error) {
+// IssueUserCert issues client certificate for user.
+func (k KubernetesCA) IssueUserCert(ctx context.Context, inf Infrastructure, userName, groupName string, ttl string) (crt, key string, err error) {
 	return issueCertificate(inf, CAKubernetes, RoleAdmin,
 		map[string]interface{}{
 			"ttl":               "2h",
 			"max_ttl":           "48h",
 			"enforce_hostnames": "false",
 			"allow_any_name":    "true",
-			"organization":      "system:masters",
+			"organization":      groupName,
 		},
 		map[string]interface{}{
 			"ttl":                  ttl,
-			"common_name":          "admin",
+			"common_name":          userName,
 			"exclude_cn_from_sans": "true",
 		})
 }
@@ -357,6 +372,10 @@ func issueCertificate(inf Infrastructure, ca, role string, roleOpts, certOpts ma
 		return "", "", err
 	}
 	crt = secret.Data["certificate"].(string)
+	err = deleteRole(client, ca, role)
+	if err != nil {
+		return "", "", err
+	}
 	key = secret.Data["private_key"].(string)
 	return crt, key, err
 }
