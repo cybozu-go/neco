@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"sync"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -51,20 +52,29 @@ func TestSabakanStateSetter(availableNodes int) {
 			prefix + "Storage/SATAHDD.Slot.2":         "OK",
 			prefix + "Storage/NonRAID.Integrated.1-1": "OK",
 		}
-		json := generateRedfishDummyData(state)
 
+		data := generateRedfishDummyData(state)
+		wg := sync.WaitGroup{}
 		for _, boot := range []string{boot0, boot1, boot2, boot3} {
-			Expect(generateRedfishDataOnBoot(boot, json)).ShouldNot(HaveOccurred())
+			wg.Add(1)
+			go func(target string) {
+				Expect(generateRedfishDataOnBoot(target, data)).ShouldNot(HaveOccurred())
+				wg.Done()
+			}(boot)
 		}
-
 		machines, err := getMachinesSpecifiedRole("")
 		Expect(err).ShouldNot(HaveOccurred())
 		for _, m := range machines {
 			if m.Spec.Role == "boot" {
 				continue
 			}
-			Expect(copyDummyRedfishDataToWorker(m.Spec.IPv4[0], json)).ShouldNot(HaveOccurred())
+			wg.Add(1)
+			go func(target string) {
+				Expect(copyDummyRedfishDataToWorker(target, data)).ShouldNot(HaveOccurred())
+				wg.Done()
+			}(m.Spec.IPv4[0])
 		}
+		wg.Wait()
 
 		By("checking all machine's state")
 		Eventually(func() error {
@@ -86,7 +96,7 @@ func TestSabakanStateSetter(availableNodes int) {
 }
 
 func generateRedfishDummyData(data map[string]string) string {
-	var result []map[string]interface{}
+	var results []map[string]interface{}
 
 	for k, v := range data {
 		entry := map[string]interface{}{
@@ -97,12 +107,12 @@ func generateRedfishDummyData(data map[string]string) string {
 				},
 			},
 		}
-		result = append(result, entry)
+		results = append(results, entry)
 	}
 
-	json, err := json.Marshal(result)
+	res, err := json.Marshal(results)
 	Expect(err).ShouldNot(HaveOccurred())
-	return string(json)
+	return string(res)
 }
 
 func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
@@ -146,10 +156,5 @@ func copyDummyRedfishDataToWorker(ip, json string) error {
 		return err
 	}
 	_, _, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+ip, "sudo", "mv", dummyRedfishDataFile, filepath.Join("/etc/neco", dummyRedfishDataFile))
-	return err
-}
-
-func deleteDummyRedfishDataFromWorker(ip string) error {
-	_, _, err := execAt(boot0, "ckecli", "ssh", "cybozu@"+ip, "sudo", "rm", filepath.Join("/etc/neco", dummyRedfishDataFile))
 	return err
 }
