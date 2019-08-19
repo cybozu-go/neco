@@ -208,10 +208,13 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
+          readinessProbe:
+            tcpSocket:
+              port: 1053
+            periodSeconds: 1
           livenessProbe:
             tcpSocket:
               port: 1053
-              host: 127.0.0.1
             periodSeconds: 1
             initialDelaySeconds: 1
             failureThreshold: 6
