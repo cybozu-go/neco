@@ -75,6 +75,9 @@ func (g *gqlClient) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte
 	}
 	req = req.WithContext(ctx)
 
+	// gqlgen 0.9+ requires application/json content-type header.
+	req.Header.Set("Content-Type", "application/json")
+
 	resp, err := g.httpClient.Do(req)
 	if err != nil {
 		return nil, err
