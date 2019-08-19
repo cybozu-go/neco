@@ -25,6 +25,9 @@ func testControllerRun(t *testing.T) {
 
 	machineTypeQEMU := &machineType{
 		Name: "qemu",
+		GracePeriod: duration{
+			Duration: time.Millisecond,
+		},
 		MetricsCheckList: []targetMetric{
 			{
 				Name: "hw_processor_status_health",
@@ -65,11 +68,14 @@ func testControllerRun(t *testing.T) {
 	hw_processor_status_health{processor="CPU.Socket.2"} 1
 	`
 	ctr := newMockController(gql, metricsInput, serf, machineTypeQEMU)
-	err := ctr.run(context.Background())
-	if err != nil {
-		t.Error(err)
+	for i := 0; i < 2; i++ {
+		err := ctr.run(context.Background())
+		if err != nil {
+			t.Error(err)
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
-	if gql.machine.Status.State != sabakan.MachineState(sabakan.StateUnhealthy.GQLEnum()) {
+	if gql.machine.Status.State != sabakan.StateUnhealthy {
 		t.Errorf("machine is not unhealthy: %s", gql.machine.Status.State)
 	}
 
@@ -83,11 +89,14 @@ func testControllerRun(t *testing.T) {
 	hw_storage_controller_status_health{controller="SATAHDD.Slot.2"} 1
 	`
 	ctr = newMockController(gql, metricsInput, serf, machineTypeQEMU)
-	err = ctr.run(context.Background())
-	if err != nil {
-		t.Error(err)
+	for i := 0; i < 2; i++ {
+		err := ctr.run(context.Background())
+		if err != nil {
+			t.Error(err)
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
-	if gql.machine.Status.State != sabakan.MachineState(sabakan.StateUnhealthy.GQLEnum()) {
+	if gql.machine.Status.State != sabakan.StateUnhealthy {
 		t.Errorf("machine is not unhealthy: %s", gql.machine.Status.State)
 	}
 
@@ -103,11 +112,14 @@ func testControllerRun(t *testing.T) {
 	hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.Embedded.1"} 1
 	`
 	ctr = newMockController(gql, metricsInput, serf, machineTypeQEMU)
-	err = ctr.run(context.Background())
-	if err != nil {
-		t.Error(err)
+	for i := 0; i < 2; i++ {
+		err := ctr.run(context.Background())
+		if err != nil {
+			t.Error(err)
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
-	if gql.machine.Status.State != sabakan.MachineState(sabakan.StateHealthy.GQLEnum()) {
+	if gql.machine.Status.State != sabakan.StateHealthy {
 		t.Errorf("machine is not healthy: %s", gql.machine.Status.State)
 	}
 }
@@ -163,5 +175,4 @@ func testControllerUnhealthy(t *testing.T) {
 func TestController(t *testing.T) {
 	t.Run("Run", testControllerRun)
 	t.Run("Unhealthy", testControllerUnhealthy)
-
 }

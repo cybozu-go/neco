@@ -6,7 +6,7 @@ TAG_NAME=$2
 
 # Run data center test
 cat >run.sh <<EOF
-#!/bin/sh -e
+#!/bin/sh -ex
 
 # Set environment variables
 GO111MODULE=on

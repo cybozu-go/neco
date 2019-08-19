@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/sabakan/v2"
 	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
 	"github.com/cybozu-go/well"
 	"github.com/vektah/gqlparser/gqlerror"
@@ -162,13 +163,12 @@ func (c *Controller) run(ctx context.Context) error {
 	now := time.Now()
 
 	for _, mss := range machineStateSources {
-		newState := mss.decideMachineStateCandidate()
-
-		if newState == noStateTransition {
+		newState, hasTransition := mss.decideMachineStateCandidate()
+		if !hasTransition {
 			continue
 		}
 
-		if newState == "unhealthy" {
+		if newState == sabakan.StateUnhealthy {
 			if ok := c.RegisterUnhealthy(mss, now); !ok {
 				continue
 			}
