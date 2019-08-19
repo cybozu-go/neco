@@ -14,16 +14,15 @@ const (
 	monitorHWStatusCritical = "2"
 	monitorHWStatusNull     = "-1"
 	systemdUnitsFailedTag   = "systemd-units-failed"
-	noStateTransition       = "no-transition"
 )
 
-func (mss *machineStateSource) decideMachineStateCandidate() string {
+func (mss *machineStateSource) decideMachineStateCandidate() (sabakan.MachineState, bool) {
 	if mss.serfStatus == nil {
 		log.Info("unreachable; serf status is nil", map[string]interface{}{
 			"serial": mss.serial,
 			"ipv4":   mss.ipv4,
 		})
-		return sabakan.StateUnreachable.GQLEnum()
+		return sabakan.StateUnreachable, true
 	}
 	if mss.serfStatus.Status != "alive" {
 		log.Info("unreachable; serf status != alive", map[string]interface{}{
@@ -31,18 +30,18 @@ func (mss *machineStateSource) decideMachineStateCandidate() string {
 			"ipv4":   mss.ipv4,
 			"status": mss.serfStatus.Status,
 		})
-		return sabakan.StateUnreachable.GQLEnum()
+		return sabakan.StateUnreachable, true
 	}
 
 	suf, ok := mss.serfStatus.Tags[systemdUnitsFailedTag]
 	if !ok {
 		state := mss.decideByMonitorHW()
-		if state == sabakan.StateHealthy.GQLEnum() {
+		if state == sabakan.StateHealthy {
 			// Do nothing if there is no systemd-units-failed tag and no hardware failure.
 			// In this case, the machine is starting up.
-			return noStateTransition
+			return sabakan.MachineState(""), false
 		}
-		return state
+		return state, true
 	}
 
 	if len(suf) != 0 {
@@ -51,23 +50,23 @@ func (mss *machineStateSource) decideMachineStateCandidate() string {
 			"ipv4":   mss.ipv4,
 			"failed": suf,
 		})
-		return sabakan.StateUnhealthy.GQLEnum()
+		return sabakan.StateUnhealthy, true
 	}
 
-	return mss.decideByMonitorHW()
+	return mss.decideByMonitorHW(), true
 }
 
-func (mss *machineStateSource) decideByMonitorHW() string {
+func (mss *machineStateSource) decideByMonitorHW() sabakan.MachineState {
 	if mss.machineType == nil {
 		log.Info("unhealthy; machine type is nil", map[string]interface{}{
 			"serial": mss.serial,
 			"ipv4":   mss.ipv4,
 		})
-		return sabakan.StateUnhealthy.GQLEnum()
+		return sabakan.StateUnhealthy
 	}
 
 	if len(mss.machineType.MetricsCheckList) == 0 {
-		return sabakan.StateHealthy.GQLEnum()
+		return sabakan.StateHealthy
 	}
 
 	if mss.metrics == nil {
@@ -75,7 +74,7 @@ func (mss *machineStateSource) decideByMonitorHW() string {
 			"serial": mss.serial,
 			"ipv4":   mss.ipv4,
 		})
-		return sabakan.StateUnhealthy.GQLEnum()
+		return sabakan.StateUnhealthy
 	}
 
 	for _, checkTarget := range mss.machineType.MetricsCheckList {
@@ -86,19 +85,19 @@ func (mss *machineStateSource) decideByMonitorHW() string {
 				"ipv4":   mss.ipv4,
 				"target": checkTarget.Name,
 			})
-			return sabakan.StateUnhealthy.GQLEnum()
+			return sabakan.StateUnhealthy
 		}
 
 		res := mss.checkTarget(checkTarget)
-		if res != sabakan.StateHealthy.GQLEnum() {
+		if res != sabakan.StateHealthy {
 			return res
 		}
 	}
 
-	return sabakan.StateHealthy.GQLEnum()
+	return sabakan.StateHealthy
 }
 
-func (mss *machineStateSource) checkTarget(target targetMetric) string {
+func (mss *machineStateSource) checkTarget(target targetMetric) sabakan.MachineState {
 	var exists bool
 	metrics := mss.metrics[target.Name]
 
@@ -147,7 +146,7 @@ func (mss *machineStateSource) checkTarget(target targetMetric) string {
 			"selector":              slctr,
 			"minimum_healthy_count": minCount,
 		})
-		return sabakan.StateUnhealthy.GQLEnum()
+		return sabakan.StateUnhealthy
 	}
 
 	if healthyCount < minCount {
@@ -159,7 +158,7 @@ func (mss *machineStateSource) checkTarget(target targetMetric) string {
 			"minimum_healthy_count": minCount,
 			"healthy_count":         healthyCount,
 		})
-		return sabakan.StateUnhealthy.GQLEnum()
+		return sabakan.StateUnhealthy
 	}
 
 	log.Info("healthy;", map[string]interface{}{
@@ -170,7 +169,7 @@ func (mss *machineStateSource) checkTarget(target targetMetric) string {
 		"minimum_healthy_count": minCount,
 		"healthy_count":         healthyCount,
 	})
-	return sabakan.StateHealthy.GQLEnum()
+	return sabakan.StateHealthy
 }
 
 func (s *selector) isMetricMatchedLabels(metric prom2json.Metric) bool {

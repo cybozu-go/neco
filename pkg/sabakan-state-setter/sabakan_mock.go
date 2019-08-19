@@ -3,7 +3,7 @@ package sss
 import (
 	"context"
 
-	sabakan "github.com/cybozu-go/sabakan/v2"
+	"github.com/cybozu-go/sabakan/v2"
 )
 
 type gqlMockClient struct {
@@ -47,7 +47,7 @@ func (g *gqlMockClient) GetSabakanMachines(ctx context.Context) (*searchMachineR
 	}, nil
 }
 
-func (g *gqlMockClient) UpdateSabakanState(ctx context.Context, ms *machineStateSource, state string) error {
-	g.machine.Status.State = sabakan.MachineState(state)
+func (g *gqlMockClient) UpdateSabakanState(ctx context.Context, ms *machineStateSource, state sabakan.MachineState) error {
+	g.machine.Status.State = state
 	return nil
 }
