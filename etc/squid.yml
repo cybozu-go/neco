@@ -84,6 +84,7 @@ spec:
           effect: NoSchedule
         - key: CriticalAddonsOnly
           operator: Exists
+      dnsPolicy: "None"
       dnsConfig:
         nameservers:
           - 127.0.0.1
