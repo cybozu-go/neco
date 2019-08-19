@@ -165,7 +165,7 @@ jobs:
             git config --global user.name "cybozu-neco"
       # Check difference between [`release` branch] and [`master` branch + `artifacts_release.go`]
       - run: git checkout release
-      - run: git merge --no-commit origin/${CIRCLE_BRANCH}
+      - run: git merge --no-commit origin/master
       - run: cp /tmp/workspace/artifacts_release.go .
       - run:
           name: Check diff
@@ -317,6 +317,11 @@ workflows:
       - deploy_github:
           requires:
             - build_release
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^release-.*/
 
   # Testing `master` branch and update "release" branch.
   master:
