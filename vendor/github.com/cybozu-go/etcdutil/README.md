@@ -55,16 +55,16 @@ tls-key: |
 
 ### Command-line flags
 
-Name             | Default                 | Description
----------------- | ----------------------- | -----------
-`etcd-endpoints` | `http://127.0.0.1:2379` | comma-separated URLs of the backend etcd
-`etcd-password`  |                         | password for etcd authentication
-`etcd-prefix`    |                         | prefix for etcd keys
-`etcd-timeout`   | `2s`                    | dial timeout duration to etcd
-`etcd-tls-ca`    |                         | Path to CA bundle used to verify etcd server certificates.
-`etcd-tls-cert`  |                         | Path to client certificate file of an etcd user.
-`etcd-tls-key`   |                         | Path to private key file of an etcd user.
-`etcd-username`  |                         | username for etcd authentication
+| Name             | Default                 | Description                                                |
+| ---------------- | ----------------------- | ---------------------------------------------------------- |
+| `etcd-endpoints` | `http://127.0.0.1:2379` | comma-separated URLs of the backend etcd                   |
+| `etcd-password`  |                         | password for etcd authentication                           |
+| `etcd-prefix`    |                         | prefix for etcd keys                                       |
+| `etcd-timeout`   | `2s`                    | dial timeout duration to etcd                              |
+| `etcd-tls-ca`    |                         | Path to CA bundle used to verify etcd server certificates. |
+| `etcd-tls-cert`  |                         | Path to client certificate file of an etcd user.           |
+| `etcd-tls-key`   |                         | Path to private key file of an etcd user.                  |
+| `etcd-username`  |                         | username for etcd authentication                           |
 
 Usage
 -----
@@ -78,4 +78,4 @@ etcdutil is licensed under MIT license.
 
 [releases]: https://github.com/cybozu-go/etcdutil/releases
 [godoc]: https://godoc.org/github.com/cybozu-go/etcdutil
-[etcd]: https://coreos.com/etcd/
+[etcd]: https://etcd.io
