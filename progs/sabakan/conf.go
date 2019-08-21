@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/cybozu-go/neco"
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 // GenerateConf generates sabakan config file
@@ -24,5 +24,10 @@ func GenerateConf(w io.Writer, mylrn int, lrns []int) error {
 			"tls-key-file":  neco.SabakanKeyFile,
 		},
 	}
-	return yaml.NewEncoder(w).Encode(data)
+	b, err := yaml.Marshal(data)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(b)
+	return err
 }

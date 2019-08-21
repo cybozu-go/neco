@@ -5,7 +5,7 @@ import (
 
 	"github.com/cybozu-go/etcdutil"
 	"github.com/cybozu-go/neco"
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 // UpdateNecoConfig updates /etc/neco/config.yml.

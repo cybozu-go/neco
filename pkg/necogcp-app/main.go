@@ -2,16 +2,16 @@
 package main
 
 import (
+	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/gcp"
 	"github.com/cybozu-go/neco/gcp/app"
 	"google.golang.org/appengine"
-	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -23,13 +23,12 @@ func loadConfig() (*gcp.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	f, err := os.Open(cfgFile)
+	data, err := ioutil.ReadFile(cfgFile)
 	if err != nil {
 		// If cfgFile does not exist, use neco-test config
 		return gcp.NecoTestConfig(), nil
 	}
-	defer f.Close()
-	err = yaml.NewDecoder(f).Decode(cfg)
+	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
 		return nil, err
 	}

@@ -13,57 +13,57 @@ import (
 	"github.com/cybozu-go/netutil"
 	"github.com/cybozu-go/placemat"
 	"github.com/cybozu-go/sabakan/v2"
-	yaml "gopkg.in/yaml.v2"
 	k8sYaml "k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/yaml"
 )
 
 type baseConfig struct {
-	Kind string `yaml:"kind"`
+	Kind string `json:"kind"`
 }
 
 type networkConfig struct {
 	Spec struct {
-		IPAMConfig    string   `yaml:"ipam-config"`
-		ASNBase       int      `yaml:"asn-base"`
-		Internet      string   `yaml:"internet"`
-		SpineTor      string   `yaml:"spine-tor"`
-		CoreSpine     string   `yaml:"core-spine"`
-		CoreExternal  string   `yaml:"core-external"`
-		CoreOperation string   `yaml:"core-operation"`
-		Proxy         string   `yaml:"proxy"`
-		NTP           []string `yaml:"ntp"`
+		IPAMConfig    string   `json:"ipam-config"`
+		ASNBase       int      `json:"asn-base"`
+		Internet      string   `json:"internet"`
+		SpineTor      string   `json:"spine-tor"`
+		CoreSpine     string   `json:"core-spine"`
+		CoreExternal  string   `json:"core-external"`
+		CoreOperation string   `json:"core-operation"`
+		Proxy         string   `json:"proxy"`
+		NTP           []string `json:"ntp"`
 		Exposed       struct {
-			Bastion      string `yaml:"bastion"`
-			LoadBalancer string `yaml:"loadbalancer"`
-			Ingress      string `yaml:"ingress"`
-			Global       string `yaml:"global"`
-		} `yaml:"exposed"`
-	} `yaml:"spec"`
+			Bastion      string `json:"bastion"`
+			LoadBalancer string `json:"loadbalancer"`
+			Ingress      string `json:"ingress"`
+			Global       string `json:"global"`
+		} `json:"exposed"`
+	} `json:"spec"`
 }
 
 type inventoryConfig struct {
 	Spec struct {
-		ClusterID string `yaml:"cluster-id"`
-		Spine     int    `yaml:"spine"`
+		ClusterID string `json:"cluster-id"`
+		Spine     int    `json:"spine"`
 		Rack      []struct {
-			CS int `yaml:"cs"`
-			SS int `yaml:"ss"`
-		} `yaml:"rack"`
-	} `yaml:"spec"`
+			CS int `json:"cs"`
+			SS int `json:"ss"`
+		} `json:"rack"`
+	} `json:"spec"`
 }
 
 type imageSpec = placemat.ImageSpec
 
 type nodeConfig struct {
-	Type string `yaml:"type"`
+	Type string `json:"type"`
 	Spec struct {
-		CPU               int      `yaml:"cpu"`
-		Memory            string   `yaml:"memory"`
-		Image             string   `yaml:"image"`
-		Data              []string `yaml:"data"`
-		UEFI              bool     `yaml:"uefi"`
-		CloudInitTemplate string   `yaml:"cloud-init-template"`
-	} `yaml:"spec"`
+		CPU               int      `json:"cpu"`
+		Memory            string   `json:"memory"`
+		Image             string   `json:"image"`
+		Data              []string `json:"data"`
+		UEFI              bool     `json:"uefi"`
+		CloudInitTemplate string   `json:"cloud-init-template"`
+	} `json:"spec"`
 }
 
 var nodeType = map[string]NodeType{

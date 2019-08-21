@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/cybozu-go/neco"
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 // GenerateConf generates etcdpasswd config file
@@ -20,7 +20,12 @@ func GenerateConf(w io.Writer, lrns []int) error {
 		"tls-cert-file": neco.EtcdpasswdCertFile,
 		"tls-key-file":  neco.EtcdpasswdKeyFile,
 	}
-	return yaml.NewEncoder(w).Encode(data)
+	b, err := yaml.Marshal(data)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(b)
+	return err
 }
 
 // GenerateSystemdDropIn generates systemd drop-in file

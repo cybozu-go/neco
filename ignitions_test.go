@@ -11,7 +11,7 @@ import (
 
 	sabakan "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/kylelemons/godebug/pretty"
-	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 const (
