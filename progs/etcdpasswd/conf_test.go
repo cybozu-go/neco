@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/cybozu-go/neco"
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 func TestGenerateConf(t *testing.T) {

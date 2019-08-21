@@ -7,7 +7,7 @@ To read parameters from YAML (or JSON):
 
     import (
         "github.com/cybozu-go/etcdutil"
-        yaml "gopkg.in/yaml.v2"
+        "sigs.k8s.io/yaml"
     )
 
     func main() {

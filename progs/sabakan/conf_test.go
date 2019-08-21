@@ -2,11 +2,11 @@ package sabakan
 
 import (
 	"bytes"
-	"reflect"
 	"testing"
 
 	"github.com/cybozu-go/neco"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/google/go-cmp/cmp"
+	"sigs.k8s.io/yaml"
 )
 
 func TestGenerateConf(t *testing.T) {
@@ -27,7 +27,7 @@ func TestGenerateConf(t *testing.T) {
 	expected := map[string]interface{}{
 		"advertise-url": "http://" + neco.BootNode0IP(0).String() + ":10080",
 		"dhcp-bind":     "0.0.0.0:67",
-		"etcd": map[interface{}]interface{}{
+		"etcd": map[string]interface{}{
 			"endpoints": []interface{}{
 				"https://" + neco.BootNode0IP(0).String() + ":2379",
 				"https://" + neco.BootNode0IP(1).String() + ":2379",
@@ -38,8 +38,8 @@ func TestGenerateConf(t *testing.T) {
 		},
 	}
 
-	if !reflect.DeepEqual(actual, expected) {
-		t.Errorf(`unexpected config file: %#v`, actual)
+	if !cmp.Equal(actual, expected) {
+		t.Error(`unexpected config file`, cmp.Diff(actual, expected))
 	}
 
 }

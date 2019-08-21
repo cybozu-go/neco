@@ -3,7 +3,7 @@ package gcp
 var artifacts = artifactSet{
 	goVersion:           "1.12.8",
 	rktVersion:          "1.30.0",
-	etcdVersion:         "3.3.13",
+	etcdVersion:         "3.3.15",
 	placematVersion:     "1.3.7",
 	customUbuntuVersion: "20190607",
 	coreOSVersion:       "2135.6.0",

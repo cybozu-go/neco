@@ -21,16 +21,16 @@ func (v endpointsVal) String() string {
 
 func (v endpointsVal) Set(s string) error {
 	endpoints := strings.Split(s, ",")
-	filterd := endpoints[:0]
+	filtered := endpoints[:0]
 	for _, e := range endpoints {
 		if len(e) != 0 {
-			filterd = append(filterd, e)
+			filtered = append(filtered, e)
 		}
 	}
-	if len(filterd) == 0 {
+	if len(filtered) == 0 {
 		return errors.New("no endpoints")
 	}
-	v.Config.Endpoints = filterd
+	v.Config.Endpoints = filtered
 	return nil
 }
 

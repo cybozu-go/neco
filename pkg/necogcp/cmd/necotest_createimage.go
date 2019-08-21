@@ -9,7 +9,7 @@ import (
 	"github.com/cybozu-go/neco/gcp"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 var necotestCreateImageCmd = &cobra.Command{
@@ -30,7 +30,11 @@ var necotestCreateImageCmd = &cobra.Command{
 				os.Remove(f.Name())
 			}()
 
-			err = yaml.NewEncoder(f).Encode(necotestCfg)
+			data, err := yaml.Marshal(necotestCfg)
+			if err != nil {
+				return err
+			}
+			_, err = f.Write(data)
 			if err != nil {
 				return err
 			}
