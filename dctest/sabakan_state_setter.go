@@ -17,7 +17,7 @@ const (
 	prefix               = "/redfish/v1/Systems/System.Embedded.1/"
 )
 
-// TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
+// TestSabakanStateSetter tests the behavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter(availableNodes int) {
 	It("should active all serf members", func() {
 		By("checking all serf members are active")
