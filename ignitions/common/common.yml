@@ -15,6 +15,7 @@ files:
   - /etc/systemd/resolved.conf
   - /etc/systemd/system.conf.d/50-cybozu.conf
   - /etc/systemd/system/systemd-journald.service.d/oom_score_adj.conf
+  - /etc/systemd/system/rngd.service.d/non_vm.conf
   - /opt/bin/load-docker-image
   - /opt/bin/load-containerd-image
   - /opt/bin/wait-k8s-containerd-socket
