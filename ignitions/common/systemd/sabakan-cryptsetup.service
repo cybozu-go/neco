@@ -1,7 +1,7 @@
 [Unit]
 Description=sabakan-cryptsetup
-Wants=neco-wait-dhcp-online.service
-After=neco-wait-dhcp-online.service
+Wants=neco-wait-dhcp-online.service rngd.service
+After=neco-wait-dhcp-online.service rngd.service
 DefaultDependencies=no
 
 [Service]

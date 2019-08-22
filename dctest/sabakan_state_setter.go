@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"sync"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 	prefix               = "/redfish/v1/Systems/System.Embedded.1/"
 )
 
-// TestSabakanStateSetter tests the bahavior of sabakan-state-setter in bootstrapping
+// TestSabakanStateSetter tests the behavior of sabakan-state-setter in bootstrapping
 func TestSabakanStateSetter(availableNodes int) {
 	It("should active all serf members", func() {
 		By("checking all serf members are active")
@@ -54,27 +54,29 @@ func TestSabakanStateSetter(availableNodes int) {
 		}
 
 		data := generateRedfishDummyData(state)
-		wg := sync.WaitGroup{}
+		var g errgroup.Group
 		for _, boot := range []string{boot0, boot1, boot2, boot3} {
-			wg.Add(1)
-			go func(target string) {
-				Expect(generateRedfishDataOnBoot(target, data)).ShouldNot(HaveOccurred())
-				wg.Done()
-			}(boot)
+			boot := boot
+			g.Go(func() error {
+				return generateRedfishDataOnBoot(boot, data)
+			})
 		}
+		Expect(g.Wait()).ShouldNot(HaveOccurred())
+
 		machines, err := getMachinesSpecifiedRole("")
 		Expect(err).ShouldNot(HaveOccurred())
+
+		g = errgroup.Group{}
 		for _, m := range machines {
 			if m.Spec.Role == "boot" {
 				continue
 			}
-			wg.Add(1)
-			go func(target string) {
-				Expect(copyDummyRedfishDataToWorker(target, data)).ShouldNot(HaveOccurred())
-				wg.Done()
-			}(m.Spec.IPv4[0])
+			target := m.Spec.IPv4[0]
+			g.Go(func() error {
+				return copyDummyRedfishDataToWorker(target, data)
+			})
 		}
-		wg.Wait()
+		Expect(g.Wait()).ShouldNot(HaveOccurred())
 
 		By("checking all machine's state")
 		Eventually(func() error {
