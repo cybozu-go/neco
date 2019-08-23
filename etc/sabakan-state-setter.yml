@@ -64,7 +64,7 @@ machine-types:
       - name: hw_systems_storage_drives_status_health
         selector:
           label-prefix:
-            device: PCIeSSD.Slot.
+            device: Disk.Bay.
         minimum-healthy-count: 2
   - name: r740xd-ss-2
     metrics:
@@ -74,7 +74,7 @@ machine-types:
       - name: hw_systems_simplestorage_controllers_devices_status_health
         selector:
           labels:
-            device: NonRAID.Integrated.1-1
+            controller: NonRAID.Integrated.1-1
         minimum-healthy-count: 10
       - name: hw_systems_storage_drives_status_health
         selector:
