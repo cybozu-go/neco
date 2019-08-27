@@ -15,6 +15,7 @@ KillMode=mixed
 Restart=on-failure
 RestartSec=10s
 OOMScoreAdjust=-1000
+ExecStartPre=/bin/mkdir -p /var/lib/setup-hw
 ExecStart=/usr/bin/rkt run \
   --pull-policy=never \
   --insecure-options=all \
@@ -23,6 +24,7 @@ ExecStart=/usr/bin/rkt run \
   --volume sys,kind=host,source=/sys --mount volume=sys,target=/sys \
   --volume modules,kind=host,source=/lib/modules,readOnly=true --mount volume=modules,target=/lib/modules \
   --volume neco,kind=host,source=/etc/neco,readOnly=true --mount volume=neco,target=/etc/neco \
+  --volume var,kind=host,source=/var/lib/setup-hw --mount volume=var,target=/var/lib/setup-hw \
   {{.Image}} \
     --name setup-hw \
     --caps-retain=CAP_SYS_ADMIN,CAP_SYS_CHROOT,CAP_CHOWN,CAP_FOWNER,CAP_NET_ADMIN
