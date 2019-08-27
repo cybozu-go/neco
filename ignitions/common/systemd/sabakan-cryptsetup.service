@@ -3,6 +3,7 @@ Description=sabakan-cryptsetup
 Wants=neco-wait-dhcp-online.service rngd.service
 After=neco-wait-dhcp-online.service rngd.service
 DefaultDependencies=no
+FailureAction=reboot-immediate
 
 [Service]
 Type=oneshot
