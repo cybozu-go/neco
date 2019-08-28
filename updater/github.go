@@ -13,6 +13,15 @@ import (
 	version "github.com/hashicorp/go-version"
 )
 
+func trimTagName(s string) string {
+	trimmed := strings.SplitN(s, "-", 2)
+	// Ignore prefix in tag name.  'prefix-X.Y.Z' is formatted to 'X.Y.Z'
+	if len(trimmed) >= 2 {
+		return trimmed[1]
+	}
+	return s
+}
+
 // ReleaseClient gets GitHub Releases
 type ReleaseClient struct {
 	owner string
@@ -45,7 +54,7 @@ func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) 
 		})
 		return "", errors.New("no tagged release")
 	}
-	return *release.TagName, nil
+	return trimTagName(*release.TagName), nil
 }
 
 // GetLatestPublishedTag returns latest published release/pre-release tag in GitHub Releases of neco repository
@@ -78,12 +87,7 @@ func (c ReleaseClient) GetLatestPublishedTag(ctx context.Context) (string, error
 		if r.TagName == nil || r.GetDraft() {
 			continue
 		}
-		s := *r.TagName
-		trimmed := strings.SplitN(s, "-", 2)
-		// Ignore prefix in tag name.  'prefix-X.Y.Z' is formatted to 'X.Y.Z'
-		if len(trimmed) >= 2 {
-			s = trimmed[1]
-		}
+		s := trimTagName(*r.TagName)
 		v, err := version.NewVersion(s)
 		if err != nil {
 			continue
