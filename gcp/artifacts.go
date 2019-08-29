@@ -5,7 +5,7 @@ var artifacts = artifactSet{
 	rktVersion:          "1.30.0",
 	etcdVersion:         "3.3.15",
 	placematVersion:     "1.3.7",
-	customUbuntuVersion: "20190607",
+	customUbuntuVersion: "20190829",
 	coreOSVersion:       "2135.6.0",
 	ctVersion:           "0.9.0",
 	baseImage:           "ubuntu-1804-bionic-v20190628",
