@@ -157,7 +157,7 @@ github.com/cybozu-go/netutil
 # github.com/cybozu-go/placemat v1.3.7
 github.com/cybozu-go/placemat
 github.com/cybozu-go/placemat/web
-# github.com/cybozu-go/sabakan/v2 v2.4.0
+# github.com/cybozu-go/sabakan/v2 v2.4.6
 github.com/cybozu-go/sabakan/v2
 github.com/cybozu-go/sabakan/v2/client
 github.com/cybozu-go/sabakan/v2/gql

@@ -52,6 +52,17 @@ func (c *Client) MachinesGetState(ctx context.Context, serial string) (sabakan.M
 	return sabakan.MachineState(data), nil
 }
 
+// MachinesSetLabel adds or updates a label for a machine on sabakan server.
+func (c *Client) MachinesSetLabel(ctx context.Context, serial string, label, value string) error {
+	r := strings.NewReader(value)
+	return c.sendRequest(ctx, "PUT", path.Join("labels", serial, label), r)
+}
+
+// MachinesRemoveLabel removes a label from a machine on sabakan server.
+func (c *Client) MachinesRemoveLabel(ctx context.Context, serial string, label string) error {
+	return c.sendRequest(ctx, "DELETE", path.Join("labels", serial, label), nil)
+}
+
 // MachinesSetRetireDate set the retire date of the machine.
 func (c *Client) MachinesSetRetireDate(ctx context.Context, serial string, date time.Time) error {
 	input := strings.NewReader(date.Format(time.RFC3339))

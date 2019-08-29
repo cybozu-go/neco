@@ -19,7 +19,7 @@ require (
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
 	github.com/cybozu-go/placemat v1.3.7
-	github.com/cybozu-go/sabakan/v2 v2.4.0
+	github.com/cybozu-go/sabakan/v2 v2.4.6
 	github.com/cybozu-go/well v1.8.1
 	github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65 // indirect
 	github.com/docker/docker-credential-helpers v0.6.0 // indirect

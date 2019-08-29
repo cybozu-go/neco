@@ -1,5 +1,3 @@
-//go:generate go run ./scripts/gqlgen.go
-
 package gql
 
 import (
@@ -9,9 +7,12 @@ import (
 	"sort"
 	"time"
 
-	"github.com/cybozu-go/sabakan/v2"
+	"github.com/cybozu-go/log"
+	sabakan "github.com/cybozu-go/sabakan/v2"
 	"github.com/vektah/gqlparser/gqlerror"
 )
+
+// THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
 // Resolver implements ResolverRoot.
 type Resolver struct {
@@ -59,9 +60,9 @@ func (r *bMCResolver) Ipv4(ctx context.Context, obj *sabakan.MachineBMC) (IPAddr
 
 type machineSpecResolver struct{ *Resolver }
 
-func (r *machineSpecResolver) Labels(ctx context.Context, obj *sabakan.MachineSpec) ([]Label, error) {
+func (r *machineSpecResolver) Labels(ctx context.Context, obj *sabakan.MachineSpec) ([]*Label, error) {
 	if len(obj.Labels) == 0 {
-		return []Label{}, nil
+		return nil, nil
 	}
 
 	keys := make([]string, 0, len(obj.Labels))
@@ -70,9 +71,9 @@ func (r *machineSpecResolver) Labels(ctx context.Context, obj *sabakan.MachineSp
 	}
 	sort.Strings(keys)
 
-	labels := make([]Label, 0, len(obj.Labels))
+	labels := make([]*Label, 0, len(obj.Labels))
 	for _, k := range keys {
-		labels = append(labels, Label{Name: k, Value: obj.Labels[k]})
+		labels = append(labels, &Label{Name: k, Value: obj.Labels[k]})
 	}
 	return labels, nil
 }
@@ -109,6 +110,11 @@ type mutationResolver struct{ *Resolver }
 
 func (r *mutationResolver) SetMachineState(ctx context.Context, serial string, state sabakan.MachineState) (*sabakan.MachineStatus, error) {
 	now := time.Now()
+
+	log.Info("SetMachineState is called", map[string]interface{}{
+		"serial": serial,
+		"state":  state,
+	})
 
 	err := r.Model.Machine.SetState(ctx, serial, state)
 	if err != nil {
@@ -175,6 +181,11 @@ type queryResolver struct{ *Resolver }
 
 func (r *queryResolver) Machine(ctx context.Context, serial string) (*sabakan.Machine, error) {
 	now := time.Now()
+
+	log.Info("Machine is called", map[string]interface{}{
+		"serial": serial,
+	})
+
 	machine, err := r.Model.Machine.Get(ctx, serial)
 	if err != nil {
 		return &sabakan.Machine{}, err
@@ -182,17 +193,23 @@ func (r *queryResolver) Machine(ctx context.Context, serial string) (*sabakan.Ma
 	machine.Status.Duration = now.Sub(machine.Status.Timestamp).Seconds()
 	return machine, nil
 }
-func (r *queryResolver) SearchMachines(ctx context.Context, having, notHaving *MachineParams) ([]sabakan.Machine, error) {
+func (r *queryResolver) SearchMachines(ctx context.Context, having *MachineParams, notHaving *MachineParams) ([]*sabakan.Machine, error) {
 	now := time.Now()
+
+	log.Info("SearchMachines is called", map[string]interface{}{
+		"having":    having,
+		"nothaving": notHaving,
+	})
+
 	machines, err := r.Model.Machine.Query(ctx, sabakan.Query{})
 	if err != nil {
 		return nil, err
 	}
-	var filtered []sabakan.Machine
+	var filtered []*sabakan.Machine
 	for _, m := range machines {
 		m.Status.Duration = now.Sub(m.Status.Timestamp).Seconds()
 		if matchMachine(m, having, notHaving, now) {
-			filtered = append(filtered, *m)
+			filtered = append(filtered, m)
 		}
 	}
 	return filtered, nil

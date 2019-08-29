@@ -23,6 +23,7 @@ stop-etcd:
 test: build
 	test -z "$$(gofmt -s -l . | grep -v '^vendor' | tee /dev/stderr)"
 	test -z "$$(golint $$(go list ./... | grep -v /vendor/) | grep -v '/mtest/.*: should not use dot imports' | tee /dev/stderr)"
+	ineffassign .
 	go test -race -v ./...
 	go vet ./...
 
