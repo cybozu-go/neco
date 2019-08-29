@@ -24,6 +24,8 @@ dns_service: internet-egress/unbound
 options:
   kube-api:
     extra_args: ["--enable-admission-plugins=PodSecurityPolicy"]
+  kube-proxy:
+    extra_args: ["--ipvs-strict-arp=true"]
   kube-scheduler:
     extenders:
     - |
