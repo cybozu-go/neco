@@ -108,6 +108,12 @@ spec:
             drop:
             - all
           readOnlyRootFilesystem: true
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: /health

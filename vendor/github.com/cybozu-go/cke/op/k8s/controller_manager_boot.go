@@ -111,7 +111,7 @@ func (c prepareControllerManagerFilesCommand) Command() cke.Command {
 // ControllerManagerParams returns parameters for kube-controller-manager.
 func ControllerManagerParams(clusterName, serviceSubnet string) cke.ServiceParams {
 	args := []string{
-		"controller-manager",
+		"kube-controller-manager",
 		"--cluster-name=" + clusterName,
 		"--service-cluster-ip-range=" + serviceSubnet,
 		"--kubeconfig=/etc/kubernetes/controller-manager/kubeconfig",

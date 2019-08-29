@@ -80,13 +80,13 @@ func (s State) IsValid() bool {
 // MachineParams is the query parameter type.
 type MachineParams struct {
 	Labels []struct {
-		Name  string `json:"name" yaml:"name"`
-		Value string `json:"value" yaml:"value"`
-	} `json:"labels" yaml:"labels"`
-	Racks               []int    `json:"racks" yaml:"racks"`
-	Roles               []string `json:"roles" yaml:"roles"`
-	States              []State  `json:"states" yaml:"states"`
-	MinDaysBeforeRetire int      `json:"minDaysBeforeRetire" yaml:"minDaysBeforeRetire"`
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	} `json:"labels"`
+	Racks               []int    `json:"racks"`
+	Roles               []string `json:"roles"`
+	States              []State  `json:"states"`
+	MinDaysBeforeRetire int      `json:"minDaysBeforeRetire"`
 }
 
 // IsValid returns non-nil error if mp is not valid.
@@ -185,6 +185,9 @@ func doQuery(ctx context.Context, url string, vars *QueryVariables, hc *well.HTT
 		return nil, err
 	}
 	req = req.WithContext(ctx)
+
+	// gqlgen 0.9+ requires application/json content-type header.
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := hc.Do(req)
 	if err != nil {

@@ -11,22 +11,22 @@ import (
 
 	"github.com/containernetworking/cni/libcni"
 	"github.com/cybozu-go/cke/scheduler"
-	"github.com/ghodss/yaml"
 	corev1 "k8s.io/api/core/v1"
 	v1validation "k8s.io/apimachinery/pkg/apis/meta/v1/validation"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"sigs.k8s.io/yaml"
 )
 
 // Node represents a node in Kubernetes.
 type Node struct {
-	Address      string            `json:"address"       yaml:"address"`
-	Hostname     string            `json:"hostname"      yaml:"hostname"`
-	User         string            `json:"user"          yaml:"user"`
-	ControlPlane bool              `json:"control_plane" yaml:"control_plane"`
-	Annotations  map[string]string `json:"annotations"   yaml:"annotations"`
-	Labels       map[string]string `json:"labels"        yaml:"labels"`
-	Taints       []corev1.Taint    `json:"taints"        yaml:"taints"`
+	Address      string            `json:"address"`
+	Hostname     string            `json:"hostname"`
+	User         string            `json:"user"`
+	ControlPlane bool              `json:"control_plane"`
+	Annotations  map[string]string `json:"annotations"`
+	Labels       map[string]string `json:"labels"`
+	Taints       []corev1.Taint    `json:"taints"`
 }
 
 // Nodename returns a hostname or address if hostname is empty
@@ -71,11 +71,11 @@ func (l SELinuxLabel) String() string {
 
 // Mount is volume mount information
 type Mount struct {
-	Source      string          `json:"source"        yaml:"source"`
-	Destination string          `json:"destination"   yaml:"destination"`
-	ReadOnly    bool            `json:"read_only"     yaml:"read_only"`
-	Propagation BindPropagation `json:"propagation"   yaml:"propagation"`
-	Label       SELinuxLabel    `json:"selinux_label" yaml:"selinux_label"`
+	Source      string          `json:"source"`
+	Destination string          `json:"destination"`
+	ReadOnly    bool            `json:"read_only"`
+	Propagation BindPropagation `json:"propagation"`
+	Label       SELinuxLabel    `json:"selinux_label"`
 }
 
 // Equal returns true if the mount is equals to other one, otherwise return false
@@ -85,9 +85,9 @@ func (m Mount) Equal(o Mount) bool {
 
 // ServiceParams is a common set of extra parameters for k8s components.
 type ServiceParams struct {
-	ExtraArguments []string          `json:"extra_args"  yaml:"extra_args"`
-	ExtraBinds     []Mount           `json:"extra_binds" yaml:"extra_binds"`
-	ExtraEnvvar    map[string]string `json:"extra_env"   yaml:"extra_env"`
+	ExtraArguments []string          `json:"extra_args"`
+	ExtraBinds     []Mount           `json:"extra_binds"`
+	ExtraEnvvar    map[string]string `json:"extra_env"`
 }
 
 // Equal returns true if the services params is equals to other one, otherwise return false
@@ -99,73 +99,73 @@ func (s ServiceParams) Equal(o ServiceParams) bool {
 
 // EtcdParams is a set of extra parameters for etcd.
 type EtcdParams struct {
-	ServiceParams `yaml:",inline"`
-	VolumeName    string `json:"volume_name" yaml:"volume_name"`
+	ServiceParams `json:",inline"`
+	VolumeName    string `json:"volume_name"`
 }
 
 // APIServerParams is a set of extra parameters for kube-apiserver.
 type APIServerParams struct {
-	ServiceParams   `yaml:",inline"`
-	AuditLogEnabled bool   `json:"audit_log_enabled" yaml:"audit_log_enabled"`
-	AuditLogPolicy  string `json:"audit_log_policy" yaml:"audit_log_policy"`
+	ServiceParams   `json:",inline"`
+	AuditLogEnabled bool   `json:"audit_log_enabled"`
+	AuditLogPolicy  string `json:"audit_log_policy"`
 }
 
 // CNIConfFile is a config file for CNI plugin deployed on worker nodes by CKE.
 type CNIConfFile struct {
-	Name    string `json:"name"    yaml:"name"`
-	Content string `json:"content" yaml:"content"`
+	Name    string `json:"name"`
+	Content string `json:"content"`
 }
 
 // SchedulerParams is a set of extra parameters for kube-scheduler.
 type SchedulerParams struct {
-	ServiceParams `yaml:",inline"`
-	Extenders     []string `json:"extenders" yaml:"extenders"`
+	ServiceParams `json:",inline"`
+	Extenders     []string `json:"extenders"`
 }
 
 // KubeletParams is a set of extra parameters for kubelet.
 type KubeletParams struct {
-	ServiceParams            `yaml:",inline"`
-	ContainerRuntime         string         `json:"container_runtime"          yaml:"container_runtime"`
-	ContainerRuntimeEndpoint string         `json:"container_runtime_endpoint" yaml:"container_runtime_endpoint"`
-	ContainerLogMaxSize      string         `json:"container_log_max_size"     yaml:"container_log_max_size"`
-	ContainerLogMaxFiles     int32          `json:"container_log_max_files"    yaml:"container_log_max_files"`
-	Domain                   string         `json:"domain"                     yaml:"domain"`
-	AllowSwap                bool           `json:"allow_swap"                 yaml:"allow_swap"`
-	BootTaints               []corev1.Taint `json:"boot_taints"                yaml:"boot_taints"`
-	CNIConfFile              CNIConfFile    `json:"cni_conf_file"              yaml:"cni_conf_file"`
+	ServiceParams            `json:",inline"`
+	ContainerRuntime         string         `json:"container_runtime"`
+	ContainerRuntimeEndpoint string         `json:"container_runtime_endpoint"`
+	ContainerLogMaxSize      string         `json:"container_log_max_size"`
+	ContainerLogMaxFiles     int32          `json:"container_log_max_files"`
+	Domain                   string         `json:"domain"`
+	AllowSwap                bool           `json:"allow_swap"`
+	BootTaints               []corev1.Taint `json:"boot_taints"`
+	CNIConfFile              CNIConfFile    `json:"cni_conf_file"`
 }
 
 // EtcdBackup is a set of configurations for etcdbackup.
 type EtcdBackup struct {
-	Enabled  bool   `json:"enabled"  yaml:"enabled"`
-	PVCName  string `json:"pvc_name" yaml:"pvc_name"`
-	Schedule string `json:"schedule" yaml:"schedule"`
-	Rotate   int    `json:"rotate,omitempty" yaml:"rotate,omitempty"`
+	Enabled  bool   `json:"enabled"`
+	PVCName  string `json:"pvc_name"`
+	Schedule string `json:"schedule"`
+	Rotate   int    `json:"rotate,omitempty"`
 }
 
 // Options is a set of optional parameters for k8s components.
 type Options struct {
-	Etcd              EtcdParams      `json:"etcd"                    yaml:"etcd"`
-	Rivers            ServiceParams   `json:"rivers"                  yaml:"rivers"`
-	EtcdRivers        ServiceParams   `json:"etcd-rivers"             yaml:"etcd-rivers"`
-	APIServer         APIServerParams `json:"kube-api"                yaml:"kube-api"`
-	ControllerManager ServiceParams   `json:"kube-controller-manager" yaml:"kube-controller-manager"`
-	Scheduler         SchedulerParams `json:"kube-scheduler"          yaml:"kube-scheduler"`
-	Proxy             ServiceParams   `json:"kube-proxy"              yaml:"kube-proxy"`
-	Kubelet           KubeletParams   `json:"kubelet"                 yaml:"kubelet"`
+	Etcd              EtcdParams      `json:"etcd"`
+	Rivers            ServiceParams   `json:"rivers"`
+	EtcdRivers        ServiceParams   `json:"etcd-rivers"`
+	APIServer         APIServerParams `json:"kube-api"`
+	ControllerManager ServiceParams   `json:"kube-controller-manager"`
+	Scheduler         SchedulerParams `json:"kube-scheduler"`
+	Proxy             ServiceParams   `json:"kube-proxy"`
+	Kubelet           KubeletParams   `json:"kubelet"`
 }
 
 // Cluster is a set of configurations for a etcd/Kubernetes cluster.
 type Cluster struct {
-	Name          string     `json:"name"                yaml:"name"`
-	Nodes         []*Node    `json:"nodes"               yaml:"nodes"`
-	TaintCP       bool       `json:"taint_control_plane" yaml:"taint_control_plane"`
-	ServiceSubnet string     `json:"service_subnet"      yaml:"service_subnet"`
-	PodSubnet     string     `json:"pod_subnet"          yaml:"pod_subnet"`
-	DNSServers    []string   `json:"dns_servers"         yaml:"dns_servers"`
-	DNSService    string     `json:"dns_service"         yaml:"dns_service"`
-	EtcdBackup    EtcdBackup `json:"etcd_backup"         yaml:"etcd_backup"`
-	Options       Options    `json:"options"             yaml:"options"`
+	Name          string     `json:"name"`
+	Nodes         []*Node    `json:"nodes"`
+	TaintCP       bool       `json:"taint_control_plane"`
+	ServiceSubnet string     `json:"service_subnet"`
+	PodSubnet     string     `json:"pod_subnet"`
+	DNSServers    []string   `json:"dns_servers"`
+	DNSService    string     `json:"dns_service"`
+	EtcdBackup    EtcdBackup `json:"etcd_backup"`
+	Options       Options    `json:"options"`
 }
 
 // Validate validates the cluster definition.
