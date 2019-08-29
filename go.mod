@@ -25,7 +25,7 @@ require (
 	github.com/docker/docker-credential-helpers v0.6.0 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef // indirect
-	github.com/google/go-cmp v0.2.0
+	github.com/google/go-cmp v0.3.0
 	github.com/google/go-github/v18 v18.2.0
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.8.5 // indirect
@@ -83,8 +83,8 @@ require (
 	google.golang.org/genproto v0.0.0-20190425155659-357c62f0e4bb // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.7 // indirect
 	gopkg.in/yaml.v2 v2.2.2
-	k8s.io/api v0.0.0-20190313235455-40a48860b5ab
-	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
+	k8s.io/api v0.0.0-20190819141258-3544db3b9e44
+	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
 	sigs.k8s.io/yaml v1.1.0
 )
 
