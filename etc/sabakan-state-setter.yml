@@ -3,29 +3,6 @@ machine-types:
     grace-period: 5s
     metrics:
       - name: hw_processor_status_health
-      - name: hw_storage_controller_status_health
-        selector:
-          labels:
-            controller: PCIeSSD.Slot.2-C
-            system: System.Embedded.1
-      - name: hw_storage_controller_status_health
-        selector:
-          labels:
-            controller: PCIeSSD.Slot.3-C
-      - name: hw_storage_controller_status_health
-        selector:
-          label-prefix:
-            controller: SATAHDD.Slot.
-            system: System.Embedded.
-        minimum-healthy-count: 1
-      - name: hw_storage_controller_status_health
-        selector:
-          labels:
-            controller: NonRAID.Integrated.1-1
-      - name: hw_storage_controller_status_health
-        selector:
-          labels:
-            controller: AHCI.Slot.1-1
   - name: r640-boot-1
     metrics:
       - name: hw_systems_processors_status_health
@@ -44,7 +21,7 @@ machine-types:
       - name: hw_systems_storage_drives_status_health
         selector:
           label-prefix:
-            device: PCIeSSD.Slot.
+            device: Disk.Bay.
         minimum-healthy-count: 1
   - name: r640-cs-1
     metrics:
