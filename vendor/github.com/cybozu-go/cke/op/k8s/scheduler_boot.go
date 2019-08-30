@@ -9,9 +9,9 @@ import (
 	"github.com/cybozu-go/cke/op"
 	"github.com/cybozu-go/cke/op/common"
 	"github.com/cybozu-go/cke/scheduler"
-	"github.com/ghodss/yaml"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/yaml"
 )
 
 type schedulerBootOp struct {
@@ -139,7 +139,7 @@ func (c prepareSchedulerFilesCommand) Command() cke.Command {
 // SchedulerParams returns parameters for kube-scheduler.
 func SchedulerParams() cke.ServiceParams {
 	args := []string{
-		"scheduler",
+		"kube-scheduler",
 		"--config=" + op.SchedulerConfigPath,
 		// for healthz service
 		"--tls-cert-file=" + op.K8sPKIPath("apiserver.crt"),

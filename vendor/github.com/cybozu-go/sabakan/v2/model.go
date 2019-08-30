@@ -36,7 +36,7 @@ type MachineModel interface {
 	Register(ctx context.Context, machines []*Machine) error
 	Get(ctx context.Context, serial string) (*Machine, error)
 	SetState(ctx context.Context, serial string, state MachineState) error
-	AddLabels(ctx context.Context, serial string, labels map[string]string) error
+	PutLabel(ctx context.Context, serial string, label, value string) error
 	DeleteLabel(ctx context.Context, serial string, label string) error
 	SetRetireDate(ctx context.Context, serial string, date time.Time) error
 	Query(ctx context.Context, query Query) ([]*Machine, error)

@@ -24,6 +24,10 @@ $ git checkout -b release-1.12 v1.12.3
 $ git push origin -u release-1.12:release-1.12
 ```
 
+Remove old changes from CHANGELOG.md of master branch.
+The CHANGELOG.md of master branch should only describe changes related to the latest release-X.Y.
+Changes in the old version are described in each branch's CHANGELOG.md.
+
 `release-*` branches are protected from removal and force push.
 
 Prepare change log entries

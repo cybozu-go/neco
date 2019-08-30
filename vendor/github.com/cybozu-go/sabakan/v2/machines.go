@@ -218,15 +218,13 @@ func (m *Machine) SetState(ms MachineState) error {
 	return nil
 }
 
-// AddLabels adds labels to Machine by merging maps.
-func (m *Machine) AddLabels(labels map[string]string) {
+// PutLabel adds a label to Machine if no label with the same name exists, or replaces a label.
+func (m *Machine) PutLabel(label, value string) {
 	if m.Spec.Labels == nil {
 		m.Spec.Labels = make(map[string]string)
 	}
 
-	for k, v := range labels {
-		m.Spec.Labels[k] = v
-	}
+	m.Spec.Labels[label] = value
 }
 
 // DeleteLabel deletes label from Machine.

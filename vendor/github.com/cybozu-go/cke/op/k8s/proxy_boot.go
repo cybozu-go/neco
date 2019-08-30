@@ -105,7 +105,7 @@ func (c prepareProxyFilesCommand) Command() cke.Command {
 // ProxyParams returns parameters for kube-proxy.
 func ProxyParams(n *cke.Node) cke.ServiceParams {
 	args := []string{
-		"proxy",
+		"kube-proxy",
 		"--proxy-mode=ipvs",
 		"--hostname-override=" + n.Nodename(),
 		"--kubeconfig=/etc/kubernetes/proxy/kubeconfig",

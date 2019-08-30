@@ -5,6 +5,41 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.4.6] - 2019-08-23
+
+### Changed
+- Update etcd to 3.3.15 and etcdutil to 1.3.3 (#171).
+- sabakan-cryptsetup: retry sabakan API calls (#171).
+
+### Changed
+
+## [2.4.5] - 2019-08-19
+
+### Changed
+- Update etcd to 3.3.14 and etcdutil to 1.3.2 (#168).
+- sabakan-cryptsetup: reformat when TPM is enabled (#169).
+
+## [2.4.4] - 2019-07-29
+
+### Added
+
+- sabakan-cryptsetup: TPM 2.0 support (#164).
+
+## [2.4.3] - 2019-07-04
+
+### Changed
+- No longer record state transition in audit (#163).
+
+## [2.4.2] - 2019-06-03
+
+### Changed
+- Fix Dockerfile (#157).
+
+## [2.4.1] - 2019-06-03
+
+### Changed
+- Rebuild container image to update its base image.
+
 ## [2.4.0] - 2019-04-26
 
 ### Added
@@ -107,7 +142,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 See [CHANGELOG-0](./CHANGELOG-0.md).
 
-[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v2.4.6...HEAD
+[2.4.6]: https://github.com/cybozu-go/sabakan/compare/v2.4.5...v2.4.6
+[2.4.5]: https://github.com/cybozu-go/sabakan/compare/v2.4.4...v2.4.5
+[2.4.4]: https://github.com/cybozu-go/sabakan/compare/v2.4.3...v2.4.4
+[2.4.3]: https://github.com/cybozu-go/sabakan/compare/v2.4.2...v2.4.3
+[2.4.2]: https://github.com/cybozu-go/sabakan/compare/v2.4.1...v2.4.2
+[2.4.1]: https://github.com/cybozu-go/sabakan/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/cybozu-go/sabakan/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/cybozu-go/sabakan/compare/v2.2.2...v2.3.0
 [2.2.2]: https://github.com/cybozu-go/sabakan/compare/v2.2.1...v2.2.2

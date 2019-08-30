@@ -96,6 +96,11 @@ spec:
               drop:
               - all
             readOnlyRootFilesystem: true
+          readinessProbe:
+            tcpSocket:
+              port: 53
+              host: localhost
+            periodSeconds: 1
           livenessProbe:
             tcpSocket:
               port: 53

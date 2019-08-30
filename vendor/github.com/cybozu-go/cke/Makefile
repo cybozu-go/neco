@@ -19,10 +19,14 @@ test:
 	go test -race -v ./...
 	go vet ./...
 
+static:
+	go generate ./static
+	git add ./static/resources.go
+
 mod:
 	go mod tidy
 	go mod vendor
 	git add -f vendor
 	git add go.mod
 
-.PHONY:	all setup test mod
+.PHONY:	all setup test static mod

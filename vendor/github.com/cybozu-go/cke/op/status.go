@@ -17,9 +17,9 @@ import (
 	"github.com/cybozu-go/cke/scheduler"
 	"github.com/cybozu-go/cke/static"
 	"github.com/cybozu-go/log"
-	"github.com/ghodss/yaml"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 )
 
 // GetNodeStatus returns NodeStatus.
@@ -134,7 +134,7 @@ func GetNodeStatus(ctx context.Context, inf cke.Infrastructure, node *cke.Node, 
 		AllowSwap:     false,
 	}
 	if status.Kubelet.Running {
-		status.Kubelet.IsHealthy, err = checkHealthz(ctx, inf, node.Address, 10248)
+		status.Kubelet.IsHealthy, err = CheckKubeletHealthz(ctx, inf, node.Address, 10248)
 		if err != nil {
 			log.Warn("failed to check kubelet health", map[string]interface{}{
 				log.FnError: err,
@@ -145,10 +145,10 @@ func GetNodeStatus(ctx context.Context, inf cke.Infrastructure, node *cke.Node, 
 		cfgData, _, err := agent.Run("cat /etc/kubernetes/kubelet/config.yml")
 		if err == nil {
 			v := struct {
-				ClusterDomain        string `yaml:"clusterDomain"`
-				FailSwapOn           bool   `yaml:"failSwapOn"`
-				ContainerLogMaxSize  string `yaml:"containerLogMaxSize"`
-				ContainerLogMaxFiles int32  `yaml:"containerLogMaxFiles"`
+				ClusterDomain        string `json:"clusterDomain"`
+				FailSwapOn           bool   `json:"failSwapOn"`
+				ContainerLogMaxSize  string `json:"containerLogMaxSize"`
+				ContainerLogMaxFiles int32  `json:"containerLogMaxFiles"`
 			}{}
 			err = yaml.Unmarshal(cfgData, &v)
 			if err == nil {
@@ -589,7 +589,8 @@ func getEtcdBackupStatus(ctx context.Context, inf cke.Infrastructure, n *cke.Nod
 	return s, nil
 }
 
-func checkHealthz(ctx context.Context, inf cke.Infrastructure, addr string, port uint16) (bool, error) {
+// CheckKubeletHealthz checks that Kubelet is healthy
+func CheckKubeletHealthz(ctx context.Context, inf cke.Infrastructure, addr string, port uint16) (bool, error) {
 	healthzURL := "http://" + addr + ":" + strconv.FormatUint(uint64(port), 10) + "/healthz"
 	req, err := http.NewRequest("GET", healthzURL, nil)
 	if err != nil {

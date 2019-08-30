@@ -11,8 +11,8 @@ import (
 	"github.com/cybozu-go/cke/op/k8s"
 	"github.com/cybozu-go/cke/scheduler"
 	"github.com/cybozu-go/log"
-	"github.com/ghodss/yaml"
 	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/yaml"
 )
 
 // NodeFilter filters nodes to

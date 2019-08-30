@@ -59,7 +59,9 @@ func BuiltInParams(node *cke.Node, initialCluster []string, state string) cke.Se
 		"--enable-v2=false",
 		"--enable-pprof=true",
 		"--auto-compaction-mode=periodic",
-		"--auto-compaction-retention=24",
+		// Follow default --etcd-compaction-interval of kube-apiserver
+		// https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/
+		"--auto-compaction-retention=5m",
 	}
 	if len(initialCluster) > 0 {
 		args = append(args,

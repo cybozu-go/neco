@@ -9,7 +9,7 @@ import (
 	"github.com/cybozu-go/cke"
 	"github.com/cybozu-go/cke/op"
 	"github.com/cybozu-go/cke/op/common"
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 var (
@@ -246,7 +246,7 @@ func auditPolicyFilePath(policy string) string {
 // APIServerParams returns parameters for API server.
 func APIServerParams(controlPlanes []*cke.Node, advertiseAddress, serviceSubnet string, auditLogEnabeled bool, auditLogPolicy string) cke.ServiceParams {
 	args := []string{
-		"apiserver",
+		"kube-apiserver",
 		"--allow-privileged",
 		"--etcd-servers=https://127.0.0.1:12379",
 		"--etcd-cafile=" + op.K8sPKIPath("etcd-ca.crt"),
