@@ -6,8 +6,8 @@ import (
 	"github.com/cybozu-go/cke"
 	"github.com/cybozu-go/cke/op"
 	"github.com/cybozu-go/cke/op/common"
-	yaml "gopkg.in/yaml.v2"
 	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/yaml"
 )
 
 type kubeletRestartOp struct {
@@ -63,6 +63,9 @@ func (o *kubeletRestartOp) NextCommand() cke.Commander {
 			common.WithParamsMap(paramsMap),
 			common.WithExtra(o.params.ServiceParams),
 			common.WithRestart())
+	case 4:
+		o.step++
+		return waitForKubeletReadyCommand{o.nodes}
 	default:
 		return nil
 	}

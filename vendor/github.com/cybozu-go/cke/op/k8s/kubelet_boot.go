@@ -2,18 +2,20 @@ package k8s
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/cybozu-go/cke"
 	"github.com/cybozu-go/cke/op"
 	"github.com/cybozu-go/cke/op/common"
 	"github.com/cybozu-go/well"
-	yaml "gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/retry"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -114,6 +116,9 @@ func (o *kubeletBootOp) NextCommand() cke.Commander {
 			common.WithOpts(opts),
 			common.WithParamsMap(paramsMap),
 			common.WithExtra(o.params.ServiceParams))
+	case 8:
+		o.step++
+		return waitForKubeletReadyCommand{o.nodes}
 	default:
 		return nil
 	}
@@ -320,13 +325,52 @@ func (c retaintBeforeKubeletBootCommand) Command() cke.Command {
 	}
 }
 
+type waitForKubeletReadyCommand struct {
+	nodes []*cke.Node
+}
+
+func (c waitForKubeletReadyCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+	for i := 0; i < 9; i++ {
+		err := c.try(ctx, inf)
+		if err == nil {
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(5 * time.Second):
+		}
+	}
+
+	// last try
+	return c.try(ctx, inf)
+}
+
+func (c waitForKubeletReadyCommand) try(ctx context.Context, inf cke.Infrastructure) error {
+	for _, node := range c.nodes {
+		isReady, err := op.CheckKubeletHealthz(ctx, inf, node.Address, 10248)
+		if err != nil {
+			return err
+		}
+		if !isReady {
+			return errors.New("node is not ready: " + node.Address)
+		}
+	}
+	return nil
+}
+
+func (c waitForKubeletReadyCommand) Command() cke.Command {
+	return cke.Command{
+		Name: "wait-for-kubelet-ready",
+	}
+}
+
 // KubeletServiceParams returns parameters for kubelet.
 func KubeletServiceParams(n *cke.Node, params cke.KubeletParams) cke.ServiceParams {
 	args := []string{
 		"kubelet",
 		"--config=/etc/kubernetes/kubelet/config.yml",
 		"--kubeconfig=/etc/kubernetes/kubelet/kubeconfig",
-		"--allow-privileged=true",
 		"--hostname-override=" + n.Nodename(),
 		"--pod-infra-container-image=" + cke.PauseImage.Name(),
 		"--network-plugin=cni",

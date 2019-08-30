@@ -3,7 +3,7 @@
 package gql
 
 import (
-	"github.com/cybozu-go/sabakan/v2"
+	sabakan "github.com/cybozu-go/sabakan/v2"
 )
 
 // Label represents an arbitrary key-value pairs.
@@ -20,7 +20,7 @@ type LabelInput struct {
 
 // MachineParams is a set of input parameters to search machines.
 type MachineParams struct {
-	Labels              []LabelInput           `json:"labels"`
+	Labels              []*LabelInput          `json:"labels"`
 	Racks               []int                  `json:"racks"`
 	Roles               []string               `json:"roles"`
 	States              []sabakan.MachineState `json:"states"`

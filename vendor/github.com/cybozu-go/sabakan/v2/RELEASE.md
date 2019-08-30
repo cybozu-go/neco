@@ -49,17 +49,25 @@ and conversion from old schema need to be implemented.
 Bump version
 ------------
 
-1. Determine a new API/program version number.  Let it write `$VERSION`.
+1. Determine a new API/program version number.  Let it write `$VERSION` as `VERSION=x.y.z`.
 2. Checkout `master` branch.
-3. Edit `CHANGELOG.md` for the new version ([example][]).
-4. Update `Version` constant in [version.go](./version.go).
-5. Commit the change and add a git tag, then push them.
+3. Make a branch to release, for example by `git neco dev "$VERSION"`
+4. Edit `CHANGELOG.md` for the new version ([example][]).
+5. Update `Version` constant in [version.go](./version.go).
+6. Commit the change and push it.
 
     ```console
-    $ VERSION=x.y.z
     $ git commit -a -m "Bump version to $VERSION"
-    $ git tag v$VERSION
-    $ git push origin master --tags
+    $ git neco review
+    ```
+
+7. Merge this branch.
+8. Checkout `master` branch.
+9. Add a git tag, then push it.
+
+    ```console
+    $ git tag "v$VERSION"
+    $ git push origin "v$VERSION"
     ```
 
 Now the version is bumped up and the latest container image is uploaded to [quay.io](https://quay.io/cybozu/sabakan).
