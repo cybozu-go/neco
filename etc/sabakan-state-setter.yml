@@ -44,7 +44,7 @@ machine-types:
       - name: hw_systems_storage_drives_status_health
         selector:
           label-prefix:
-            device: PCIeSSD.Slot.
+            device: Disk.Bay.
         minimum-healthy-count: 1
   - name: r640-cs-1
     metrics:
