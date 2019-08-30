@@ -135,7 +135,7 @@ github.com/coreos/ignition/config/shared/validations
 github.com/coreos/ignition/config/validate/report
 # github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f
 github.com/coreos/pkg/capnslog
-# github.com/cybozu-go/cke v1.15.0-rc.4
+# github.com/cybozu-go/cke v1.15.0
 github.com/cybozu-go/cke
 github.com/cybozu-go/cke/sabakan
 github.com/cybozu-go/cke/scheduler

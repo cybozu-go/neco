@@ -14,7 +14,7 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/coreos/ignition v0.32.0 // indirect
-	github.com/cybozu-go/cke v1.15.0-rc.4
+	github.com/cybozu-go/cke v1.15.0
 	github.com/cybozu-go/etcdutil v1.3.3
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
