@@ -43,5 +43,10 @@ func NewNotifier(ctx context.Context, st storage.Storage) (Notifier, error) {
 		return nil, err
 	}
 
-	return &SlackClient{URL: slackURL, HTTP: hc}, nil
+	me, err := neco.MyCluster()
+	if err != nil {
+		return nil, err
+	}
+
+	return &SlackClient{URL: slackURL, HTTP: hc, Cluster: me}, nil
 }

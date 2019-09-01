@@ -52,8 +52,9 @@ type Attachment struct {
 
 // SlackClient is a slack client
 type SlackClient struct {
-	URL  string
-	HTTP *http.Client
+	URL     string
+	HTTP    *http.Client
+	Cluster string
 }
 
 // PostWebHook posts a payload to slack
@@ -96,6 +97,7 @@ func (c SlackClient) NotifyInfo(req neco.UpdateRequest, message string) error {
 		Title:      "Update was started",
 		Text:       "Updating process was started on boot servers.",
 		Fields: []AttachmentField{
+			{Title: "Cluster", Value: c.Cluster, Short: true},
 			{Title: "Version", Value: req.Version, Short: true},
 			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
 			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
@@ -114,6 +116,7 @@ func (c SlackClient) NotifySucceeded(req neco.UpdateRequest) error {
 		Title:      "Update completed successfully",
 		Text:       "Updating on boot servers are completed successfully :tada: :tada: :tada:",
 		Fields: []AttachmentField{
+			{Title: "Cluster", Value: c.Cluster, Short: true},
 			{Title: "Version", Value: req.Version, Short: true},
 			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
 			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
@@ -131,6 +134,7 @@ func (c SlackClient) NotifyFailure(req neco.UpdateRequest, message string) error
 		Title:      "Failed to update boot servers",
 		Text:       "Failed to update boot servers due to some error :crying_cat_face:.  Please fix it manually.",
 		Fields: []AttachmentField{
+			{Title: "Cluster", Value: c.Cluster, Short: true},
 			{Title: "Version", Value: req.Version, Short: true},
 			{Title: "Servers", Value: fmt.Sprintf("%v", req.Servers), Short: true},
 			{Title: "Started at", Value: req.StartedAt.Format(time.RFC3339), Short: true},
