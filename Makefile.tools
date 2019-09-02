@@ -14,7 +14,7 @@ NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_
 CRITOOLS_VERSION = 1.15.0
 
 ### for argocd
-ARGOCD_VERSION = 1.1.2
+ARGOCD_VERSION = 1.2.0-rc2
 
 ### for kubectl
 K8S_VERSION = 1.15.3
