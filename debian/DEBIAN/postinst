@@ -18,6 +18,7 @@ configure() {
     /usr/bin/neco completion > /etc/bash_completion.d/neco
     /usr/bin/kubectl completion bash > /etc/bash_completion.d/kubectl
     /usr/bin/stern --completion bash > /etc/bash_completion.d/stern
+    /usr/bin/argocd completion bash > /etc/bash_completion.d/argocd
 }
 
 if test "$1" = "configure"; then
