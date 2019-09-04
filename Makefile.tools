@@ -8,7 +8,6 @@ CURL=curl -Lsf
 
 ### for node_exporter
 NODE_EXPORTER_VERSION = 0.18.1
-NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
 
 ### for crictl
 CRITOOLS_VERSION = 1.15.0
@@ -36,7 +35,8 @@ node_exporter:
 	rm -f $(LIBEXECDIR)/node_exporter
 	rm -rf $(BUILDDIR)/node_exporter
 	mkdir -p $(BUILDDIR)/node_exporter $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
-	$(CURL) $(NODE_EXPORTER_URL) | tar -C $(BUILDDIR)/node_exporter --strip-components=1 -xzf -
+	$(CURL) https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz | \
+	tar -C $(BUILDDIR)/node_exporter --strip-components=1 -xzf -
 	cd $(BUILDDIR)/node_exporter; GO111MODULE=on make build
 	cp $(BUILDDIR)/node_exporter/node_exporter $(SBINDIR)/
 	ln -s /usr/sbin/node_exporter $(LIBEXECDIR)/node_exporter
@@ -81,8 +81,8 @@ stern:
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
 	$(CURL) -o $(BINDIR)/stern https://github.com/wercker/stern/releases/download/$(STERN_VERSION)/stern_linux_amd64
 	chmod +x $(BINDIR)/stern
-	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/wercker/stern/1.11.0/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/wercker/stern/1.11.0/README.md
+	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/wercker/stern/$(STERN_VERSION)/LICENSE
+	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/wercker/stern/$(STERN_VERSION)/README.md
 
 kustomize:
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
