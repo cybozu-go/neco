@@ -8,7 +8,6 @@ CURL=curl -Lsf
 
 ### for node_exporter
 NODE_EXPORTER_VERSION = 0.18.1
-NODE_EXPORTER_URL = https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
 
 ### for crictl
 CRITOOLS_VERSION = 1.15.0
@@ -25,13 +24,19 @@ TOPOLVM_VERSION = 0.1.1
 ### for stern
 STERN_VERSION = 1.11.0
 
-all: node_exporter containerd crictl argocd kubectl lvmd stern
+### for kustomize
+# Follow Argo CD installed kustomize version
+# https://github.com/cybozu/neco-containers/blob/master/argocd/Dockerfile#L32
+KUSTOMIZE_VERSION = 3.1.0
+
+all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize
 
 node_exporter:
 	rm -f $(LIBEXECDIR)/node_exporter
 	rm -rf $(BUILDDIR)/node_exporter
 	mkdir -p $(BUILDDIR)/node_exporter $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
-	$(CURL) $(NODE_EXPORTER_URL) | tar -C $(BUILDDIR)/node_exporter --strip-components=1 -xzf -
+	$(CURL) https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz | \
+	tar -C $(BUILDDIR)/node_exporter --strip-components=1 -xzf -
 	cd $(BUILDDIR)/node_exporter; GO111MODULE=on make build
 	cp $(BUILDDIR)/node_exporter/node_exporter $(SBINDIR)/
 	ln -s /usr/sbin/node_exporter $(LIBEXECDIR)/node_exporter
@@ -76,10 +81,17 @@ stern:
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
 	$(CURL) -o $(BINDIR)/stern https://github.com/wercker/stern/releases/download/$(STERN_VERSION)/stern_linux_amd64
 	chmod +x $(BINDIR)/stern
-	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/wercker/stern/1.11.0/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/wercker/stern/1.11.0/README.md
+	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/wercker/stern/$(STERN_VERSION)/LICENSE
+	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/wercker/stern/$(STERN_VERSION)/README.md
+
+kustomize:
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	$(CURL) -o $(BINDIR)/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64
+	chmod +x $(BINDIR)/kustomize
+	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
+	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v${KUSTOMIZE_VERSION}/README.md
 
 clean:
 	rm -rf $(BUILDDIR)
 
-.PHONY:	all setup clean node_exporter containerd crictl argocd kubectl lvmd stern
+.PHONY:	all setup clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize
