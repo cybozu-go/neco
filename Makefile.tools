@@ -25,7 +25,12 @@ TOPOLVM_VERSION = 0.1.1
 ### for stern
 STERN_VERSION = 1.11.0
 
-all: node_exporter containerd crictl argocd kubectl lvmd stern
+### for kustomize
+# Follow Argo CD installed kustomize version
+# https://github.com/cybozu/neco-containers/blob/master/argocd/Dockerfile#L32
+KUSTOMIZE_VERSION = 3.1.0
+
+all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize
 
 node_exporter:
 	rm -f $(LIBEXECDIR)/node_exporter
@@ -79,7 +84,14 @@ stern:
 	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/wercker/stern/1.11.0/LICENSE
 	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/wercker/stern/1.11.0/README.md
 
+kustomize:
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	$(CURL) -o $(BINDIR)/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64
+	chmod +x $(BINDIR)/kustomize
+	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
+	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v${KUSTOMIZE_VERSION}/README.md
+
 clean:
 	rm -rf $(BUILDDIR)
 
-.PHONY:	all setup clean node_exporter containerd crictl argocd kubectl lvmd stern
+.PHONY:	all setup clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize
