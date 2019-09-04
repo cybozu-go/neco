@@ -76,9 +76,10 @@ func TestCoilSetup() {
 		Expect(len(podList.Items)).To(Equal(1))
 		podName := podList.Items[0].Name
 
-		_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "default", "10.64.0.0/14", "5")
-		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
+		// create non-default pools first to prevent misuse of default pool
 		_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "internet-egress", "172.17.0.0/28", "0")
+		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
+		_, stderr, err = execAt(boot0, "kubectl", "--namespace=kube-system", "exec", podName, "/coilctl", "pool", "create", "default", "10.64.0.0/14", "5")
 		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
 	})
 }
