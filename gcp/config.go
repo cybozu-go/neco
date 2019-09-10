@@ -10,7 +10,7 @@ const (
 	// DefaultHomeDisk is default value for attaching home disk image in host-vm
 	defaultHomeDisk = false
 	// DefaultHomeDiskSizeGB is default home disk size
-	defaultHomeDiskSizeGB = 20
+	defaultHomeDiskSizeGB = 50
 	// DefaultPreemptible is default value for enabling preemptible
 	// https://cloud.google.com/compute/docs/instances/preemptible
 	defaultPreemptible = false
