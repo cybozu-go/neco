@@ -1,6 +1,5 @@
 [Unit]
 Description=run docker prune periodically
-PartOf=docker-prune.service
 
 [Timer]
 OnCalendar=daily
