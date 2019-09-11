@@ -42,9 +42,6 @@ options:
         }]
       }
   kubelet:
-    boot_taints:
-      - key: coil.cybozu.com/bootstrap
-        effect: NoSchedule
     extra_binds:
       - source: /var/lib/k8s-containerd
         destination: /var/lib/k8s-containerd
