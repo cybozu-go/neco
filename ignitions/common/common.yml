@@ -101,6 +101,12 @@ systemd:
     enabled: true
   - name: wait-k8s-containerd-socket.service
     enabled: true
+  - name: rkt-gc.service
+  - name: rkt-gc.timer
+    enabled: true
+  - name: docker-prune.service
+  - name: docker-prune.timer
+    enabled: true
 networkd:
   - 01-eth0.network
   - 01-eth1.network

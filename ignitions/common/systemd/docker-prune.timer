@@ -1,5 +1,5 @@
 [Unit]
-Description=run rkt gc periodically
+Description=run docker prune periodically
 
 [Timer]
 OnCalendar=daily
