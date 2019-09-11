@@ -1,0 +1,9 @@
+[Unit]
+Description=prune docker images and containers
+After=network-online.target docker.service
+Wants=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker container prune -f --filter "until=72h"
+ExecStart=/usr/bin/docker image prune -a -f --filter "until=72h"
