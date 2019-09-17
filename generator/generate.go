@@ -126,7 +126,7 @@ func getLatestImage(ctx context.Context, name string, release bool) (*neco.Conta
 		if err != nil {
 			continue
 		}
-		if v.Prerelease() != "" {
+		if release && v.Prerelease() != "" {
 			continue
 		}
 		versions = append(versions, v)

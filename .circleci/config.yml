@@ -70,6 +70,9 @@ jobs:
       - run: time make SUDO="" setup
       - run: time make test
       - run: time make deb SUDO="" FAKEROOT=
+      - run: go install -mod=vendor ./pkg/generate-artifacts/
+      - run: generate-artifacts > /tmp/artifacts.go
+      - run: diff -u artifacts.go /tmp/artifacts.go
 
   build_release:
     docker:
