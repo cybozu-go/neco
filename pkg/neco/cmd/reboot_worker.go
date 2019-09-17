@@ -134,6 +134,9 @@ func doQuery(ctx context.Context, url string, query string, hc *well.HTTPClient)
 	}
 	req = req.WithContext(ctx)
 
+	// gqlgen 0.9+ requires application/json content-type header.
+	req.Header.Set("Content-Type", "application/json")
+
 	resp, err := hc.Do(req)
 	if err != nil {
 		return nil, err
