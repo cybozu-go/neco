@@ -13,7 +13,10 @@ $GCLOUD compute instances create ${INSTANCE_NAME} \
   --image vmx-enabled \
   --boot-disk-type ${DISK_TYPE} \
   --boot-disk-size ${BOOT_DISK_SIZE} \
-  --local-ssd interface=scsi
+  --local-ssd interface=nvme \
+  --local-ssd interface=nvme \
+  --local-ssd interface=nvme \
+  --local-ssd interface=nvme
 
 # Run data center test
 for i in $(seq 300); do
@@ -27,9 +30,9 @@ cat >run.sh <<EOF
 #!/bin/sh -ex
 
 # mkfs and mount local SSD on /var/scratch
-mkfs -t ext4 -F /dev/disk/by-id/google-local-ssd-0
+mkfs -t ext4 -F /dev/disk/by-id/google-local-nvme-ssd-0
 mkdir -p /var/scratch
-mount -t ext4 /dev/disk/by-id/google-local-ssd-0 /var/scratch
+mount -t ext4 /dev/disk/by-id/google-local-nvme-ssd-0 /var/scratch
 chmod 1777 /var/scratch
 
 # Set environment variables

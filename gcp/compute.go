@@ -97,7 +97,10 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 		"--image", cc.image,
 		"--boot-disk-type", "pd-ssd",
 		"--boot-disk-size", bootDiskSize,
-		"--local-ssd", "interface=scsi",
+		"--local-ssd", "interface=nvme",
+		"--local-ssd", "interface=nvme",
+		"--local-ssd", "interface=nvme",
+		"--local-ssd", "interface=nvme",
 		"--machine-type", cc.cfg.Compute.MachineType,
 		"--scopes", "https://www.googleapis.com/auth/devstorage.read_write")
 	if cc.cfg.Compute.HostVM.Preemptible {
