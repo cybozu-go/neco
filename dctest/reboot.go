@@ -61,6 +61,15 @@ func TestRebootAllBootServers() {
 
 		By("checking services on the boot servers are running after reboot")
 		checkSystemdServicesOnBoot()
+
+		By("checking sabakan is available")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			return nil
+		}).Should(Succeed())
 	})
 }
 
