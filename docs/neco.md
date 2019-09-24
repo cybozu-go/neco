@@ -65,6 +65,11 @@ Synopsis
     This command must be invoked only once in the cluster after `neco init` and
     `neco init-local` completed.
 
+    When `--upload` option is specified, it uploads only given target.
+    - `all`: Upload ignitions and sabakan & cke assets(default)
+    - `ignitions`: Upload ignitions
+    - `assets`: Upload sabakan & cke assets
+
 * `neco status`
 
     Show the status of the current update process.
