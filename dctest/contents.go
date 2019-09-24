@@ -66,6 +66,7 @@ func TestInitData() {
 		weight, err = strconv.ParseFloat(ckeTemplate.Nodes[2].Labels[sabakan.CKELabelWeight], 64)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(weight).To(BeNumerically("==", 1.000000))
+		execSafeAt(boot0, "neco", "config", "set", "proxy", "http://squid.internet-egress.svc.cluster.local:3128")
 		execSafeAt(boot0, "neco", "init-data")
 	})
 }

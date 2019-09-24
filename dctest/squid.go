@@ -58,4 +58,8 @@ func TestSquid() {
 		By("removing testhttpd deployments")
 		execSafeAt(boot0, "kubectl", "delete", "deployments/testhttpd")
 	})
+
+	It("reverts proxy config", func() {
+		execSafeAt(boot0, "neco", "config", "set", "proxy", proxy)
+	})
 }
