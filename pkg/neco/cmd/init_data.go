@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"os"
 
 	"github.com/cybozu-go/log"
@@ -14,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var ignitionsOnly bool
+var targetUploaded string
 
 func initData(ctx context.Context, st storage.Storage) error {
 	version, err := neco.GetDebianVersion(neco.NecoPackageName)
@@ -55,26 +56,39 @@ func initData(ctx context.Context, st storage.Storage) error {
 		}
 	}
 
-	if ignitionsOnly {
-		return sabakan.UploadIgnitions(ctx, localClient, version, st)
+	uploadAssets := func() error {
+		env := well.NewEnvironment(ctx)
+		env.Go(func(ctx context.Context) error {
+			return sabakan.UploadContents(ctx, localClient, proxyClient, version, auth, st)
+		})
+		env.Go(func(ctx context.Context) error {
+			return cke.UploadContents(ctx, localClient, proxyClient, version)
+		})
+		env.Go(func(ctx context.Context) error {
+			return sabakan.UploadDHCPJSON(ctx, localClient)
+		})
+		env.Go(func(ctx context.Context) error {
+			return cke.SetCKETemplate(ctx, st)
+		})
+		env.Go(cke.UpdateResources)
+		env.Stop()
+		return env.Wait()
 	}
 
-	env := well.NewEnvironment(ctx)
-	env.Go(func(ctx context.Context) error {
-		return sabakan.UploadContents(ctx, localClient, proxyClient, version, auth, st)
-	})
-	env.Go(func(ctx context.Context) error {
-		return cke.UploadContents(ctx, localClient, proxyClient, version)
-	})
-	env.Go(func(ctx context.Context) error {
-		return sabakan.UploadDHCPJSON(ctx, localClient)
-	})
-	env.Go(func(ctx context.Context) error {
-		return cke.SetCKETemplate(ctx, st)
-	})
-	env.Go(cke.UpdateResources)
-	env.Stop()
-	return env.Wait()
+	switch targetUploaded {
+	case "all":
+		err := uploadAssets()
+		if err != nil {
+			return err
+		}
+		return sabakan.UploadIgnitions(ctx, localClient, version, st)
+	case "ignitions":
+		return sabakan.UploadIgnitions(ctx, localClient, version, st)
+	case "assets":
+		return uploadAssets()
+	default:
+		return errors.New("unknown target name: " + targetUploaded)
+	}
 }
 
 var initDataCmd = &cobra.Command{
@@ -103,6 +117,6 @@ If uploaded versions are up to date, do nothing.
 }
 
 func init() {
-	initDataCmd.Flags().BoolVar(&ignitionsOnly, "ignitions-only", false, "upload ignitions only")
+	initDataCmd.Flags().StringVar(&targetUploaded, "upload", "all", "target name to be uploaded: ignitions, assets, all")
 	rootCmd.AddCommand(initDataCmd)
 }
