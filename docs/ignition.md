@@ -221,5 +221,15 @@ Container Linux will periodically update serf tags as follows:
 | `systemd-units-failed` | Failed unit names.                        |
 | `version`              | Version of `neco` that boot this machine. |
 
+Environment variable files
+--------------------------
+
+Container Linux will periodically update environment variable files using serf tags of the boot servers as follows:
+
+### `/etc/neco/proxy.env`
+
+This file is used as `EnvironmentFile=` in the systemd service which requires internet connection.
+It stores `HTTP_PROXY` and `HTTPS_PROXY`. When this file is updated, Container Linux restarts `docker.service` and `k8s-contaienrd.service`.
+
 [rkt]: https://github.com/rkt/rkt/
 [BOSS]: https://www.dell.com/support/article/us/en/04/sln310144/boss-s1-card

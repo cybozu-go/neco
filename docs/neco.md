@@ -247,6 +247,11 @@ The default value is `60m`.
 Set GitHub personal access token for using GitHub API with authenticated user.
 It will be used by `neco-updater` and `neco-worker`.
 
+### `serf-tags-proxy`
+
+Specify HTTP proxy server to access Internet for worker nodes.
+It will be used by `setup-serf-tags.service` on the boot server for set as a serf tag.
+
 Use case
 --------
 
