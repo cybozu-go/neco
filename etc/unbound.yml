@@ -246,3 +246,14 @@ spec:
       port: 53
       targetPort: 1053
       protocol: TCP
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: unbound-pdb
+  namespace: internet-egress
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unbound
