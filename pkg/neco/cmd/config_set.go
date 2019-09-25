@@ -117,6 +117,16 @@ Possible keys are:
 			case "github-token":
 				value = args[1]
 				return st.PutGitHubToken(ctx, value)
+			case "serf-tags-proxy":
+				value = args[1]
+				u, err := url.Parse(value)
+				if err != nil {
+					return err
+				}
+				if !u.IsAbs() {
+					return errors.New("invalid URL")
+				}
+				return st.PutSerfTagsProxy(ctx, value)
 			}
 			return errors.New("unknown key: " + key)
 		})

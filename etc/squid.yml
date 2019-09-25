@@ -331,7 +331,7 @@ metadata:
   name: squid
   namespace: internet-egress
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app.kubernetes.io/name: squid
   ports:

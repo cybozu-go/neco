@@ -1,0 +1,23 @@
+#!/bin/sh
+
+PROXY_ENVIRONMENTFILE=/etc/neco/proxy.env
+
+proxy=$(docker exec serf serf members -format=json -tag boot-server=true | jq -r '.members[0].tags."proxy"')
+if [ -z "${proxy}" ]; then
+    exit 0
+fi
+
+cat >"${PROXY_ENVIRONMENTFILE}.tmp" <<EOF
+HTTP_PROXY="${proxy}"
+HTTPS_PROXY="${proxy}"
+EOF
+
+diff -u "${PROXY_ENVIRONMENTFILE}" "${PROXY_ENVIRONMENTFILE}.tmp" >/dev/null
+if [ "$?" -ne 0 ]; then
+    cp -f "${PROXY_ENVIRONMENTFILE}.tmp" "${PROXY_ENVIRONMENTFILE}"
+    systemctl restart docker.service k8s-containerd.service
+fi
+
+rm -f "${PROXY_ENVIRONMENTFILE}.tmp"
+
+exit 0

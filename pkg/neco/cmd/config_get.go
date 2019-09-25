@@ -89,6 +89,12 @@ Possible keys are:
 					return err
 				}
 				fmt.Println(token)
+			case "serf-tags-proxy":
+				proxy, err := st.GetSerfTagsProxy(ctx)
+				if err != nil {
+					return err
+				}
+				fmt.Println(proxy)
 			default:
 				return errors.New("unknown key: " + key)
 			}

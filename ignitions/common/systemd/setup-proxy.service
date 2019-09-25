@@ -1,0 +1,9 @@
+[Unit]
+Description=Set proxy for services
+Requires=serf.service docker.service k8s-containerd.service
+After=serf.service docker.service k8s-containerd.service
+PartOf=setup-proxy.timer
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/setup-proxy

@@ -124,3 +124,13 @@ func (s Storage) PutGitHubToken(ctx context.Context, token string) error {
 func (s Storage) GetGitHubToken(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyGitHubToken)
 }
+
+// PutSerfTagsProxy stores serf tags proxy config to storage.
+func (s Storage) PutSerfTagsProxy(ctx context.Context, proxy string) error {
+	return s.put(ctx, KeySerfTagsProxy, proxy)
+}
+
+// GetSerfTagsProxy returns serf tags proxy config from storage.
+func (s Storage) GetSerfTagsProxy(ctx context.Context) (string, error) {
+	return s.get(ctx, KeySerfTagsProxy)
+}

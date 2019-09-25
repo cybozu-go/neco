@@ -1,0 +1,10 @@
+[Unit]
+Description=Set proxy for services periodically
+Wants=serf.service docker.service k8s-containerd.service
+After=serf.service docker.service k8s-containerd.service
+
+[Timer]
+OnCalendar=*-*-* *:*:0/20
+
+[Install]
+WantedBy=multi-user.target
