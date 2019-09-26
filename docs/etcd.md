@@ -140,7 +140,7 @@ Timeout from workers in nanoseconds.
 
 GitHub personal access token.
 
-## `<prefix>/config/serf-tags-proxy`
+## `<prefix>/serf-tag/proxy`
 
 HTTP proxy url for worker nodes to access Internet such as `https://squid.slack.com:3128`.
 It will be used by `setup-serf-tags.service` on the boot servers.

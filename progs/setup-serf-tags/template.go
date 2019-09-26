@@ -10,7 +10,7 @@ systemd_units_failed="$(systemctl list-units --state=failed --no-legend --plain 
 
 SERFOPS=""
 
-proxy=$(neco config get serf-tags-proxy)
+proxy=$(neco serf-tag get proxy)
 if [ -n "${proxy}" ]; then
        SERFOPS="${SERFOPTS} -set proxy=${proxy}"
 fi
