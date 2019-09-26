@@ -79,7 +79,7 @@ func TestSerfTagsProxy() {
 			}
 
 			for k, v := range containerdPIDs {
-				stdout = execSafeAt(boot0, "ckecli", "ssh", k, "--", "systemctl", "show", "-p", "ExecMainPID", "--value", "k8s-containerd.service")
+				stdout := execSafeAt(boot0, "ckecli", "ssh", k, "--", "systemctl", "show", "-p", "ExecMainPID", "--value", "k8s-containerd.service")
 				if strings.TrimSpace(string(stdout)) == v {
 					return fmt.Errorf("member %s have not restarted k8s-containerd.service", k)
 				}

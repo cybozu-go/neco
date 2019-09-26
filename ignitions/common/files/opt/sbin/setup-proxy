@@ -2,8 +2,15 @@
 
 PROXY_ENVIRONMENTFILE=/etc/neco/proxy.env
 
-proxy=$(docker exec serf serf members -format=json -tag boot-server=true | jq -r '.members[0].tags."proxy"')
+proxy_tags=$(docker exec serf serf members -format=json -tag boot-server=true | jq -r '.members[].tags."proxy"')
+if [ "$(echo "$proxy_tags" | uniq | wc -l)" -gt 1 ]; then
+    echo "proxy serf tags on boot servers are not unique. Skip updating..."
+    exit 0
+fi
+
+proxy="$(echo "$proxy_tags" | uniq)"
 if [ -z "${proxy}" -o "${proxy}" = "null" ]; then
+    echo "proxy serf tags on boot server is empty or null. Skip updating..."
     exit 0
 fi
 
@@ -15,7 +22,12 @@ EOF
 diff -u "${PROXY_ENVIRONMENTFILE}" "${PROXY_ENVIRONMENTFILE}.tmp" >/dev/null
 if [ "$?" -ne 0 ]; then
     cp -f "${PROXY_ENVIRONMENTFILE}.tmp" "${PROXY_ENVIRONMENTFILE}"
-    systemctl restart docker.service k8s-containerd.service
+
+    echo "Restarting docker.service."
+    systemctl restart docker.service
+
+    echo "Restarting k8s-containerd.service."
+    systemctl restart k8s-containerd.service
 fi
 
 rm -f "${PROXY_ENVIRONMENTFILE}.tmp"
