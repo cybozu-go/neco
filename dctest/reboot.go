@@ -33,19 +33,6 @@ func fetchClusterNodes() (map[string]bool, error) {
 	return m, nil
 }
 
-func getSerfMembers() (*serfMemberContainer, error) {
-	stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json")
-	if err != nil {
-		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
-	}
-	var result serfMemberContainer
-	err = json.Unmarshal(stdout, &result)
-	if err != nil {
-		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
-	}
-	return &result, nil
-}
-
 // TestRebootAllBootServers tests all boot servers are normal after reboot
 func TestRebootAllBootServers() {
 	It("runs systemd service on all boot servers after reboot", func() {

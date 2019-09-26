@@ -17,7 +17,7 @@ func TestSerfTagsProxy() {
 	containerdPIDs := make(map[string]string)
 
 	It("should get current PIDs of container runtime services", func() {
-		members, err := getSerfMembers()
+		members, err := getSerfWorkerMembers()
 		Expect(err).NotTo(HaveOccurred())
 		for _, m := range members.Members {
 			addr := strings.Split(m.Addr, ":")[0]
