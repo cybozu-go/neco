@@ -1,7 +1,6 @@
 package dctest
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -31,15 +30,11 @@ func TestSerfTagsProxy() {
 	It("should set workers' proxy configuration to serf tag", func() {
 		execSafeAt(boot0, "neco", "serf-tag", "set", "proxy", dummyProxyURL)
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "boot-server=true")
-			if err != nil {
-				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-			}
-			var m serfMemberContainer
-			err = json.Unmarshal(stdout, &m)
+			m, err := getSerfBootMembers()
 			if err != nil {
 				return err
 			}
+
 			if len(m.Members) != 3 {
 				return fmt.Errorf("serf members should be 3: %d", len(m.Members))
 			}
