@@ -3,7 +3,7 @@
 PROXY_ENVIRONMENTFILE=/etc/neco/proxy.env
 
 proxy=$(docker exec serf serf members -format=json -tag boot-server=true | jq -r '.members[0].tags."proxy"')
-if [ -z "${proxy}" ]; then
+if [ -z "${proxy}" -o "${proxy}" = "null" ]; then
     exit 0
 fi
 
