@@ -15,17 +15,16 @@ func TestSerfTagsProxy() {
 
 	dockerPIDs := make(map[string]string)
 	containerdPIDs := make(map[string]string)
-	var members *serfMemberContainer
 
 	It("should get current PIDs of container runtime services", func() {
-		var err error
-		members, err = getSerfMembers()
+		members, err := getSerfMembers()
 		Expect(err).NotTo(HaveOccurred())
 		for _, m := range members.Members {
-			stdout := execSafeAt(boot0, "ckecli", "ssh", m.Addr, "--", "systemctl", "show", "-p", "ExecMainPID", "--value", "docker.service")
-			dockerPIDs[m.Addr] = strings.TrimSpace(string(stdout))
-			stdout = execSafeAt(boot0, "ckecli", "ssh", m.Addr, "--", "systemctl", "show", "-p", "ExecMainPID", "--value", "k8s-containerd.service")
-			containerdPIDs[m.Addr] = strings.TrimSpace(string(stdout))
+			addr := strings.Split(m.Addr, ":")[0]
+			stdout := execSafeAt(boot0, "ckecli", "ssh", addr, "--", "systemctl", "show", "-p", "ExecMainPID", "--value", "docker.service")
+			dockerPIDs[addr] = strings.TrimSpace(string(stdout))
+			stdout = execSafeAt(boot0, "ckecli", "ssh", addr, "--", "systemctl", "show", "-p", "ExecMainPID", "--value", "k8s-containerd.service")
+			containerdPIDs[addr] = strings.TrimSpace(string(stdout))
 		}
 	})
 
@@ -60,10 +59,10 @@ func TestSerfTagsProxy() {
 
 	It("should confirm change of workers' proxy configuration", func() {
 		Eventually(func() error {
-			for _, m := range members.Members {
-				stdout := execSafeAt(boot0, "ckecli", "ssh", m.Addr, "cat", "/etc/neco/proxy.env")
+			for addr := range dockerPIDs {
+				stdout := execSafeAt(boot0, "ckecli", "ssh", addr, "cat", "/etc/neco/proxy.env")
 				if string(stdout) != fmt.Sprintf("HTTP_PROXY=%s\nHTTPS_PROXY=%s\n", dummyProxyURL, dummyProxyURL) {
-					return fmt.Errorf("member %s have not reflected tag proxy", m.Name)
+					return fmt.Errorf("member %s have not reflected tag proxy", addr)
 				}
 			}
 			return nil
@@ -72,14 +71,17 @@ func TestSerfTagsProxy() {
 
 	It("should confirm change of PIDs of container runtime services", func() {
 		Eventually(func() error {
-			for _, m := range members.Members {
-				stdout := execSafeAt(boot0, "ckecli", "ssh", m.Addr, "--", "systemctl", "show", "-p", "ExecMainPID", "--value", "docker.service")
-				if strings.TrimSpace(string(stdout)) == dockerPIDs[m.Addr] {
-					return fmt.Errorf("member %s have not restarted docker.service", m.Name)
+			for k, v := range dockerPIDs {
+				stdout := execSafeAt(boot0, "ckecli", "ssh", k, "--", "systemctl", "show", "-p", "ExecMainPID", "--value", "docker.service")
+				if strings.TrimSpace(string(stdout)) == v {
+					return fmt.Errorf("member %s have not restarted docker.service", k)
 				}
-				stdout = execSafeAt(boot0, "ckecli", "ssh", m.Addr, "--", "systemctl", "show", "-p", "ExecMainPID", "--value", "k8s-containerd.service")
-				if strings.TrimSpace(string(stdout)) == containerdPIDs[m.Addr] {
-					return fmt.Errorf("member %s have not restarted k8s-containerd.service", m.Name)
+			}
+
+			for k, v := range containerdPIDs {
+				stdout = execSafeAt(boot0, "ckecli", "ssh", k, "--", "systemctl", "show", "-p", "ExecMainPID", "--value", "k8s-containerd.service")
+				if strings.TrimSpace(string(stdout)) == v {
+					return fmt.Errorf("member %s have not restarted k8s-containerd.service", k)
 				}
 			}
 			return nil
@@ -87,12 +89,12 @@ func TestSerfTagsProxy() {
 	})
 
 	It("should confirm change of configuration of container runtime services", func() {
-		for _, m := range members.Members {
-			stdout := execSafeAt(boot0, "ckecli", "ssh", m.Addr, "--", "docker", "-D", "info", "--format", "{{.HTTPProxy}}")
+		for addr := range dockerPIDs {
+			stdout := execSafeAt(boot0, "ckecli", "ssh", addr, "--", "docker", "-D", "info", "--format", "{{.HTTPProxy}}")
 			Expect(strings.TrimSpace(string(stdout))).To(Equal(dummyProxyURL))
-			stdout = execSafeAt(boot0, "ckecli", "ssh", m.Addr, "--", "docker", "-D", "info", "--format", "{{.HTTPSProxy}}")
+			stdout = execSafeAt(boot0, "ckecli", "ssh", addr, "--", "docker", "-D", "info", "--format", "{{.HTTPSProxy}}")
 			Expect(strings.TrimSpace(string(stdout))).To(Equal(dummyProxyURL))
-			// skip test for containerd because we cannot find CLI to get configuration
 		}
+		// skip test for containerd because we cannot find CLI to get configuration
 	})
 }
