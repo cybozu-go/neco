@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	progsSabakan "github.com/cybozu-go/neco/progs/sabakan"
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -87,6 +88,11 @@ func TestRebootAllNodes() {
 
 	It("set node-proxy", func() {
 		execSafeAt(boot0, "neco", "config", "set", "node-proxy", newNodeProxyURL)
+		roles, err := progsSabakan.GetInstalledRoles()
+		Expect(err).ShouldNot(HaveOccurred())
+		for _, role := range roles {
+			execSafeAt(boot0, "sabactl", "ignitions", "delete", role, debVer)
+		}
 		execSafeAt(boot0, "neco", "init-data", "--ignitions-only")
 	})
 
