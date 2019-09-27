@@ -261,7 +261,7 @@ func UploadIgnitions(ctx context.Context, c *http.Client, id string, st storage.
 }
 
 func uploadIgnitions(ctx context.Context, c *sabac.Client, id string, st storage.Storage) error {
-	roles, err := GetInstalledRoles()
+	roles, err := getInstalledRoles()
 	if err != nil {
 		return err
 	}
@@ -368,8 +368,7 @@ func needIgnitionUpdate(ctx context.Context, c *sabac.Client, role, id string) (
 	return latest != id, nil
 }
 
-// GetInstalledRoles returns installed role names
-func GetInstalledRoles() ([]string, error) {
+func getInstalledRoles() ([]string, error) {
 	paths, err := filepath.Glob(filepath.Join(neco.IgnitionDirectory, "roles", "*", "site.yml"))
 	if err != nil {
 		return nil, err
