@@ -11,7 +11,8 @@ Restart=always
 ExecStartPre=/bin/mkdir -p /var/lib/k8s-containerd
 ExecStartPre=/bin/mkdir -p /run/k8s-containerd
 ExecStart=/opt/sbin/containerd --config /etc/k8s-containerd/config.toml
-EnvironmentFile=/etc/neco/proxy.env
+Environment="HTTP_PROXY=http://{{ index .Spec.IPv4 0 }}:30128"
+Environment="HTTPS_PROXY=http://{{ index .Spec.IPv4 0 }}:30128"
 
 # (lack of) limits from the upstream docker service unit
 LimitNOFILE=1048576

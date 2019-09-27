@@ -178,16 +178,6 @@ See details [Role and weights](https://github.com/cybozu-go/cke/blob/master/docs
 
     Update cke template using overriding weights. This is useful if administrator updates role and weights in the running Kubernetes cluster.
 
-### Serf tags management
-
-* `neco serf-tag get KEY`
-
-    Get the serf tag which has given key.
-
-* `neco serf-tag set KEY VALUE`
-
-    Set VALUE to the serf tag which has given key.
-
 ### Miscellaneous
 
 * `neco image NAME`
@@ -257,14 +247,10 @@ The default value is `60m`.
 Set GitHub personal access token for using GitHub API with authenticated user.
 It will be used by `neco-updater` and `neco-worker`.
 
-<a name="serf-tags"></a>
-Configurable Serf Tags
-----------------------
-
-### `proxy`
+### `node-proxy`
 
 Specify HTTP proxy server to access Internet for worker nodes.
-It will be used by `setup-serf-tags.service` on the boot server for set as a serf tag.
+This value is used as metadata key in the ignition template.
 
 Use case
 --------

@@ -9,7 +9,6 @@ files:
   - /etc/modprobe.d/conntrack-hashsize.conf
   - /etc/modules-load.d/cybozu.conf
   - /etc/neco/bmc-address.json
-  - /etc/neco/proxy.env
   - /etc/neco/rack
   - /etc/neco/version
   - /etc/sysctl.d/60-cybozu.conf
@@ -29,7 +28,6 @@ files:
   - /opt/sbin/setup-hw
   - /opt/sbin/setup-local-network
   - /opt/sbin/setup-node-exporter
-  - /opt/sbin/setup-proxy
   - /opt/sbin/setup-serf-conf
   - /opt/sbin/setup-serf-tags
   - /opt/sbin/setup-var
@@ -108,9 +106,6 @@ systemd:
     enabled: true
   - name: docker-prune.service
   - name: docker-prune.timer
-    enabled: true
-  - name: setup-proxy.service
-  - name: setup-proxy.timer
     enabled: true
 networkd:
   - 01-eth0.network
