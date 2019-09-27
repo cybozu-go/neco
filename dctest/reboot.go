@@ -126,7 +126,7 @@ func TestRebootAllNodes() {
 				return fmt.Errorf("some nodes are still starting reboot: %v", preReboot)
 			}
 			return nil
-		})
+		}).Should(Succeed())
 
 		By("recover all nodes")
 		Eventually(func() error {
