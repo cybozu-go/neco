@@ -62,6 +62,8 @@ func TestRebootAllBootServers() {
 
 // TestRebootAllNodes tests all nodes stop scenario
 func TestRebootAllNodes() {
+	newNodeProxyURL := "http://squid.internet-egress.svc.cluster.local:3128"
+
 	It("can access a pod from another pod running on different node", func() {
 		execSafeAt(boot0, "kubectl", "run", "nginx-reboot-test", "--image=quay.io/cybozu/testhttpd:0", "--generator=run-pod/v1")
 		execSafeAt(boot0, "kubectl", "run", "debug-reboot-test", "--generator=run-pod/v1", "--image=quay.io/cybozu/ubuntu-debug:18.04", "sleep", "Infinity")
@@ -81,6 +83,11 @@ func TestRebootAllNodes() {
 
 	It("stop CKE sabakan integration", func() {
 		execSafeAt(boot0, "ckecli", "sabakan", "disable")
+	})
+
+	It("set node-proxy", func() {
+		execSafeAt(boot0, "neco", "config", "set", "node-proxy", newNodeProxyURL)
+		execSafeAt(boot0, "neco", "init-data", "--ignitions-only")
 	})
 
 	It("reboots all nodes", func() {
@@ -214,6 +221,19 @@ func TestRebootAllNodes() {
 			}
 			return nil
 		}).Should(Succeed())
+	})
+
+	It("should confirm change of configuration of container runtime services", func() {
+		members, err := getSerfWorkerMembers()
+		Expect(err).NotTo(HaveOccurred())
+		for _, m := range members.Members {
+			addr := strings.Split(m.Addr, ":")[0]
+			stdout := execSafeAt(boot0, "ckecli", "ssh", addr, "--", "docker", "-D", "info", "--format", "{{.HTTPProxy}}")
+			Expect(strings.TrimSpace(string(stdout))).To(Equal(newNodeProxyURL))
+			stdout = execSafeAt(boot0, "ckecli", "ssh", addr, "--", "docker", "-D", "info", "--format", "{{.HTTPSProxy}}")
+			Expect(strings.TrimSpace(string(stdout))).To(Equal(newNodeProxyURL))
+		}
+		// skip test for containerd because we cannot find CLI to get configuration
 	})
 
 	It("can pull new image from internet", func() {
