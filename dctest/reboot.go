@@ -105,10 +105,13 @@ func TestRebootAllNodes() {
 		By("wait for rebooting")
 		preReboot := make(map[string]bool)
 		for _, m := range machines {
+			if m.Spec.Role == "boot" {
+				continue
+			}
 			preReboot[m.Spec.IPv4[0]] = true
 		}
 		Eventually(func() error {
-			result, err := getSerfMembers()
+			result, err := getSerfWorkerMembers()
 			if err != nil {
 				return err
 			}
@@ -134,7 +137,7 @@ func TestRebootAllNodes() {
 			if err != nil {
 				return err
 			}
-			result, err := getSerfMembers()
+			result, err := getSerfWorkerMembers()
 			if err != nil {
 				return err
 			}
