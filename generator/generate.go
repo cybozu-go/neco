@@ -37,7 +37,6 @@ var privateImages = map[string]bool{
 
 var debRepos = []string{
 	"etcdpasswd",
-	neco.GitHubRepoName,
 }
 
 var templ = template.Must(template.New("").Parse(artifactSetTemplate))
