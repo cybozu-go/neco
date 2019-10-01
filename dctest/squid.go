@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 )
 
 // TestSquid test installed squid
@@ -31,6 +32,16 @@ func TestSquid() {
 			}
 			return nil
 		}).Should(Succeed())
+		By("checking PodDisruptionBudget for squid Deployment")
+		pdb := policyv1beta1.PodDisruptionBudget{}
+		stdout, stderr, err := execAt(boot0, "kubectl", "get", "poddisruptionbudgets", "squid-pdb", "-n", "internet-egress", "-o", "json")
+		if err != nil {
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
+		err = json.Unmarshal(stdout, &pdb)
+		Expect(err).ShouldNot(HaveOccurred())
+		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
+		Expect(pdb.Spec.MaxUnavailable.IntValue()).Should(Equal(int32(1)))
 	})
 
 	It("should serve for docker daemon", func() {
