@@ -2,7 +2,6 @@ package dctest
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -91,12 +90,7 @@ func TestInit() {
 		}
 		By("getting systemd unit statuses by serf members")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "os-name=\"Ubuntu\"")
-			if err != nil {
-				return err
-			}
-			var m serfMemberContainer
-			err = json.Unmarshal(stdout, &m)
+			m, err := getSerfBootMembers()
 			if err != nil {
 				return err
 			}

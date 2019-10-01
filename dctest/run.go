@@ -2,6 +2,7 @@ package dctest
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -224,4 +225,43 @@ func checkSystemdServicesOnBoot() {
 		}
 		return nil
 	}).Should(Succeed())
+}
+
+func getSerfMembers() (*serfMemberContainer, error) {
+	stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json")
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+	var result serfMemberContainer
+	err = json.Unmarshal(stdout, &result)
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+	return &result, nil
+}
+
+func getSerfBootMembers() (*serfMemberContainer, error) {
+	stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "boot-server=true")
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+	var result serfMemberContainer
+	err = json.Unmarshal(stdout, &result)
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+	return &result, nil
+}
+
+func getSerfWorkerMembers() (*serfMemberContainer, error) {
+	stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "boot-server=false")
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+	var result serfMemberContainer
+	err = json.Unmarshal(stdout, &result)
+	if err != nil {
+		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+	}
+	return &result, nil
 }

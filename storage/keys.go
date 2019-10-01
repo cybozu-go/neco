@@ -30,6 +30,7 @@ const (
 	KeyCheckUpdateInterval   = "config/check-update-interval"
 	KeyWorkerTimeout         = "config/worker-timeout"
 	KeyGitHubToken           = "config/github-token"
+	KeyNodeProxy             = "config/node-proxy"
 	KeyVaultUnsealKey        = "vault-unseal-key"
 	KeyVaultRootToken        = "vault-root-token"
 	KeyFinishPrefix          = "finish/"

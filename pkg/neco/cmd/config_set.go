@@ -29,14 +29,15 @@ Possible keys are:
     quay-password         - Password to authenticate to quay.io from QUAY_PASSWORD.  This does not take VALUE.
     check-update-interval - Polling interval for checking new neco release.
     worker-timeout        - Timeout value to wait for workers.
-    github-token          - GitHub personal access token for checking GitHub release.`,
+    github-token          - GitHub personal access token for checking GitHub release.
+    node-proxy            - HTTP proxy server URL to access Internet for worker nodes.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return fmt.Errorf("accepts %d arg(s), received %d", 1, len(args))
 		}
 		switch args[0] {
-		case "env", "slack", "proxy", "check-update-interval", "worker-timeout":
+		case "env", "slack", "proxy", "check-update-interval", "worker-timeout", "node-proxy":
 			if len(args) != 2 {
 				return fmt.Errorf("accepts %d arg(s), received %d", 2, len(args))
 			}
@@ -56,6 +57,7 @@ Possible keys are:
 		"check-update-interval",
 		"worker-timeout",
 		"github-token",
+		"node-proxy",
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
@@ -117,6 +119,16 @@ Possible keys are:
 			case "github-token":
 				value = args[1]
 				return st.PutGitHubToken(ctx, value)
+			case "node-proxy":
+				value = args[1]
+				u, err := url.Parse(value)
+				if err != nil {
+					return err
+				}
+				if !u.IsAbs() {
+					return errors.New("invalid URL")
+				}
+				return st.PutNodeProxy(ctx, value)
 			}
 			return errors.New("unknown key: " + key)
 		})
