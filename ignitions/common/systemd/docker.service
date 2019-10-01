@@ -17,8 +17,13 @@ EnvironmentFile=-/run/flannel/flannel_docker_opts.env
 Environment=DOCKER_SELINUX=--selinux-enabled=true
 
 # settings for Neco
+{{ if eq (Metadata "proxy_url") "" }}
 Environment="HTTP_PROXY=http://{{ index .Spec.IPv4 0 }}:30128"
 Environment="HTTPS_PROXY=http://{{ index .Spec.IPv4 0 }}:30128"
+{{ else }}
+Environment="HTTP_PROXY={{ Metadata "proxy_url" }}"
+Environment="HTTPS_PROXY={{ Metadata "proxy_url" }}"
+{{ end }}
 Environment=DOCKER_OPTS="--bridge=none --iptables=false --ip-masq=false --dns=127.0.0.1 --cpu-rt-runtime=950000"
 LimitMEMLOCK=infinity
 

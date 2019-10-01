@@ -140,6 +140,10 @@ Timeout from workers in nanoseconds.
 
 GitHub personal access token.
 
+## `<prefix>/config/node-proxy`
+
+HTTP proxy url for worker nodes to access Internet such as `http://squid:3128`.
+
 ## `<prefix>/vault-unseal-key`
 
 Vault unseal key for unsealing automatically.

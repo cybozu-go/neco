@@ -53,15 +53,11 @@ func TestCKE(availableNodes int) {
 	It("all systemd units are active", func() {
 		By("getting systemd unit statuses by serf members")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "os-name=\"Container Linux by CoreOS\"")
-			if err != nil {
-				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-			}
-			var m serfMemberContainer
-			err = json.Unmarshal(stdout, &m)
+			m, err := getSerfWorkerMembers()
 			if err != nil {
 				return err
 			}
+
 			if len(m.Members) != availableNodes {
 				return fmt.Errorf("too few serf members: %d", len(m.Members))
 			}

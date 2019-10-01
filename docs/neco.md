@@ -247,6 +247,11 @@ The default value is `60m`.
 Set GitHub personal access token for using GitHub API with authenticated user.
 It will be used by `neco-updater` and `neco-worker`.
 
+### `node-proxy`
+
+Specify HTTP proxy server to access Internet for worker nodes.
+This value is used as metadata key in the ignition template.
+
 Use case
 --------
 

@@ -298,6 +298,16 @@ func uploadIgnitions(ctx context.Context, c *sabac.Client, id string, st storage
 		return err
 	}
 
+	proxy, err := st.GetNodeProxy(ctx)
+	switch err {
+	case storage.ErrNotFound:
+		metadata["proxy_url"] = ""
+	case nil:
+		metadata["proxy_url"] = proxy
+	default:
+		return err
+	}
+
 	// set boot server addresses in metadata
 	req, err := st.GetRequest(ctx)
 	if err != nil {

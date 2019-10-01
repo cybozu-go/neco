@@ -124,3 +124,13 @@ func (s Storage) PutGitHubToken(ctx context.Context, token string) error {
 func (s Storage) GetGitHubToken(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyGitHubToken)
 }
+
+// PutNodeProxy stores node-proxy config to storage.
+func (s Storage) PutNodeProxy(ctx context.Context, token string) error {
+	return s.put(ctx, KeyNodeProxy, token)
+}
+
+// GetNodeProxy returns node-proxy from storage
+func (s Storage) GetNodeProxy(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyNodeProxy)
+}
