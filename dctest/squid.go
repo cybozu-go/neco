@@ -41,7 +41,6 @@ func TestSquid() {
 		err = json.Unmarshal(stdout, &pdb)
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
-		Expect(pdb.Spec.MaxUnavailable.IntValue()).Should(Equal(1))
 	})
 
 	It("should serve for docker daemon", func() {
