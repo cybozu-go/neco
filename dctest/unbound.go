@@ -41,7 +41,7 @@ func TestUnbound() {
 		err = json.Unmarshal(stdout, &pdb)
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
-		Expect(pdb.Spec.MaxUnavailable.IntValue()).Should(Equal(int32(1)))
+		Expect(pdb.Spec.MaxUnavailable.IntValue()).Should(Equal(1))
 	})
 
 	It("should resolve www.cybozu.com", func() {
