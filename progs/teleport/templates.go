@@ -19,6 +19,9 @@ teleport:
 ssh_service:
   enabled: yes
   listen_addr: 0.0.0.0:3022
+  pam:
+    enabled: yes
+    service_name: "teleport"
 `))
 
 var serviceTmpl = template.Must(template.New("teleport-node.service").
