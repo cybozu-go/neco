@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/tcnksm/go-input"
@@ -138,6 +139,9 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 	if draftOpts.issue == 0 {
 		return nil
 	}
+
+	// wait for the pr get created
+	time.Sleep(2 * time.Second)
 
 	fmt.Printf("Connect %s/%s#%d with %s/%s#%d.\n",
 		curRepo.Owner, curRepo.Name, pr.Number, issueRepo.Owner, issueRepo.Name, draftOpts.issue)
