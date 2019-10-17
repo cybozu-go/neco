@@ -33,7 +33,6 @@ var (
 		"/etc/containers/registries.conf",
 		"/etc/docker/daemon.json",
 		"/etc/profile.d/go.sh",
-		"/etc/systemd/system/docker.service.d/99-placemat.conf",
 		"/usr/local/bin/podenter",
 	}
 )
@@ -370,6 +369,9 @@ func dumpStaticFiles() error {
 	for _, file := range staticFiles {
 		err := copyStatic(statikFS, file)
 		if err != nil {
+			log.Error("failed to copy file: "+file, map[string]interface{}{
+				log.FnError: err,
+			})
 			return err
 		}
 		log.Info("wrote", map[string]interface{}{
