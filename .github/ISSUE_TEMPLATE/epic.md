@@ -15,6 +15,10 @@ Brief summary of what this Epic is.
 
 Describe how this Epic impacts an initiative the business is working on.
 
+## Technical information
+
+Describe technical problems and possible solutions for this epic.
+
 ## Scope and goal
 
 Define what is a must-have for launch and in-scope. Keep this section fluid and dynamic until you lock-in priority during planning.
