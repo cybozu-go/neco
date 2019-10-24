@@ -61,7 +61,7 @@ commands:
 jobs:
   build:
     docker:
-      - image: quay.io/cybozu/golang:1.12-bionic
+      - image: quay.io/cybozu/golang:1.13-bionic
       - image: quay.io/coreos/etcd:v3.3
     working_directory: /work
     resource_class: xlarge
@@ -76,7 +76,7 @@ jobs:
 
   build_release:
     docker:
-      - image: quay.io/cybozu/golang:1.12-bionic
+      - image: quay.io/cybozu/golang:1.13-bionic
       - image: quay.io/coreos/etcd:v3.3
     working_directory: /work
     resource_class: xlarge
@@ -96,7 +96,7 @@ jobs:
 
   deploy_github:
     docker:
-      - image: quay.io/cybozu/golang:1.12-bionic
+      - image: quay.io/cybozu/golang:1.13-bionic
     steps:
       - attach_workspace:
           at: ./artifacts
@@ -144,7 +144,7 @@ jobs:
 
   generate-artifacts:
     docker:
-      - image: quay.io/cybozu/golang:1.12-bionic
+      - image: quay.io/cybozu/golang:1.13-bionic
     steps:
       - checkout
       - run: go install -mod=vendor ./pkg/generate-artifacts/
@@ -224,7 +224,7 @@ jobs:
 
   update-release:
     docker:
-      - image: quay.io/cybozu/golang:1.12-bionic
+      - image: quay.io/cybozu/golang:1.13-bionic
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -261,7 +261,7 @@ jobs:
 
   build_necogcp:
     docker:
-      - image: quay.io/cybozu/golang:1.12-bionic
+      - image: quay.io/cybozu/golang:1.13-bionic
     working_directory: /work
     steps:
       - checkout
