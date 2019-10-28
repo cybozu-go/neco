@@ -26,6 +26,7 @@ var (
 		"MutatingAdmissionWebhook",
 		"ValidatingAdmissionWebhook",
 		"ResourceQuota",
+		"StorageObjectInUseProtection",
 
 		// NodeRestriction is not in the list above, but added to restrict kubelet privilege.
 		"NodeRestriction",
@@ -252,6 +253,8 @@ func APIServerParams(controlPlanes []*cke.Node, advertiseAddress, serviceSubnet 
 		"--etcd-cafile=" + op.K8sPKIPath("etcd-ca.crt"),
 		"--etcd-certfile=" + op.K8sPKIPath("apiserver-etcd-client.crt"),
 		"--etcd-keyfile=" + op.K8sPKIPath("apiserver-etcd-client.key"),
+		// disable compaction by apisever as it cannot do it.
+		"--etcd-compaction-interval=0",
 
 		"--bind-address=0.0.0.0",
 		"--insecure-port=0",

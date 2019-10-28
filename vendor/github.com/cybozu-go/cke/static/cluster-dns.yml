@@ -72,6 +72,9 @@ spec:
     metadata:
       labels:
         cke.cybozu.com/appname: cluster-dns
+        k8s-app: coredns # sonobuoy requires
+      annotations:
+        prometheus.io/port: "9153"
     spec:
       priorityClassName: system-cluster-critical
       serviceAccountName: cke-cluster-dns
@@ -102,6 +105,8 @@ spec:
         - containerPort: 1053
           name: dns-tcp
           protocol: TCP
+        - containerPort: 9153
+          name: metrics
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -154,3 +159,17 @@ spec:
       port: 53
       targetPort: 1053
       protocol: TCP
+---
+
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: cluster-dns-pdb
+  namespace: kube-system
+  annotations:
+    cke.cybozu.com/revision: "1"
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      cke.cybozu.com/appname: cluster-dns

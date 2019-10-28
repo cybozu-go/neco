@@ -7,7 +7,7 @@ require (
 	github.com/coreos/etcd v3.3.15+incompatible
 	github.com/coreos/go-systemd v0.0.0-20181031085051-9002847aa142 // indirect
 	github.com/coreos/ignition v0.30.0
-	github.com/cybozu-go/etcdutil v1.3.3
+	github.com/cybozu-go/etcdutil v1.3.4
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
 	github.com/cybozu-go/well v1.8.1
@@ -37,3 +37,5 @@ require (
 	google.golang.org/genproto v0.0.0-20181127195345-31ac5d88444a // indirect
 	sigs.k8s.io/yaml v1.1.0
 )
+
+go 1.13

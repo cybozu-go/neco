@@ -29,11 +29,16 @@ func DecideOps(c *cke.Cluster, cs *cke.ClusterStatus, resources []cke.ResourceDe
 
 	// 2. Bootstrap etcd cluster, if not yet.
 	if !nf.EtcdBootstrapped() {
+		// Etcd boot operations run only when all CPs are SSH reachable
+		if len(nf.SSHNotConnectedNodes(nf.cluster.Nodes, true, false)) > 0 {
+			log.Warn("cannot boot etcd since there are ssh-unconnectable control planes", nil)
+			return nil
+		}
 		return []cke.Operator{etcd.BootOp(nf.ControlPlane(), c.Options.Etcd, c.Options.Kubelet.Domain)}
 	}
 
 	// 3. Start etcd containers.
-	if nodes := nf.EtcdStoppedMembers(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.EtcdStoppedMembers(), true, false); len(nodes) > 0 {
 		return []cke.Operator{etcd.StartOp(nodes, c.Options.Etcd, c.Options.Kubelet.Domain)}
 	}
 
@@ -47,9 +52,11 @@ func DecideOps(c *cke.Cluster, cs *cke.ClusterStatus, resources []cke.ResourceDe
 		return ops
 	}
 
-	// 6. Maintain etcd cluster.
-	if o := etcdMaintOp(c, nf); o != nil {
-		return []cke.Operator{o}
+	// 6. Maintain etcd cluster, only when all CPs are SSH reachable.
+	if len(nf.SSHNotConnectedNodes(nf.cluster.Nodes, true, false)) == 0 {
+		if o := etcdMaintOp(c, nf); o != nil {
+			return []cke.Operator{o}
+		}
 	}
 
 	// 7. Maintain k8s resources.
@@ -66,53 +73,56 @@ func DecideOps(c *cke.Cluster, cs *cke.ClusterStatus, resources []cke.ResourceDe
 }
 
 func riversOps(c *cke.Cluster, nf *NodeFilter) (ops []cke.Operator) {
-	if nodes := nf.RiversStoppedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.RiversStoppedNodes(), true, true); len(nodes) > 0 {
 		ops = append(ops, op.RiversBootOp(nodes, nf.ControlPlane(), c.Options.Rivers, op.RiversContainerName, op.RiversUpstreamPort, op.RiversListenPort))
 	}
-	if nodes := nf.RiversOutdatedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.RiversOutdatedNodes(), true, true); len(nodes) > 0 {
 		ops = append(ops, op.RiversRestartOp(nodes, nf.ControlPlane(), c.Options.Rivers, op.RiversContainerName, op.RiversUpstreamPort, op.RiversListenPort))
 	}
-	if nodes := nf.EtcdRiversStoppedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.EtcdRiversStoppedNodes(), true, false); len(nodes) > 0 {
 		ops = append(ops, op.RiversBootOp(nodes, nf.ControlPlane(), c.Options.EtcdRivers, op.EtcdRiversContainerName, op.EtcdRiversUpstreamPort, op.EtcdRiversListenPort))
 	}
-	if nodes := nf.EtcdRiversOutdatedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.EtcdRiversOutdatedNodes(), true, false); len(nodes) > 0 {
 		ops = append(ops, op.RiversRestartOp(nodes, nf.ControlPlane(), c.Options.EtcdRivers, op.EtcdRiversContainerName, op.EtcdRiversUpstreamPort, op.EtcdRiversListenPort))
 	}
 	return ops
 }
 
 func k8sOps(c *cke.Cluster, nf *NodeFilter) (ops []cke.Operator) {
-	if nodes := nf.APIServerStoppedNodes(); len(nodes) > 0 {
+	// For cp nodes
+	if nodes := nf.SSHConnectedNodes(nf.APIServerStoppedNodes(), true, false); len(nodes) > 0 {
 		ops = append(ops, k8s.APIServerBootOp(nodes, nf.ControlPlane(), c.ServiceSubnet, c.Options.Kubelet.Domain, c.Options.APIServer))
 	}
-	if nodes := nf.APIServerOutdatedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.APIServerOutdatedNodes(), true, false); len(nodes) > 0 {
 		ops = append(ops, k8s.APIServerRestartOp(nodes, nf.ControlPlane(), c.ServiceSubnet, c.Options.Kubelet.Domain, c.Options.APIServer))
 	}
-	if nodes := nf.ControllerManagerStoppedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.ControllerManagerStoppedNodes(), true, false); len(nodes) > 0 {
 		ops = append(ops, k8s.ControllerManagerBootOp(nodes, c.Name, c.ServiceSubnet, c.Options.ControllerManager))
 	}
-	if nodes := nf.ControllerManagerOutdatedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.ControllerManagerOutdatedNodes(), true, false); len(nodes) > 0 {
 		ops = append(ops, k8s.ControllerManagerRestartOp(nodes, c.Name, c.ServiceSubnet, c.Options.ControllerManager))
 	}
-	if nodes := nf.SchedulerStoppedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.SchedulerStoppedNodes(), true, false); len(nodes) > 0 {
 		ops = append(ops, k8s.SchedulerBootOp(nodes, c.Name, c.Options.Scheduler))
 	}
-	if nodes := nf.SchedulerOutdatedNodes(c.Options.Scheduler.Extenders); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.SchedulerOutdatedNodes(c.Options.Scheduler.Extenders), true, false); len(nodes) > 0 {
 		ops = append(ops, k8s.SchedulerRestartOp(nodes, c.Name, c.Options.Scheduler))
 	}
-	if nodes := nf.KubeletUnrecognizedNodes(); len(nodes) > 0 {
+
+	// For all nodes
+	if nodes := nf.SSHConnectedNodes(nf.KubeletUnrecognizedNodes(), true, true); len(nodes) > 0 {
 		ops = append(ops, k8s.KubeletRestartOp(nodes, c.Name, c.ServiceSubnet, c.Options.Kubelet))
 	}
-	if nodes := nf.KubeletStoppedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.KubeletStoppedNodes(), true, true); len(nodes) > 0 {
 		ops = append(ops, k8s.KubeletBootOp(nodes, nf.KubeletStoppedRegisteredNodes(), nf.HealthyAPIServer(), c.Name, c.PodSubnet, c.Options.Kubelet))
 	}
-	if nodes := nf.KubeletOutdatedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.KubeletOutdatedNodes(), true, true); len(nodes) > 0 {
 		ops = append(ops, k8s.KubeletRestartOp(nodes, c.Name, c.ServiceSubnet, c.Options.Kubelet))
 	}
-	if nodes := nf.ProxyStoppedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.ProxyStoppedNodes(), true, true); len(nodes) > 0 {
 		ops = append(ops, k8s.KubeProxyBootOp(nodes, c.Name, c.Options.Proxy))
 	}
-	if nodes := nf.ProxyOutdatedNodes(); len(nodes) > 0 {
+	if nodes := nf.SSHConnectedNodes(nf.ProxyOutdatedNodes(), true, true); len(nodes) > 0 {
 		ops = append(ops, k8s.KubeProxyRestartOp(nodes, c.Name, c.Options.Proxy))
 	}
 	return ops
@@ -168,11 +178,17 @@ func k8sMaintOps(c *cke.Cluster, cs *cke.ClusterStatus, resources []cke.Resource
 
 	ops = append(ops, decideNodeDNSOps(apiServer, c, ks)...)
 
-	cpAddresses := make([]corev1.EndpointAddress, len(nf.ControlPlane()))
-	for i, cp := range nf.ControlPlane() {
-		cpAddresses[i] = corev1.EndpointAddress{
-			IP: cp.Address,
-		}
+	var cpReadyAddresses []corev1.EndpointAddress
+	for _, n := range nf.HealthyAPIServerNodes() {
+		cpReadyAddresses = append(cpReadyAddresses, corev1.EndpointAddress{
+			IP: n.Address,
+		})
+	}
+	var cpNotReadyAddresses []corev1.EndpointAddress
+	for _, n := range nf.UnhealthyAPIServerNodes() {
+		cpNotReadyAddresses = append(cpNotReadyAddresses, corev1.EndpointAddress{
+			IP: n.Address,
+		})
 	}
 
 	masterEP := &corev1.Endpoints{}
@@ -180,7 +196,8 @@ func k8sMaintOps(c *cke.Cluster, cs *cke.ClusterStatus, resources []cke.Resource
 	masterEP.Name = "kubernetes"
 	masterEP.Subsets = []corev1.EndpointSubset{
 		{
-			Addresses: cpAddresses,
+			Addresses:         cpReadyAddresses,
+			NotReadyAddresses: cpNotReadyAddresses,
 			Ports: []corev1.EndpointPort{
 				{
 					Name:     "https",
@@ -203,6 +220,12 @@ func k8sMaintOps(c *cke.Cluster, cs *cke.ClusterStatus, resources []cke.Resource
 		ops = append(ops, svcOp)
 	}
 
+	cpAddresses := make([]corev1.EndpointAddress, len(nf.ControlPlane()))
+	for i, cp := range nf.ControlPlane() {
+		cpAddresses[i] = corev1.EndpointAddress{
+			IP: cp.Address,
+		}
+	}
 	etcdEP := &corev1.Endpoints{}
 	etcdEP.Namespace = metav1.NamespaceSystem
 	etcdEP.Name = op.EtcdEndpointsName
@@ -305,7 +328,7 @@ func decideEpOp(expect, actual *corev1.Endpoints, apiServer *cke.Node) cke.Opera
 		return updateOp
 	}
 
-	if len(subset.Addresses) != len(expect.Subsets[0].Addresses) {
+	if len(subset.Addresses) != len(expect.Subsets[0].Addresses) || len(subset.NotReadyAddresses) != len(expect.Subsets[0].NotReadyAddresses) {
 		return updateOp
 	}
 
@@ -314,6 +337,16 @@ func decideEpOp(expect, actual *corev1.Endpoints, apiServer *cke.Node) cke.Opera
 		endpoints[a.IP] = true
 	}
 	for _, a := range subset.Addresses {
+		if !endpoints[a.IP] {
+			return updateOp
+		}
+	}
+
+	endpoints = make(map[string]bool)
+	for _, a := range expect.Subsets[0].NotReadyAddresses {
+		endpoints[a.IP] = true
+	}
+	for _, a := range subset.NotReadyAddresses {
 		if !endpoints[a.IP] {
 			return updateOp
 		}
@@ -444,7 +477,7 @@ func cleanOps(c *cke.Cluster, nf *NodeFilter) (ops []cke.Operator) {
 	var apiServers, controllerManagers, schedulers, etcds, etcdRivers []*cke.Node
 
 	for _, n := range c.Nodes {
-		if n.ControlPlane {
+		if !nf.status.NodeStatuses[n.Address].SSHConnected || n.ControlPlane {
 			continue
 		}
 
