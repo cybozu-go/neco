@@ -5,6 +5,7 @@ import (
 	"net"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/netutil"
@@ -53,8 +54,13 @@ type IssueResponse struct {
 	CACert string `json:"ca_certificate"`
 }
 
+var roleLock sync.Mutex
+
 // addRole adds a role to CA if not exists.
 func addRole(client *vault.Client, ca, role string, data map[string]interface{}) error {
+	roleLock.Lock()
+	defer roleLock.Unlock()
+
 	l := client.Logical()
 	rpath := path.Join(ca, "roles", role)
 	secret, err := l.Read(rpath)
@@ -79,6 +85,9 @@ func addRole(client *vault.Client, ca, role string, data map[string]interface{})
 
 // deleteRole deletes a role of CA.
 func deleteRole(client *vault.Client, ca, role string) error {
+	roleLock.Lock()
+	defer roleLock.Unlock()
+
 	l := client.Logical()
 	rpath := path.Join(ca, "roles", role)
 	l.Delete(rpath)
@@ -104,7 +113,7 @@ func (e EtcdCA) IssueServerCert(ctx context.Context, inf Infrastructure, node *N
 	for i := range d {
 		altNames = append(altNames, "cke-etcd.kube-system.svc."+strings.Join(d[0:i+1], "."))
 	}
-	return issueCertificate(inf, CAServer, RoleSystem,
+	return issueCertificate(inf, CAServer, RoleSystem, false,
 		map[string]interface{}{
 			"ttl":            "87600h",
 			"max_ttl":        "87600h",
@@ -120,7 +129,7 @@ func (e EtcdCA) IssueServerCert(ctx context.Context, inf Infrastructure, node *N
 
 // IssuePeerCert issues TLS certificates for mutual peer authentication.
 func (e EtcdCA) IssuePeerCert(ctx context.Context, inf Infrastructure, node *Node) (crt, key string, err error) {
-	return issueCertificate(inf, CAEtcdPeer, RoleSystem,
+	return issueCertificate(inf, CAEtcdPeer, RoleSystem, false,
 		map[string]interface{}{
 			"ttl":            "87600h",
 			"max_ttl":        "87600h",
@@ -135,7 +144,7 @@ func (e EtcdCA) IssuePeerCert(ctx context.Context, inf Infrastructure, node *Nod
 
 // IssueForAPIServer issues TLC client certificate for Kubernetes.
 func (e EtcdCA) IssueForAPIServer(ctx context.Context, inf Infrastructure, node *Node) (crt, key string, err error) {
-	return issueCertificate(inf, CAEtcdClient, RoleSystem,
+	return issueCertificate(inf, CAEtcdClient, RoleSystem, false,
 		map[string]interface{}{
 			"ttl":            "87600h",
 			"max_ttl":        "87600h",
@@ -150,7 +159,7 @@ func (e EtcdCA) IssueForAPIServer(ctx context.Context, inf Infrastructure, node 
 
 // IssueRoot issues certificate for root user.
 func (e EtcdCA) IssueRoot(ctx context.Context, inf Infrastructure) (cert, key string, err error) {
-	return issueCertificate(inf, CAEtcdClient, RoleAdmin,
+	return issueCertificate(inf, CAEtcdClient, RoleAdmin, false,
 		map[string]interface{}{
 			"ttl":            "2h",
 			"max_ttl":        "24h",
@@ -166,7 +175,7 @@ func (e EtcdCA) IssueRoot(ctx context.Context, inf Infrastructure) (cert, key st
 
 // IssueForBackup issues certificate for etcdbackup.
 func (e EtcdCA) IssueForBackup(ctx context.Context, inf Infrastructure) (cert, key string, err error) {
-	return issueCertificate(inf, CAEtcdClient, RoleAdmin,
+	return issueCertificate(inf, CAEtcdClient, RoleAdmin, false,
 		map[string]interface{}{
 			"ttl":            "87600h",
 			"max_ttl":        "87600h",
@@ -181,7 +190,7 @@ func (e EtcdCA) IssueForBackup(ctx context.Context, inf Infrastructure) (cert, k
 
 // IssueEtcdClientCertificate issues TLS client certificate for a user.
 func IssueEtcdClientCertificate(inf Infrastructure, username, ttl string) (cert, key string, err error) {
-	return issueCertificate(inf, CAEtcdClient, RoleSystem,
+	return issueCertificate(inf, CAEtcdClient, RoleSystem, false,
 		map[string]interface{}{
 			"ttl":            "87600h",
 			"max_ttl":        "87600h",
@@ -200,7 +209,7 @@ type KubernetesCA struct{}
 
 // IssueUserCert issues client certificate for user.
 func (k KubernetesCA) IssueUserCert(ctx context.Context, inf Infrastructure, userName, groupName string, ttl string) (crt, key string, err error) {
-	return issueCertificate(inf, CAKubernetes, RoleAdmin,
+	return issueCertificate(inf, CAKubernetes, RoleAdmin, true,
 		map[string]interface{}{
 			"ttl":               "2h",
 			"max_ttl":           "48h",
@@ -233,7 +242,7 @@ func (k KubernetesCA) IssueForAPIServer(ctx context.Context, inf Infrastructure,
 	}
 	kubeSvcAddr := netutil.IntToIP4(netutil.IP4ToInt(ip) + 1)
 
-	return issueCertificate(inf, CAKubernetes, RoleSystem,
+	return issueCertificate(inf, CAKubernetes, RoleSystem, false,
 		map[string]interface{}{
 			"ttl":               "87600h",
 			"max_ttl":           "87600h",
@@ -250,7 +259,7 @@ func (k KubernetesCA) IssueForAPIServer(ctx context.Context, inf Infrastructure,
 
 // IssueForScheduler issues TLS certificate for kube-scheduler.
 func (k KubernetesCA) IssueForScheduler(ctx context.Context, inf Infrastructure) (crt, key string, err error) {
-	return issueCertificate(inf, CAKubernetes, RoleKubeScheduler,
+	return issueCertificate(inf, CAKubernetes, RoleKubeScheduler, false,
 		map[string]interface{}{
 			"ttl":               "87600h",
 			"max_ttl":           "87600h",
@@ -266,7 +275,7 @@ func (k KubernetesCA) IssueForScheduler(ctx context.Context, inf Infrastructure)
 
 // IssueForControllerManager issues TLS certificate for kube-controller-manager.
 func (k KubernetesCA) IssueForControllerManager(ctx context.Context, inf Infrastructure) (crt, key string, err error) {
-	return issueCertificate(inf, CAKubernetes, RoleKubeControllerManager,
+	return issueCertificate(inf, CAKubernetes, RoleKubeControllerManager, false,
 		map[string]interface{}{
 			"ttl":               "87600h",
 			"max_ttl":           "87600h",
@@ -288,7 +297,7 @@ func (k KubernetesCA) IssueForKubelet(ctx context.Context, inf Infrastructure, n
 		altNames = "localhost," + nodename
 	}
 
-	return issueCertificate(inf, CAKubernetes, RoleKubelet,
+	return issueCertificate(inf, CAKubernetes, RoleKubelet, false,
 		map[string]interface{}{
 			"ttl":               "87600h",
 			"max_ttl":           "87600h",
@@ -306,7 +315,7 @@ func (k KubernetesCA) IssueForKubelet(ctx context.Context, inf Infrastructure, n
 
 // IssueForProxy issues TLS certificate for kube-proxy.
 func (k KubernetesCA) IssueForProxy(ctx context.Context, inf Infrastructure) (crt, key string, err error) {
-	return issueCertificate(inf, CAKubernetes, RoleKubeProxy,
+	return issueCertificate(inf, CAKubernetes, RoleKubeProxy, false,
 		map[string]interface{}{
 			"ttl":               "87600h",
 			"max_ttl":           "87600h",
@@ -322,7 +331,7 @@ func (k KubernetesCA) IssueForProxy(ctx context.Context, inf Infrastructure) (cr
 
 // IssueForServiceAccount issues TLS certificate to sign service account tokens.
 func (k KubernetesCA) IssueForServiceAccount(ctx context.Context, inf Infrastructure) (crt, key string, err error) {
-	return issueCertificate(inf, CAKubernetes, RoleServiceAccount,
+	return issueCertificate(inf, CAKubernetes, RoleServiceAccount, false,
 		map[string]interface{}{
 			"ttl":            "87600h",
 			"max_ttl":        "87600h",
@@ -343,7 +352,7 @@ type AggregationCA struct{}
 
 // IssueClientCertificate issues TLS client certificate for API server
 func (a AggregationCA) IssueClientCertificate(ctx context.Context, inf Infrastructure) (cert, key string, err error) {
-	return issueCertificate(inf, CAKubernetesAggregation, RoleSystem,
+	return issueCertificate(inf, CAKubernetesAggregation, RoleSystem, false,
 		map[string]interface{}{
 			"ttl":            "87600h",
 			"max_ttl":        "87600h",
@@ -356,7 +365,7 @@ func (a AggregationCA) IssueClientCertificate(ctx context.Context, inf Infrastru
 		})
 }
 
-func issueCertificate(inf Infrastructure, ca, role string, roleOpts, certOpts map[string]interface{}) (crt, key string, err error) {
+func issueCertificate(inf Infrastructure, ca, role string, onetime bool, roleOpts, certOpts map[string]interface{}) (crt, key string, err error) {
 	client, err := inf.Vault()
 	if err != nil {
 		return "", "", err
@@ -372,9 +381,10 @@ func issueCertificate(inf Infrastructure, ca, role string, roleOpts, certOpts ma
 		return "", "", err
 	}
 	crt = secret.Data["certificate"].(string)
-	err = deleteRole(client, ca, role)
-	if err != nil {
-		return "", "", err
+	if onetime {
+		if err := deleteRole(client, ca, role); err != nil {
+			return "", "", err
+		}
 	}
 	key = secret.Data["private_key"].(string)
 	return crt, key, err

@@ -35,6 +35,24 @@ server:
   pidfile: "/tmp/unbound.pid"
   infra-host-ttl: 60
   prefetch: yes
+  local-zone: "10.in-addr.arpa." transparent
+  local-zone: "168.192.in-addr.arpa." transparent
+  local-zone: "16.172.in-addr.arpa." transparent
+  local-zone: "17.172.in-addr.arpa." transparent
+  local-zone: "18.172.in-addr.arpa." transparent
+  local-zone: "19.172.in-addr.arpa." transparent
+  local-zone: "20.172.in-addr.arpa." transparent
+  local-zone: "21.172.in-addr.arpa." transparent
+  local-zone: "22.172.in-addr.arpa." transparent
+  local-zone: "23.172.in-addr.arpa." transparent
+  local-zone: "24.172.in-addr.arpa." transparent
+  local-zone: "25.172.in-addr.arpa." transparent
+  local-zone: "26.172.in-addr.arpa." transparent
+  local-zone: "27.172.in-addr.arpa." transparent
+  local-zone: "28.172.in-addr.arpa." transparent
+  local-zone: "29.172.in-addr.arpa." transparent
+  local-zone: "30.172.in-addr.arpa." transparent
+  local-zone: "31.172.in-addr.arpa." transparent
 remote-control:
   control-enable: yes
   control-interface: 127.0.0.1

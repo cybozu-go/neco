@@ -2,6 +2,7 @@ package sabakan
 
 import (
 	"context"
+	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/cke"
@@ -96,7 +97,7 @@ func (ig integrator) Do(ctx context.Context, leaderKey string) error {
 		return err
 	}
 
-	g := NewGenerator(cluster, tmpl, cstr, machines)
+	g := NewGenerator(cluster, tmpl, cstr, machines, time.Now())
 
 	val := ctx.Value(WaitSecs)
 	if val != nil {

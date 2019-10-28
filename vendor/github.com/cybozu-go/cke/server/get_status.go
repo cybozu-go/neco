@@ -24,6 +24,7 @@ func (c Controller) GetClusterStatus(ctx context.Context, cluster *cke.Cluster, 
 			if err != nil {
 				return fmt.Errorf("%s: %v", n.Address, err)
 			}
+
 			mu.Lock()
 			statuses[n.Address] = ns
 			mu.Unlock()

@@ -604,6 +604,26 @@ func (nf *NodeFilter) HealthyAPIServer() *cke.Node {
 	return node
 }
 
+// HealthyAPIServerNodes returns nodes which have healthy API servers
+func (nf *NodeFilter) HealthyAPIServerNodes() (nodes []*cke.Node) {
+	for _, n := range nf.ControlPlane() {
+		if nf.nodeStatus(n).APIServer.IsHealthy {
+			nodes = append(nodes, n)
+		}
+	}
+	return nodes
+}
+
+// UnhealthyAPIServerNodes returns nodes which have unhealthy API servers
+func (nf *NodeFilter) UnhealthyAPIServerNodes() (nodes []*cke.Node) {
+	for _, n := range nf.ControlPlane() {
+		if !nf.nodeStatus(n).APIServer.IsHealthy {
+			nodes = append(nodes, n)
+		}
+	}
+	return nodes
+}
+
 func isInternal(name string) bool {
 	if strings.HasPrefix(name, "cke.cybozu.com/") {
 		return true
@@ -782,4 +802,40 @@ func nodeIsOutdated(n *cke.Node, current *corev1.Node, taintCP bool) bool {
 	}
 
 	return false
+}
+
+// SSHNotConnectedNodes returns nodes that are not connected via SSH out of targets.
+func (nf *NodeFilter) SSHNotConnectedNodes(targets []*cke.Node, includeControlPlane, includeWorker bool) (nodes []*cke.Node) {
+	for _, n := range targets {
+		if n.ControlPlane && !includeControlPlane {
+			continue
+		}
+		if !n.ControlPlane && !includeWorker {
+			continue
+		}
+		if nf.status.NodeStatuses[n.Address].SSHConnected {
+			continue
+		}
+
+		nodes = append(nodes, n)
+	}
+	return nodes
+}
+
+// SSHConnectedNodes returns nodes that are connected via SSH out of targets
+func (nf *NodeFilter) SSHConnectedNodes(targets []*cke.Node, includeControlPlane, includeWorker bool) (nodes []*cke.Node) {
+	for _, n := range targets {
+		if n.ControlPlane && !includeControlPlane {
+			continue
+		}
+		if !n.ControlPlane && !includeWorker {
+			continue
+		}
+		if !nf.status.NodeStatuses[n.Address].SSHConnected {
+			continue
+		}
+
+		nodes = append(nodes, n)
+	}
+	return nodes
 }

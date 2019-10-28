@@ -14,12 +14,12 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/coreos/ignition v0.32.0 // indirect
-	github.com/cybozu-go/cke v1.15.0
-	github.com/cybozu-go/etcdutil v1.3.3
+	github.com/cybozu-go/cke v1.15.5
+	github.com/cybozu-go/etcdutil v1.3.4
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
 	github.com/cybozu-go/placemat v1.3.7
-	github.com/cybozu-go/sabakan/v2 v2.4.6
+	github.com/cybozu-go/sabakan/v2 v2.4.8
 	github.com/cybozu-go/well v1.8.1
 	github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65 // indirect
 	github.com/docker/docker-credential-helpers v0.6.0 // indirect
@@ -53,7 +53,6 @@ require (
 	github.com/pborman/uuid v0.0.0-20170112150404-1b00554d8222 // indirect
 	github.com/pelletier/go-toml v1.3.0 // indirect
 	github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 // indirect
-	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829 // indirect
 	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
 	github.com/prometheus/prom2json v1.1.0
 	github.com/rakyll/statik v0.1.5
@@ -75,7 +74,6 @@ require (
 	go4.org v0.0.0-20190313082347-94abd6928b1d // indirect
 	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	golang.org/x/sys v0.0.0-20190516110030-61b9204099cb // indirect
 	golang.org/x/text v0.3.2 // indirect
 	google.golang.org/api v0.4.0
@@ -90,3 +88,5 @@ require (
 )
 
 replace github.com/golang/lint v0.0.0-20190409202823-959b441ac422 => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
+
+go 1.13

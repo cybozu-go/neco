@@ -14,7 +14,7 @@ import (
 var (
 	errNotAvailable       = errors.New("no healthy machine is available")
 	errMissingMachine     = errors.New("failed to apply new template due to missing machines")
-	errTooManyUnreachable = errors.New("too many unreachable/non-existent control plane nodes")
+	errTooManyNonExistent = errors.New("too many non-existent control plane nodes")
 
 	// DefaultWaitRetiringSeconds before removing retiring nodes from the cluster.
 	DefaultWaitRetiringSeconds = 300.0
@@ -59,6 +59,12 @@ func MachineToNode(m *Machine, tmpl *cke.Node) *cke.Node {
 		n.Taints = append(n.Taints, corev1.Taint{
 			Key:    "cke.cybozu.com/state",
 			Value:  "unhealthy",
+			Effect: corev1.TaintEffectNoSchedule,
+		})
+	case StateUnreachable:
+		n.Taints = append(n.Taints, corev1.Taint{
+			Key:    "cke.cybozu.com/state",
+			Value:  "unreachable",
 			Effect: corev1.TaintEffectNoSchedule,
 		})
 	case StateRetiring:
@@ -109,11 +115,11 @@ type Generator struct {
 // NewGenerator creates a new Generator.
 // current can be nil if no cluster configuration has been set.
 // template must have been validated with ValidateTemplate().
-func NewGenerator(current, template *cke.Cluster, cstr *cke.Constraints, machines []Machine) *Generator {
+func NewGenerator(current, template *cke.Cluster, cstr *cke.Constraints, machines []Machine, currentTime time.Time) *Generator {
 	g := &Generator{
 		template:    template,
 		constraints: cstr,
-		timestamp:   time.Now(),
+		timestamp:   currentTime,
 		waitSeconds: DefaultWaitRetiringSeconds,
 	}
 
@@ -390,7 +396,7 @@ func (g *Generator) Regenerate() (*cke.Cluster, error) {
 // Update updates the current configuration when necessary.
 // If the generator decides no updates are necessary, it returns (nil, nil).
 func (g *Generator) Update() (*cke.Cluster, error) {
-	op, err := g.removeUnreachable()
+	op, err := g.removeNonExistentNode()
 	if err != nil {
 		return nil, err
 	}
@@ -449,9 +455,9 @@ func (g *Generator) Update() (*cke.Cluster, error) {
 	return nil, nil
 }
 
-func (g *Generator) removeUnreachable() (*updateOp, error) {
+func (g *Generator) removeNonExistentNode() (*updateOp, error) {
 	op := &updateOp{
-		name: "remove unreachable",
+		name: "remove non-existent node",
 	}
 
 	for _, n := range g.controlPlanes {
@@ -460,27 +466,19 @@ func (g *Generator) removeUnreachable() (*updateOp, error) {
 			op.record("remove non-existent control plane: " + n.Address)
 			continue
 		}
-		if m.Status.State == StateUnreachable {
-			op.record("remove unreachable control plane: " + n.Address)
-			continue
-		}
 		op.cps = append(op.cps, m)
 	}
 
 	if len(op.cps)*2 <= len(g.controlPlanes) {
 		// Replacing more than half of control plane nodes would destroy
 		// etcd cluster.  We cannot do anything in this case.
-		return nil, errTooManyUnreachable
+		return nil, errTooManyNonExistent
 	}
 
 	for _, n := range g.workers {
 		m := g.machineMap[n.Address]
 		if m == nil {
 			op.record("remove non-existent worker: " + n.Address)
-			continue
-		}
-		if m.Status.State == StateUnreachable {
-			op.record("remove unreachable worker: " + n.Address)
 			continue
 		}
 		op.workers = append(op.workers, m)
@@ -716,6 +714,10 @@ func hasValidTaint(n *cke.Node, m *Machine) bool {
 	switch m.Status.State {
 	case StateUnhealthy:
 		if ckeTaint.Value != "unhealthy" || ckeTaint.Effect != corev1.TaintEffectNoSchedule {
+			return false
+		}
+	case StateUnreachable:
+		if ckeTaint.Value != "unreachable" || ckeTaint.Effect != corev1.TaintEffectNoSchedule {
 			return false
 		}
 	case StateRetiring:
