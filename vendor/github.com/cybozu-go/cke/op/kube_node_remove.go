@@ -2,10 +2,14 @@ package op
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/cybozu-go/cke"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/json"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
 )
 
 type kubeNodeRemove struct {
@@ -48,15 +52,35 @@ func (c nodeRemoveCommand) Run(ctx context.Context, inf cke.Infrastructure) erro
 	if err != nil {
 		return err
 	}
-
 	nodesAPI := cs.CoreV1().Nodes()
 	for _, n := range c.nodes {
-		err := nodesAPI.Delete(n.Name, nil)
+		if !n.DeletionTimestamp.IsZero() {
+			continue
+		}
+		if !n.Spec.Unschedulable {
+			oldData, err := json.Marshal(n)
+			if err != nil {
+				return err
+			}
+			n.Spec.Unschedulable = true
+			newData, err := json.Marshal(n)
+			if err != nil {
+				return err
+			}
+			patchBytes, err := strategicpatch.CreateTwoWayMergePatch(oldData, newData, n)
+			if err != nil {
+				return fmt.Errorf("failed to create patch for node %s: %v", n.Name, err)
+			}
+			_, err = nodesAPI.Patch(n.Name, types.StrategicMergePatchType, patchBytes)
+			if err != nil {
+				return fmt.Errorf("failed to patch node %s: %v", n.Name, err)
+			}
+		}
+		err = nodesAPI.Delete(n.Name, nil)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to delete node %s: %v", n.Name, err)
 		}
 	}
-
 	return nil
 }
 

@@ -27,7 +27,7 @@ func annotate(meta *metav1.ObjectMeta, rev int64, data []byte) {
 	meta.Annotations[AnnotationResourceOriginal] = string(data)
 }
 
-func applyNamespace(o *corev1.Namespace, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*corev1.Namespace, error), createFunc func(*corev1.Namespace) (*corev1.Namespace, error), patchFunc func(string, types.PatchType, []byte, ...string) (*corev1.Namespace, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyNamespace(o *corev1.Namespace, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*corev1.Namespace, error), createFunc func(*corev1.Namespace) (*corev1.Namespace, error), patchFunc func(string, types.PatchType, []byte, ...string) (*corev1.Namespace, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -66,27 +66,20 @@ func applyNamespace(o *corev1.Namespace, data []byte, rev int64, getFunc func(st
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(60))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyServiceAccount(o *corev1.ServiceAccount, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*corev1.ServiceAccount, error), createFunc func(*corev1.ServiceAccount) (*corev1.ServiceAccount, error), patchFunc func(string, types.PatchType, []byte, ...string) (*corev1.ServiceAccount, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyServiceAccount(o *corev1.ServiceAccount, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*corev1.ServiceAccount, error), createFunc func(*corev1.ServiceAccount) (*corev1.ServiceAccount, error), patchFunc func(string, types.PatchType, []byte, ...string) (*corev1.ServiceAccount, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -125,27 +118,20 @@ func applyServiceAccount(o *corev1.ServiceAccount, data []byte, rev int64, getFu
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(0))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyConfigMap(o *corev1.ConfigMap, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*corev1.ConfigMap, error), createFunc func(*corev1.ConfigMap) (*corev1.ConfigMap, error), patchFunc func(string, types.PatchType, []byte, ...string) (*corev1.ConfigMap, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyConfigMap(o *corev1.ConfigMap, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*corev1.ConfigMap, error), createFunc func(*corev1.ConfigMap) (*corev1.ConfigMap, error), patchFunc func(string, types.PatchType, []byte, ...string) (*corev1.ConfigMap, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -184,27 +170,20 @@ func applyConfigMap(o *corev1.ConfigMap, data []byte, rev int64, getFunc func(st
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(0))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyService(o *corev1.Service, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*corev1.Service, error), createFunc func(*corev1.Service) (*corev1.Service, error), patchFunc func(string, types.PatchType, []byte, ...string) (*corev1.Service, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyService(o *corev1.Service, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*corev1.Service, error), createFunc func(*corev1.Service) (*corev1.Service, error), patchFunc func(string, types.PatchType, []byte, ...string) (*corev1.Service, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -243,27 +222,20 @@ func applyService(o *corev1.Service, data []byte, rev int64, getFunc func(string
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(0))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyPodSecurityPolicy(o *policyv1beta1.PodSecurityPolicy, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*policyv1beta1.PodSecurityPolicy, error), createFunc func(*policyv1beta1.PodSecurityPolicy) (*policyv1beta1.PodSecurityPolicy, error), patchFunc func(string, types.PatchType, []byte, ...string) (*policyv1beta1.PodSecurityPolicy, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyPodSecurityPolicy(o *policyv1beta1.PodSecurityPolicy, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*policyv1beta1.PodSecurityPolicy, error), createFunc func(*policyv1beta1.PodSecurityPolicy) (*policyv1beta1.PodSecurityPolicy, error), patchFunc func(string, types.PatchType, []byte, ...string) (*policyv1beta1.PodSecurityPolicy, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -302,27 +274,20 @@ func applyPodSecurityPolicy(o *policyv1beta1.PodSecurityPolicy, data []byte, rev
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(0))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyNetworkPolicy(o *networkingv1.NetworkPolicy, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*networkingv1.NetworkPolicy, error), createFunc func(*networkingv1.NetworkPolicy) (*networkingv1.NetworkPolicy, error), patchFunc func(string, types.PatchType, []byte, ...string) (*networkingv1.NetworkPolicy, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyNetworkPolicy(o *networkingv1.NetworkPolicy, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*networkingv1.NetworkPolicy, error), createFunc func(*networkingv1.NetworkPolicy) (*networkingv1.NetworkPolicy, error), patchFunc func(string, types.PatchType, []byte, ...string) (*networkingv1.NetworkPolicy, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -361,27 +326,20 @@ func applyNetworkPolicy(o *networkingv1.NetworkPolicy, data []byte, rev int64, g
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(0))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyRole(o *rbacv1.Role, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*rbacv1.Role, error), createFunc func(*rbacv1.Role) (*rbacv1.Role, error), patchFunc func(string, types.PatchType, []byte, ...string) (*rbacv1.Role, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyRole(o *rbacv1.Role, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*rbacv1.Role, error), createFunc func(*rbacv1.Role) (*rbacv1.Role, error), patchFunc func(string, types.PatchType, []byte, ...string) (*rbacv1.Role, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -420,27 +378,20 @@ func applyRole(o *rbacv1.Role, data []byte, rev int64, getFunc func(string, meta
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(0))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyRoleBinding(o *rbacv1.RoleBinding, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*rbacv1.RoleBinding, error), createFunc func(*rbacv1.RoleBinding) (*rbacv1.RoleBinding, error), patchFunc func(string, types.PatchType, []byte, ...string) (*rbacv1.RoleBinding, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyRoleBinding(o *rbacv1.RoleBinding, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*rbacv1.RoleBinding, error), createFunc func(*rbacv1.RoleBinding) (*rbacv1.RoleBinding, error), patchFunc func(string, types.PatchType, []byte, ...string) (*rbacv1.RoleBinding, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -479,27 +430,20 @@ func applyRoleBinding(o *rbacv1.RoleBinding, data []byte, rev int64, getFunc fun
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(0))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyClusterRole(o *rbacv1.ClusterRole, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*rbacv1.ClusterRole, error), createFunc func(*rbacv1.ClusterRole) (*rbacv1.ClusterRole, error), patchFunc func(string, types.PatchType, []byte, ...string) (*rbacv1.ClusterRole, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyClusterRole(o *rbacv1.ClusterRole, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*rbacv1.ClusterRole, error), createFunc func(*rbacv1.ClusterRole) (*rbacv1.ClusterRole, error), patchFunc func(string, types.PatchType, []byte, ...string) (*rbacv1.ClusterRole, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -538,27 +482,20 @@ func applyClusterRole(o *rbacv1.ClusterRole, data []byte, rev int64, getFunc fun
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(0))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyClusterRoleBinding(o *rbacv1.ClusterRoleBinding, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*rbacv1.ClusterRoleBinding, error), createFunc func(*rbacv1.ClusterRoleBinding) (*rbacv1.ClusterRoleBinding, error), patchFunc func(string, types.PatchType, []byte, ...string) (*rbacv1.ClusterRoleBinding, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyClusterRoleBinding(o *rbacv1.ClusterRoleBinding, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*rbacv1.ClusterRoleBinding, error), createFunc func(*rbacv1.ClusterRoleBinding) (*rbacv1.ClusterRoleBinding, error), patchFunc func(string, types.PatchType, []byte, ...string) (*rbacv1.ClusterRoleBinding, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -597,27 +534,20 @@ func applyClusterRoleBinding(o *rbacv1.ClusterRoleBinding, data []byte, rev int6
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(0))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyDeployment(o *appsv1.Deployment, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*appsv1.Deployment, error), createFunc func(*appsv1.Deployment) (*appsv1.Deployment, error), patchFunc func(string, types.PatchType, []byte, ...string) (*appsv1.Deployment, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyDeployment(o *appsv1.Deployment, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*appsv1.Deployment, error), createFunc func(*appsv1.Deployment) (*appsv1.Deployment, error), patchFunc func(string, types.PatchType, []byte, ...string) (*appsv1.Deployment, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -656,27 +586,20 @@ func applyDeployment(o *appsv1.Deployment, data []byte, rev int64, getFunc func(
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(60))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyDaemonSet(o *appsv1.DaemonSet, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*appsv1.DaemonSet, error), createFunc func(*appsv1.DaemonSet) (*appsv1.DaemonSet, error), patchFunc func(string, types.PatchType, []byte, ...string) (*appsv1.DaemonSet, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyDaemonSet(o *appsv1.DaemonSet, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*appsv1.DaemonSet, error), createFunc func(*appsv1.DaemonSet) (*appsv1.DaemonSet, error), patchFunc func(string, types.PatchType, []byte, ...string) (*appsv1.DaemonSet, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -715,27 +638,20 @@ func applyDaemonSet(o *appsv1.DaemonSet, data []byte, rev int64, getFunc func(st
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
-
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(60))
 	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	return nil
 }
 
-func applyCronJob(o *batchv1beta1.CronJob, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*batchv1beta1.CronJob, error), createFunc func(*batchv1beta1.CronJob) (*batchv1beta1.CronJob, error), patchFunc func(string, types.PatchType, []byte, ...string) (*batchv1beta1.CronJob, error), deleteFunc func(string, *metav1.DeleteOptions) error) error {
+func applyCronJob(o *batchv1beta1.CronJob, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*batchv1beta1.CronJob, error), createFunc func(*batchv1beta1.CronJob) (*batchv1beta1.CronJob, error), patchFunc func(string, types.PatchType, []byte, ...string) (*batchv1beta1.CronJob, error)) error {
 	annotate(&o.ObjectMeta, rev, data)
 	current, err := getFunc(o.Name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -774,22 +690,67 @@ func applyCronJob(o *batchv1beta1.CronJob, data []byte, rev int64, getFunc func(
 		return err
 	}
 	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
-	if err == nil {
-		return nil
+	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
+		return err
 	}
 
-	log.Warn("failed to apply patch", map[string]interface{}{
-		"kind":      o.Kind,
-		"namespace": o.Namespace,
-		"name":      o.Name,
-		log.FnError: err,
-	})
+	return nil
+}
 
-	err = deleteFunc(o.Name, metav1.NewDeleteOptions(60))
+func applyPodDisruptionBudget(o *policyv1beta1.PodDisruptionBudget, data []byte, rev int64, getFunc func(string, metav1.GetOptions) (*policyv1beta1.PodDisruptionBudget, error), createFunc func(*policyv1beta1.PodDisruptionBudget) (*policyv1beta1.PodDisruptionBudget, error), patchFunc func(string, types.PatchType, []byte, ...string) (*policyv1beta1.PodDisruptionBudget, error)) error {
+	annotate(&o.ObjectMeta, rev, data)
+	current, err := getFunc(o.Name, metav1.GetOptions{})
+	if errors.IsNotFound(err) {
+		_, err = createFunc(o)
+		return err
+	}
 	if err != nil {
 		return err
 	}
-	_, err = createFunc(o)
 
-	return err
+	modified, err := encodeToJSON(o)
+	if err != nil {
+		return err
+	}
+
+	original, ok := current.Annotations[AnnotationResourceOriginal]
+	if !ok {
+		original = string(modified)
+		log.Warn("use modified resource as original for 3-way patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+		})
+	}
+
+	currentData, err := encodeToJSON(current)
+	if err != nil {
+		return err
+	}
+	pm, err := strategicpatch.NewPatchMetaFromStruct(o)
+	if err != nil {
+		return err
+	}
+	patch, err := strategicpatch.CreateThreeWayMergePatch([]byte(original), modified, currentData, pm, true)
+	if err != nil {
+		return err
+	}
+	_, err = patchFunc(o.Name, types.StrategicMergePatchType, patch)
+	if err != nil {
+		log.Error("failed to apply patch", map[string]interface{}{
+			"kind":      o.Kind,
+			"namespace": o.Namespace,
+			"name":      o.Name,
+			log.FnError: err,
+		})
+		return err
+	}
+
+	return nil
 }

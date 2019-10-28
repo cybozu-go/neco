@@ -90,6 +90,7 @@ type ClusterStatus struct {
 
 // NodeStatus status of a node.
 type NodeStatus struct {
+	SSHConnected      bool
 	Etcd              EtcdStatus
 	Rivers            ServiceStatus
 	EtcdRivers        ServiceStatus

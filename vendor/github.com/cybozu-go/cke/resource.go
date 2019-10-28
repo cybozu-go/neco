@@ -31,19 +31,20 @@ type Kind string
 
 // Supported resource kinds
 const (
-	KindNamespace          = "Namespace"
-	KindServiceAccount     = "ServiceAccount"
-	KindPodSecurityPolicy  = "PodSecurityPolicy"
-	KindNetworkPolicy      = "NetworkPolicy"
-	KindClusterRole        = "ClusterRole"
-	KindRole               = "Role"
-	KindClusterRoleBinding = "ClusterRoleBinding"
-	KindRoleBinding        = "RoleBinding"
-	KindConfigMap          = "ConfigMap"
-	KindDeployment         = "Deployment"
-	KindDaemonSet          = "DaemonSet"
-	KindCronJob            = "CronJob"
-	KindService            = "Service"
+	KindNamespace           = "Namespace"
+	KindServiceAccount      = "ServiceAccount"
+	KindPodSecurityPolicy   = "PodSecurityPolicy"
+	KindNetworkPolicy       = "NetworkPolicy"
+	KindClusterRole         = "ClusterRole"
+	KindRole                = "Role"
+	KindClusterRoleBinding  = "ClusterRoleBinding"
+	KindRoleBinding         = "RoleBinding"
+	KindConfigMap           = "ConfigMap"
+	KindDeployment          = "Deployment"
+	KindDaemonSet           = "DaemonSet"
+	KindCronJob             = "CronJob"
+	KindService             = "Service"
+	KindPodDisruptionBudget = "PodDisruptionBudget"
 )
 
 // IsSupported returns true if k is supported by CKE.
@@ -52,7 +53,7 @@ func (k Kind) IsSupported() bool {
 	case KindNamespace, KindServiceAccount,
 		KindPodSecurityPolicy, KindNetworkPolicy,
 		KindClusterRole, KindRole, KindClusterRoleBinding, KindRoleBinding,
-		KindConfigMap, KindDeployment, KindDaemonSet, KindCronJob, KindService:
+		KindConfigMap, KindDeployment, KindDaemonSet, KindCronJob, KindService, KindPodDisruptionBudget:
 		return true
 	}
 	return false
@@ -87,6 +88,8 @@ func (k Kind) Order() int {
 		return 12
 	case KindService:
 		return 13
+	case KindPodDisruptionBudget:
+		return 14
 	}
 	panic("unknown kind: " + string(k))
 }
@@ -126,45 +129,47 @@ func ApplyResource(clientset *kubernetes.Clientset, data []byte, rev int64) erro
 	switch o := obj.(type) {
 	case *corev1.Namespace:
 		c := clientset.CoreV1().Namespaces()
-		return applyNamespace(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyNamespace(o, data, rev, c.Get, c.Create, c.Patch)
 	case *corev1.ServiceAccount:
 		c := clientset.CoreV1().ServiceAccounts(o.Namespace)
-		return applyServiceAccount(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyServiceAccount(o, data, rev, c.Get, c.Create, c.Patch)
 	case *corev1.ConfigMap:
 		c := clientset.CoreV1().ConfigMaps(o.Namespace)
-		return applyConfigMap(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyConfigMap(o, data, rev, c.Get, c.Create, c.Patch)
 	case *corev1.Service:
 		c := clientset.CoreV1().Services(o.Namespace)
-		return applyService(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyService(o, data, rev, c.Get, c.Create, c.Patch)
 	case *policyv1beta1.PodSecurityPolicy:
 		c := clientset.PolicyV1beta1().PodSecurityPolicies()
-		return applyPodSecurityPolicy(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyPodSecurityPolicy(o, data, rev, c.Get, c.Create, c.Patch)
 	case *networkingv1.NetworkPolicy:
 		c := clientset.NetworkingV1().NetworkPolicies(o.Namespace)
-		return applyNetworkPolicy(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyNetworkPolicy(o, data, rev, c.Get, c.Create, c.Patch)
 	case *rbacv1.Role:
 		c := clientset.RbacV1().Roles(o.Namespace)
-		return applyRole(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyRole(o, data, rev, c.Get, c.Create, c.Patch)
 	case *rbacv1.RoleBinding:
 		c := clientset.RbacV1().RoleBindings(o.Namespace)
-		return applyRoleBinding(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyRoleBinding(o, data, rev, c.Get, c.Create, c.Patch)
 	case *rbacv1.ClusterRole:
 		c := clientset.RbacV1().ClusterRoles()
-		return applyClusterRole(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyClusterRole(o, data, rev, c.Get, c.Create, c.Patch)
 	case *rbacv1.ClusterRoleBinding:
 		c := clientset.RbacV1().ClusterRoleBindings()
-		return applyClusterRoleBinding(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyClusterRoleBinding(o, data, rev, c.Get, c.Create, c.Patch)
 	case *appsv1.Deployment:
 		c := clientset.AppsV1().Deployments(o.Namespace)
-		return applyDeployment(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyDeployment(o, data, rev, c.Get, c.Create, c.Patch)
 	case *appsv1.DaemonSet:
 		c := clientset.AppsV1().DaemonSets(o.Namespace)
-		return applyDaemonSet(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyDaemonSet(o, data, rev, c.Get, c.Create, c.Patch)
 	case *batchv1beta1.CronJob:
 		c := clientset.BatchV1beta1().CronJobs(o.Namespace)
-		return applyCronJob(o, data, rev, c.Get, c.Create, c.Patch, c.Delete)
+		return applyCronJob(o, data, rev, c.Get, c.Create, c.Patch)
+	case *policyv1beta1.PodDisruptionBudget:
+		c := clientset.PolicyV1beta1().PodDisruptionBudgets(o.Namespace)
+		return applyPodDisruptionBudget(o, data, rev, c.Get, c.Create, c.Patch)
 	}
-
 	return fmt.Errorf("unsupported type: %s", gvk.String())
 }
 
@@ -213,6 +218,9 @@ func ParseResource(data []byte) (key string, jsonData []byte, err error) {
 		data, err := encodeToJSON(o)
 		return o.Kind + "/" + o.Namespace + "/" + o.Name, data, err
 	case *batchv1beta1.CronJob:
+		data, err := encodeToJSON(o)
+		return o.Kind + "/" + o.Namespace + "/" + o.Name, data, err
+	case *policyv1beta1.PodDisruptionBudget:
 		data, err := encodeToJSON(o)
 		return o.Kind + "/" + o.Namespace + "/" + o.Name, data, err
 	}

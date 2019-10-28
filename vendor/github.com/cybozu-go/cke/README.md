@@ -4,10 +4,14 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/cybozu-go/cke)](https://goreportcard.com/report/github.com/cybozu-go/cke)
 [![Docker Repository on Quay](https://quay.io/repository/cybozu/cke/status "Docker Repository on Quay")](https://quay.io/repository/cybozu/cke)
 
-CKE
-===
 
-**CKE** is a distributed service that automates [Kubernetes][] cluster management.
+
+Cybozu Kubernetes Engine
+========================
+
+<a href="https://landscape.cncf.io/format=card-mode&grouping=category&organization=cybozu&selected=cybozu-kubernetes-engine"><img src="https://raw.githubusercontent.com/cncf/artwork/master/projects/kubernetes/certified-kubernetes/versionless/color/certified-kubernetes-color.svg?sanitize=true" align="right" width="120px" alt="Kubernetes certification logo"></a>
+
+**CKE** (Cybozu Kubernetes Engine) is a distributed service that automates [Kubernetes][] cluster management.
 
 **Project Status**: Testing for production.
 
@@ -95,6 +99,11 @@ This repository contains these programs:
 * `ckecli`: CLI tool for `cke`.
 
 To see their usage, run them with `-h` option.
+
+Getting started
+---------------
+
+A demonstration of CKE running on docker is available at [example](example/) directory.
 
 Documentation
 -------------

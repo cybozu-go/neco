@@ -26,8 +26,12 @@ import (
 func GetNodeStatus(ctx context.Context, inf cke.Infrastructure, node *cke.Node, cluster *cke.Cluster) (*cke.NodeStatus, error) {
 	status := &cke.NodeStatus{}
 	agent := inf.Agent(node.Address)
-	ce := inf.Engine(node.Address)
+	status.SSHConnected = agent != nil
+	if !status.SSHConnected {
+		return status, nil
+	}
 
+	ce := inf.Engine(node.Address)
 	ss, err := ce.Inspect([]string{
 		EtcdContainerName,
 		RiversContainerName,
@@ -467,6 +471,15 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			s.SetResourceStatus(rkey, obj.Annotations)
 		case "CronJob":
 			obj, err := k8s.BatchV2alpha1().CronJobs(parts[1]).Get(parts[2], metav1.GetOptions{})
+			if k8serr.IsNotFound(err) {
+				continue
+			}
+			if err != nil {
+				return cke.KubernetesClusterStatus{}, err
+			}
+			s.SetResourceStatus(rkey, obj.Annotations)
+		case "PodDisruptionBudget":
+			obj, err := k8s.PolicyV1beta1().PodDisruptionBudgets(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
 				continue
 			}

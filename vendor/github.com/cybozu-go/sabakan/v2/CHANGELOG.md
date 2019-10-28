@@ -5,6 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.4.8] - 2019-10-28
+
+### Changed
+- Support Golang 1.13 (#173)
+
+## [2.4.7] - 2019-09-10
+
+No changes.  Only for updating Docker base image.
+
 ## [2.4.6] - 2019-08-23
 
 ### Changed
@@ -142,7 +151,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 See [CHANGELOG-0](./CHANGELOG-0.md).
 
-[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v2.4.6...HEAD
+[Unreleased]: https://github.com/cybozu-go/sabakan/compare/v2.4.8...HEAD
+[2.4.8]: https://github.com/cybozu-go/sabakan/compare/v2.4.7...v2.4.8
+[2.4.7]: https://github.com/cybozu-go/sabakan/compare/v2.4.6...v2.4.7
 [2.4.6]: https://github.com/cybozu-go/sabakan/compare/v2.4.5...v2.4.6
 [2.4.5]: https://github.com/cybozu-go/sabakan/compare/v2.4.4...v2.4.5
 [2.4.4]: https://github.com/cybozu-go/sabakan/compare/v2.4.3...v2.4.4

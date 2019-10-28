@@ -26,6 +26,7 @@ var clusterDNSTemplate = template.Must(template.New("").Parse(`.:1053 {
 {{- if .Upstreams }}
     forward . {{ .Upstreams }}
 {{- end }}
+    prometheus localhost:9153
     cache 30
     reload
     loadbalance

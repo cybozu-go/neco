@@ -59,8 +59,11 @@ func BuiltInParams(node *cke.Node, initialCluster []string, state string) cke.Se
 		"--enable-v2=false",
 		"--enable-pprof=true",
 		"--auto-compaction-mode=periodic",
-		// Follow default --etcd-compaction-interval of kube-apiserver
+		// Mimic the default --etcd-compaction-interval of kube-apiserver (= 5 minutes).
 		// https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/
+		// etcd version 3.3.3 and later will run compaction for every auto-compaction-retention
+		// value if the value is less than 1 hour.
+		// https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/maintenance.md#auto-compaction
 		"--auto-compaction-retention=5m",
 	}
 	if len(initialCluster) > 0 {
