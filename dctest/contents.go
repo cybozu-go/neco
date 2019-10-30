@@ -9,6 +9,7 @@ import (
 
 	"github.com/cybozu-go/cke"
 	"github.com/cybozu-go/cke/sabakan"
+	"github.com/cybozu-go/log"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"sigs.k8s.io/yaml"
@@ -66,6 +67,15 @@ func TestInitData() {
 		weight, err = strconv.ParseFloat(ckeTemplate.Nodes[2].Labels[sabakan.CKELabelWeight], 64)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(weight).To(BeNumerically("==", 1.000000))
-		execSafeAt(boot0, "neco", "init-data")
+		Eventually(func() error {
+			stdout, stderr, err = execAt(boot0, "neco", "init-data")
+			if err != nil {
+				log.Warn("failed to initialize data", map[string]interface{}{
+					"stdout": string(stdout),
+					"stderr": string(stderr),
+				})
+			}
+			return err
+		}).Should(Succeed())
 	})
 }
