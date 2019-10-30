@@ -252,6 +252,7 @@ func assetsUploadWithRetry(ctx context.Context, c *sabac.Client, name, filename 
 			})
 		},
 	)
+	return
 }
 
 func needAssetUpload(ctx context.Context, name string, c *sabac.Client) (bool, error) {
