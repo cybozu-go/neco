@@ -189,7 +189,7 @@ func uploadAssets(ctx context.Context, c *sabac.Client, auth *DockerAuth) error 
 		if file.IsDir() {
 			continue
 		}
-		_, err = c.AssetsUpload(ctx, file.Name(), filepath.Join(neco.WorkerAssetsPath, file.Name()), nil)
+		_, err = assetsUploadWithRetry(ctx, c, file.Name(), filepath.Join(neco.WorkerAssetsPath, file.Name()), nil)
 		if err != nil {
 			return err
 		}
@@ -208,7 +208,7 @@ func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *sa
 		return nil
 	}
 
-	_, err = c.AssetsUpload(ctx, name, neco.SystemImagePath(img), nil)
+	_, err = assetsUploadWithRetry(ctx, c, name, neco.SystemImagePath(img), nil)
 	return err
 }
 
@@ -235,8 +235,23 @@ func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Cl
 		return err
 	}
 
-	_, err = c.AssetsUpload(ctx, name, archive, nil)
+	_, err = assetsUploadWithRetry(ctx, c, name, archive, nil)
 	return err
+}
+
+func assetsUploadWithRetry(ctx context.Context, c *sabac.Client, name, filename string, meta map[string]string) (status *sabakan.AssetStatus, err error) {
+	neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+		func(ctx context.Context) error {
+			status, err = c.AssetsUpload(ctx, name, filename, meta)
+			return err
+		},
+		func(err error) {
+			log.Warn("sabakan: failed to upload images", map[string]interface{}{
+				log.FnError: err,
+				"filepath":  filename,
+			})
+		},
+	)
 }
 
 func needAssetUpload(ctx context.Context, name string, c *sabac.Client) (bool, error) {
