@@ -95,4 +95,4 @@ clean:
 	$(MAKE) -f Makefile.tools clean
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB)
 
-.PHONY:	all start-etcd stop-etcd test mod deb necogcp setup clean
+.PHONY:	all start-etcd stop-etcd test mod deb setup-files-for-deb gcp-deb necogcp git-neco setup clean
