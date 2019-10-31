@@ -1,0 +1,15 @@
+users:
+  - name: cybozu
+    groups:
+      - sudo
+      - docker
+    sshAuthorizedKeys:
+      - '{{ Metadata "authorized_key" }}'
+  - name: admin
+    # Admin user for debugging in dctest environment
+    groups:
+      - sudo
+      - docker
+    passwordHash:
+      - '$6$rounds=4096$Yait11KVds$0JBjR.iLyFKFktMLwVONDWir8iWTfK0bvqz2D5OzaVPMW/V3Uz2qlb9yDorfQlF59.HEn8bq2xmB7JBv9ZxdK0'
+

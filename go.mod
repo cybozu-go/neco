@@ -53,6 +53,7 @@ require (
 	github.com/pborman/uuid v0.0.0-20170112150404-1b00554d8222 // indirect
 	github.com/pelletier/go-toml v1.3.0 // indirect
 	github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 // indirect
+	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829 // indirect
 	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
 	github.com/prometheus/prom2json v1.1.0
 	github.com/rakyll/statik v0.1.5

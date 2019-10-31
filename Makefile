@@ -60,7 +60,7 @@ mod:
 
 deb: $(DEB)
 
-$(DEB):
+setup-files-for-deb:
 	$(MAKE) -f Makefile.tools SUDO=$(SUDO)
 	cp -r debian/* $(WORKDIR)
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco
@@ -72,6 +72,12 @@ $(DEB):
 	cp -a ignitions $(SHAREDIR)
 	cp README.md LICENSE $(DOCDIR)/neco
 	chmod -R g-w $(WORKDIR)
+
+$(DEB): setup-files-for-deb
+	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(WORKDIR) $(DEST)
+
+gcp-deb: setup-files-for-deb
+	cp dctest/passwd.yml $(SHAREDIR)/ignitions/common/passwd.yml
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(WORKDIR) $(DEST)
 
 necogcp: $(STATIK)
