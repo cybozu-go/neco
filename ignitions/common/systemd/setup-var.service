@@ -12,6 +12,7 @@ ExecStart=/opt/sbin/setup-var
 RemainAfterExit=yes
 StandardOutput=journal+console
 StandardError=journal+console
+TimeoutStartSec=infinity
 
 
 [Install]
