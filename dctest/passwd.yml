@@ -5,9 +5,9 @@ users:
       - docker
     sshAuthorizedKeys:
       - '{{ Metadata "authorized_key" }}'
-  - name: admin
+  - name: root
     # Admin user for debugging in dctest environment
     groups:
       - sudo
       - docker
-    passwordHash: '$6$rounds=4096$Yait11KVds$0JBjR.iLyFKFktMLwVONDWir8iWTfK0bvqz2D5OzaVPMW/V3Uz2qlb9yDorfQlF59.HEn8bq2xmB7JBv9ZxdK0'
+    passwordHash: '$6$rounds=4096$59GB.cUwHzf2IPp$yegXbf6Wv4Jb7BGZ.YOOQAljJyDfXCIM4/hcXLeaAB923qJWZ9aG3zige4RyxZSt4zYmUQc0lVmAgrJ7fgAG30'
