@@ -78,6 +78,7 @@ $(DEB): setup-files-for-deb
 
 gcp-deb: setup-files-for-deb
 	cp dctest/passwd.yml $(SHAREDIR)/ignitions/common/passwd.yml
+	sed -i -e "s/TimeoutStartSec=infinity/TimeoutStartSec=1200/g" $(SHAREDIR)/ignitions/common/systemd/setup-var.service
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(WORKDIR) $(DEST)
 
 necogcp: $(STATIK)
