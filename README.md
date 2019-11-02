@@ -5,133 +5,176 @@
 
 <img src="./neco_logo.svg" width="100" alt="neco logo" />
 
-**Neco** is a collection of tools to build and maintain large data center
-infrastructure.  It is used in [cybozu.com](https://www.cybozu.com/), the
-top B2B groupware service in Japan.
+**Neco** is a project to build and maintain highly automated on-premise data centers using [Kubernetes][] at the center of its system.
+The project is led by a [CNCF][] Silver member [Cybozu][] which is also known as [Kintone][] in the United States.
 
-**Project Status**: Perpetual beta.
+Neco is also the name of the architecture for systems built on the deliverables of the project.
 
-Architecture
+Table of Contents:
+
+- [Repositories](#repositories)
+- [System overview](#system-overview)
+  - [Boot servers](#boot-servers)
+  - [Neco Continuous Delivery System (Neco CD)](#neco-continuous-delivery-system-neco-cd)
+  - [Kubernetes](#kubernetes)
+- [Network](#network)
+  - [Design](#design)
+  - [Node BGP and redundancy](#node-bgp-and-redundancy)
+  - [DHCP and location of boot servers](#dhcp-and-location-of-boot-servers)
+- [Tests](#tests)
+  - [Virtual data center](#virtual-data-center)
+  - [Large tests](#large-tests)
+  - [Middle/Small tests](#middlesmall-tests)
+- [Directories](#directories)
+
+Repositories
 ------------
 
-Neco adopts [network booting][netboot] to manage thousands of servers
-efficiently.  The center of Neco is therefore a few netboot servers.
+The project consists of a lot of repositories including:
 
-[neco-ubuntu][] creates a custom Ubuntu installer to setup netboot servers.
+- [cybozu-go/neco][neco]: The main repository.
+- [cybozu-go/neco-apps][neco-apps]: Kubernetes application manifests for Argo CD.
+- [cybozu/neco-containers][neco-containers]: Dockerfiles to build container images.
+- [cybozu-go/sabakan][Sabakan]: Versatile network boot server.
+- [cybozu-go/cke][CKE]: Cybozu Kubernetes Engine.
+- [cybozu-go/coil][Coil]: [CNI][] plugin in favor of UNIX philosophy.
+- [cybozu-go/topolvm][TopoLVM]: Capacity-aware [CSI][] plugin using LVM.
+- [cybozu-go/placemat][placemat]: Virtual data center construction tool.
 
-[Sabakan][sabakan], a product from Neco, implements functions necessary
-for netboot including [DHCP][], [UEFI HTTP Boot][], [iPXE][], [ignition][]
-and file server service to download assets.
+System overview
+---------------
 
-![sabakan_architecture](http://www.plantuml.com/plantuml/svg/ZOv1IyGm58Jl-HN3BdZBOTkRY2ohu1uyBBX_uBLvhMAQIFAYYFZVBIbHIoruoOFvPZApZq91qc1Lu5R8zPQnOMaDMfkYSDZWGm66X1gAZ8mevhjR0zKQg4UWC8MXZNzpUWfWUnVe_IzKpr05hIrtekVmK_sUV_1UyC3XjQp_OP4QUYQ7xVrJ_oW7crXzbrvDFnTFQLpHwuK-Zd3UCF93CT_TKgfK1j3fHL-Ny2LkZpSdNE1uFf_G-O36Ur7P_o_ddfr9W_q2)
-<!-- go to http://www.plantuml.com/plantuml/ and enter the above URL to edit the diagram. -->
+![necosystem](https://www.plantuml.com/plantuml/svg/ZPHDJzj048RFtLynWajxe1Akk4GL0Wm2HFYeGkaXuh2nXyJAPiUQtQMD8FtjdJN-SEKKDGV7ddTcvzbtl3voNhCFAwCCpj7cuAa4BkOBhq1-hv2I8PR_rxVdhxlZA9wOW8UlSByeE8TILbZ3xMJI9TqLTYdw3MO49LCUCkz4bGPlRPHR5bRgz0eOCw_jt22yg0zCmUOfiKM6v41jbCeCXHpE2tyHPh1xfmsUCw9LqsEU4wIdZw0TQBdFSkZOr5HQjxB5h98ZbQfpzmm--Rt3PkKH_D0-MwWgLTHG3ZNLeQOcE8yCBxtOLPYXW7jqi7lvJBmMDTenJSbw2lpOvwk4i_Hg6Bn6hytuP2YasXGP3UDtJ2lq2mnkgDsZmPBORr6efF73jGYLAp5MSyBUT57aETh7d7vQiQ5EbMbuciTE34z4iZjBESBEJRn-bA7XxUJJJkMtHFRhZkUiMoCkrYNoKcogfh9edlQ7MwN2L3cPtEntYBsQZf9ZhM1MkMhpBbNo_rJ9-rJ9DgfaErKYL9kMx8J8mmJv6Hb-mPVV1nNTB4Q7SEdLMNz4qucUwQMsVyKUT3332PzgBxbE6gBFyfs-l57rI0UZZXJ_5AknlgicIkdC4yDtXwpY1KHfNa8OmPZcXLNj6MnCwXsT4PoYAQ8tnsNfslFOu-kbzArCQLMIHUkTgasgr__SeCEeAcZbvXCG_H5j8k2enF3wz3Tf8_WMaDTHsLvI-GyIbGm9NZeNsc0ejpHem0xxxtEtgyuDTOGs3olp1m00)
 
-To share and keep data between netboot servers, [etcd][] is used widely.
-To protect data and authorize users, [Vault][] is used too.
+A Neco data center consists of a few (from 3 to 5) management servers called _boot sever_ and thousands of servers for a Kubernetes cluster; pretty big, huh?  In fact, Neco is designed to manage such large clusters.
 
-![etcd_vault_architecture](http://www.plantuml.com/plantuml/svg/TOwzQWCn48HxFSLmgKM8hmiXc3HvW90kpKPQcmDPEdPN3YRatUEpyC-1hv5WFhwTMQkHMDqb9noCyZOnEhOG4L9LO-dmwu18Hj-aZ1CYFVrFIs2r1FeZS6WoV2m_sJS13-z2Xtkedw4Ll4-yCJ-7V-vs_bifXW-M_NdzbUsf9fiaFhXBsqixsU2bw5xQpzEfbu8LGVUfB2W26iSq1BAXv0wagCVSJS_PV6tgCyPgZrisA0TXqwyyg5P6OB5XCvrWdOjjxLMCPEJMd6FTfNy0)
-<!-- go to http://www.plantuml.com/plantuml/ and enter the above URL to edit the diagram. -->
+### Boot servers
 
-As to network, Neco uses layer-3 technologies only.  Specifically,
-[BGP][] is used to advertise/receive routes together with [BFD][] to
-reduce route convergence and [ECMP][] for high availability.
+Boot servers are symmetrical with each other except for host names and IP addresses.
 
-![network_architecture](http://www.plantuml.com/plantuml/svg/ZLB1Ri8m3BtdAopk7E8ZcYO6aoPkKxexYjeCAjgu2kdGDF7l2mviHR9eBr2_z_py77bvZ3R4lctKyL3xpWRRGbDx5xyx1nJYdbJPK5_1naSN4gw2AwFrkyR1R4t1GN6gOxcVWJq2rp_gFDGKNN8RYXZGqsJ8ijjeU9fNTFBpPnwaUDeVb6qb45Nc_c5ZD2p0hTxUCuKI9NIXt7L7gSwM1xjBAxqKinGVm5ELAfDWdG60mU8VPAvhW-R54w2px5veg8yEZFji4aQ1jMOWFIl-VU2FDt-SxezZ_YkY28KBNowtS2tOhpRcDGlIn_QYaltMr7QN8DaIT3wiGdoIZYgcqx_UwX4UHpBfINdmcWT7yk187XpDWuCynWpkaCF20kfqRZAB3rb-_7i5okuoYp8hkQlB0cUrTBxgs-ON)
-<!-- go to http://www.plantuml.com/plantuml/ and enter the above URL to edit the diagram. -->
+All persistent data are stored in an [etcd][] cluster.  Thanks to etcd, adding or removing a boot server can be done easily.
 
-Repository contents
--------------------
+[Sabakan][] is a network boot server that supports DHCP and HTTP.  It can also manage an inventory of Node servers and assign IP addresses automatically.  Node servers should use [UEFI HTTP boot][HTTPBoot] to load [CoreOS][] from sabakan.
 
-### neco
+[CKE][], or Cybozu Kubernetes Engines, is a CNCF certified Kubernetes installer.  It queries Node server status to Sabakan and chooses Nodes to construct Kubernetes control plane and worker nodes.  TLS certificates required for Kubernetes are issued by [Vault][].
 
-`neco` is a deploy automation tool written in Go.
-It installs and updates miscellaneous utilities in boot servers.
+### Neco Continuous Delivery System (Neco CD)
 
-See [docs/neco.md](docs/neco.md)
+To bootstrap and maintain boot servers, a simple continuous delivery system called Neco CD is implemented in this repository.
 
-### neco-updater
+Neco CD consists of these programs and artifacts:
 
-`neco-updater` is a background service to detect new releases of `neco`.
-When detected, it sends the update information to `neco-worker` through etcd.
+- [`neco-updater`](./docs/neco-updater.md): a daemon to watch GitHub and notify `neco-worker` of new artifacts.
+- [`neco-worker`](./docs/neco-worker.md): a daemon to install/update programs on a boot server.
+- [`neco`](./docs/neco.md): CLI tool to bootstrap and configure boot servers.
+- Neco debian package: archive of program binaries to be installed on boot servers.
 
-Neco itself is released as a Debian package in [releases][].
+Debian packages are built by CircleCI and released on [GitHub releases][releases].
 
-See [docs/neco-updater.md](docs/neco-updater.md)
+Read [docs/cicd.md](docs/cicd.md) for details.
 
-### neco-worker
+### Kubernetes
 
-`neco-worker` is an automate maintenance service. It installs/updates `neco` package, applications,
-and sabakan contents when receives information from `neco-updater` through etcd.
+Kubernetes cluster installed with CKE has nothing other than essential functions.
+To make it useful, many applications such as [MetalLB][] or [Teleport][] are installed.
 
-See [docs/neco-worker.md](docs/neco-worker.md)
+Manifests of these applications are in [neco-apps][] repository and continuously delivered by [Argo CD][ArgoCD].
 
-### generate-artifacts
+Network
+-------
 
-`generate-artifacts` is a command-line tool to generate `artifacts.go` which is a collection of latest components.
+### Design
 
-See [docs/generate-artifacts.md](docs/generate-artifacts.md)
+Network of Neco is designed with these goals:
 
-### Test suite
+- Bare-metal performance, i.e., no overlays like [VXLAN][]
+- Scalability, especially for [east-west traffic](https://searchnetworking.techtarget.com/definition/east-west-traffic)
+- Vendor neutrality
 
-[dctest](dctest/) directory contains test suites to run integration
-tests in a virtual data center environment.
+The data center network for Neco should employ [leaf-spine topology](https://blog.westmonroepartners.com/a-beginners-guide-to-understanding-the-leaf-spine-network-topology/).  More specifically, each data center rack works as an autonomous system (AS) and exchanges routes with [BGP][].
 
-[Placemat][placemat] is a tool to create arbitrarily complex network topology
-and virtual servers using Linux networking stacks, [rkt][], and [QEMU][].
+Since BGP is a layer-3 routing protocol, use of layer-2 can be limited within a single rack.
 
-See [docs/dctest.md](docs/dctest.md)
+![leaf-spine](https://www.plantuml.com/plantuml/svg/VPB1IiGm48RlUOfXSz53OJjJFShgnPl8xb4y13DkosQJagQ8YE-kROKKdCrb2FD_Cny9sGt9n3IUdHfEdUzDD6TmdUVqsJE4cDgWKZXoQZd2b_B1CXpwtnpC0CDqgAKcIarIt-hViitUl9rgkBe_FC7jpNPRNs-c0SVclLuHc0dC1Au8oWHbWbP48-verEo2wgNjh6N_6hjZcwgxFy5SvP3KNEMmcIwxF13eoeOFNsbOJFh1ZInc2FenCdin9D3FO-oTFDg0thDT8YmOiMJ4eX4l6wbWf9AHYaOIZJlsTlgmFm00)
 
-### CI/CD
+### Node BGP and redundancy
 
-CI/CD in **Neco** is running by CircleCI.
-Then `neco-updater` service is updated automatically.
+Kubernetes nodes need to route packets for Pods.  Without overlay networking, this means that each node needs to advertise routing information.  In Neco, each node runs [BIRD][] to speak BGP and advertise routes for Pods.
 
-See [docs/cicd.md](docs/cicd.md)
+For high availability, network links must be redundant.  Therefore, Neco requires that each rack has two Top-of-Rack (ToR) switches and each server has two ethernet links.  To reduce convergence time of BGP, [BFD][] is used together.
 
-### Run unit tests at local machine
+This means that ToR switches and node servers in a rack are all BGP speakers and need to connect each other as iBGP peers.  To make configurations simple and flexible, ToR switches are configured as [route reflectors](https://en.wikipedia.org/wiki/Route_reflector).
 
-First, start up etcd server manually.
+The two ToR switches are independent; each has its own managing subnet.  As a result, each server has two IP addresses for each ToR switch.  To tolerate single link or ToR switch failure, the server has another IP address called **the node address** with `/32` netmask and advertises it via BGP.
 
-```console
-$ make start-etcd
-```
+![iBGP](https://www.plantuml.com/plantuml/svg/ZPAnJiCm48RtUugJEYVOLs38L5ZO40AsgaCadsghgOsSGmWXthsnhQGPF3H3TFhrvVzoYNUZz56-pmEC9-U_-jYVSN2UH_aT64CK6q2SJFFJn-E3KXf0mf75SiG_yC4mIeWQzu3JzHdUKUT9grQrkjLtT0-7XQCLHrUEPYvNDNlhZ65_YEvefSdFmJ-KadIRRQyfq9Zcd7UfZLIxLLFVjlIpMDKjRvCqSwoxHLxiAmEj3LGrKDr0TGDTlyDgGHD-V5E4PVLDawDDMNF2XJ7uz4DE7RhdbxU4qGrOfOvkggjZE_OcdP4B)
 
-Then, run `go test` on another terminal.
+### DHCP and location of boot servers
 
-```console
-$ go test -v -count=1 -race -mod=vendor ./...
-```
+[UEFI HTTP Boot][HTTPBoot] requires a DHCP server which requires layer-2 broadcast domain.  Without DHCP relay servers, a dedicated server must be run as a boot server for each rack because layer-2 domain does not span racks.
 
-### GCP suite
+If ToR switches can provide DHCP relay, this requirement can be relaxed.
 
-[gcp](gcp/) directory contains utilities for provisioning the Google Compute Engine services for Neco project.
-Test suite, and other Neco github projects deploy GCE instance based on an image created by this tool.
+Tests
+-----
 
-See [docs/gcp](docs/gcp/)
+### Virtual data center
 
-### `git-neco`
+To make continuous delivery reliable enough, thorough and comprehensive system tests need to be performed.
+Since Neco is the system to bootstrap and maintain an on-premise data center, this means that the tests should do the same thing, that is, to bootstrap and maintain a data center!
 
-`git-neco` is a git extension utility to help Neco developers.
+To simulate an on-premise data center, we have created [placemat][], a tool to construct a virtual data center with containers, virtual machines and Linux network stacks.  The virtual data center implements the aforementioned leaf-spine networks with BGP routers.
 
-Documentation
--------------
+### Large tests
 
-[docs](docs/) directory contains documents about designs and specifications.
+[dctest](dctest/) directory contains test suites to run large tests using the virtual data center.
+Details are described in [docs/dctest.md](docs/dctest.md).
+
+### Middle/Small tests
+
+Other than large tests, this repository contains smaller tests that can be run as follows:
+
+1. Setup the environment by `make setup`.  This is a one shot job.
+2. Run etcd by `make start-etcd`
+3. Run tests by `go test -v -count 1 -race -mod=vendor ./...`
+4. Stop etcd by `make stop-etcd`
+
+Directories
+-----------
+
+Other than Go packages, this repository has the following directories:
+
+- [`dctest/`](dctest/): Large tests using a virtual data center.
+- [`debian/`](debian/): Ingredients for Debian package.
+- [`docs/`](docs/): miscellaneous documentation.
+- [`etc/`](etc/): Kubernetes manifests for networking and other configuration files.
+- [`ignitions/`](ignitions/): [CoreOS Ignition][Ignition] template files.
 
 [releases]: https://github.com/cybozu-go/neco/releases
 [godoc]: https://godoc.org/github.com/cybozu-go/neco
-[netboot]: https://en.wikipedia.org/wiki/Network_booting
-[neco-ubuntu]: https://github.com/cybozu/neco-ubuntu
-[sabakan]: https://github.com/cybozu-go/sabakan
-[DHCP]: https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol
-[UEFI HTTP Boot]: https://github.com/tianocore/tianocore.github.io/wiki/HTTP-Boot
-[iPXE]: https://ipxe.org/
-[ignition]: https://github.com/coreos/ignition
-[etcd]: http://etcd.io/
-[Vault]: http://vaultproject.io/
-[BGP]: https://en.wikipedia.org/wiki/Border_Gateway_Protocol
+[ArgoCD]: https://argoproj.github.io/argo-cd/
 [BFD]: https://en.wikipedia.org/wiki/Bidirectional_Forwarding_Detection
-[ECMP]: https://en.wikipedia.org/wiki/Equal-cost_multi-path_routing
+[BGP]: https://en.wikipedia.org/wiki/Border_Gateway_Protocol
+[BIRD]: https://bird.network.cz/
+[CKE]: https://github.com/cybozu-go/cke
+[CNCF]: https://www.cncf.io
+[CNI]: https://github.com/containernetworking/cni
+[Coil]: https://github.com/cybozu-go/coil
+[CoreOS]: https://coreos.com/os/docs/latest/
+[CSI]: https://github.com/container-storage-interface/spec
+[Cybozu]: https://cybozu-global.com
+[etcd]: https://etcd.io
+[HTTPBoot]: https://github.com/tianocore/tianocore.github.io/wiki/HTTP-Boot
+[Ignition]: https://coreos.com/ignition/docs/latest/
+[Kintone]: https://www.kintone.com
+[Kubernetes]: https://kubernetes.io
+[MetalLB]: https://metallb.universe.tf
+[neco]: https://github.com/cybozu-go/neco
+[neco-apps]: https://github.com/cybozu-go/neco-apps
+[neco-containers]: https://github.com/cybozu/neco-containers
 [placemat]: https://github.com/cybozu-go/placemat
-[rkt]: https://coreos.com/rkt/
-[QEMU]: https://www.qemu.org/
+[Sabakan]: https://github.com/cybozu-go/sabakan
+[Teleport]: https://gravitational.com/teleport/
+[TopoLVM]: https://github.com/cybozu-go/topolvm
+[Vault]: https://www.vaultproject.io
+[VXLAN]: https://en.wikipedia.org/wiki/Virtual_Extensible_LAN

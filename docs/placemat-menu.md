@@ -9,7 +9,6 @@ The cluster of the overview is in the following figure.
 
 ![Network Design](http://www.plantuml.com/plantuml/png/hPF1IiGm48RlUOgX9pq4d3p1uYBePGNhJKH26tVBran9P-a-lcsIjIarwyLBwNp__y_03Ddqh1sVlbhXJCNQxbi3nIFr33TFbespXcyBq3qqiH9LIwSQYeVpLEiMHZQGEtgJEV_epvrncXkoi4iCr74wQ4lEG3aqN1syN8rrgfTTOnU6VWBujqMbbbTwyOhJrV7kWydXLJMRnQjP35bXgJQX6Ro9UoA6tKY4b59iI_-FQQ5yKQPAUL7Uasxu7zqkHmHPqs1bsFVqYI3kTurKHAxP7rY6EtlGca-M_gmX6bF9hdE2-aN0N0AJXChDM0gv1EOISSRSTT5kvchDSUN7cQibtnXRJ-_j6m00)
 
-
 The network is designed as a spine-and-leaf architecture.  There is a *core
 switches* at the top of the cluster.  The *spine switches* connects core
 switches and racks.  It is a L3 switch to routing between inter cluster,
