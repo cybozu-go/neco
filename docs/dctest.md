@@ -9,7 +9,7 @@ Generating deb Package
 
 Dctest uses a generated deb package to install Neco.
 Details of artifacts definition used in generating the deb package are
-described in [Artifacts](artifacts).
+described in [Artifacts](artifacts.md).
 
 Type of Test Suites
 -------------------
