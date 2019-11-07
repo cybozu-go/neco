@@ -54,6 +54,7 @@ data:
     detect_broken_pconn on
     forwarded_for delete
     httpd_suppress_version_string on
+    shutdown_lifetime 10 seconds
 ---
 apiVersion: v1
 kind: ConfigMap
