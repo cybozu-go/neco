@@ -34,6 +34,7 @@ The project consists of a lot of repositories including:
 
 - [cybozu-go/neco][neco]: The main repository.
 - [cybozu-go/neco-apps][neco-apps]: Kubernetes application manifests for Argo CD.
+- [cybozu/neco-ubuntu][neco-ubuntu]: Custom Ubuntu installer for boot servers.
 - [cybozu/neco-containers][neco-containers]: Dockerfiles to build container images.
 - [cybozu-go/sabakan][Sabakan]: Versatile network boot server.
 - [cybozu-go/cke][CKE]: Cybozu Kubernetes Engine.
@@ -75,10 +76,10 @@ Read [docs/cicd.md](docs/cicd.md) for details.
 
 ### Kubernetes
 
-Kubernetes cluster installed with CKE has nothing other than essential functions.
-To make it useful, many applications such as [MetalLB][] or [Teleport][] are installed.
+A Kubernetes cluster created with CKE is a vanilla installation; it almost has nothing useful.
 
-Manifests of these applications are in [neco-apps][] repository and continuously delivered by [Argo CD][ArgoCD].
+We have selected a set of applications such as [MetalLB][], [Calico][], or [Teleport][] to make the vanilla Kubernetes fully featured.
+The manifests of the applications are maintained in [neco-apps][] repository and continuously delivered by [Argo CD][ArgoCD].
 
 Network
 -------
@@ -123,7 +124,25 @@ Tests
 To make continuous delivery reliable enough, thorough and comprehensive system tests need to be performed.
 Since Neco is the system to bootstrap and maintain an on-premise data center, this means that the tests should do the same thing, that is, to bootstrap and maintain a data center!
 
-To simulate an on-premise data center, we have created [placemat][], a tool to construct a virtual data center with containers, virtual machines and Linux network stacks.  The virtual data center implements the aforementioned leaf-spine networks with BGP routers.
+To simulate an on-premise data center, we have created [placemat][], a tool to construct a virtual data center using containers, virtual machines and Linux network stacks.
+
+The virtual data center implements the aforementioned leaf-spine networks with BGP routers.
+To create the virtual data center, run the following commands in a Ubuntu or Debian OS:
+
+```console
+$ sudo apt update
+$ sudo apt install -y qemu qemu-kvm socat picocom cloud-utils rkt
+$ wget https://github.com/cybozu-go/placemat/releases/download/v1.3.9/placemat_1.3.9_amd64.deb
+$ sudo dpkg -i placemat_1.3.9_amd64.deb
+$ git clone https://github.com/cybozu-go/neco
+$ cd neco/dctest
+$ make setup
+$ make placemat
+$ make test
+```
+
+- To login a boot server in the virtual data center, run `./dcssh boot-0`.
+- To stop and delete the virtual data center, run `make stop`.
 
 ### Large tests
 
@@ -156,6 +175,7 @@ Other than Go packages, this repository has the following directories:
 [BFD]: https://en.wikipedia.org/wiki/Bidirectional_Forwarding_Detection
 [BGP]: https://en.wikipedia.org/wiki/Border_Gateway_Protocol
 [BIRD]: https://bird.network.cz/
+[Calico]: https://www.projectcalico.org/
 [CKE]: https://github.com/cybozu-go/cke
 [CNCF]: https://www.cncf.io
 [CNI]: https://github.com/containernetworking/cni
@@ -172,6 +192,7 @@ Other than Go packages, this repository has the following directories:
 [neco]: https://github.com/cybozu-go/neco
 [neco-apps]: https://github.com/cybozu-go/neco-apps
 [neco-containers]: https://github.com/cybozu/neco-containers
+[neco-ubuntu]: https://github.com/cybozu/neco-ubuntu
 [placemat]: https://github.com/cybozu-go/placemat
 [Sabakan]: https://github.com/cybozu-go/sabakan
 [Teleport]: https://gravitational.com/teleport/
