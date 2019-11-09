@@ -10,9 +10,13 @@ The project is led by a [CNCF][] Silver member [Cybozu][] which is also known as
 
 Neco is also the name of the architecture for systems built on the deliverables of the project.
 
+Please read about [Project Neco: Building Cloud Native On-Premise Data Centers](https://blog.kintone.io/entry/neco).
+
 Table of Contents:
 
-- [Repositories](#repositories)
+- [Resources](#resources)
+  - [Blogs](#blogs)
+  - [Repositories](#repositories)
 - [System overview](#system-overview)
   - [Boot servers](#boot-servers)
   - [Neco Continuous Delivery System (Neco CD)](#neco-continuous-delivery-system-neco-cd)
@@ -27,8 +31,15 @@ Table of Contents:
   - [Middle/Small tests](#middlesmall-tests)
 - [Directories](#directories)
 
-Repositories
-------------
+Resources
+---------
+
+### Blogs
+
+- English: https://blog.kintone.io/archive/category/neco
+- Japanese: https://blog.cybozu.io/archive/category/Neco
+
+### Repositories
 
 The project consists of a lot of repositories including:
 
