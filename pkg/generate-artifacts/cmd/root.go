@@ -23,11 +23,15 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/cybozu-go/neco/generator"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
+
+const defaultIgnoreFile = "artifacts_ignore.yaml"
 
 var rootCmd = &cobra.Command{
 	Use:   "generate-artifacts",
@@ -41,10 +45,24 @@ If --release is given, the generated source code will have a build
 tag "release".  If not, the generated code will have tag "!release".
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		data, err := ioutil.ReadFile(*ignoreFile)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(2)
+		}
+
+		ignored := &generator.IgnoreConfig{}
+		err = yaml.Unmarshal(data, ignored)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(2)
+		}
+
 		cfg := generator.Config{
 			Release: *flagRelease,
+			Ignored: ignored,
 		}
-		err := generator.Generate(context.Background(), cfg, os.Stdout)
+		err = generator.Generate(context.Background(), cfg, os.Stdout)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			os.Exit(2)
@@ -62,8 +80,10 @@ func Execute() {
 
 var (
 	flagRelease *bool
+	ignoreFile  *string
 )
 
 func init() {
 	flagRelease = rootCmd.Flags().Bool("release", false, "Generate artifacts_release.go")
+	ignoreFile = rootCmd.Flags().String("ignore-file", defaultIgnoreFile, "Filename to ignore artifacts")
 }
