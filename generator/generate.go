@@ -166,6 +166,7 @@ func getLatestImage(ctx context.Context, name string, release bool, ignoreVersio
 		return nil, err
 	}
 	versions := make([]*version.Version, 0, len(tags))
+OUTER:
 	for _, tag := range tags {
 		if strings.Count(tag, ".") < 2 {
 			// ignore branch tags such as "1.2"
@@ -173,7 +174,7 @@ func getLatestImage(ctx context.Context, name string, release bool, ignoreVersio
 		}
 		for _, ignored := range ignoreVersions {
 			if tag == ignored {
-				continue
+				continue OUTER
 			}
 		}
 		v, err := version.NewVersion(tag)
@@ -232,13 +233,14 @@ func getLatestDeb(ctx context.Context, name string, ignoreVersions []string) (*n
 		return nil, err
 	}
 	var version string
+OUTER:
 	for _, release := range releases {
 		if release.TagName == nil {
 			continue
 		}
 		for _, ignored := range ignoreVersions {
 			if *release.TagName == ignored {
-				continue
+				continue OUTER
 			}
 		}
 		version = *release.TagName
@@ -278,6 +280,7 @@ func getLatestCoreOS(ctx context.Context, ignoreVersions []string) (*neco.CoreOS
 	}
 
 	versions := make([]*version.Version, 0, len(feed))
+OUTER:
 	for k := range feed {
 		v, err := version.NewVersion(k)
 		if err != nil {
@@ -288,7 +291,7 @@ func getLatestCoreOS(ctx context.Context, ignoreVersions []string) (*neco.CoreOS
 		}
 		for _, ignored := range ignoreVersions {
 			if k == ignored {
-				continue
+				continue OUTER
 			}
 		}
 		versions = append(versions, v)

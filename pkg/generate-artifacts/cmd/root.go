@@ -28,7 +28,7 @@ import (
 
 	"github.com/cybozu-go/neco/generator"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 const defaultIgnoreFile = "artifacts_ignore.yaml"
