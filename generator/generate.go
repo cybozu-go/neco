@@ -3,6 +3,7 @@ package generator
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -230,7 +231,7 @@ func getLatestDeb(ctx context.Context, name string, ignoreVersions []string) (*n
 		})
 		return nil, err
 	}
-	versions := make([]string, 0, len(releases))
+	var version string
 	for _, release := range releases {
 		if release.TagName == nil {
 			continue
@@ -240,13 +241,23 @@ func getLatestDeb(ctx context.Context, name string, ignoreVersions []string) (*n
 				continue
 			}
 		}
-		versions = append(versions, *release.TagName)
+		version = *release.TagName
+		break
 	}
+
+	if version == "" {
+		log.Error("no available version", map[string]interface{}{
+			"owner":      "cybozu-go",
+			"repository": name,
+		})
+		return nil, errors.New(name + ": no available version was found")
+	}
+
 	return &neco.DebianPackage{
 		Name:       name,
 		Owner:      "cybozu-go",
 		Repository: name,
-		Release:    versions[0],
+		Release:    version,
 	}, nil
 }
 

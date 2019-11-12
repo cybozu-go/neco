@@ -46,16 +46,18 @@ tag "release".  If not, the generated code will have tag "!release".
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		data, err := ioutil.ReadFile(*ignoreFile)
-		if err != nil {
+		if err != nil && !os.IsNotExist(err) {
 			fmt.Fprintln(os.Stderr, err.Error())
 			os.Exit(2)
 		}
 
 		ignored := &generator.IgnoreConfig{}
-		err = yaml.Unmarshal(data, ignored)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
-			os.Exit(2)
+		if len(data) > 0 {
+			err = yaml.Unmarshal(data, ignored)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+				os.Exit(2)
+			}
 		}
 
 		cfg := generator.Config{
