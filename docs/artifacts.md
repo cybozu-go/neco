@@ -29,6 +29,8 @@ When generating neco binaries and the neco deb package, `artifacts.go` is used
 in default.  A CI job uses `artifacts_release.go` by specifying `TAGS=release`
 for `make` command after checking-out the `release` branch.
 
+## How to handle prerelease versions
+
 As described above, you should not edit artifacts files manually in general.
 One of the exceptions is to use an RC version of a component, e.g. cke 1.15.0-rc1,
 to prepare for the update of the component.
@@ -40,3 +42,22 @@ the master branch anyway, because that component does not get included in
 `artifacts_release.go` and CI on `release` branch will fail.
 Instead, after you confirm that neco can accept a component of x.y.z-\<prerelease\>,
 release the component as x.y.z and include it in artifacts files by `generate-artifacts`.
+
+## How to ignore latest versions
+
+By using `artifacts_ignore.yaml`, the latest versions of components can be ignored.
+Use this, for example, if you have a bug in the latest versions and do not want to include it in `artifacts.go`.
+
+```yaml
+images:
+- name: cke
+  versions: ["1.2.3", "1.2.4", "1.2.5"]
+- name: etcd
+  versions: ["1.2.3.4"]
+debs:
+- name: etcdpasswd
+  versions: ["v1.2.3"]
+coreOS:
+- channel: stable
+  versions: ["2247.5.0"]
+```

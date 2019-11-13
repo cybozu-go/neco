@@ -68,13 +68,63 @@ func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*ne
 type Config struct {
 	// tag the generated source code as release or not
 	Release bool
+	Ignored *IgnoreConfig
+}
+
+// IgnoreConfig defines the ignored versions of components.
+type IgnoreConfig struct {
+	Images []ignoreImageConfig  `json:"images"`
+	Debs   []ignoreDebConfig    `json:"debs"`
+	CoreOS []ignoreCoreOSConfig `json:"coreOS"`
+}
+
+type ignoreImageConfig struct {
+	Name     string   `json:"name"`
+	Versions []string `json:"versions"`
+}
+
+type ignoreDebConfig struct {
+	Name     string   `json:"name"`
+	Versions []string `json:"versions"`
+}
+
+type ignoreCoreOSConfig struct {
+	Channel  string   `json:"channel"`
+	Versions []string `json:"versions"`
+}
+
+func (c *IgnoreConfig) getImageVersions(name string) []string {
+	for _, img := range c.Images {
+		if img.Name == name {
+			return img.Versions
+		}
+	}
+	return nil
+}
+
+func (c *IgnoreConfig) getDebVersions(name string) []string {
+	for _, deb := range c.Debs {
+		if deb.Name == name {
+			return deb.Versions
+		}
+	}
+	return nil
+}
+
+func (c *IgnoreConfig) getCoreOSVersions() []string {
+	for _, core := range c.CoreOS {
+		if core.Channel == "stable" {
+			return core.Versions
+		}
+	}
+	return nil
 }
 
 // Generate generates new artifacts.go contents and writes it to out.
 func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 	images := make([]*neco.ContainerImage, len(quayRepos))
 	for i, name := range quayRepos {
-		img, err := getLatestImage(ctx, name, cfg.Release)
+		img, err := getLatestImage(ctx, name, cfg.Release, cfg.Ignored.getImageVersions(name))
 		if err != nil {
 			return err
 		}
@@ -83,7 +133,7 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 
 	debs := make([]*neco.DebianPackage, 0, len(debRepos))
 	for _, name := range debRepos {
-		deb, err := getLatestDeb(ctx, name)
+		deb, err := getLatestDeb(ctx, name, cfg.Ignored.getDebVersions(name))
 		if err != nil {
 			return err
 		}
@@ -93,7 +143,7 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 		debs = append(debs, deb)
 	}
 
-	coreos, err := getLatestCoreOS(ctx)
+	coreos, err := getLatestCoreOS(ctx, cfg.Ignored.getCoreOSVersions())
 	if err != nil {
 		return err
 	}
@@ -101,7 +151,7 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 	return render(out, cfg.Release, images, debs, coreos)
 }
 
-func getLatestImage(ctx context.Context, name string, release bool) (*neco.ContainerImage, error) {
+func getLatestImage(ctx context.Context, name string, release bool, ignoreVersions []string) (*neco.ContainerImage, error) {
 	ref, err := docker.ParseReference("//quay.io/cybozu/" + name)
 	if err != nil {
 		return nil, err
@@ -116,10 +166,16 @@ func getLatestImage(ctx context.Context, name string, release bool) (*neco.Conta
 		return nil, err
 	}
 	versions := make([]*version.Version, 0, len(tags))
+OUTER:
 	for _, tag := range tags {
 		if strings.Count(tag, ".") < 2 {
 			// ignore branch tags such as "1.2"
 			continue
+		}
+		for _, ignored := range ignoreVersions {
+			if tag == ignored {
+				continue OUTER
+			}
 		}
 		v, err := version.NewVersion(tag)
 		if err != nil {
@@ -155,7 +211,7 @@ func getLatestImage(ctx context.Context, name string, release bool) (*neco.Conta
 	}, nil
 }
 
-func getLatestDeb(ctx context.Context, name string) (*neco.DebianPackage, error) {
+func getLatestDeb(ctx context.Context, name string, ignoreVersions []string) (*neco.DebianPackage, error) {
 	var hc *http.Client
 	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
 		ts := oauth2.StaticTokenSource(
@@ -164,7 +220,7 @@ func getLatestDeb(ctx context.Context, name string) (*neco.DebianPackage, error)
 		hc = oauth2.NewClient(ctx, ts)
 	}
 	client := neco.NewGitHubClient(hc)
-	release, resp, err := client.Repositories.GetLatestRelease(ctx, "cybozu-go", name)
+	releases, resp, err := client.Repositories.ListReleases(ctx, "cybozu-go", name, nil)
 	if err != nil {
 		if resp.StatusCode == http.StatusNotFound {
 			return nil, nil
@@ -176,23 +232,38 @@ func getLatestDeb(ctx context.Context, name string) (*neco.DebianPackage, error)
 		})
 		return nil, err
 	}
-	if release.TagName == nil {
-		log.Error("no tagged release", map[string]interface{}{
+	var version string
+OUTER:
+	for _, release := range releases {
+		if release.TagName == nil {
+			continue
+		}
+		for _, ignored := range ignoreVersions {
+			if *release.TagName == ignored {
+				continue OUTER
+			}
+		}
+		version = *release.TagName
+		break
+	}
+
+	if version == "" {
+		log.Error("no available version", map[string]interface{}{
 			"owner":      "cybozu-go",
 			"repository": name,
-			"release":    release.String(),
 		})
-		return nil, errors.New("no tagged release")
+		return nil, errors.New(name + ": no available version was found")
 	}
+
 	return &neco.DebianPackage{
 		Name:       name,
 		Owner:      "cybozu-go",
 		Repository: name,
-		Release:    *release.TagName,
+		Release:    version,
 	}, nil
 }
 
-func getLatestCoreOS(ctx context.Context) (*neco.CoreOSImage, error) {
+func getLatestCoreOS(ctx context.Context, ignoreVersions []string) (*neco.CoreOSImage, error) {
 	resp, err := http.Get(coreOSFeed)
 	if err != nil {
 		return nil, err
@@ -209,6 +280,7 @@ func getLatestCoreOS(ctx context.Context) (*neco.CoreOSImage, error) {
 	}
 
 	versions := make([]*version.Version, 0, len(feed))
+OUTER:
 	for k := range feed {
 		v, err := version.NewVersion(k)
 		if err != nil {
@@ -216,6 +288,11 @@ func getLatestCoreOS(ctx context.Context) (*neco.CoreOSImage, error) {
 				"version": k,
 			})
 			return nil, err
+		}
+		for _, ignored := range ignoreVersions {
+			if k == ignored {
+				continue OUTER
+			}
 		}
 		versions = append(versions, v)
 	}
