@@ -8,6 +8,7 @@ machine-types:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
       - name: hw_chassis_power_voltages_status_health
+      - name: hw_chassis_thermal_fans_status_health
       - name: hw_systems_storage_drives_status_health
         selector:
           label-prefix:
@@ -18,6 +19,7 @@ machine-types:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
       - name: hw_chassis_power_voltages_status_health
+      - name: hw_chassis_thermal_fans_status_health
       - name: hw_systems_storage_drives_status_health
         selector:
           label-prefix:
@@ -28,6 +30,7 @@ machine-types:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
       - name: hw_chassis_power_voltages_status_health
+      - name: hw_chassis_thermal_fans_status_health
       - name: hw_systems_storage_drives_status_health
         selector:
           label-prefix:
@@ -38,6 +41,7 @@ machine-types:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
       - name: hw_chassis_power_voltages_status_health
+      - name: hw_chassis_thermal_fans_status_health
       - name: hw_systems_storage_drives_status_health
         selector:
           label-prefix:
@@ -48,6 +52,7 @@ machine-types:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
       - name: hw_chassis_power_voltages_status_health
+      - name: hw_chassis_thermal_fans_status_health
       - name: hw_systems_simplestorage_controllers_devices_status_health
         selector:
           labels:
