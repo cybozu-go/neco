@@ -109,7 +109,7 @@ test: $(TEST_DEPS)
 placemat: $(PLACEMAT_DEPS)
 	sudo rm -rf $(PLACEMAT_DATADIR)
 	sudo rm -rf $(VM_SHARED_DIR)
-	sudo systemd-run --unit=placemat.service $(PLACEMAT) -enable-virtfs $(abspath output/cluster.yml) -bmc-cert $(OUTPUT)/bmc.cert -bmc-key $(OUTPUT)/bmc.key
+	sudo systemd-run --unit=placemat.service $(PLACEMAT) -bmc-cert $(abspath output/bmc.cert) -bmc-key $(abspath output/bmc.key) -enable-virtfs $(abspath output/cluster.yml)
 	@echo 'Placemat is running.  To kill it, do "make stop".'
 
 stop:
