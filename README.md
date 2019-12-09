@@ -143,8 +143,8 @@ To create the virtual data center, run the following commands in a Ubuntu or Deb
 ```console
 $ sudo apt update
 $ sudo apt install -y qemu qemu-kvm socat picocom cloud-utils rkt
-$ wget https://github.com/cybozu-go/placemat/releases/download/v1.3.9/placemat_1.3.9_amd64.deb
-$ sudo dpkg -i placemat_1.3.9_amd64.deb
+$ wget https://github.com/cybozu-go/placemat/releases/download/v1.4.0/placemat_1.4.0_amd64.deb
+$ sudo dpkg -i placemat_1.4.0_amd64.deb
 $ git clone https://github.com/cybozu-go/neco
 $ cd neco/dctest
 $ make setup
