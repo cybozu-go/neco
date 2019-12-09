@@ -46,7 +46,7 @@ else ifdef DATACENTER
 else
   DEB = $(GENERATED_DEB)
 endif
-PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(BMC_USER)
+PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(AUTOCONFIG) $(BMC_USER) $(OUTPUT)/bmc.cert $(OUTPUT)/bmc.key
 TEST_DEPS = $(DEB)
 SSH_PRIVKEY = $(realpath ./dctest_key)
 BOB_PRIVKEY = $(realpath ./bob_key)
@@ -74,6 +74,11 @@ $(OUTPUT)/$(CUSTOM_UBUNTU): $(CUSTOM_UBUNTU)
 	rm -f $@
 	ln $< $@
 	touch $@
+
+$(OUTPUT)/bmc.cert $(OUTPUT)/bmc.key:
+	openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 \
+	-subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=*.www.example.com" \
+	-keyout $(OUTPUT)/bmc.key  -out $(OUTPUT)/bmc.cert
 
 # SABAKAN_CONTENTS
 $(DHCP_JSON):
@@ -104,7 +109,7 @@ test: $(TEST_DEPS)
 placemat: $(PLACEMAT_DEPS)
 	sudo rm -rf $(PLACEMAT_DATADIR)
 	sudo rm -rf $(VM_SHARED_DIR)
-	sudo systemd-run --unit=placemat.service $(PLACEMAT) -enable-virtfs $(abspath output/cluster.yml)
+	sudo systemd-run --unit=placemat.service $(PLACEMAT) -bmc-cert $(abspath output/bmc.cert) -bmc-key $(abspath output/bmc.key) -enable-virtfs $(abspath output/cluster.yml)
 	@echo 'Placemat is running.  To kill it, do "make stop".'
 
 stop:
