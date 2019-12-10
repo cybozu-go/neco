@@ -32,6 +32,7 @@ type networkConfig struct {
 		CoreOperation string   `json:"core-operation"`
 		Proxy         string   `json:"proxy"`
 		NTP           []string `json:"ntp"`
+		Pod           string   `json:"pod"`
 		Exposed       struct {
 			Bastion      string `json:"bastion"`
 			LoadBalancer string `json:"loadbalancer"`
@@ -171,6 +172,10 @@ func unmarshalNetwork(dir string, data []byte) (*NetworkMenu, error) {
 		}
 	}
 
+	_, network.Pod, err = parseNetworkCIDR(n.Spec.Pod)
+	if err != nil {
+		return nil, err
+	}
 	_, network.Bastion, err = parseNetworkCIDR(n.Spec.Exposed.Bastion)
 	if err != nil {
 		return nil, err

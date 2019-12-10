@@ -74,6 +74,7 @@ spec:
   core-external: 10.0.3.0/24
   core-operation: 10.0.4.0/24
   proxy: 10.0.49.3
+  pod: 10.64.0.0/14
   exposed:
     bastion: 10.72.48.0/26
     loadbalancer: 10.72.32.0/20
@@ -162,6 +163,8 @@ example is assigned addresses when `10.0.1.0` is specified:
     the Internet running on the core switch.
 
 - `ntp`: The IP addresses of the NTP servers running on the core switch.
+
+- `pod`: The network address advertised to outside of the cluster. Different from `exposed`, `pod` network will not accept connections from outside.
 
 - `exposed`: The network addresses advertise to outside of the cluster
     - `bastion`: The bastion network addresses, whey are also advertised to the
