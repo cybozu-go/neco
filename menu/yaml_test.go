@@ -33,6 +33,7 @@ spec:
   core-operation: 10.0.4.0/24
   spine-tor: 10.0.1.0
   proxy: 10.0.49.3
+  pod: 10.64.0.0/14
   exposed:
     loadbalancer: 10.72.32.0/20
     bastion: 10.72.48.0/26
@@ -52,6 +53,7 @@ spec:
 				CoreOperation:  mustParseCIDR("10.0.4.0/24"),
 				SpineTor:       net.ParseIP("10.0.1.0"),
 				Proxy:          net.ParseIP("10.0.49.3"),
+				Pod:            mustParseCIDR("10.64.0.0/14"),
 				Bastion:        mustParseCIDR("10.72.48.0/26"),
 				LoadBalancer:   mustParseCIDR("10.72.32.0/20"),
 				Ingress:        mustParseCIDR("10.72.48.64/26"),

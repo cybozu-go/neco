@@ -127,6 +127,7 @@ type TemplateArgs struct {
 		ASNExternal int
 		ASNSpine    int
 		ASNCore     int
+		Pod         *net.IPNet
 	}
 	ClusterID string
 	Racks     []Rack
@@ -281,6 +282,7 @@ func setNetworkArgs(templateArgs *TemplateArgs, menu *Menu) {
 	templateArgs.Network.Endpoints.Host = addToIPNet(menu.Network.Internet, offsetInternetHost)
 	templateArgs.Network.Endpoints.External = addToIPNet(menu.Network.CoreExternal, offsetExternalExternal)
 	templateArgs.Network.Endpoints.Operation = addToIPNet(menu.Network.CoreOperation, offsetOperationOperation)
+	templateArgs.Network.Pod = menu.Network.Pod
 }
 
 func buildNode(basename string, idx int, offsetStart int, rack *Rack) Node {
