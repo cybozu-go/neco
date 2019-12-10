@@ -31,6 +31,7 @@ type NetworkMenu struct {
 	SpineTor       net.IP
 	Proxy          net.IP
 	NTP            []net.IP
+	Pod            *net.IPNet
 	Bastion        *net.IPNet
 	LoadBalancer   *net.IPNet
 	Ingress        *net.IPNet
