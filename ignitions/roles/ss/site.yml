@@ -2,4 +2,5 @@ include: ../../common/common.yml
 files:
   - /etc/udev/crypt-base-path
   - /etc/udev/rules.d/99-neco.rules
+  # I want to only make `/dev/crypt-disk/by-path/` directory. It is workaround to make a `dummy` file.
   - /dev/crypt-disk/by-path/dummy
