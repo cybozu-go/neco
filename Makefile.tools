@@ -45,7 +45,7 @@ node_exporter:
 containerd:
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
 	$(CURL) https://github.com/containerd/containerd/releases/download/v$(CONTAINERD_VERSION)/containerd-$(CONTAINERD_VERSION).linux-amd64.tar.gz | \
-	tar xzf - --strip-components=1 -C $(LIBEXECDIR) bin/containerd bin/containerd-shim bin/ctr
+	tar xzf - --strip-components=1 -C $(LIBEXECDIR) bin/containerd bin/containerd-shim bin/containerd-shim-runc-v1 bin/containerd-shim-runc-v2 bin/ctr
 	$(CURL) -o $(DOCDIR)/$@/LICENSE   https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/LICENSE
 	$(CURL) -o $(DOCDIR)/$@/NOTICE    https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/NOTICE
 	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/README.md
