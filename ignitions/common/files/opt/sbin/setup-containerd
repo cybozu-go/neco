@@ -17,6 +17,22 @@ for i in $(seq 20); do
 done
 
 for i in $(seq 20); do
+    rm -f /opt/sbin/containerd-shim-runc-v1
+    if curl -sfSL -o /opt/sbin/containerd-shim-runc-v1 {{ MyURL }}/api/v1/assets/containerd-shim-runc-v1; then
+        break
+    fi
+    sleep 5
+done
+
+for i in $(seq 20); do
+    rm -f /opt/sbin/containerd-shim-runc-v2
+    if curl -sfSL -o /opt/sbin/containerd-shim-runc-v2 {{ MyURL }}/api/v1/assets/containerd-shim-runc-v2; then
+        break
+    fi
+    sleep 5
+done
+
+for i in $(seq 20); do
     rm -f /opt/bin/ctr
     if curl -sfSL -o /opt/bin/ctr {{ MyURL }}/api/v1/assets/ctr; then
         break
@@ -34,5 +50,7 @@ done
 
 chmod a+x /opt/sbin/containerd
 chmod a+x /opt/sbin/containerd-shim
+chmod a+x /opt/sbin/containerd-shim-runc-v1
+chmod a+x /opt/sbin/containerd-shim-runc-v2
 chmod a+x /opt/bin/ctr
 chmod a+x /opt/bin/crictl
