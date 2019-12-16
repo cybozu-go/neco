@@ -10,3 +10,4 @@ for symlink in $(udevadm info -q symlink -n "${BASE_DEV}"); do
       ;;
   esac
 done
+return 0
