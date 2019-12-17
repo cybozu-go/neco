@@ -2,4 +2,3 @@ include: ../../common/common.yml
 files:
   - /etc/udev/crypt-base-path
   - /etc/udev/rules.d/99-neco.rules
-  - /etc/systemd/system/sabakan-cryptsetup.d/mkdir.conf
