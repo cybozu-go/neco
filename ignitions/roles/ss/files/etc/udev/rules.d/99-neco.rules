@@ -1,0 +1,1 @@
+SUBSYSTEM=="block", ENV{DM_UUID}=="CRYPT-*", ENV{DEVTYPE}=="disk", IMPORT{program}=="/etc/udev/crypt-base-path %s{dm/name}", SYMLINK+="crypt-disk/by-path/$env{CRYPT_BASE_PATH}"
