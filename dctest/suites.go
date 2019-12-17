@@ -15,6 +15,7 @@ var BootstrapSuite = func() {
 	Context("sabakan-state-setter", func() {
 		TestSabakanStateSetter(availableNodes)
 	})
+	Context("ignitions", TestIgnitions)
 	Context("cke", func() {
 		TestCKESetup()
 		TestCKE(availableNodes)

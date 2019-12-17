@@ -1,0 +1,14 @@
+#!/bin/sh
+BASE_DEV=$(cryptsetup status "${1}" | grep device | awk '{print $2}')
+
+for symlink in $(udevadm info -q symlink -n "${BASE_DEV}"); do
+  case ${symlink} in
+    disk/by-path/virtio-*)
+      ;;
+    disk/by-path/*)
+      echo "CRYPT_BASE_PATH=${symlink#disk/by-path/}"
+      ;;
+  esac
+done
+mkdir -p /dev/crypt-disk/by-path/
+exit 0
