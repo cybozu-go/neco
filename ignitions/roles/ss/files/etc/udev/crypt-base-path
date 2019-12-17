@@ -11,4 +11,4 @@ for symlink in $(udevadm info -q symlink -n "${BASE_DEV}"); do
   esac
 done
 mkdir -p /dev/crypt-disk/by-path/
-return 0
+exit 0
