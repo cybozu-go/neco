@@ -10,16 +10,16 @@ CURL=curl -Lsf
 NODE_EXPORTER_VERSION = 0.18.1
 
 ### for crictl
-CRITOOLS_VERSION = 1.15.0
+CRITOOLS_VERSION = 1.16.1
 
 ### for argocd
-ARGOCD_VERSION = 1.2.2
+ARGOCD_VERSION = 1.2.5
 
 ### for kubectl
-K8S_VERSION = 1.15.3
+K8S_VERSION = 1.16.4
 
 ### for lvmd
-TOPOLVM_VERSION = 0.1.1
+TOPOLVM_VERSION = 0.2.1
 
 ### for stern
 STERN_VERSION = 1.11.0
@@ -27,7 +27,7 @@ STERN_VERSION = 1.11.0
 ### for kustomize
 # Follow Argo CD installed kustomize version
 # https://github.com/cybozu/neco-containers/blob/master/argocd/Dockerfile#L32
-KUSTOMIZE_VERSION = 3.1.0
+KUSTOMIZE_VERSION = 3.2.0
 
 all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize
 
@@ -53,7 +53,7 @@ containerd:
 crictl:
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
 	$(CURL) -o crictl.tar.gz https://github.com/kubernetes-sigs/cri-tools/releases/download/v$(CRITOOLS_VERSION)/crictl-v$(CRITOOLS_VERSION)-linux-amd64.tar.gz
-	tar zxf crictl.tar.gz -C $(LIBEXECDIR)
+	tar zxf crictl.tar.gz --no-same-owner -C $(LIBEXECDIR)
 	rm -f crictl.tar.gz
 	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/LICENSE
 	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/README.md

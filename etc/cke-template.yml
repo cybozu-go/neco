@@ -23,7 +23,9 @@ pod_subnet: 10.64.0.0/14
 dns_service: internet-egress/unbound
 options:
   kube-api:
-    extra_args: ["--enable-admission-plugins=PodSecurityPolicy"]
+    extra_args:
+      - "--enable-admission-plugins=PodSecurityPolicy"
+      - "--feature-gates=EvenPodsSpread=true"
   kube-proxy:
     extra_args: ["--ipvs-strict-arp=true"]
   kube-scheduler:
@@ -41,6 +43,8 @@ options:
           "ignoredByScheduler": true
         }]
       }
+    extra_args:
+      - "--feature-gates=EvenPodsSpread=true"
   kubelet:
     extra_binds:
       - source: /var/lib/k8s-containerd
@@ -52,6 +56,6 @@ options:
     container_log_max_files: 10
   etcd:
     extra_args:
-      - --listen-metrics-urls=http://0.0.0.0:2381
+      - "--listen-metrics-urls=http://0.0.0.0:2381"
       # 8 * 1024 * 1024 * 1024 = 8589934592 = 8GB
-      - --quota-backend-bytes=8589934592
+      - "--quota-backend-bytes=8589934592"
