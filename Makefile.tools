@@ -13,7 +13,7 @@ NODE_EXPORTER_VERSION = 0.18.1
 CRITOOLS_VERSION = 1.16.1
 
 ### for argocd
-ARGOCD_VERSION = 1.2.5
+ARGOCD_VERSION = 1.3.6
 
 ### for kubectl
 K8S_VERSION = 1.16.4
@@ -27,7 +27,7 @@ STERN_VERSION = 1.11.0
 ### for kustomize
 # Follow Argo CD installed kustomize version
 # https://github.com/cybozu/neco-containers/blob/master/argocd/Dockerfile#L32
-KUSTOMIZE_VERSION = 3.2.0
+KUSTOMIZE_VERSION = 3.5.3
 
 all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize
 
@@ -86,10 +86,9 @@ stern:
 
 kustomize:
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
-	$(CURL) -o $(BINDIR)/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64
-	chmod +x $(BINDIR)/kustomize
-	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/v${KUSTOMIZE_VERSION}/README.md
+	$(CURL) https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz | tar xzf - -C $(BINDIR)
+	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
+	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
 
 clean:
 	rm -rf $(BUILDDIR)
