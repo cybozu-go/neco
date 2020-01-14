@@ -117,7 +117,7 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 		"--machine-type", cc.cfg.Compute.MachineType,
 		"--scopes", "https://www.googleapis.com/auth/devstorage.read_write")
 	if cc.cfg.Compute.ShutdownAt != "" {
-		log.Info("the instance will shutdown at "+cc.cfg.Compute.ShutdownAt, map[string]interface{}{})
+		log.Info("the instance will shutdown at UTC "+cc.cfg.Compute.ShutdownAt, map[string]interface{}{})
 		buf := new(bytes.Buffer)
 		err := startUpScriptTmpl.Execute(buf, struct {
 			ShutdownAt string
@@ -131,7 +131,10 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		gcmd = append(gcmd, "--metadata-from-file", "startup-script="+startUpScriptPath)
+		gcmd = append(gcmd,
+			"--metadata-from-file", "startup-script="+startUpScriptPath,
+			"--scopes", "compute-rw",
+		)
 	}
 	if cc.cfg.Compute.HostVM.Preemptible {
 		gcmd = append(gcmd, "--preemptible")
