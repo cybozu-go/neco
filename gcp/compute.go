@@ -38,6 +38,7 @@ const (
 	// MetadataKeyExtended is key for extended time in metadata
 	MetadataKeyExtended = "extended"
 	startUpScriptPath   = "/tmp/gcp-instance-startup.sh"
+	timeFormat          = "Jan 2, 2006 at 15:04"
 )
 
 // ComputeClient is GCP compute client using "gcloud compute"
@@ -104,10 +105,42 @@ func (cc *ComputeClient) CreateVMXEnabledInstance(ctx context.Context) error {
 	return c.Run()
 }
 
+func convertLocalTimeToUTC(timezone, shotdownAt string) (string, error) {
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		return "", err
+	}
+	// year and date will be ignored
+	t, err := time.ParseInLocation(timeFormat, "Jul 9, 2012 at "+shotdownAt, loc)
+	if err != nil {
+		return "", err
+	}
+	utcTime := t.UTC().Format("15:04")
+	return utcTime, nil
+}
+
 // CreateHostVMInstance creates host-vm instance
 func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 	gcmd := cc.gCloudComputeInstances()
 	bootDiskSize := strconv.Itoa(cc.cfg.Compute.BootDiskSizeGB) + "GB"
+	shotdownAt, err := convertLocalTimeToUTC(cc.cfg.Compute.AutoShutdown.Timezone, cc.cfg.Compute.AutoShutdown.ShutdownAt)
+	if err != nil {
+		return err
+	}
+	log.Info("the instance will shutdown at UTC "+shotdownAt, map[string]interface{}{})
+	buf := new(bytes.Buffer)
+	err = startUpScriptTmpl.Execute(buf, struct {
+		ShutdownAt string
+	}{
+		ShutdownAt: shotdownAt,
+	})
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(startUpScriptPath, buf.Bytes(), 0755)
+	if err != nil {
+		return err
+	}
 	gcmd = append(gcmd, "create", cc.instance,
 		"--zone", cc.cfg.Common.Zone,
 		"--image", cc.image,
@@ -115,27 +148,9 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 		"--boot-disk-size", bootDiskSize,
 		"--local-ssd", "interface=scsi",
 		"--machine-type", cc.cfg.Compute.MachineType,
-		"--scopes", "https://www.googleapis.com/auth/devstorage.read_write")
-	if cc.cfg.Compute.ShutdownAt != "" {
-		log.Info("the instance will shutdown at UTC "+cc.cfg.Compute.ShutdownAt, map[string]interface{}{})
-		buf := new(bytes.Buffer)
-		err := startUpScriptTmpl.Execute(buf, struct {
-			ShutdownAt string
-		}{
-			ShutdownAt: cc.cfg.Compute.ShutdownAt,
-		})
-		if err != nil {
-			return err
-		}
-		err = ioutil.WriteFile(startUpScriptPath, buf.Bytes(), 0755)
-		if err != nil {
-			return err
-		}
-		gcmd = append(gcmd,
-			"--metadata-from-file", "startup-script="+startUpScriptPath,
-			"--scopes", "compute-rw",
-		)
-	}
+		"--metadata-from-file", "startup-script="+startUpScriptPath,
+		"--scopes", "compute-rw,storage-rw",
+	)
 	if cc.cfg.Compute.HostVM.Preemptible {
 		gcmd = append(gcmd, "--preemptible")
 	}
