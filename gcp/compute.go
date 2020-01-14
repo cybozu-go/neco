@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -17,11 +19,25 @@ import (
 	"github.com/cybozu-go/well"
 )
 
+var startUpScriptTmpl = template.Must(template.New("").Parse(`#!/bin/sh
+
+STARTUP_PATH=/tmp/startup.sh
+cat << 'EOF' > $STARTUP_PATH
+export NAME=$(curl -X GET http://metadata.google.internal/computeMetadata/v1/instance/name -H 'Metadata-Flavor: Google')
+export ZONE=$(curl -X GET http://metadata.google.internal/computeMetadata/v1/instance/zone -H 'Metadata-Flavor: Google')
+/snap/bin/gcloud --quiet compute instances delete $NAME --zone=$ZONE
+EOF
+chmod 755 $STARTUP_PATH
+
+at {{ .ShutdownAt }} -f $STARTUP_PATH
+`))
+
 const (
 	retryCount   = 300
 	imageLicense = "https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx"
 	// MetadataKeyExtended is key for extended time in metadata
 	MetadataKeyExtended = "extended"
+	startUpScriptPath   = "/tmp/gcp-instance-startup.sh"
 )
 
 // ComputeClient is GCP compute client using "gcloud compute"
@@ -100,6 +116,23 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 		"--local-ssd", "interface=scsi",
 		"--machine-type", cc.cfg.Compute.MachineType,
 		"--scopes", "https://www.googleapis.com/auth/devstorage.read_write")
+	if cc.cfg.Compute.ShutdownAt != "" {
+		log.Info("the instance will shutdown at "+cc.cfg.Compute.ShutdownAt, map[string]interface{}{})
+		buf := new(bytes.Buffer)
+		err := startUpScriptTmpl.Execute(buf, struct {
+			ShutdownAt string
+		}{
+			ShutdownAt: cc.cfg.Compute.ShutdownAt,
+		})
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(startUpScriptPath, buf.Bytes(), 0755)
+		if err != nil {
+			return err
+		}
+		gcmd = append(gcmd, "--metadata-from-file", "startup-script="+startUpScriptPath)
+	}
 	if cc.cfg.Compute.HostVM.Preemptible {
 		gcmd = append(gcmd, "--preemptible")
 	}
