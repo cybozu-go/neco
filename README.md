@@ -141,9 +141,6 @@ The virtual data center implements the aforementioned leaf-spine networks with B
 To create the virtual data center, run the following commands in a Ubuntu or Debian OS:
 
 ```console
-(Adjust /etc/docker/daemon.json to specify '"bip": "172.18.0.1/16"' and restart the Docker daemon.
- See https://github.com/cybozu-go/neco/blob/master/gcp/public/etc/docker/daemon.json .)
-
 $ sudo add-apt-repository ppa:smoser/swtpm
 $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7AD8C79D
 $ sudo add-apt-repository "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu bionic main"
