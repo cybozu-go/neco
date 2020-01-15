@@ -37,7 +37,6 @@ const (
 	imageLicense = "https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx"
 	// MetadataKeyExtended is key for extended time in metadata
 	MetadataKeyExtended = "extended"
-	startUpScriptPath   = "/tmp/gcp-instance-startup.sh"
 	timeFormat          = "2006-01-02 15:04:05"
 )
 
@@ -139,8 +138,16 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(startUpScriptPath, buf.Bytes(), 0755)
+	tmpfile, err := ioutil.TempFile("/tmp", "gcp-start-up-script-*.sh")
 	if err != nil {
+		return err
+	}
+	log.Info("start up script for "+tmpfile.Name(), map[string]interface{}{})
+	_, err = tmpfile.Write(buf.Bytes())
+	if err != nil {
+		return err
+	}
+	if err := tmpfile.Close(); err != nil {
 		return err
 	}
 	gcmd = append(gcmd, "create", cc.instance,
@@ -150,7 +157,7 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 		"--boot-disk-size", bootDiskSize,
 		"--local-ssd", "interface=scsi",
 		"--machine-type", cc.cfg.Compute.MachineType,
-		"--metadata-from-file", "startup-script="+startUpScriptPath,
+		"--metadata-from-file", "startup-script="+tmpfile.Name(),
 		"--scopes", "compute-rw,storage-rw",
 	)
 	if cc.cfg.Compute.HostVM.Preemptible {
