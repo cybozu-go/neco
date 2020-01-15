@@ -38,7 +38,7 @@ const (
 	// MetadataKeyExtended is key for extended time in metadata
 	MetadataKeyExtended = "extended"
 	startUpScriptPath   = "/tmp/gcp-instance-startup.sh"
-	timeFormat          = "Jan 2, 2006 at 15:04"
+	timeFormat          = "2006-01-02 15:04:05"
 )
 
 // ComputeClient is GCP compute client using "gcloud compute"
@@ -105,13 +105,15 @@ func (cc *ComputeClient) CreateVMXEnabledInstance(ctx context.Context) error {
 	return c.Run()
 }
 
-func convertLocalTimeToUTC(timezone, shotdownAt string) (string, error) {
+func convertLocalTimeToUTC(timezone, shutdownAt string) (string, error) {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {
 		return "", err
 	}
-	// year and date will be ignored
-	t, err := time.ParseInLocation(timeFormat, "Jul 9, 2012 at "+shotdownAt, loc)
+	now := time.Now().In(loc)
+	localTime := fmt.Sprintf("%d-%02d-%02d "+shutdownAt+":00",
+		now.Year(), now.Month(), now.Day())
+	t, err := time.ParseInLocation(timeFormat, localTime, loc)
 	if err != nil {
 		return "", err
 	}

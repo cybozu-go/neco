@@ -67,6 +67,7 @@ type HostVMConfig struct {
 	Preemptible    bool `yaml:"preemptible"`
 }
 
+// AutoShutdownConfig is configuration for automatically shutting down host-vm instance
 type AutoShutdownConfig struct {
 	Timezone   string `yaml:"timezone"`
 	ShutdownAt string `yaml:"shutdown-at"`
