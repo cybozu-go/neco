@@ -142,12 +142,13 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		tmpfile.Close()
+		os.Remove(tmpfile.Name())
+	}()
 	log.Info("start up script for "+tmpfile.Name(), map[string]interface{}{})
 	_, err = tmpfile.Write(buf.Bytes())
 	if err != nil {
-		return err
-	}
-	if err := tmpfile.Close(); err != nil {
 		return err
 	}
 	gcmd = append(gcmd, "create", cc.instance,
