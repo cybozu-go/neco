@@ -38,6 +38,13 @@ Fields are common configuration for GCE provisioning.
 | `boot-disk-sizeGB`  | int      | `20`    | Root filesystem size in GB    |
 | `optional-packages` | []string | `[]`    | List of optional APT packages |
 
+Fields in `auto-shutdown` are configuration for deleting `host-vm` instance.
+
+| Field         | Type   | Default      | Description                        |
+| ------------- | ------ | ------------ | ---------------------------------- |
+| `timezone`    | string | `Asia/Tokyo` | Timezone of `shutdown-at`          |
+| `shutdown-at` | string | `21:00`      | Time of shutdown with hh:mm format |
+
 Fields in `host-vm` are configuration for `host-vm` instance.
 
 | Field              | Type | Default | Description                                                                                                                                                              |

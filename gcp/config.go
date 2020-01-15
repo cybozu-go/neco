@@ -14,6 +14,10 @@ const (
 	// DefaultPreemptible is default value for enabling preemptible
 	// https://cloud.google.com/compute/docs/instances/preemptible
 	defaultPreemptible = false
+	// DefaultShutdownAt is default time for instance auto-shutdown
+	defaultShutdownAt = "21:00"
+	// DefaultTimeZone is default timezone for instance auto-shutdown
+	defaultTimeZone = "Asia/Tokyo"
 )
 
 // Config is configuration for necogcp command and GAE app
@@ -44,10 +48,11 @@ type ShutdownConfig struct {
 
 // ComputeConfig is configuration for GCE
 type ComputeConfig struct {
-	MachineType      string       `yaml:"machine-type"`
-	BootDiskSizeGB   int          `yaml:"boot-disk-sizeGB"`
-	OptionalPackages []string     `yaml:"optional-packages"`
-	HostVM           HostVMConfig `yaml:"host-vm"`
+	MachineType      string             `yaml:"machine-type"`
+	BootDiskSizeGB   int                `yaml:"boot-disk-sizeGB"`
+	OptionalPackages []string           `yaml:"optional-packages"`
+	HostVM           HostVMConfig       `yaml:"host-vm"`
+	AutoShutdown     AutoShutdownConfig `yaml:"auto-shutdown"`
 
 	// backward compatibility
 	VMXEnabled struct {
@@ -60,6 +65,12 @@ type HostVMConfig struct {
 	HomeDisk       bool `yaml:"home-disk"`
 	HomeDiskSizeGB int  `yaml:"home-disk-sizeGB"`
 	Preemptible    bool `yaml:"preemptible"`
+}
+
+// AutoShutdownConfig is configuration for automatically shutting down host-vm instance
+type AutoShutdownConfig struct {
+	Timezone   string `yaml:"timezone"`
+	ShutdownAt string `yaml:"shutdown-at"`
 }
 
 // NewConfig returns Config
@@ -77,6 +88,10 @@ func NewConfig() (*Config, error) {
 		},
 		Compute: ComputeConfig{
 			BootDiskSizeGB: defaultBootDiskSizeGB,
+			AutoShutdown: AutoShutdownConfig{
+				Timezone:   defaultTimeZone,
+				ShutdownAt: defaultShutdownAt,
+			},
 			HostVM: HostVMConfig{
 				HomeDisk:       defaultHomeDisk,
 				HomeDiskSizeGB: defaultHomeDiskSizeGB,

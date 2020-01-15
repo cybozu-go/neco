@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -17,11 +19,25 @@ import (
 	"github.com/cybozu-go/well"
 )
 
+var startUpScriptTmpl = template.Must(template.New("").Parse(`#!/bin/sh
+
+STARTUP_PATH=/tmp/startup.sh
+cat << 'EOF' > $STARTUP_PATH
+export NAME=$(curl -X GET http://metadata.google.internal/computeMetadata/v1/instance/name -H 'Metadata-Flavor: Google')
+export ZONE=$(curl -X GET http://metadata.google.internal/computeMetadata/v1/instance/zone -H 'Metadata-Flavor: Google')
+/snap/bin/gcloud --quiet compute instances delete $NAME --zone=$ZONE
+EOF
+chmod 755 $STARTUP_PATH
+
+at {{ .ShutdownAt }} -f $STARTUP_PATH
+`))
+
 const (
 	retryCount   = 300
 	imageLicense = "https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx"
 	// MetadataKeyExtended is key for extended time in metadata
 	MetadataKeyExtended = "extended"
+	timeFormat          = "2006-01-02 15:04:05"
 )
 
 // ComputeClient is GCP compute client using "gcloud compute"
@@ -88,10 +104,53 @@ func (cc *ComputeClient) CreateVMXEnabledInstance(ctx context.Context) error {
 	return c.Run()
 }
 
+func convertLocalTimeToUTC(timezone, shutdownAt string) (string, error) {
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		return "", err
+	}
+	now := time.Now().In(loc)
+	localTime := fmt.Sprintf("%d-%02d-%02d "+shutdownAt+":00",
+		now.Year(), now.Month(), now.Day())
+	t, err := time.ParseInLocation(timeFormat, localTime, loc)
+	if err != nil {
+		return "", err
+	}
+	utcTime := t.UTC().Format("15:04")
+	return utcTime, nil
+}
+
 // CreateHostVMInstance creates host-vm instance
 func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 	gcmd := cc.gCloudComputeInstances()
 	bootDiskSize := strconv.Itoa(cc.cfg.Compute.BootDiskSizeGB) + "GB"
+	shotdownAt, err := convertLocalTimeToUTC(cc.cfg.Compute.AutoShutdown.Timezone, cc.cfg.Compute.AutoShutdown.ShutdownAt)
+	if err != nil {
+		return err
+	}
+	log.Info("the instance will shutdown at UTC "+shotdownAt, map[string]interface{}{})
+	buf := new(bytes.Buffer)
+	err = startUpScriptTmpl.Execute(buf, struct {
+		ShutdownAt string
+	}{
+		ShutdownAt: shotdownAt,
+	})
+	if err != nil {
+		return err
+	}
+	tmpfile, err := ioutil.TempFile("/tmp", "gcp-start-up-script-*.sh")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		tmpfile.Close()
+		os.Remove(tmpfile.Name())
+	}()
+	log.Info("start up script for "+tmpfile.Name(), map[string]interface{}{})
+	_, err = tmpfile.Write(buf.Bytes())
+	if err != nil {
+		return err
+	}
 	gcmd = append(gcmd, "create", cc.instance,
 		"--zone", cc.cfg.Common.Zone,
 		"--image", cc.image,
@@ -99,7 +158,9 @@ func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 		"--boot-disk-size", bootDiskSize,
 		"--local-ssd", "interface=scsi",
 		"--machine-type", cc.cfg.Compute.MachineType,
-		"--scopes", "https://www.googleapis.com/auth/devstorage.read_write")
+		"--metadata-from-file", "startup-script="+tmpfile.Name(),
+		"--scopes", "compute-rw,storage-rw",
+	)
 	if cc.cfg.Compute.HostVM.Preemptible {
 		gcmd = append(gcmd, "--preemptible")
 	}
