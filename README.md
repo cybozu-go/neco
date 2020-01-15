@@ -141,10 +141,25 @@ The virtual data center implements the aforementioned leaf-spine networks with B
 To create the virtual data center, run the following commands in a Ubuntu or Debian OS:
 
 ```console
+(Adjust /etc/docker/daemon.json to specify '"bip": "172.18.0.1/16"' and restart the Docker daemon.
+ See https://github.com/cybozu-go/neco/blob/master/gcp/public/etc/docker/daemon.json .)
+
+$ sudo add-apt-repository ppa:smoser/swtpm
+$ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7AD8C79D
+$ sudo add-apt-repository "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu bionic main"
+$ wget -O - https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
 $ sudo apt update
-$ sudo apt install -y qemu qemu-kvm socat picocom cloud-utils rkt
+$ sudo apt install -y build-essential systemd-container lldpd qemu qemu-kvm socat picocom swtpm cloud-utils jq libgpgme11 freeipmi-tools unzip skopeo libdevmapper-dev libgpgme-dev libostree-dev fakeroot docker-ce docker-ce-cli containerd.io
+$ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios.bin
+$ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios-256k.bin
+$ sudo install -m 0644 -b bios.bin bios-256k.bin /usr/share/seabios/
+$ wget https://github.com/rkt/rkt/releases/download/v1.30.0/rkt_1.30.0-1_amd64.deb
+$ sudo dpkg -i rkt_1.30.0-1_amd64.deb
 $ wget https://github.com/cybozu-go/placemat/releases/download/v1.4.0/placemat_1.4.0_amd64.deb
 $ sudo dpkg -i placemat_1.4.0_amd64.deb
+$ wget https://github.com/coreos/container-linux-config-transpiler/releases/download/v0.9.0/ct-v0.9.0-x86_64-unknown-linux-gnu
+$ sudo install ct-v0.9.0-x86_64-unknown-linux-gnu /usr/local/bin/ct
 $ git clone https://github.com/cybozu-go/neco
 $ cd neco/dctest
 $ make setup
@@ -154,6 +169,14 @@ $ make test
 
 - To login a boot server in the virtual data center, run `./dcssh boot-0`.
 - To stop and delete the virtual data center, run `make stop`.
+
+The setup commands above are examined on a GCP VM based on the Ubuntu 18.04 disk image.
+Some more setup steps are needed for the GCP environment.
+
+- [Enable nested virtualization by creating a custom image](https://cloud.google.com/compute/docs/instances/enable-nested-virtualization-vm-instances).
+- Mount an additional local SSD scratch disk at `/var/scratch`.
+- Stop and disable `systemd-resolved.service` and [prepare `resolv.conf`](https://cloud.google.com/compute/docs/internal-dns).
+- [Install the latest Go](https://golang.org/dl/) and set `GOPATH`.
 
 ### Large tests
 
