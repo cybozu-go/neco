@@ -138,7 +138,7 @@ Since Neco is the system to bootstrap and maintain an on-premise data center, th
 To simulate an on-premise data center, we have created [placemat][], a tool to construct a virtual data center using containers, virtual machines and Linux network stacks.
 
 The virtual data center implements the aforementioned leaf-spine networks with BGP routers.
-To create the virtual data center, run the following commands in a Ubuntu or Debian OS:
+To create the virtual data center, run the following commands on Ubuntu 18.04:
 
 ```console
 $ sudo add-apt-repository ppa:smoser/swtpm
@@ -155,8 +155,6 @@ $ wget https://github.com/rkt/rkt/releases/download/v1.30.0/rkt_1.30.0-1_amd64.d
 $ sudo dpkg -i rkt_1.30.0-1_amd64.deb
 $ wget https://github.com/cybozu-go/placemat/releases/download/v1.4.0/placemat_1.4.0_amd64.deb
 $ sudo dpkg -i placemat_1.4.0_amd64.deb
-$ wget https://github.com/coreos/container-linux-config-transpiler/releases/download/v0.9.0/ct-v0.9.0-x86_64-unknown-linux-gnu
-$ sudo install ct-v0.9.0-x86_64-unknown-linux-gnu /usr/local/bin/ct
 $ git clone https://github.com/cybozu-go/neco
 $ cd neco/dctest
 $ make setup
@@ -171,6 +169,7 @@ The setup commands above are examined on a GCP VM based on the Ubuntu 18.04 disk
 Some more setup steps are needed for the GCP environment.
 
 - [Enable nested virtualization by creating a custom image](https://cloud.google.com/compute/docs/instances/enable-nested-virtualization-vm-instances).
+- Select a machine configuration with many vCPUs and much memory, e.g. n1-standard-32.
 - Mount an additional local SSD scratch disk at `/var/scratch`.
 - Stop and disable `systemd-resolved.service` and [prepare `resolv.conf`](https://cloud.google.com/compute/docs/internal-dns).
 - [Install the latest Go](https://golang.org/dl/) and set `GOPATH`.
