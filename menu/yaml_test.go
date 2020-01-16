@@ -38,7 +38,7 @@ spec:
     loadbalancer: 10.72.32.0/20
     bastion: 10.72.48.0/26
     ingress: 10.72.48.64/26
-    global: 172.17.0.0/24
+    global: 172.19.0.0/24
 `,
 			expected: NetworkMenu{
 				IPAMConfigFile: "example/ipam.json",
@@ -57,7 +57,7 @@ spec:
 				Bastion:        mustParseCIDR("10.72.48.0/26"),
 				LoadBalancer:   mustParseCIDR("10.72.32.0/20"),
 				Ingress:        mustParseCIDR("10.72.48.64/26"),
-				Global:         mustParseCIDR("172.17.0.0/24"),
+				Global:         mustParseCIDR("172.19.0.0/24"),
 			},
 		},
 	}
@@ -84,7 +84,7 @@ spec:
     loadbalancer: 10.72.32.0/20
     bastion: 10.72.48.0/26
     ingress: 10.72.48.64/26
-    global: 172.17.0.0/24
+    global: 172.19.0.0/24
 `,
 		`
 # Invalid IP address @ spine-tor

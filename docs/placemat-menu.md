@@ -79,7 +79,7 @@ spec:
     bastion: 10.72.48.0/26
     loadbalancer: 10.72.32.0/20
     ingress: 10.72.48.64/26
-    global: 172.17.0.0/26
+    global: 172.19.0.0/26
 ```
 
 - `ipam-config`: The path of configuration file of IP address assignment.
