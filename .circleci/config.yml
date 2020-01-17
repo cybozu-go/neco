@@ -70,9 +70,13 @@ jobs:
       - run: time make SUDO="" setup
       - run: time make test
       - run: time make deb SUDO="" FAKEROOT=
-      - run: go install -mod=vendor ./pkg/generate-artifacts/
-      - run: generate-artifacts > /tmp/artifacts.go
-      - run: diff -u artifacts.go /tmp/artifacts.go
+      - run:
+          command: |
+            if [ "${CIRCLE_BRANCH}" != "master" ]; then
+              go install -mod=vendor ./pkg/generate-artifacts/
+              generate-artifacts > /tmp/artifacts.go
+              diff -u artifacts.go /tmp/artifacts.go
+            fi
 
   build_release:
     docker:
