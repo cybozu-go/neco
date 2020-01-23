@@ -1,5 +1,7 @@
 #!/bin/sh
-BASE_DEV=$(cryptsetup status "${1}" | grep device | awk '{print $2}')
+
+DISK_DEV=$(dmsetup deps "/dev/$1" -o blkdevname | sed -e 's/.*(\(.*\))/\1/')
+BASE_DEV=$(cryptsetup status "/dev/${DISK_DEV}" | grep device | awk '{print $2}')
 
 for symlink in $(udevadm info -q symlink -n "${BASE_DEV}"); do
   case ${symlink} in
@@ -10,5 +12,5 @@ for symlink in $(udevadm info -q symlink -n "${BASE_DEV}"); do
       ;;
   esac
 done
-mkdir -p /dev/crypt-disk/by-path/
+mkdir -p /dev/crypt-part/by-path/
 exit 0
