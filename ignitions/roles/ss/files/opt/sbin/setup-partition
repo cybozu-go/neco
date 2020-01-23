@@ -1,0 +1,33 @@
+#!/bin/sh -u
+
+# debug
+set -x
+
+is_target_device() {
+    DEV=$(basename $1)
+    if [ $DEV = 'vda' ] || [ $DEV = 'vdb' ]; then
+        # in the case of qemu's system disks, enter here
+        echo 'false'
+    elif [ -e /sys/block/$DEV/device/model ] &&
+         grep -q DELLBOSS /sys/block/$DEV/device/model; then
+        # in the case of BOSS, enter here
+        echo 'false'
+    else
+        echo 'true'
+    fi
+}
+
+for dm in $(ls /dev/dm-*); do
+    DEV_PATH=$(cryptsetup status $dm | grep device | awk '{print $2}')
+    if [ -n "$DEV_PATH" ]; then
+        if [ $(is_target_device $DEV_PATH) = 'true' ]; then
+            if parted $dm -s print; then
+                # is a partition exists already
+                partprobe $dm
+            else
+                # create a partition
+                parted -s -a optimal -- $dm mklabel gpt mkpart primary 1MiB -0
+            fi
+        fi
+    fi
+done
