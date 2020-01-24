@@ -23,11 +23,11 @@ func TestIgnitions() {
 		Expect(devices).To(HaveLen(2))
 
 		By("checking correspondence on device and partition")
-		stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+machines[0].Spec.IPv4[0], "sudo", "dmsetup", "deps", filepath.Join(cryptPartDir, "pci-0000\\:00\\:0a.0-p1"), "-o", "devname")
+		stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "--", "cybozu@"+machines[0].Spec.IPv4[0], "sudo", "dmsetup", "deps", filepath.Join(cryptPartDir, "pci-0000\\:00\\:0a.0-p1"), "-o", "devname")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		Expect(stdout).Should(ContainElement("crypt-vdc"))
 
-		stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+machines[0].Spec.IPv4[0], "sudo", "dmsetup", "deps", filepath.Join(cryptPartDir, "pci-0000\\:00\\:0b.0-p1"), "-o", "devname")
+		stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "--", "cybozu@"+machines[0].Spec.IPv4[0], "sudo", "dmsetup", "deps", filepath.Join(cryptPartDir, "pci-0000\\:00\\:0b.0-p1"), "-o", "devname")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		Expect(stdout).Should(ContainElement("crypt-vdd"))
 	})
