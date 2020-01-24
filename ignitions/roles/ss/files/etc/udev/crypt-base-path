@@ -1,10 +1,15 @@
 #!/bin/sh
 
-DISK_DEV=$(dmsetup deps "/dev/$1" -o blkdevname | sed -e 's/.*(\(.*\))/\1/')
+SCRIPT_NAME=$(basename $0)
+NAME=$1
+UUID=$2
+
+DISK_DEV=$(dmsetup deps -u $UUID -o blkdevname | sed -e 's/.*(\(.*\))/\1/')
 BASE_DEV=$(cryptsetup status "/dev/${DISK_DEV}" | grep device | awk '{print $2}')
 UDEV_LINKS=$(udevadm info -q symlink -n ${BASE_DEV})
-logger "$(basename $0) $1 DISK_DEV:$DISK_DEV BASE_DEV:$BASE_DEV"
-logger "$(basename $0) $1 UDEV_LINKS:$UDEV_LINKS"
+
+logger "$SCRIPT_NAME $NAME DISK_DEV:$DISK_DEV BASE_DEV:$BASE_DEV"
+logger "$SCRIPT_NAME $NAME UDEV_LINKS:$UDEV_LINKS"
 
 for symlink in $UDEV_LINKS; do
   case ${symlink} in
