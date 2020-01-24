@@ -1,4 +1,4 @@
-name: dctest
+name: neco
 nodes:
 - user: cybozu
   control_plane: true
