@@ -49,7 +49,7 @@ func testMyCluster(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	clusterFile = f.Name()
+	ClusterFile = f.Name()
 
 	cluster, err := MyCluster()
 	if err != nil {

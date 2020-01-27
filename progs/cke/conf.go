@@ -40,6 +40,12 @@ func GenerateCKETemplate(ctx context.Context, st storage.Storage, ckeTemplate []
 		return nil, err
 	}
 
+	name, err := neco.MyCluster()
+	if err != nil {
+		return nil, err
+	}
+	tmpl.Name = name
+
 	weights, err := st.GetCKEWeight(ctx)
 	if err != nil && err != storage.ErrNotFound {
 		return nil, err

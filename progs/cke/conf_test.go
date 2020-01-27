@@ -3,6 +3,7 @@ package cke
 import (
 	"bytes"
 	"context"
+	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -45,6 +46,17 @@ func TestGenerateConf(t *testing.T) {
 
 func TestGenerateCKETemplate(t *testing.T) {
 	t.Parallel()
+
+	f, err := ioutil.TempFile("", "test-generate-cke-template")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	_, err = f.WriteString("test\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	neco.ClusterFile = f.Name()
 
 	defaultTemplate := `
 taint_control_plane: false
@@ -149,7 +161,7 @@ nodes:
     cke.cybozu.com/role: ss
     cke.cybozu.com/weight: "10"` + defaultTemplate
 	expected := cke.NewCluster()
-	err := yaml.Unmarshal([]byte(expectedTemplate), expected)
+	err = yaml.Unmarshal([]byte(expectedTemplate), expected)
 	if err != nil {
 		t.Fatal(err)
 	}

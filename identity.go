@@ -17,7 +17,7 @@ func MyLRN() (int, error) {
 
 // MyCluster returns cluster name of own node
 func MyCluster() (string, error) {
-	data, err := ioutil.ReadFile(clusterFile)
+	data, err := ioutil.ReadFile(ClusterFile)
 	if err != nil {
 		return "", err
 	}
