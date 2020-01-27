@@ -116,7 +116,7 @@ const (
 // File locations
 var (
 	rackFile    = filepath.Join(NecoDir, "rack")
-	clusterFile = filepath.Join(NecoDir, "cluster")
+	ClusterFile = filepath.Join(NecoDir, "cluster")
 
 	ServerCAFile   = "/usr/local/share/ca-certificates/neco.crt"
 	ServerCertFile = filepath.Join(NecoDir, "server.crt")

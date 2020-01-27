@@ -153,6 +153,8 @@ Synopsis
 
 ### CKE related functions
 
+The name of the cluster in [cke-template.yml](../etc/cke-template.yml) will be overwritten with the value read from `/etc/neco/cluster`.
+
 The weight is values of each role for **overriding** `labels["cke.cybozu.com/weight"]` values in [cke-template.yml](../etc/cke-template.yml).
 When commands as follows run `ckecli sabakan set-template` internally, read etcd saved weight values and then generate `cke-template.yml`.
 
