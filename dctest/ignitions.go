@@ -1,34 +1,66 @@
 package dctest
 
 import (
-	"path/filepath"
+	"regexp"
 	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
+func parentDev(str string) string {
+	re := regexp.MustCompile(`^.*\((.*)\)$`)
+	tmp := re.FindStringSubmatch(strings.TrimSpace(str))
+	if len(tmp) != 2 {
+		return ""
+	}
+	return tmp[1]
+}
+
 // TestIgnitions tests for ignitions functions.
 func TestIgnitions() {
-	It("should create by-path based name for partitions on encrypted devices", func() {
+	const cryptPartDir = "/dev/crypt-part/by-path/"
+
+	targetSymlinks := []struct {
+		symlink string
+		diskDev string
+	}{
+		{
+			symlink: cryptPartDir + "pci-0000:00:0a.0-p1",
+			diskDev: "vdc",
+		},
+		{
+			symlink: cryptPartDir + "pci-0000:00:0b.0-p1",
+			diskDev: "vdd",
+		},
+	}
+
+	It("should create by-path based symlinks for partitions on encrypted devices", func() {
+		By("getting SS Node IP address")
 		machines, err := getMachinesSpecifiedRole("ss")
 		Expect(err).NotTo(HaveOccurred())
 		ssNodeIP := machines[0].Spec.IPv4[0]
-		cryptPartDir := "/dev/crypt-part/by-path/"
 
-		By("checking count of symbols")
+		By("checking the number of symlinks")
 		stdout, stderr, err := execAt(boot0, "ckecli", "ssh", "cybozu@"+ssNodeIP, "ls", cryptPartDir)
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		devices := strings.Fields(strings.TrimSpace(string(stdout)))
-		Expect(devices).To(HaveLen(2))
+		Expect(devices).To(HaveLen(len(targetSymlinks)))
 
-		By("checking correspondence on device and partition")
-		stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "--", "cybozu@"+ssNodeIP, "sudo", "dmsetup", "deps", filepath.Join(cryptPartDir, "pci-0000\\:00\\:0a.0-p1"), "-o", "devname")
-		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		Expect(string(stdout)).Should(ContainSubstring("crypt-vdc"))
+		for _, t := range targetSymlinks {
+			By("checking the disk device of " + t.symlink)
 
-		stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "--", "cybozu@"+ssNodeIP, "sudo", "dmsetup", "deps", filepath.Join(cryptPartDir, "pci-0000\\:00\\:0b.0-p1"), "-o", "devname")
-		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		Expect(string(stdout)).Should(ContainSubstring("crypt-vdd"))
+			By("getting the crypt volume")
+			stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+ssNodeIP, "--", "sudo", "dmsetup", "deps", t.symlink, "-o", "devname")
+			Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+			cryptDev := parentDev(string(stdout))
+			Expect(cryptDev).NotTo(BeEmpty())
+
+			By("getting the disk device")
+			stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+ssNodeIP, "--", "sudo", "dmsetup", "deps", cryptDev, "-o", "devname")
+			Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+			actualDiskDev := parentDev(string(stdout))
+			Expect(actualDiskDev).To(Equal(t.diskDev))
+		}
 	})
 }
