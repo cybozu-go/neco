@@ -8,11 +8,11 @@ output_log() {
   logger "$SCRIPT_NAME $NAME $1"
 }
 
-DISK_DEV=$(dmsetup deps -u $UUID -o blkdevname | sed -e 's/.*(\(.*\))/\1/')
-BASE_DEV=$(cryptsetup status "/dev/${DISK_DEV}" | grep device | awk '{print $2}')
-UDEV_LINKS=$(udevadm info -q symlink -n ${BASE_DEV})
+CRYPT_DEV=$(dmsetup deps -u $UUID -o devname | sed -e 's/.*(\(.*\))/\1/')
+DISK_DEV=$(dmsetup deps $CRYPT_DEV -o devname | sed -e 's/.*(\(.*\))/\1/')
+UDEV_LINKS=$(udevadm info -q symlink -n $DISK_DEV)
 
-output_log "DISK_DEV:$DISK_DEV BASE_DEV:$BASE_DEV"
+output_log "CRYPT_DEV: $CRYPT_DEV DISK_DEV:$DISK_DEV"
 output_log "UDEV_LINKS:$UDEV_LINKS"
 
 for symlink in $UDEV_LINKS; do
