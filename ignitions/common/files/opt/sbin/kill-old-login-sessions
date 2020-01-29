@@ -1,0 +1,16 @@
+#!/bin/sh -e
+
+
+sessions=$(loginctl list-sessions --no-legend | sed -e 's/^ *//g' | cut -f 1 -d ' ')
+
+for session in $sessions
+do
+  timestamp=$(loginctl show-session -p Timestamp --value $session)
+  now=$(date +%s)
+  target=$(date +%s --date "$timestamp")
+  diff=$(( $now - $target ))
+  echo $diff
+  if [ $diff -gt 8640000 ]; then
+    loginctl kill-session $session
+  fi
+done
