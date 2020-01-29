@@ -182,7 +182,7 @@ example is assigned addresses when `10.0.1.0` is specified:
 
 Inventory resource presents the specifications of the nodes excluding boot
 servers.  This resource contains the number of the computation server (cs) and
-storage server (cs) in the rack.  The rack must have a boot server, so the
+storage server (ss) in the rack.  The rack must have a boot server, so the
 resource does not contain a configuration for the boot server.
 
 ```yaml
