@@ -43,6 +43,10 @@ The boot process runs roughly as follows:
 
 There are clear and strong reasons why the process is ordered this way.
 
+In addition to the above, the below processes run just on storage servers(`ss`):
+
+1. Prepare partitions on encrypted disks (After setup dm-crypt volumes using `sabakan-cryptsetup`)
+
 ### Configure network with DHCP
 
 * Why the network need to be configured with DHCP and later be re-configured?
@@ -161,6 +165,18 @@ There are clear and strong reasons why the process is ordered this way.
 
     Because running `serf` will tell sabakan that the machine becomes running
     and available.
+
+### Prepare partitions on encrypted disks
+
+* Why partitions are created?
+
+    Because devices on `ss` are used as storage disks for `OSD` pod of `Rook/Ceph`.
+
+* How partitions are created?
+
+    By running the  `setup-partition` as a one-shot service on `ss`.
+    Partitions are created in encrypted devices exclude BOSS or a partition existed already.
+    And aliases specific to the device are made using `udev`.
 
 systemd targets and ordering dependencies
 -----------------------------------------
