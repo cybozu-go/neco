@@ -1,10 +1,8 @@
 version: 2.1
 commands:
-  dctest-command:
-    description: "datacenter test"
+  run-dctest-bootstrap:
+    description: "run datacenter test (bootstrap)"
     parameters:
-      suite:
-        type: string
       tag:
         type: string
         default: ""
@@ -53,9 +51,10 @@ commands:
             ./bin/watch_podlogs
           background: true
       - run:
+          name: Run dctest bootstrap
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/run-dctest.sh "<<parameters.suite>>" "<<parameters.tag>>" "<<parameters.datacenter>>"
+            ./bin/run-dctest.sh bootstrap "<<parameters.tag>>" "<<parameters.datacenter>>"
           no_output_timeout: 20m
 
 jobs:
@@ -112,14 +111,13 @@ jobs:
     resource_class: xlarge
     steps:
       - checkout
-      - dctest-command:
-          suite: ./bootstrap
+      - run-dctest-bootstrap
       - run:
-          name: run dctest functions
+          name: Run dctest functions
           command: ./bin/run-dctest-suite.sh functions
           no_output_timeout: 20m
       - run:
-          name: delete instance
+          name: Delete instance
           command: |
             . ./bin/env
             $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE}
@@ -133,15 +131,15 @@ jobs:
       - image: google/cloud-sdk
     steps:
       - checkout
-      - dctest-command:
-          suite: ./bootstrap
+      - run-dctest-bootstrap:
           tag: release
           datacenter: staging
       - run:
+          name: Run dctest upgrade
           command: ./bin/run-dctest-suite.sh upgrade
           no_output_timeout: 20m
       - run:
-          name: delete instance
+          name: Delete instance
           command: |
             . ./bin/env
             $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE}
@@ -181,11 +179,10 @@ jobs:
             if [ "$diffs" = "" ]; then touch .skip; exit 0; fi
             printf "%s\n" "$diffs"
       # Skip the following steps if there is no difference.
-      - dctest-command:
-          suite: ./bootstrap
+      - run-dctest-bootstrap:
           tag: release
       - run:
-          name: Run tests
+          name: Run dctest functions release
           command: |
             if [ -f .skip ]; then exit 0; fi
             ./bin/run-dctest-suite.sh functions release
@@ -213,15 +210,15 @@ jobs:
       - run: git checkout release
       - run: git merge --no-commit origin/master
       - run: cp /tmp/workspace/artifacts_release.go .
-      - dctest-command:
-          suite: ./bootstrap
+      - run-dctest-bootstrap:
           tag: release
           datacenter: staging
       - run:
+          name: Run dctest upgrade release
           command: ./bin/run-dctest-suite.sh upgrade release
           no_output_timeout: 20m
       - run:
-          name: delete instance
+          name: Delete instance
           command: |
             . ./bin/env
             $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE}
@@ -282,7 +279,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Store Service Account
+          name: Store service account
           command: |
             echo $GCLOUD_SERVICE_ACCOUNT > account.json
             gcloud auth activate-service-account --key-file=account.json
