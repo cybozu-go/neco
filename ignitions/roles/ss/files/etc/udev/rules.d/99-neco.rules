@@ -1,1 +1,6 @@
-SUBSYSTEM=="block", ENV{DM_UUID}=="CRYPT-*", ENV{DEVTYPE}=="disk", IMPORT{program}=="/etc/udev/crypt-base-path %s{dm/name}", SYMLINK+="crypt-disk/by-path/$env{CRYPT_BASE_PATH}"
+KERNEL!="dm-*", GOTO="neco_end"
+ENV{ID_PART_ENTRY_NAME}!="primary", GOTO="neco_end"
+
+IMPORT{program}=="/etc/udev/crypt-base-path $name $env{DM_UUID}", SYMLINK+="crypt-part/by-path/$env{CRYPT_BASE_PATH}-p$env{DM_PART}"
+
+LABEL="neco_end"
