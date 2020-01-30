@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-limit=$(echo "3600 * 24 * 1" | bc) # 1 day
+limit=86400 # 1 day
 sessions=$(loginctl list-sessions --no-legend | sed -e 's/^ *//g' | cut -f 1 -d ' ')
 
 for session in $sessions
