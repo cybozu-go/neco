@@ -177,9 +177,9 @@ There are clear and strong reasons why the process is ordered this way.
     - OSD should be backed by whole disk, partitions or logical volumes.
     - Making partition in dm-crypted device can bypass the above-mentioned limitation.
 
-* What devices are partitioned?
+* What type of devices are partitioned?
 
-    All encrypted HDDs. In addition, it makes persistent names for each partition.
+    All encrypted HDDs. In addition, the created partitions have the static name (`primary`).
 
 systemd targets and ordering dependencies
 -----------------------------------------
