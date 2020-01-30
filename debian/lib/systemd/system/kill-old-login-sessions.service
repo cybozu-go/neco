@@ -1,0 +1,8 @@
+[Unit]
+Description=kill old login sessions
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/kill-old-login-sessions
