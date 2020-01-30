@@ -41,6 +41,10 @@ The boot process runs roughly as follows:
 8. Configure BIOS and BMC
 9. Run `serf` and other programs as a docker container
 
+In addition, the following processes run only on storage servers(`ss`).
+
+1. Prepare partitions on encrypted disks (After setup dm-crypt volumes using `sabakan-cryptsetup`)
+
 There are clear and strong reasons why the process is ordered this way.
 
 ### Configure network with DHCP
@@ -162,6 +166,21 @@ There are clear and strong reasons why the process is ordered this way.
     Because running `serf` will tell sabakan that the machine becomes running
     and available.
 
+### Prepare partitions on encrypted disks
+
+* Why partitions should be created?
+
+    Because of the following reasons.
+
+    - The devices on `ss` are used as OSD of Rook/Ceph
+    - These devices are encrypted with dm-crypt.
+    - OSD should be backed by whole disk, partitions or logical volumes.
+    - Making partition in dm-crypted device can bypass the above-mentioned limitation.
+
+* What type of devices are partitioned?
+
+    All encrypted HDDs.
+
 systemd targets and ordering dependencies
 -----------------------------------------
 
@@ -185,6 +204,7 @@ Specifically, following services have `DefaultDependencies=no`:
 * `neco-wait-dhcp-online.service`: to wait IP address is configured by DHCP
 * `sabakan-cryptsetup.service`: to prepare encrypted disks
 * `setup-var.service`: to prepare LVM volumes
+* `setup-partition.service`: to prepare partitions
 
 After mounting volumes, next thing to do is to reconfigure the network.
 This is done by running following services before `network-online.target`:

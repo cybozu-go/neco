@@ -37,6 +37,8 @@ var FunctionsSuite = func() {
 	Context("join/remove", TestJoinRemove)
 	Context("reboot-all-boot-servers", TestRebootAllBootServers)
 	Context("reboot-all-nodes", TestRebootAllNodes)
+	// Test the setup-partition's behavior after reboot.
+	Context("ignitions", TestIgnitions)
 }
 
 // UpgradeSuite is a test suite that tests upgrading process works correctry
