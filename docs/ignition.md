@@ -41,11 +41,11 @@ The boot process runs roughly as follows:
 8. Configure BIOS and BMC
 9. Run `serf` and other programs as a docker container
 
-There are clear and strong reasons why the process is ordered this way.
-
-In addition to the above, the below processes run just on storage servers(`ss`):
+In addition, the following processes run only on storage servers(`ss`).
 
 1. Prepare partitions on encrypted disks (After setup dm-crypt volumes using `sabakan-cryptsetup`)
+
+There are clear and strong reasons why the process is ordered this way.
 
 ### Configure network with DHCP
 
@@ -168,15 +168,18 @@ In addition to the above, the below processes run just on storage servers(`ss`):
 
 ### Prepare partitions on encrypted disks
 
-* Why partitions are created?
+* Why partitions should be created?
 
-    Because devices on `ss` are used as storage disks for `OSD` pod of `Rook/Ceph`.
+    Because of the following reasons.
 
-* How partitions are created?
+    - The devices on `ss` are used as OSD of Rook/Ceph
+    - These devices are encrypted with dm-crypt.
+    - OSD should be backed by whole disk, partitions or logical volumes.
+    - Making partition in dm-crypted device can bypass the above-mentioned limitation.
 
-    By running the  `setup-partition` as a one-shot service on `ss`.
-    Partitions are created in encrypted devices exclude BOSS or a partition existed already.
-    And aliases specific to the device are made using `udev`.
+* What devices are partitioned?
+
+    All encrypted HDDs. In addition, it makes persistent names for each partition.
 
 systemd targets and ordering dependencies
 -----------------------------------------
@@ -201,6 +204,7 @@ Specifically, following services have `DefaultDependencies=no`:
 * `neco-wait-dhcp-online.service`: to wait IP address is configured by DHCP
 * `sabakan-cryptsetup.service`: to prepare encrypted disks
 * `setup-var.service`: to prepare LVM volumes
+* `setup-partition.service`: to prepare partitions
 
 After mounting volumes, next thing to do is to reconfigure the network.
 This is done by running following services before `network-online.target`:
