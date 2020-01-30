@@ -179,7 +179,7 @@ There are clear and strong reasons why the process is ordered this way.
 
 * What type of devices are partitioned?
 
-    All encrypted HDDs. In addition, the created partitions have the static name (`primary`).
+    All encrypted HDDs.
 
 systemd targets and ordering dependencies
 -----------------------------------------
