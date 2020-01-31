@@ -117,6 +117,11 @@ jobs:
           command: ./bin/run-dctest-suite.sh functions
           no_output_timeout: 20m
       - run:
+          name: Extend the lifetime of the instance by 10 mins
+          commnad: $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
+            --metadata extended=$(date -Iseconds -d+10minutes)
+          when: on_fail
+      - run:
           name: Delete instance
           command: |
             . ./bin/env

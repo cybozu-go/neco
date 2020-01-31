@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -16,6 +17,8 @@ type Server struct {
 	client *http.Client
 	cfg    *gcp.Config
 }
+
+var shutdownMetadataNotFound = errors.New(gcp.MetadataKeyShutdownAt + " is not found")
 
 // NewServer creates a new Server
 func NewServer(cfg *gcp.Config) (*Server, error) {
@@ -63,6 +66,23 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 
 	for _, instance := range instanceList.Items {
 		if contain(instance.Name, exclude) {
+			continue
+		}
+
+		shutdownAt, err := getShutdownAt(instance)
+		if err != nil {
+			if err != shutdownMetadataNotFound {
+				RenderError(r.Context(), w, InternalServerError(err))
+				return
+			}
+		}
+		if now.Sub(shutdownAt) >= 0 {
+			_, err := service.Instances.Delete(project, zone, instance.Name).Do()
+			if err != nil {
+				RenderError(r.Context(), w, InternalServerError(err))
+				continue
+			}
+			status.Deleted = append(status.Deleted, instance.Name)
 			continue
 		}
 
@@ -116,4 +136,13 @@ func getExtendedAt(instance *compute.Instance) (time.Time, error) {
 		}
 	}
 	return time.Parse(time.RFC3339, instance.CreationTimestamp)
+}
+
+func getShutdownAt(instance *compute.Instance) (time.Time, error) {
+	for _, metadata := range instance.Metadata.Items {
+		if metadata.Key == gcp.MetadataKeyShutdownAt {
+			return time.Parse(time.RFC3339, *metadata.Value)
+		}
+	}
+	return time.Time{}, shutdownMetadataNotFound
 }
