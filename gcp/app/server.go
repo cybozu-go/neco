@@ -18,7 +18,7 @@ type Server struct {
 	cfg    *gcp.Config
 }
 
-var shutdownMetadataNotFound = errors.New(gcp.MetadataKeyShutdownAt + " is not found")
+var errShutdownMetadataNotFound = errors.New(gcp.MetadataKeyShutdownAt + " is not found")
 
 // NewServer creates a new Server
 func NewServer(cfg *gcp.Config) (*Server, error) {
@@ -71,18 +71,20 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 
 		shutdownAt, err := getShutdownAt(instance)
 		if err != nil {
-			if err != shutdownMetadataNotFound {
+			if err != errShutdownMetadataNotFound {
 				RenderError(r.Context(), w, InternalServerError(err))
 				return
 			}
 		}
-		if now.Sub(shutdownAt) >= 0 {
-			_, err := service.Instances.Delete(project, zone, instance.Name).Do()
-			if err != nil {
-				RenderError(r.Context(), w, InternalServerError(err))
-				continue
+		if err != errShutdownMetadataNotFound {
+			if now.Sub(shutdownAt) >= 0 {
+				_, err := service.Instances.Delete(project, zone, instance.Name).Do()
+				if err != nil {
+					RenderError(r.Context(), w, InternalServerError(err))
+					continue
+				}
+				status.Deleted = append(status.Deleted, instance.Name)
 			}
-			status.Deleted = append(status.Deleted, instance.Name)
 			continue
 		}
 
@@ -144,5 +146,5 @@ func getShutdownAt(instance *compute.Instance) (time.Time, error) {
 			return time.Parse(time.RFC3339, *metadata.Value)
 		}
 	}
-	return time.Time{}, shutdownMetadataNotFound
+	return time.Time{}, errShutdownMetadataNotFound
 }
