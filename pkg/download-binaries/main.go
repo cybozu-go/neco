@@ -39,7 +39,7 @@ func main() {
 	}
 	splitTags := strings.Split(teleportTag, ".")
 	if len(splitTags) != 4 {
-		log.Fatal("unexpected tag format")
+		log.Fatal("teleport unexpected tag format:" + teleportTag)
 	}
 	teleportVersion := strings.Join(splitTags[:len(splitTags)-1], ".")
 	err = downloadFile(fmt.Sprintf(teleportWindowsURL, teleportVersion))
