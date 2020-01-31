@@ -146,6 +146,13 @@ jobs:
           command: ./bin/run-dctest-suite.sh upgrade
           no_output_timeout: 20m
       - run:
+          name: Set the instance lifetime to 10 minutes
+          command: |
+            . ./bin/env
+            $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
+              --metadata shutdown-at=$(date -Iseconds -d+10minutes)
+          when: on_fail
+      - run:
           name: Delete instance
           command: |
             . ./bin/env
@@ -195,6 +202,13 @@ jobs:
             ./bin/run-dctest-suite.sh functions release
           no_output_timeout: 20m
       - run:
+          name: Set the instance lifetime to 10 minutes
+          command: |
+            . ./bin/env
+            $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
+              --metadata shutdown-at=$(date -Iseconds -d+10minutes)
+          when: on_fail
+      - run:
           name: Delete instance
           command: |
             if [ -f .skip ]; then exit 0; fi
@@ -224,6 +238,13 @@ jobs:
           name: Run dctest upgrade release
           command: ./bin/run-dctest-suite.sh upgrade release
           no_output_timeout: 20m
+      - run:
+          name: Set the instance lifetime to 10 minutes
+          command: |
+            . ./bin/env
+            $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
+              --metadata shutdown-at=$(date -Iseconds -d+10minutes)
+          when: on_fail
       - run:
           name: Delete instance
           command: |

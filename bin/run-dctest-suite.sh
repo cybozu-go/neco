@@ -22,8 +22,7 @@ exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME}
 EOF
 chmod +x run.sh
 
-#$GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
-#set +e
-#$GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo -H /home/cybozu/run.sh'
-#exit $?
-exit 1
+$GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
+set +e
+$GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo -H /home/cybozu/run.sh'
+exit $?
