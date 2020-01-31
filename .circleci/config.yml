@@ -114,8 +114,7 @@ jobs:
       - run-dctest-bootstrap
       - run:
           name: Run dctest functions
-          command: exit 1
-          # command: ./bin/run-dctest-suite.sh functions
+          command: ./bin/run-dctest-suite.sh functions
           no_output_timeout: 20m
       - run:
           name: Extend the lifetime of the instance by 10 mins
