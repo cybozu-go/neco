@@ -2,12 +2,17 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/gcp"
+	"github.com/nlopes/slack"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
 )
@@ -147,4 +152,123 @@ func getShutdownAt(instance *compute.Instance) (time.Time, error) {
 		}
 	}
 	return time.Time{}, errShutdownMetadataNotFound
+}
+
+// HandleHandle handles REST API /extend
+func (s Server) HandleExtend(w http.ResponseWriter, r *http.Request) {
+	s.extend(w, r)
+}
+
+func (s Server) extend(w http.ResponseWriter, r *http.Request) {
+	bodyRaw, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Error("failed to read body", map[string]interface{}{
+			log.FnError: err,
+		})
+		RenderError(r.Context(), w, InternalServerError(err))
+		return
+	}
+
+	body, _ := url.QueryUnescape(string(bodyRaw))
+	body = strings.Replace(body, "payload=", "", 1)
+
+	project := s.cfg.Common.Project
+	zone := s.cfg.Common.Zone
+
+	service, err := compute.New(s.client)
+	if err != nil {
+		log.Error("failed to create client", map[string]interface{}{
+			log.FnError: err,
+		})
+		RenderError(r.Context(), w, InternalServerError(err))
+		return
+	}
+
+	p, err := service.Projects.Get(project).Do()
+	if err != nil {
+		log.Error("failed to get project", map[string]interface{}{
+			"project": project,
+		})
+		RenderError(r.Context(), w, InternalServerError(err))
+		return
+	}
+	verificationToken := ""
+	for _, item := range p.CommonInstanceMetadata.Items {
+		if item.Key == "SLACK_VERIFICATION_TOKEN" {
+			verificationToken = *item.Value
+		}
+	}
+	if len(verificationToken) == 0 {
+		log.Error("token not found", map[string]interface{}{})
+		RenderError(r.Context(), w, InternalServerError(errors.New("SLACK_VERIFICATION_TOKEN not found")))
+		return
+	}
+
+	var message slack.InteractionCallback
+	err = json.Unmarshal([]byte(body), &message)
+	if err != nil {
+		log.Error("failed to unmarshal body", map[string]interface{}{
+			log.FnError: err,
+		})
+		RenderError(r.Context(), w, InternalServerError(err))
+		return
+	}
+
+	if message.Token != verificationToken {
+		log.Error("invalid token", map[string]interface{}{})
+		RenderError(r.Context(), w, InternalServerError(errors.New("invalid token")))
+		return
+	}
+
+	instance := message.ActionCallback.BlockActions[0].Value
+	target, err := service.Instances.Get(project, zone, instance).Do()
+	if err != nil {
+		log.Error("failed to get target instance", map[string]interface{}{
+			log.FnError: err,
+			"project":   project,
+			"zone":      zone,
+			"instance":  instance,
+		})
+		RenderError(r.Context(), w, InternalServerError(err))
+		return
+	}
+
+	shutdownAt := time.Now().UTC().Add(1 * time.Hour).Format(time.RFC3339)
+	found := false
+	metadata := target.Metadata
+	for _, m := range metadata.Items {
+		if m.Key == gcp.MetadataKeyShutdownAt {
+			m.Value = &shutdownAt
+			found = true
+			break
+		}
+	}
+	if !found {
+		metadata.Items = append(metadata.Items, &compute.MetadataItems{
+			Key:   gcp.MetadataKeyShutdownAt,
+			Value: &shutdownAt,
+		})
+	}
+
+	_, err = service.Instances.SetMetadata(project, zone, instance, metadata).Do()
+	if err != nil {
+		log.Error("failed to set metadata", map[string]interface{}{
+			log.FnError:   err,
+			"project":     project,
+			"zone":        zone,
+			"instance":    instance,
+			"shutdown_at": shutdownAt,
+		})
+		RenderError(r.Context(), w, InternalServerError(err))
+		return
+	}
+
+	log.Info("extended instance", map[string]interface{}{
+		"project":     project,
+		"zone":        zone,
+		"instance":    instance,
+		"shutdown_at": shutdownAt,
+	})
+
+	RenderJSON(w, ExtendStatus{Extended: instance}, http.StatusOK)
 }
