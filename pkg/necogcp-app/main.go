@@ -50,6 +50,7 @@ func main() {
 		log.ErrorExit(err)
 	}
 	http.HandleFunc("/shutdown", server.HandleShutdown)
+	http.HandleFunc("/extend", server.HandleExtend)
 
 	appengine.Main()
 }

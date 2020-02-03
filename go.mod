@@ -45,6 +45,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/mtrmac/gpgme v0.0.0-20170102180018-b2432428689c // indirect
+	github.com/nlopes/slack v0.6.0
 	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.5.0
 	github.com/opencontainers/runc v0.0.0-20170216015123-6b1d0e76f239 // indirect

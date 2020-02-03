@@ -251,6 +251,8 @@ github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
 # github.com/gorilla/mux v1.7.1
 github.com/gorilla/mux
+# github.com/gorilla/websocket v1.4.0
+github.com/gorilla/websocket
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-cleanhttp v0.5.1
@@ -346,6 +348,11 @@ github.com/modern-go/concurrent
 github.com/modern-go/reflect2
 # github.com/mtrmac/gpgme v0.0.0-20170102180018-b2432428689c
 github.com/mtrmac/gpgme
+# github.com/nlopes/slack v0.6.0
+github.com/nlopes/slack
+github.com/nlopes/slack/internal/errorsx
+github.com/nlopes/slack/internal/timex
+github.com/nlopes/slack/slackutilsx
 # github.com/onsi/ginkgo v1.8.0
 github.com/onsi/ginkgo
 github.com/onsi/ginkgo/config
