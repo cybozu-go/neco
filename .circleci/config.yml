@@ -151,6 +151,7 @@ jobs:
             $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
               --metadata shutdown-at=$(date -Iseconds -d+10minutes)
           when: on_fail
+      - notify-slack-to-extend
       - run:
           name: Delete instance
           command: |

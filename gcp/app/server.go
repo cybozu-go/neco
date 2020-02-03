@@ -229,7 +229,7 @@ func (s Server) extend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(message.ActionCallback.BlockActions) != 1 {
+	if len(message.ActionCallback.BlockActions) < 1 {
 		log.Error("block_actions is empty", map[string]interface{}{})
 		RenderError(r.Context(), w, InternalServerError(errors.New("block_actions is empty")))
 		return
