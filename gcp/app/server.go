@@ -155,7 +155,7 @@ func getShutdownAt(instance *compute.Instance) (time.Time, error) {
 	return time.Time{}, errShutdownMetadataNotFound
 }
 
-// HandleHandle handles REST API /extend
+// HandleExtend handles REST API /extend
 func (s Server) HandleExtend(w http.ResponseWriter, r *http.Request) {
 	s.extend(w, r)
 }
@@ -171,7 +171,14 @@ func (s Server) extend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, _ := url.QueryUnescape(string(bodyRaw))
+	body, err := url.QueryUnescape(string(bodyRaw))
+	if err != nil {
+		log.Error("failed to unescape query", map[string]interface{}{
+			log.FnError: err,
+		})
+		RenderError(r.Context(), w, InternalServerError(err))
+		return
+	}
 	body = strings.Replace(body, "payload=", "", 1)
 
 	project := s.cfg.Common.Project
@@ -222,6 +229,11 @@ func (s Server) extend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(message.ActionCallback.BlockActions) != 1 {
+		log.Error("block_actions is empty", map[string]interface{}{})
+		RenderError(r.Context(), w, InternalServerError(errors.New("block_actions is empty")))
+		return
+	}
 	instance := message.ActionCallback.BlockActions[0].Value
 	target, err := service.Instances.Get(project, zone, instance).Do()
 	if err != nil {

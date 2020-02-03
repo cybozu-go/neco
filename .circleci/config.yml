@@ -56,6 +56,34 @@ commands:
             if [ -f .skip ]; then exit 0; fi
             ./bin/run-dctest.sh bootstrap "<<parameters.tag>>" "<<parameters.datacenter>>"
           no_output_timeout: 20m
+  notify-slack-to-extend:
+    description: "notify slack to extend the lifetime of the GCP instance"
+    steps:
+      - run:
+          name: Notify Slack to extend the lifetime of the GCP instance
+          command: |
+            . ./bin/env
+            curl -X POST -H 'Content-type: application/json' --data "{
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"Failed: ${CIRCLE_USERNAME}'s workflow (${CIRCLE_JOB}) in <https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/workflows/${CIRCLE_PROJECT_REPONAME}|${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}> (<https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/tree/${CIRCLE_BRANCH}|${CIRCLE_BRANCH}>)\n Do you extend the lifetime of ${INSTANCE_NAME}?\"
+                  },
+                  \"accessory\": {
+                    \"type\": \"button\",
+                    \"text\": {
+                      \"type\": \"plain_text\",
+                      \"text\": \"Extend\",
+                      \"emoji\": true
+                    },
+                    \"value\": \"${INSTANCE_NAME}\"
+                  }
+                }
+              ]
+            }" $SLACK_WEBHOOK_URL
+          when: on_fail
 
 jobs:
   build:
@@ -124,31 +152,6 @@ jobs:
               --metadata shutdown-at=$(date -Iseconds -d+10minutes)
           when: on_fail
       - run:
-          name: notify to slack
-          command: |
-            . ./bin/env
-            curl -X POST -H 'Content-type: application/json' --data "{
-              \"blocks\": [
-                {
-                  \"type\": \"section\",
-                  \"text\": {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"Failed: ${CIRCLE_USERNAME}'s workflow (${CIRCLE_JOB}) in <https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/workflows/${CIRCLE_PROJECT_REPONAME}|${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}> (<https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/tree/${CIRCLE_BRANCH}|${CIRCLE_BRANCH}>)\n Do you extend the lifetime of ${INSTANCE_NAME}?\"
-                  },
-                  \"accessory\": {
-                    \"type\": \"button\",
-                    \"text\": {
-                      \"type\": \"plain_text\",
-                      \"text\": \"Extend\",
-                      \"emoji\": true
-                    },
-                    \"value\": \"${INSTANCE_NAME}\"
-                  }
-                }
-              ]
-            }" $SLACK_WEBHOOK_URL
-          when: on_fail
-      - run:
           name: Delete instance
           command: |
             . ./bin/env
@@ -177,31 +180,7 @@ jobs:
             $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
               --metadata shutdown-at=$(date -Iseconds -d+10minutes)
           when: on_fail
-      - run:
-          name: notify to slack
-          command: |
-            . ./bin/env
-            curl -X POST -H 'Content-type: application/json' --data "{
-              \"blocks\": [
-                {
-                  \"type\": \"section\",
-                  \"text\": {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"Failed: ${CIRCLE_USERNAME}'s workflow (${CIRCLE_JOB}) in <https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/workflows/${CIRCLE_PROJECT_REPONAME}|${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}> (<https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/tree/${CIRCLE_BRANCH}|${CIRCLE_BRANCH}>)\n Do you extend the lifetime of ${INSTANCE_NAME}?\"
-                  },
-                  \"accessory\": {
-                    \"type\": \"button\",
-                    \"text\": {
-                      \"type\": \"plain_text\",
-                      \"text\": \"Extend\",
-                      \"emoji\": true
-                    },
-                    \"value\": \"${INSTANCE_NAME}\"
-                  }
-                }
-              ]
-            }" $SLACK_WEBHOOK_URL
-          when: on_fail
+      - notify-slack-to-extend
       - run:
           name: Delete instance
           command: |
@@ -258,31 +237,7 @@ jobs:
             $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
               --metadata shutdown-at=$(date -Iseconds -d+10minutes)
           when: on_fail
-      - run:
-          name: notify to slack
-          command: |
-            . ./bin/env
-            curl -X POST -H 'Content-type: application/json' --data "{
-              \"blocks\": [
-                {
-                  \"type\": \"section\",
-                  \"text\": {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"Failed: ${CIRCLE_USERNAME}'s workflow (${CIRCLE_JOB}) in <https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/workflows/${CIRCLE_PROJECT_REPONAME}|${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}> (<https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/tree/${CIRCLE_BRANCH}|${CIRCLE_BRANCH}>)\n Do you extend the lifetime of ${INSTANCE_NAME}?\"
-                  },
-                  \"accessory\": {
-                    \"type\": \"button\",
-                    \"text\": {
-                      \"type\": \"plain_text\",
-                      \"text\": \"Extend\",
-                      \"emoji\": true
-                    },
-                    \"value\": \"${INSTANCE_NAME}\"
-                  }
-                }
-              ]
-            }" $SLACK_WEBHOOK_URL
-          when: on_fail
+      - notify-slack-to-extend
       - run:
           name: Delete instance
           command: |
@@ -320,31 +275,7 @@ jobs:
             $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
               --metadata shutdown-at=$(date -Iseconds -d+10minutes)
           when: on_fail
-      - run:
-          name: notify to slack
-          command: |
-            . ./bin/env
-            curl -X POST -H 'Content-type: application/json' --data "{
-              \"blocks\": [
-                {
-                  \"type\": \"section\",
-                  \"text\": {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"Failed: ${CIRCLE_USERNAME}'s workflow (${CIRCLE_JOB}) in <https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/workflows/${CIRCLE_PROJECT_REPONAME}|${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}> (<https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/tree/${CIRCLE_BRANCH}|${CIRCLE_BRANCH}>)\n Do you extend the lifetime of ${INSTANCE_NAME}?\"
-                  },
-                  \"accessory\": {
-                    \"type\": \"button\",
-                    \"text\": {
-                      \"type\": \"plain_text\",
-                      \"text\": \"Extend\",
-                      \"emoji\": true
-                    },
-                    \"value\": \"${INSTANCE_NAME}\"
-                  }
-                }
-              ]
-            }" $SLACK_WEBHOOK_URL
-          when: on_fail
+      - notify-slack-to-extend
       - run:
           name: Delete instance
           command: |
