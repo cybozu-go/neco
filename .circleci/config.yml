@@ -80,7 +80,6 @@ jobs:
   build_release:
     docker:
       - image: quay.io/cybozu/golang:1.13-bionic
-      - image: quay.io/coreos/etcd:v3.3
     working_directory: /work
     resource_class: xlarge
     steps:
@@ -96,6 +95,21 @@ jobs:
           root: .
           paths:
             - "*.deb"
+
+  download_binaries:
+    docker:
+      - image: quay.io/cybozu/golang:1.13-bionic
+    working_directory: /work
+    steps:
+      - checkout
+      - run:
+          name: download binaries to workspace
+          command: go run ./pkg/download-binaries/main.go
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "*.exe"
+            - "*.zip"
 
   deploy_github:
     docker:
@@ -313,6 +327,12 @@ workflows:
   release:
     jobs:
       - build_release:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^release-.*/
+      - download_binaries:
           filters:
             branches:
               ignore: /.*/
