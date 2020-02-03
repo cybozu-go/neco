@@ -6,6 +6,7 @@ type ShutdownStatus struct {
 	Deleted []string `json:"deleted"`
 }
 
+// ExtendStatus represents status of /extend
 type ExtendStatus struct {
 	Extended string `json:"extended"`
 }

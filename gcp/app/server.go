@@ -15,6 +15,7 @@ import (
 	"github.com/nlopes/slack"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
+	"google.golang.org/api/option"
 )
 
 // Server is the API Server of GAE app
@@ -58,7 +59,7 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 	now := time.Now().UTC()
 	expiration := s.cfg.App.Shutdown.Expiration
 
-	service, err := compute.New(s.client)
+	service, err := compute.NewService(r.Context(), option.WithHTTPClient(s.client))
 	if err != nil {
 		RenderError(r.Context(), w, InternalServerError(err))
 		return
@@ -160,6 +161,7 @@ func (s Server) HandleExtend(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Server) extend(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 	bodyRaw, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error("failed to read body", map[string]interface{}{
@@ -175,7 +177,7 @@ func (s Server) extend(w http.ResponseWriter, r *http.Request) {
 	project := s.cfg.Common.Project
 	zone := s.cfg.Common.Zone
 
-	service, err := compute.New(s.client)
+	service, err := compute.NewService(r.Context(), option.WithHTTPClient(s.client))
 	if err != nil {
 		log.Error("failed to create client", map[string]interface{}{
 			log.FnError: err,
