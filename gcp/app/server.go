@@ -235,7 +235,7 @@ func (s Server) extend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shutdownAt := time.Now().UTC().Add(1 * time.Hour).Format(time.RFC3339)
+	shutdownAt := time.Now().UTC().Add(2 * time.Hour).Format(time.RFC3339)
 	found := false
 	metadata := target.Metadata
 	for _, m := range metadata.Items {
