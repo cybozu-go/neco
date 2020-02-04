@@ -1,6 +1,24 @@
 #!/bin/sh -u
 
-PART_NAME=primary
+PART_TYPE=f800
+PART_NAME=ceph-osd
+
+# The following command creates a partition with gdisk. 
+# Its type is $PART_TYPE and its name is $PART_NAME.
+GDISK_CMD=$(cat << EOS
+o
+y
+n
+
+
+
+$PART_TYPE
+c
+$PART_NAME
+w
+y
+EOS
+)
 
 is_target_device() {
     DEV=$(basename $1)
@@ -18,15 +36,12 @@ is_target_device() {
 
 for DM in $(ls /dev/dm-*); do
     DEV_PATH=$(cryptsetup status $DM | grep device | awk '{print $2}')
-    if [ -n "$DEV_PATH" ]; then
-        if [ $(is_target_device $DEV_PATH) = 'true' ]; then
-            if [ -n "$(parted -s $DM print 2> /dev/null | grep $PART_NAME)" ]; then
-                echo "partition is already exists on $DM (backed by $DEV_PATH)"
-                partprobe $DM
-            else
-                echo "create a partition on $DM (backed by $DEV_PATH)"
-                parted -s -a optimal $DM -- mklabel gpt mkpart $PART_NAME 1MiB -0
-            fi
-        fi
+    if [ -z "$DEV_PATH" ]; then continue; fi
+    if [ $(is_target_device $DEV_PATH) != 'true' ]; then continue; fi
+    if ! $(echo i | gdisk $DM 2> /dev/null | grep "Partition name:" | grep -q "'$PART_NAME'"); then
+        echo "create a partition on $DM (backed by $DEV_PATH)"
+        echo "$GDISK_CMD" | gdisk $DM
     fi
+    echo "update partition devmappings on $DM"
+    kpartx -u $DM
 done
