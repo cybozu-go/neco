@@ -162,25 +162,6 @@ func TestRebootAllNodes() {
 		}).Should(Succeed())
 	})
 
-	It("re-enable CKE sabakan integration", func() {
-		execSafeAt(boot0, "ckecli", "sabakan", "enable")
-	})
-
-	It("fetch cluster nodes", func() {
-		Eventually(func() error {
-			afterNodes, err := fetchClusterNodes()
-			if err != nil {
-				return err
-			}
-
-			if !reflect.DeepEqual(beforeNodes, afterNodes) {
-				return fmt.Errorf("cluster nodes mismatch after reboot: before=%v after=%v", beforeNodes, afterNodes)
-			}
-
-			return nil
-		}).Should(Succeed())
-	})
-
 	It("sets all nodes' machine state to healthy", func() {
 		Eventually(func() error {
 			stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get")
@@ -203,6 +184,25 @@ func TestRebootAllNodes() {
 				if state != "healthy" {
 					return fmt.Errorf("sabakan machine state of %s is not healthy: %s", m.Spec.Serial, state)
 				}
+			}
+
+			return nil
+		}).Should(Succeed())
+	})
+
+	It("re-enable CKE sabakan integration", func() {
+		execSafeAt(boot0, "ckecli", "sabakan", "enable")
+	})
+
+	It("fetch cluster nodes", func() {
+		Eventually(func() error {
+			afterNodes, err := fetchClusterNodes()
+			if err != nil {
+				return err
+			}
+
+			if !reflect.DeepEqual(beforeNodes, afterNodes) {
+				return fmt.Errorf("cluster nodes mismatch after reboot: before=%v after=%v", beforeNodes, afterNodes)
 			}
 
 			return nil
