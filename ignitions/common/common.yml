@@ -62,6 +62,7 @@ systemd:
   - name: bird-wait.service
     enabled: true
   - name: setup-node-exporter.service
+  - name: iptables-notrack-udp-53.service
   - name: node-exporter.service
     enabled: true
   - name: chronyd.service
