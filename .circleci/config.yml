@@ -120,24 +120,13 @@ jobs:
           command: |
             VERSION=$(echo $CIRCLE_TAG | sed 's/^release-//')
             time make deb SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
-      - persist_to_workspace:
-          root: .
-          paths:
-            - "*.deb"
-
-  download_binaries:
-    docker:
-      - image: quay.io/cybozu/golang:1.13-bionic
-    working_directory: /work
-    steps:
-      - checkout
       - run:
           name: download binaries to workspace
           command: go run ./pkg/download-binaries/main.go
       - persist_to_workspace:
           root: .
           paths:
-            - "*.exe"
+            - "*.deb"
             - "*.zip"
 
   deploy_github:
@@ -388,12 +377,6 @@ workflows:
   release:
     jobs:
       - build_release:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^release-.*/
-      - download_binaries:
           filters:
             branches:
               ignore: /.*/
