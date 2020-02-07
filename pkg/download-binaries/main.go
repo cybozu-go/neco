@@ -1,6 +1,7 @@
 package main
 
 import (
+	"archive/zip"
 	"bufio"
 	"context"
 	"errors"
@@ -26,6 +27,7 @@ import (
 )
 
 const (
+	zipFileName        = "operation-cli-windows-amd64.zip"
 	teleportWindowsURL = "https://get.gravitational.com/teleport-v%s-windows-amd64-bin.zip"
 	kubectlWindowsURL  = "https://storage.googleapis.com/kubernetes-release/release/v%s/bin/windows/amd64/kubectl.exe"
 	argoCDWindowsURL   = "https://github.com/argoproj/argo-cd/releases/download/v%s/argocd-windows-amd64"
@@ -58,6 +60,77 @@ func main() {
 	if err != nil {
 		log.ErrorExit(err)
 	}
+
+	zipFiles, err := filepath.Glob("*.zip")
+	if err != nil {
+		log.ErrorExit(err)
+	}
+	exeFiles, err := filepath.Glob("*.exe")
+	if err != nil {
+		log.ErrorExit(err)
+	}
+	files := append(zipFiles, exeFiles...)
+	// TODO: Opt in after releasing windows binaries at https://github.com/argoproj/argo-cd/releases/
+	//files = append(files, filepath.Base(argoCDWindowsURL))
+
+	err = createZip(files)
+	if err != nil {
+		log.ErrorExit(err)
+	}
+	for _, filename := range files {
+		err = os.Remove(filename)
+		if err != nil {
+			log.ErrorExit(err)
+		}
+	}
+}
+
+func createZip(files []string) error {
+	log.Info("compressing", map[string]interface{}{"output": zipFileName})
+	newZipFile, err := ioutil.TempFile(*outputDir, "zip-")
+	if err != nil {
+		return err
+	}
+	defer newZipFile.Close()
+
+	w := zip.NewWriter(newZipFile)
+	defer w.Close()
+
+	for _, filename := range files {
+		err := func(filename string) error {
+			src, err := os.Open(filename)
+			if err != nil {
+				return err
+			}
+			defer src.Close()
+
+			info, err := src.Stat()
+			if err != nil {
+				return err
+			}
+
+			header, err := zip.FileInfoHeader(info)
+			if err != nil {
+				return err
+			}
+
+			header.Name = filename
+			header.Method = zip.Deflate
+
+			f, err := w.CreateHeader(header)
+			if err != nil {
+				return err
+			}
+
+			_, err = io.Copy(f, src)
+			return err
+		}(filename)
+		if err != nil {
+			return err
+		}
+	}
+
+	return os.Rename(newZipFile.Name(), filepath.Join(*outputDir, zipFileName))
 }
 
 func newDownloader(ctx context.Context) downloader {
