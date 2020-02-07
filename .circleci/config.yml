@@ -127,7 +127,6 @@ jobs:
           root: .
           paths:
             - "*.deb"
-            - "*.exe"
             - "*.zip"
 
   deploy_github:
