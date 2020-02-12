@@ -49,7 +49,7 @@ func main() {
 			Owner:      neco.GitHubRepoOwner,
 			Release:    "release-" + tag,
 		}
-		downloadURL, err := worker.GetGithubDownloadURL(ctx, github, deb)
+		downloadURL, err := worker.GetGitHubDownloadURL(ctx, github, deb)
 		if err != nil {
 			return err
 		}

@@ -2,12 +2,11 @@ package worker
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
+	"regexp"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
@@ -20,7 +19,7 @@ import (
 func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *http.Client, pkg *neco.DebianPackage, background bool) error {
 	gh := neco.NewGitHubClient(ghClient)
 
-	downloadURL, err := GetGithubDownloadURL(ctx, gh, pkg)
+	downloadURL, err := GetGitHubDownloadURL(ctx, gh, pkg)
 	if err != nil {
 		return err
 	}
@@ -55,8 +54,8 @@ func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage) error {
 	return well.CommandContext(context.Background(), "systemd-run", "-q", "dpkg", "-i", deb).Run()
 }
 
-// GetGithubDownloadURL returns URL of specified Debian package hosted in GitHub releases.
-func GetGithubDownloadURL(ctx context.Context, gh *github.Client, pkg *neco.DebianPackage) (string, error) {
+// GetGitHubDownloadURL returns URL of specified Debian package hosted in GitHub releases.
+func GetGitHubDownloadURL(ctx context.Context, gh *github.Client, pkg *neco.DebianPackage) (string, error) {
 	releases, err := listGithubReleases(ctx, gh, pkg)
 	if err != nil {
 		return "", err
@@ -75,22 +74,29 @@ func GetGithubDownloadURL(ctx context.Context, gh *github.Client, pkg *neco.Debi
 		return "", fmt.Errorf("no such release: %s@%s", pkg.Repository, pkg.Release)
 	}
 
-	var asset *github.ReleaseAsset
-	for _, a := range release.Assets {
-		if strings.HasSuffix(*a.Name, ".deb") && strings.HasPrefix(*a.Name, "neco_") {
-			asset = &a
-			break
-		}
-	}
+	asset := findDebAsset(release.Assets, pkg.Name)
 	if asset == nil {
-		return "", errors.New("neco debian package not found")
+		return "", fmt.Errorf("debian package not found: %s@%s", pkg.Repository, pkg.Release)
 	}
-
 	if asset.BrowserDownloadURL == nil {
 		return "", fmt.Errorf("asset browser-download-url is empty: %s@%s", pkg.Repository, pkg.Release)
 	}
 
 	return *asset.BrowserDownloadURL, nil
+}
+
+func findDebAsset(assets []github.ReleaseAsset, name string) *github.ReleaseAsset {
+	filePattern := regexp.MustCompile(fmt.Sprintf(`^%s_.*\.deb$`, name))
+	for _, a := range assets {
+		name := a.Name
+		if name == nil {
+			continue
+		}
+		if filePattern.MatchString(*name) {
+			return &a
+		}
+	}
+	return nil
 }
 
 func listGithubReleases(ctx context.Context, gh *github.Client, pkg *neco.DebianPackage) ([]*github.RepositoryRelease, error) {
