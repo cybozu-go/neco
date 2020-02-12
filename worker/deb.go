@@ -2,10 +2,12 @@ package worker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
@@ -73,11 +75,17 @@ func GetGithubDownloadURL(ctx context.Context, gh *github.Client, pkg *neco.Debi
 		return "", fmt.Errorf("no such release: %s@%s", pkg.Repository, pkg.Release)
 	}
 
-	if len(release.Assets) != 1 {
-		return "", fmt.Errorf("no asset in release: %s@%s", pkg.Repository, pkg.Release)
+	var asset *github.ReleaseAsset
+	for _, a := range release.Assets {
+		if strings.HasSuffix(*a.Name, ".deb") && strings.HasPrefix(*a.Name, "neco_") {
+			asset = &a
+			break
+		}
+	}
+	if asset == nil {
+		return "", errors.New("neco debian package not found")
 	}
 
-	asset := release.Assets[0]
 	if asset.BrowserDownloadURL == nil {
 		return "", fmt.Errorf("asset browser-download-url is empty: %s@%s", pkg.Repository, pkg.Release)
 	}
