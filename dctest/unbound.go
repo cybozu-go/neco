@@ -45,7 +45,7 @@ func TestUnbound() {
 		By("running a test pod")
 		execSafeAt(boot0, "kubectl", "run", "test",
 			"--image=$(ckecli images | grep quay.io/cybozu/unbound)",
-			"--generator=run-pod/v1", "--command", "--", "/bin/sleep", "infinity")
+			"--generator=run-pod/v1", "--command", "--", "pause")
 
 		By("executing getent hosts www.cybozu.com in test pod")
 		Eventually(func() error {
