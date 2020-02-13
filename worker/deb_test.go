@@ -1,23 +1,56 @@
 package worker
 
 import (
-	"context"
-	"net/http"
+	"reflect"
 	"testing"
 
-	"github.com/cybozu-go/neco"
+	"github.com/google/go-github/v18/github"
 )
 
-func TestInstallDebianPackage(t *testing.T) {
-	t.Skip()
-	t.Parallel()
-
-	pkg := &neco.DebianPackage{
-		Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v0.5",
+func TestFindDebAsset(t *testing.T) {
+	type args struct {
+		assets []github.ReleaseAsset
+		name   string
 	}
-
-	err := InstallDebianPackage(context.Background(), http.DefaultClient, http.DefaultClient, pkg, true)
-	if err != nil {
-		t.Fatal(err)
+	tests := []struct {
+		name string
+		args args
+		want *github.ReleaseAsset
+	}{
+		{
+			"valid",
+			args{
+				assets: []github.ReleaseAsset{{Name: strToPointer("etcdpasswd_aaa.deb")}},
+				name:   "etcdpasswd",
+			},
+			&github.ReleaseAsset{Name: strToPointer("etcdpasswd_aaa.deb")},
+		},
+		{
+			"invalid ext",
+			args{
+				assets: []github.ReleaseAsset{{Name: strToPointer("etcdpasswd_aaa.zip")}},
+				name:   "etcdpasswd",
+			},
+			nil,
+		},
+		{
+			"name not matched",
+			args{
+				assets: []github.ReleaseAsset{{Name: strToPointer("etcdpasswd_aaa.deb")}},
+				name:   "neco",
+			},
+			nil,
+		},
 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := findDebAsset(tt.args.assets, tt.args.name); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("findDebAsset() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func strToPointer(str string) *string {
+	return &str
 }
