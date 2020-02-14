@@ -41,7 +41,9 @@ for DM in $(ls /dev/dm-*); do
     if ! $(echo i | gdisk $DM 2> /dev/null | grep "Partition name:" | grep -q "'$PART_NAME'"); then
         echo "create a partition on $DM (backed by $DEV_PATH)"
         echo "$GDISK_CMD" | gdisk $DM
+        sync
+        sleep 1
     fi
     echo "update partition devmappings on $DM"
-    kpartx -u $DM
+    kpartx -u -s $DM
 done
