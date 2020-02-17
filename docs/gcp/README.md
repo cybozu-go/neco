@@ -9,7 +9,7 @@ Requirements
 Overview
 --------
 
-![workflow](http://www.plantuml.com/plantuml/svg/ZP1DJWGX58JtdABISQ6BngWxJCmOntW23u3mGdVaXpGmqTjBbEb5_vXPlbVKzuewf2odN9nbKkKmeRlZE5AquHjlpw-GCNPdvPxZPIAP2IVtrPEN7vOqHYSDpMyUEDuJOGWfzoU7qLUyLrKlYPIiIhVXPM9rLA3ldt3TfXi8N45f61Llw_m89py9-jV2n3_16cUr_oDwKg4YeLPk9dP-8i3vnS1cteMrT8jrOnbbGz5GmSLIMIaDCs_hFETR975kPgcWfD4Rh41ixdm_sv4iLQJCyACPCZkGryNP7m00)
+![workflow](http://www.plantuml.com/plantuml/svg/ZT0xoiCm40JWNgSOp5_yAIH8IXN1a3Fa0CfwaGrw64ioENvSH2dy26btD9-MRLCsKoxU2KCvJcZE2hU9JMRC_Yavc8VZ3eCtbflwvg9mJum-fYndZo4iIA0bBud9B4cpqnNw2wqXvHN_c_a96dy8JD7I2DgqXJxOHKEfNy5QFiBgTglnsxBaOkb0qOybCrBgFzxUzqhjIRfUPfsWf25OR23HSkYAToy0)
 
 Developer's development environment is deployed by GCE.
 The instance name is called `host-vm` which is based on `vmx-enabled` instance image.
@@ -36,13 +36,6 @@ First, download a credential to access your GCP account by following steps:
 1. Run `gcloud auth login` with your GCP project.
 1. Edit `$HOME/.necogcp.yml`. See [config.md](config.md)
 
-### Deploy GAE app for your project
-
-You can skip this step if the GAE app is up to date.
-
-```console
-make -f Makefile.gcp create
-```
 ### Install necogcp command
 
 necogcp command is used for creating a VM image, creating a VM instance, and so on.
