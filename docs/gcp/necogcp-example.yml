@@ -10,6 +10,9 @@ app:
     - my-instance-2
 compute:
   machine-type: n1-standard-32
+  auto-shutdown:
+    timezone: "Asia/Tokyo"
+    shutdown-at: "21:00"
   boot-disk-sizeGB: 20
   optional-packages: ["manpages-dev", "glibc-doc"]
   host-vm:
