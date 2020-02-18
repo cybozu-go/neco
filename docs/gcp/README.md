@@ -56,7 +56,7 @@ If you want to update your existing image, re-run this command.
 
 ### Extend time to delete `host-vm` automatically
 
-`host-vm` created by `necogcp create-instance` has a `at` job which deletes `host-vm` instance at certain time.
+`host-vm` created by `necogcp create-instance` has a `at` job which deletes `host-vm` instance at 21:00 JST by default.
 If you want to extend the time, please modify the `at` job.
 
 
