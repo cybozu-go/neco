@@ -15,16 +15,6 @@ Developer's development environment is deployed by GCE.
 The instance name is called `host-vm` which is based on `vmx-enabled` instance image.
 Developer can create custom `vmx-enabled` image with `$HOME/.neco-gcp.yml`.
 
-GAE app
--------
-
-**To prevent over cost of GCP billing, You have to deploy GAE app in advance.**
-
-GAE app on your GCP project does:
-
-- Stop given instances at night.
-- Delete `host-vm` instance and other all instances at night.
-
 Usage
 -----
 
@@ -54,7 +44,7 @@ If you want to update your existing image, re-run this command.
 
 ### Use `host-vm` instance for your project
 
-**`host-vm` instance is deleted by GAE app every evening, You have to run above step every day.**
+**`host-vm` instance is deleted by `at` job which is created by `necogcp create-instance`**
 
 Please create `vmx-enabled` image in advance with above step.
 
@@ -63,6 +53,11 @@ necogcp create-instance
 ```
 
 If you want to update your existing image, re-run this command.
+
+### Extend time to delete `host-vm` automatically
+
+`host-vm` created by `necogcp create-instance` has a `at` job which deletes `host-vm` instance at certain time.
+If you want to extend the time, please modify the `at` job.
 
 
 For `neco-test` GCP project
