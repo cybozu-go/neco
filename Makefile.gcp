@@ -14,8 +14,6 @@ CRON_YAML = $(CURDIR)/pkg/necogcp-app/cron.yaml
 all:
 	@echo "Specify one of these targets:"
 	@echo
-	@echo "    create                      - Deploy GAE app on your project"
-	@echo "    destroy                     - Destroy all version of GAE app on your project"
 	@echo "    PROJECT=neco-test create    - Deploy GAE app on neco-test"
 	@echo "    PROJECT=neco-test destroy   - Destroy all version of GAE app on neco-test"
 
