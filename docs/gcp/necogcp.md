@@ -1,7 +1,7 @@
 necogcp
 =======
 
-`necogcp` is comamnd line tool for GCP provisioning.
+`necogcp` is a command-line tool for GCP provisioning.
 
 Synopsis
 --------
@@ -54,9 +54,9 @@ Synopsis
 Flags
 -----
 
-Flag            | Default value    | Description
---------------- | ---------------- | -----------
-`--config`      | `$HOME/.necogcp.yml` | [Viper configuration file](https://github.com/spf13/viper#reading-config-files).
+| Flag       | Default value        | Description                                                                      |
+| ---------- | -------------------- | -------------------------------------------------------------------------------- |
+| `--config` | `$HOME/.necogcp.yml` | [Viper configuration file](https://github.com/spf13/viper#reading-config-files). |
 
 Configuration file
 ------------------
