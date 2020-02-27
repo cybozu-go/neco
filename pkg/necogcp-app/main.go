@@ -26,7 +26,7 @@ func loadConfig() (*gcp.Config, error) {
 	data, err := ioutil.ReadFile(cfgFile)
 	if err != nil {
 		// If cfgFile does not exist, use neco-test config
-		return gcp.NecoTestConfig(), nil
+		return gcp.NecoTestConfig(), nil // return nil
 	}
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
