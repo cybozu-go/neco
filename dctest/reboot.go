@@ -84,22 +84,21 @@ func TestRebootAllNodes() {
 	})
 
 	It("reboots all nodes", func() {
-		By("reboot all nodes")
+		By("getting machines list")
 		stdout, _, err := execAt(boot0, "sabactl", "machines", "get")
 		Expect(err).ShouldNot(HaveOccurred())
 		var machines []sabakan.Machine
 		err = json.Unmarshal(stdout, &machines)
 		Expect(err).ShouldNot(HaveOccurred())
+
+		By("shutdown all nodes")
+		// Skip reboot vm on rack-3 because IPMI is not initialized
 		for _, m := range machines {
-			if m.Spec.Role == "boot" {
+			if m.Spec.Role == "boot" || m.Spec.Rack == 3 {
 				continue
 			}
-			_, _, err = execAt(boot0, "neco", "ipmipower", "stop", m.Spec.IPv4[0])
-			Expect(err).ShouldNot(HaveOccurred())
-		}
-		for _, m := range machines {
-			_, _, err = execAt(boot0, "neco", "ipmipower", "start", m.Spec.IPv4[0])
-			Expect(err).ShouldNot(HaveOccurred())
+			stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "stop", m.Spec.IPv4[0])
+			Expect(err).ShouldNot(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 		}
 
 		By("wait for rebooting")
@@ -126,12 +125,28 @@ func TestRebootAllNodes() {
 				}
 			}
 			if len(preReboot) > 0 {
+				fmt.Println("retry to ipmipower-stop", preReboot)
+				for addr := range preReboot {
+					stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "stop", addr)
+					if err != nil {
+						fmt.Println("unable to ipmipower-stop", addr, "stdout:", string(stdout), "stderr:", string(stderr))
+					}
+				}
 				return fmt.Errorf("some nodes are still starting reboot: %v", preReboot)
 			}
 			return nil
 		}).Should(Succeed())
 
-		By("recover all nodes")
+		By("start all nodes")
+		for _, m := range machines {
+			if m.Spec.Rack == 3 {
+				continue
+			}
+			stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "start", m.Spec.IPv4[0])
+			Expect(err).ShouldNot(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
+		}
+
+		By("wait for recovery of all nodes")
 		Eventually(func() error {
 			nodes, err := fetchClusterNodes()
 			if err != nil {
@@ -151,6 +166,11 @@ func TestRebootAllNodes() {
 					addr := addrs[0]
 					if addr == k {
 						if m.Status != "alive" {
+							fmt.Println("retry to ipmipower-start", addr)
+							stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "start", addr)
+							if err != nil {
+								fmt.Println("unable to ipmipower-start", addr, "stdout:", string(stdout), "stderr:", string(stderr))
+							}
 							return fmt.Errorf("reboot failed: %s, %v", k, m)
 						}
 						continue OUTER
