@@ -193,6 +193,7 @@ func TestRebootAllNodes() {
 	})
 
 	It("sets all nodes' machine state to healthy", func() {
+		By("getting machine state")
 		Eventually(func() error {
 			stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get")
 			if err != nil {
@@ -209,10 +210,8 @@ func TestRebootAllNodes() {
 				if m.Spec.Role == "boot" {
 					continue
 				}
-				stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", m.Spec.Serial)
-				state := string(bytes.TrimSpace(stdout))
-				if state != "healthy" {
-					return fmt.Errorf("sabakan machine state of %s is not healthy: %s", m.Spec.Serial, state)
+				if m.Status.State != "healthy" {
+					return fmt.Errorf("sabakan machine state of %s is not healthy: %s", m.Spec.Serial, m.Status.State)
 				}
 			}
 
