@@ -163,7 +163,6 @@ func TestRebootAllNodes() {
 				serfMember = append(serfMember, mem.Name+":"+mem.Status)
 			}
 			sort.Strings(serfMember)
-			fmt.Printf("expected %d, actual %d\n", len(nodes), len(result.Members))
 			fmt.Printf("%d: %s\n", len(result.Members), strings.Join(serfMember, ","))
 
 		OUTER:
