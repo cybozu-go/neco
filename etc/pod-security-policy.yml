@@ -19,6 +19,8 @@ spec:
     - 'downwardAPI'
     # Assume that persistentVolumes set up by the cluster admin are safe to use.
     - 'persistentVolumeClaim'
+    # Allow inline ephemeral volume.
+    - 'csi'
   hostNetwork: false
   hostIPC: false
   hostPID: false
