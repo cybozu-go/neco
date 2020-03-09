@@ -1,10 +1,10 @@
 package dctest
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/cybozu-go/sabakan/v2"
@@ -156,6 +156,16 @@ func TestRebootAllNodes() {
 			if err != nil {
 				return err
 			}
+
+			// Debug log
+			var serfMember []string
+			for _, mem := range result.Members {
+				serfMember = append(serfMember, mem.Name+":"+mem.Status)
+			}
+			sort.Strings(serfMember)
+			fmt.Printf("expected %d, actual %d\n", len(nodes), len(result.Members))
+			fmt.Printf("%d: %s\n", len(result.Members), strings.Join(serfMember, ","))
+
 		OUTER:
 			for k := range nodes {
 				for _, m := range result.Members {
