@@ -103,7 +103,7 @@ github.com/containers/storage/pkg/stringid
 github.com/containers/storage/pkg/stringutils
 github.com/containers/storage/pkg/system
 github.com/containers/storage/pkg/truncindex
-# github.com/coreos/etcd v3.3.15+incompatible
+# github.com/coreos/etcd v3.3.19+incompatible
 github.com/coreos/etcd/auth/authpb
 github.com/coreos/etcd/clientv3
 github.com/coreos/etcd/clientv3/balancer
@@ -122,6 +122,7 @@ github.com/coreos/etcd/pkg/systemd
 github.com/coreos/etcd/pkg/types
 github.com/coreos/etcd/raft
 github.com/coreos/etcd/raft/raftpb
+github.com/coreos/etcd/version
 # github.com/coreos/go-semver v0.3.0
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f
