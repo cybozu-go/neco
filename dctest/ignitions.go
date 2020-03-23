@@ -44,7 +44,7 @@ func TestIgnitions() {
 		ssNodeIP = machines[0].Spec.IPv4[0]
 	})
 
-	It("should create by-path based symlinks for partitions on encrypted devices", func() {
+	It("should create by-path based symlinks for encrypted devices", func() {
 		By("checking the number of symlinks")
 		stdout, stderr, err := execAt(boot0, "ckecli", "ssh", "cybozu@"+ssNodeIP, "ls", cryptDiskDir)
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
