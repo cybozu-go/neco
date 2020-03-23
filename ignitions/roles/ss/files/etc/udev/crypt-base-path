@@ -9,8 +9,7 @@ output_log() {
 }
 
 CRYPT_DEV=$(dmsetup deps -u $UUID -o devname | sed -e 's/.*(\(.*\))/\1/')
-DISK_DEV=$(dmsetup deps $CRYPT_DEV -o devname | sed -e 's/.*(\(.*\))/\1/')
-UDEV_LINKS=$(udevadm info -q symlink -n $DISK_DEV)
+UDEV_LINKS=$(udevadm info -q symlink -n /dev/$CRYPT_DEV)
 
 output_log "CRYPT_DEV: $CRYPT_DEV DISK_DEV:$DISK_DEV"
 output_log "UDEV_LINKS:$UDEV_LINKS"
@@ -18,6 +17,8 @@ output_log "UDEV_LINKS:$UDEV_LINKS"
 for symlink in $UDEV_LINKS; do
   case ${symlink} in
     disk/by-path/virtio-*)
+      ;;
+    disk/by-path/*-ata-*)
       ;;
     disk/by-path/*)
       output_log "find a symlink:$symlink"
