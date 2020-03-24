@@ -32,6 +32,6 @@ if [ -z "$CRYPT_BASE_PATH" ]; then
   exit 1
 fi
 
-mkdir -p /dev/crypt-part/by-path/
+mkdir -p /dev/crypt-disk/by-path/
 echo "CRYPT_BASE_PATH=$CRYPT_BASE_PATH"
 exit 0
