@@ -43,8 +43,9 @@ var FunctionsSuite = func() {
 
 // UpgradeSuite is a test suite that tests upgrading process works correctry
 var UpgradeSuite = func() {
-	// cs x 6 + ss x 4 = 10
-	availableNodes := 10
+	// TODO: reflect increase of ss after new menu.yml is released
+	// cs x 6 + ss x 1 = 7
+	availableNodes := 7
 	Context("sabakan-state-setter", func() {
 		TestSabakanStateSetter(availableNodes)
 	})
