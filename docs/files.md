@@ -62,6 +62,17 @@ Ignitions registered by neco-worker to sabakan are included in `/usr/share/neco/
 neco-worker identify role and its ignitions by listing the directory.
 The directory must contain an entry point file `site.yml`, which defined in [sabakan ignition spec.][ignition.md].
 
+`/etc/udev` (only for ss)
+-------------------------
+
+### `crypt-base-path`
+
+The shell script to determine link names located under `/dev/crypt-disk/by-path` based on the bus where the devices are connected. This script is used in udev rule `99-neco.rules`.
+
+### `rules.d/99-neco.rules`
+
+The udev rules to create the links located under `/dev/crypt-disk/by-path`.
+
 
 [etcdutil]: https://github.com/cybozu-go/etcdutil
 [sabakan]: https://github.com/cybozu-go/sabakan
