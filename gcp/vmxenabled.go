@@ -204,7 +204,7 @@ func configureApt(ctx context.Context) error {
 }
 
 func configureSWTPM(ctx context.Context) error {
-	return well.CommandContext(ctx, "add-apt-repository", "ppa:smoser/swtpm").Run()
+	return well.CommandContext(ctx, "add-apt-repository", "-y", "ppa:smoser/swtpm").Run()
 }
 
 func configureProjectAtomic(ctx context.Context) error {
