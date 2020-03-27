@@ -4,8 +4,8 @@ import . "github.com/onsi/ginkgo"
 
 // BootstrapSuite is a test suite that tests initial setup of Neco
 var BootstrapSuite = func() {
-	// cs x 6 + ss x 1 = 7
-	availableNodes := 7
+	// cs x 6 + ss x 4 = 10
+	availableNodes := 10
 	Context("setup", TestSetup)
 	Context("initialize", TestInit)
 	Context("sabakan", TestSabakan)
@@ -41,6 +41,7 @@ var FunctionsSuite = func() {
 
 // UpgradeSuite is a test suite that tests upgrading process works correctry
 var UpgradeSuite = func() {
+	// TODO: reflect increase of ss after new menu.yml is released
 	// cs x 6 + ss x 1 = 7
 	availableNodes := 7
 	Context("sabakan-state-setter", func() {
