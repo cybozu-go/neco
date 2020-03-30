@@ -1,6 +1,12 @@
 package dctest
 
-import . "github.com/onsi/ginkgo"
+import (
+	"encoding/json"
+
+	"github.com/cybozu-go/cke/sabakan"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
 
 // BootstrapSuite is a test suite that tests initial setup of Neco
 var BootstrapSuite = func() {
@@ -41,8 +47,15 @@ var FunctionsSuite = func() {
 
 // UpgradeSuite is a test suite that tests upgrading process works correctry
 var UpgradeSuite = func() {
-	// cs x 6 + ss x 4 = 10
-	availableNodes := 10
+	By("getting machines list")
+	stdout, _, err := execAt(boot0, "sabactl", "machines", "get")
+	Expect(err).ShouldNot(HaveOccurred())
+	var machines []sabakan.Machine
+	err = json.Unmarshal(stdout, &machines)
+	Expect(err).ShouldNot(HaveOccurred())
+	availableNodes := len(machines)
+	Expect(availableNodes).NotTo(Equal(0))
+
 	Context("sabakan-state-setter", func() {
 		TestSabakanStateSetter(availableNodes)
 	})
