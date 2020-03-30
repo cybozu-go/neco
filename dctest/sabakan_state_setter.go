@@ -16,12 +16,19 @@ import (
 func TestSabakanStateSetter() {
 	It("should wait for all nodes to join serf", func() {
 		By("getting machines list")
-		stdout, _, err := execAt(boot0, "sabactl", "machines", "get")
+		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role=cs")
 		Expect(err).ShouldNot(HaveOccurred())
-		var machines []sabakan.Machine
-		err = json.Unmarshal(stdout, &machines)
+		var csMachines []sabakan.Machine
+		err = json.Unmarshal(stdout, &csMachines)
 		Expect(err).ShouldNot(HaveOccurred())
-		availableNodes := len(machines)
+
+		stdout, _, err = execAt(boot0, "sabactl", "machines", "get", "--role=ss")
+		Expect(err).ShouldNot(HaveOccurred())
+		var ssMachines []sabakan.Machine
+		err = json.Unmarshal(stdout, &ssMachines)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		availableNodes := len(csMachines) + len(ssMachines)
 		Expect(availableNodes).NotTo(Equal(0))
 
 		By("checking all serf members are active")
