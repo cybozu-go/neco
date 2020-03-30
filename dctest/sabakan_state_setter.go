@@ -13,8 +13,17 @@ import (
 )
 
 // TestSabakanStateSetter tests the behavior of sabakan-state-setter in bootstrapping
-func TestSabakanStateSetter(availableNodes int) {
+func TestSabakanStateSetter() {
 	It("should wait for all nodes to join serf", func() {
+		By("getting machines list")
+		stdout, _, err := execAt(boot0, "sabactl", "machines", "get")
+		Expect(err).ShouldNot(HaveOccurred())
+		var machines []sabakan.Machine
+		err = json.Unmarshal(stdout, &machines)
+		Expect(err).ShouldNot(HaveOccurred())
+		availableNodes := len(machines)
+		Expect(availableNodes).NotTo(Equal(0))
+
 		By("checking all serf members are active")
 		Eventually(func() error {
 			m, err := getSerfWorkerMembers()
