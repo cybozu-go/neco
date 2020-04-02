@@ -80,7 +80,7 @@ systemd:
     enabled: true
   - name: cke-image-etcd.service
     enabled: true
-  - name: cke-image-hyperkube.service
+  - name: cke-image-kubernetes.service
     enabled: true
   - name: cke-image-pause.service
     enabled: true

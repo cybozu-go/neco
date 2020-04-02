@@ -24,11 +24,8 @@ spec:
     - cs: 2
       ss: 1
     - cs: 2
-      ss: 1
     - cs: 1
-      ss: 1
     - cs: 1
-      ss: 1
 ---
 kind: Image
 name: custom-ubuntu-image
