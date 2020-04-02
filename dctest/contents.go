@@ -36,7 +36,7 @@ func TestInitData() {
 
 		By("initialize data for sabakan and CKE")
 		execSafeAt(boot0, "neco", "cke", "weight", "set", "cs", "2")
-		execSafeAt(boot0, "neco", "cke", "weight", "set", "ss", "3")
+		execSafeAt(boot0, "neco", "cke", "weight", "set", "ss", "1")
 		stdout, stderr, err := execAt(boot0, "neco", "cke", "weight", "list")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		var result map[string]int
@@ -47,13 +47,13 @@ func TestInitData() {
 		Expect(v).To(Equal(2))
 		v, ok = result["ss"]
 		Expect(ok).To(BeTrue())
-		Expect(v).To(Equal(3))
+		Expect(v).To(Equal(1))
 		stdout, stderr, err = execAt(boot0, "neco", "cke", "weight", "get", "cs")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		Expect(string(bytes.TrimSpace(stdout))).To(Equal("2"))
 		stdout, stderr, err = execAt(boot0, "neco", "cke", "weight", "get", "ss")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		Expect(string(bytes.TrimSpace(stdout))).To(Equal("3"))
+		Expect(string(bytes.TrimSpace(stdout))).To(Equal("1"))
 		execSafeAt(boot0, "neco", "cke", "update")
 		stdout, stderr, err = execAt(boot0, "ckecli", "sabakan", "get-template")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
@@ -65,7 +65,7 @@ func TestInitData() {
 		Expect(weight).To(BeNumerically("==", 2.000000))
 		weight, err = strconv.ParseFloat(ckeTemplate.Nodes[2].Labels[sabakan.CKELabelWeight], 64)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(weight).To(BeNumerically("==", 3.000000))
+		Expect(weight).To(BeNumerically("==", 1.000000))
 		execSafeAt(boot0, "neco", "init-data")
 	})
 }
