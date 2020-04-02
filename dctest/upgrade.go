@@ -218,7 +218,7 @@ func TestUpgrade() {
 					return checkVersionInDeployment("internet-egress", "unbound", img)
 				case "quay.io/cybozu/coredns":
 					return checkVersionInDeployment("kube-system", "cluster-dns", img)
-				case "quay.io/cybozu/hyperkube":
+				case "quay.io/cybozu/kubernetes":
 					for _, node := range cluster.Nodes {
 						if node.ControlPlane {
 							for _, cn := range []string{"kube-apiserver", "kube-scheduler", "kube-controller-manager"} {
