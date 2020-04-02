@@ -1,5 +1,5 @@
 [Unit]
-Description=Load hyperkube image for CKE
+Description=Load kubernetes image for CKE
 Wants=network-online.target
 Requires=docker.service
 After=network-online.target docker.service wait-k8s-containerd-socket.service
@@ -8,7 +8,7 @@ After=network-online.target docker.service wait-k8s-containerd-socket.service
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/opt/bin/load-docker-image \
-  {{ MyURL }}/api/v1/assets/{{ Metadata "cke:hyperkube.img" }} {{ Metadata "cke:hyperkube.ref" }}
+  {{ MyURL }}/api/v1/assets/{{ Metadata "cke:kubernetes.img" }} {{ Metadata "cke:kubernetes.ref" }}
 StandardOutput=journal+console
 StandardError=journal+console
 
