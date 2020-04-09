@@ -8,3 +8,7 @@ BINDIR := $(WORKDIR)/usr/bin
 SBINDIR := $(WORKDIR)/usr/sbin
 LIBEXECDIR := $(WORKDIR)/usr/libexec/neco
 SHAREDIR := $(WORKDIR)/usr/share/neco
+OPWORKDIR := $(CURDIR)/op-work
+OPCONTROL := $(OPWORKDIR)/DEBIAN/control
+OPBINDIR := $(OPWORKDIR)/usr/bin
+OPDOCDIR := $(OPWORKDIR)/usr/share/doc
