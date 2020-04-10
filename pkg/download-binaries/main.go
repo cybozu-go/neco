@@ -92,16 +92,18 @@ func main() {
 	for _, u := range urls {
 		files = append(files, filepath.Base(u))
 	}
+	defer func() {
+		for _, filename := range files {
+			err = os.Remove(filepath.Join(*outputDir, filename))
+			if err != nil {
+				log.ErrorExit(err)
+			}
+		}
+	}()
 
 	err = createZip(files)
 	if err != nil {
 		log.ErrorExit(err)
-	}
-	for _, filename := range files {
-		err = os.Remove(filename)
-		if err != nil {
-			log.ErrorExit(err)
-		}
 	}
 }
 
@@ -118,7 +120,7 @@ func createZip(files []string) error {
 
 	for _, filename := range files {
 		err := func(filename string) error {
-			src, err := os.Open(filename)
+			src, err := os.Open(filepath.Join(*outputDir, filename))
 			if err != nil {
 				return err
 			}
