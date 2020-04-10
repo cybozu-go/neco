@@ -275,7 +275,7 @@ func (d *downloader) fetchArgoCDTag(ctx context.Context) (string, error) {
 				if len(split) != 2 {
 					return "", errors.New("unexpected image format: " + c.Image)
 				}
-				return split[1], nil
+				return strings.TrimPrefix(split[1], "v"), nil
 			}
 		}
 	}
