@@ -58,7 +58,7 @@ func main() {
 	if err != nil {
 		log.ErrorExit(err)
 	}
-	argoCDtag, err := d.fetchArgoCDTag(ctx)
+	argoCDTag, err := d.fetchArgoCDTag(ctx)
 	if err != nil {
 		log.ErrorExit(err)
 	}
@@ -73,8 +73,8 @@ func main() {
 		fmt.Sprintf(teleportLinuxURL, teleportVersion),
 		fmt.Sprintf(kubectlWindowsURL, kubectlVersion),
 		fmt.Sprintf(kubectlLinuxURL, kubectlVersion),
-		fmt.Sprintf(argoCDWindowsURL, argoCDtag),
-		fmt.Sprintf(argoCDLinuxURL, argoCDtag),
+		fmt.Sprintf(argoCDWindowsURL, argoCDTag),
+		fmt.Sprintf(argoCDLinuxURL, argoCDTag),
 	}
 
 	env := well.NewEnvironment(ctx)
@@ -155,17 +155,6 @@ func createZip(files []string) error {
 	return os.Rename(newZipFile.Name(), filepath.Join(*outputDir, zipFileName))
 }
 
-func newDownloader(ctx context.Context) downloader {
-	var hc *http.Client
-	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: token},
-		)
-		hc = oauth2.NewClient(ctx, ts)
-	}
-	return downloader{neco.NewGitHubClient(hc)}
-}
-
 func prepareOutputDir() error {
 	_, err := os.Stat(*outputDir)
 	if err != nil && !os.IsNotExist(err) {
@@ -207,13 +196,15 @@ func generateDownloadFile(url string) func(context.Context) error {
 	}
 }
 
-func getImageTag(name string) (url string) {
-	for _, img := range neco.CurrentArtifacts.Images {
-		if img.Name == name {
-			return img.Tag
-		}
+func newDownloader(ctx context.Context) downloader {
+	var hc *http.Client
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: token},
+		)
+		hc = oauth2.NewClient(ctx, ts)
 	}
-	return ""
+	return downloader{neco.NewGitHubClient(hc)}
 }
 
 func (d *downloader) fetchKubectlVersion(ctx context.Context) (string, error) {
@@ -239,30 +230,6 @@ func (d *downloader) fetchKubectlVersion(ctx context.Context) (string, error) {
 		return "", err
 	}
 	return fullVersion, nil
-}
-
-func getLatestPatchVersionFromReleases(releases []*github.RepositoryRelease, vString string) (string, error) {
-	latestPatchVersion, err := version.NewVersion(fmt.Sprintf("%s.0", vString))
-	if err != nil {
-		return "", err
-	}
-	for _, r := range releases {
-		if r.GetTargetCommitish() != fmt.Sprintf("release-%s", vString) {
-			continue
-		}
-		v, err := version.NewVersion(strings.TrimPrefix(r.GetTagName(), "v"))
-		if err != nil {
-			log.Error("failed convert tag to version", map[string]interface{}{
-				"tag":       r.GetTagName(),
-				log.FnError: err,
-			})
-			continue
-		}
-		if latestPatchVersion.LessThan(v) {
-			latestPatchVersion = v
-		}
-	}
-	return latestPatchVersion.String(), nil
 }
 
 func (d *downloader) getTeleportVersion() (string, error) {
@@ -313,4 +280,37 @@ func (d *downloader) fetchArgoCDTag(ctx context.Context) (string, error) {
 		}
 	}
 	return "", errors.New("argocd-server deployment not found")
+}
+
+func getImageTag(name string) (url string) {
+	for _, img := range neco.CurrentArtifacts.Images {
+		if img.Name == name {
+			return img.Tag
+		}
+	}
+	return ""
+}
+
+func getLatestPatchVersionFromReleases(releases []*github.RepositoryRelease, vString string) (string, error) {
+	latestPatchVersion, err := version.NewVersion(fmt.Sprintf("%s.0", vString))
+	if err != nil {
+		return "", err
+	}
+	for _, r := range releases {
+		if r.GetTargetCommitish() != fmt.Sprintf("release-%s", vString) {
+			continue
+		}
+		v, err := version.NewVersion(strings.TrimPrefix(r.GetTagName(), "v"))
+		if err != nil {
+			log.Error("failed convert tag to version", map[string]interface{}{
+				"tag":       r.GetTagName(),
+				log.FnError: err,
+			})
+			continue
+		}
+		if latestPatchVersion.LessThan(v) {
+			latestPatchVersion = v
+		}
+	}
+	return latestPatchVersion.String(), nil
 }
