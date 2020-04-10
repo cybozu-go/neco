@@ -26,7 +26,6 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-
 const (
 	zipFileName = "operation-cli-windows-amd64.zip"
 
@@ -49,18 +48,39 @@ type downloader struct {
 func main() {
 	flag.Parse()
 	ctx := context.Background()
-	env := well.NewEnvironment(ctx)
 
-	err := prepareOutputDir()
+	d := newDownloader(ctx)
+	kubectlVersion, err := d.fetchKubectlVersion(ctx)
+	if err != nil {
+		log.ErrorExit(err)
+	}
+	teleportVersion, err := d.getTeleportVersion()
+	if err != nil {
+		log.ErrorExit(err)
+	}
+	argoCDtag, err := d.fetchArgoCDTag(ctx)
 	if err != nil {
 		log.ErrorExit(err)
 	}
 
-	d := newDownloader(ctx)
-	env.Go(d.downloadKubectl)
-	env.Go(d.downloadTeleport)
-	// TODO: Opt in downloadArgoCD after releasing windows binaries at https://github.com/argoproj/argo-cd/releases/
-	// env.Go(d.downloadArgoCD)
+	err = prepareOutputDir()
+	if err != nil {
+		log.ErrorExit(err)
+	}
+
+	urls := []string{
+		fmt.Sprintf(teleportWindowsURL, teleportVersion),
+		fmt.Sprintf(teleportLinuxURL, teleportVersion),
+		fmt.Sprintf(kubectlWindowsURL, kubectlVersion),
+		fmt.Sprintf(kubectlLinuxURL, kubectlVersion),
+		fmt.Sprintf(argoCDWindowsURL, argoCDtag),
+		fmt.Sprintf(argoCDLinuxURL, argoCDtag),
+	}
+
+	env := well.NewEnvironment(ctx)
+	for _, u := range urls {
+		env.Go(generateDownloadFile(u))
+	}
 
 	env.Stop()
 	err = env.Wait()
@@ -68,17 +88,10 @@ func main() {
 		log.ErrorExit(err)
 	}
 
-	zipFiles, err := filepath.Glob("*.zip")
-	if err != nil {
-		log.ErrorExit(err)
+	files := []string{}
+	for _, u := range urls {
+		files = append(files, filepath.Base(u))
 	}
-	exeFiles, err := filepath.Glob("*.exe")
-	if err != nil {
-		log.ErrorExit(err)
-	}
-	files := append(zipFiles, exeFiles...)
-	// TODO: Opt in after releasing windows binaries at https://github.com/argoproj/argo-cd/releases/
-	//files = append(files, filepath.Base(argoCDWindowsURL))
 
 	err = createZip(files)
 	if err != nil {
@@ -165,28 +178,31 @@ func prepareOutputDir() error {
 	return nil
 }
 
-func downloadFile(ctx context.Context, url string) error {
-	f, err := ioutil.TempFile(*outputDir, path.Base(url)+"-")
-	if err != nil {
-		return err
-	}
-	defer f.Close()
+func generateDownloadFile(url string) func(context.Context) error {
+	return func(ctx context.Context) error {
+		log.Info("downloading ...", map[string]interface{}{"url": url})
+		f, err := ioutil.TempFile(*outputDir, path.Base(url)+"-")
+		if err != nil {
+			return err
+		}
+		defer f.Close()
 
-	client := &well.HTTPClient{Client: &http.Client{}}
-	req, _ := http.NewRequest("GET", url, nil)
-	req = req.WithContext(ctx)
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+		client := &well.HTTPClient{Client: &http.Client{}}
+		req, _ := http.NewRequest("GET", url, nil)
+		req = req.WithContext(ctx)
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
 
-	_, err = io.Copy(f, resp.Body)
-	if err != nil {
-		return err
-	}
+		_, err = io.Copy(f, resp.Body)
+		if err != nil {
+			return err
+		}
 
-	return os.Rename(f.Name(), filepath.Join(*outputDir, path.Base(url)))
+		return os.Rename(f.Name(), filepath.Join(*outputDir, path.Base(url)))
+	}
 }
 
 func getImageTag(name string) (url string) {
@@ -198,29 +214,29 @@ func getImageTag(name string) (url string) {
 	return ""
 }
 
-func (d *downloader) downloadKubectl(ctx context.Context) error {
+func (d *downloader) fetchKubectlVersion(ctx context.Context) (string, error) {
+	log.Info("fetching kubectl version from github...", map[string]interface{}{})
 	ckeTag := getImageTag("cke")
 	if len(ckeTag) == 0 {
-		return errors.New("cke not found in artifacts")
+		return "", errors.New("cke not found in artifacts")
 	}
 	splitTags := strings.Split(ckeTag, ".")
 	if len(splitTags) != 3 {
-		return errors.New("cke unexpected tag format:" + ckeTag)
+		return "", errors.New("cke unexpected tag format:" + ckeTag)
 	}
 	k8sVersion := strings.Join(splitTags[:len(splitTags)-1], ".")
 
 	releases, resp, err := d.gh.Repositories.ListReleases(ctx, "kubernetes", "kubernetes", nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	fullVersion, err := getLatestPatchVersionFromReleases(releases, k8sVersion)
 	if err != nil {
-		return err
+		return "", err
 	}
-	log.Info("downloading kubectl...", map[string]interface{}{"version": fullVersion})
-	return downloadFile(ctx, fmt.Sprintf(kubectlWindowsURL, fullVersion))
+	return fullVersion, nil
 }
 
 func getLatestPatchVersionFromReleases(releases []*github.RepositoryRelease, vString string) (string, error) {
@@ -247,30 +263,21 @@ func getLatestPatchVersionFromReleases(releases []*github.RepositoryRelease, vSt
 	return latestPatchVersion.String(), nil
 }
 
-func (d *downloader) downloadTeleport(ctx context.Context) error {
+func (d *downloader) getTeleportVersion() (string, error) {
 	teleportTag := getImageTag("teleport")
 	if len(teleportTag) == 0 {
-		return errors.New("teleport not found in artifacts")
+		return "", errors.New("teleport not found in artifacts")
 	}
 	splitTags := strings.Split(teleportTag, ".")
 	if len(splitTags) != 4 {
-		return errors.New("teleport unexpected tag format:" + teleportTag)
+		return "", errors.New("teleport unexpected tag format:" + teleportTag)
 	}
 	teleportVersion := strings.Join(splitTags[:len(splitTags)-1], ".")
-	log.Info("downloading teleport...", map[string]interface{}{"version": teleportVersion})
-	return downloadFile(ctx, fmt.Sprintf(teleportWindowsURL, teleportVersion))
+	return teleportVersion, nil
 }
 
-func (d *downloader) downloadArgoCD(ctx context.Context) error {
-	argoCDTag, err := d.getArgoCDTag(ctx)
-	if err != nil {
-		return err
-	}
-	log.Info("downloading argocd...", map[string]interface{}{"version": argoCDTag})
-	return downloadFile(ctx, fmt.Sprintf(argoCDWindowsURL, argoCDTag))
-}
-
-func (d *downloader) getArgoCDTag(ctx context.Context) (string, error) {
+func (d *downloader) fetchArgoCDTag(ctx context.Context) (string, error) {
+	log.Info("fetching ArgoCD tag from github...", map[string]interface{}{})
 	const argoCDUpstreamFilePath = "argocd/base/upstream/install.yaml"
 	buf, err := d.gh.Repositories.DownloadContents(ctx, "cybozu-go", "neco-apps", argoCDUpstreamFilePath, &github.RepositoryContentGetOptions{Ref: "release"})
 	if err != nil {
