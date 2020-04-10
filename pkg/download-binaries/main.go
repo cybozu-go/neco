@@ -26,11 +26,18 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+
 const (
-	zipFileName        = "operation-cli-windows-amd64.zip"
+	zipFileName = "operation-cli-windows-amd64.zip"
+
 	teleportWindowsURL = "https://get.gravitational.com/teleport-v%s-windows-amd64-bin.zip"
-	kubectlWindowsURL  = "https://storage.googleapis.com/kubernetes-release/release/v%s/bin/windows/amd64/kubectl.exe"
-	argoCDWindowsURL   = "https://github.com/argoproj/argo-cd/releases/download/v%s/argocd-windows-amd64"
+	teleportLinuxURL   = "https://get.gravitational.com/teleport-v%s-linux-amd64-bin.tar.gz"
+
+	kubectlWindowsURL = "https://storage.googleapis.com/kubernetes-release/release/v%s/bin/windows/amd64/kubectl.exe"
+	kubectlLinuxURL   = "https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubectl"
+
+	argoCDWindowsURL = "https://github.com/argoproj/argo-cd/releases/download/v%s/argocd-windows-amd64.exe"
+	argoCDLinuxURL   = "https://github.com/argoproj/argo-cd/releases/download/v%s/argocd-linux-amd64"
 )
 
 var outputDir = flag.String("dir", ".", "The output directory. Create the directory if not present.")
