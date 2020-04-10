@@ -73,8 +73,13 @@ func main() {
 		fmt.Sprintf(teleportLinuxURL, teleportVersion),
 		fmt.Sprintf(kubectlWindowsURL, kubectlVersion),
 		fmt.Sprintf(kubectlLinuxURL, kubectlVersion),
-		fmt.Sprintf(argoCDWindowsURL, argoCDTag),
 		fmt.Sprintf(argoCDLinuxURL, argoCDTag),
+	}
+
+	// Windows binaries are provided in no less than v1.5.0
+	// https://github.com/argoproj/argo-cd/releases
+	if argoCDTag >= "1.5.0" {
+		urls = append(urls, fmt.Sprintf(argoCDWindowsURL, argoCDTag))
 	}
 
 	env := well.NewEnvironment(ctx)
