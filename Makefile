@@ -86,6 +86,7 @@ $(OP_DEB):
 		cp $(BINDIR)/$$BINNAME $(OPBINDIR) ; \
 		cp -r $(DOCDIR)/$$BINNAME $(OPDOCDIR) ; \
 	done
+	$(MAKE) -f Makefile.tools SUDO=$(SUDO) BINDIR=$(OPBINDIR) DOCDIR=$(OPDOCDIR) teleport
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(OPWORKDIR) $(DEST)
 
 gcp-deb: setup-files-for-deb
