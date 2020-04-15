@@ -29,6 +29,9 @@ STERN_VERSION = 1.11.0
 # https://github.com/cybozu/neco-containers/blob/master/argocd/Dockerfile#L32
 KUSTOMIZE_VERSION = 3.5.3
 
+## for teleport
+TELEPORT_VERSION = 4.2.8
+
 all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize
 
 node_exporter:
@@ -90,7 +93,14 @@ kustomize:
 	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
 	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
 
+teleport:
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	$(CURL) https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz | tar xzf - -C $(BINDIR) --strip 1 $@/tsh
+	$(CURL) -o $(OPDOCDIR)/$@/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
+	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
+
+
 clean:
 	rm -rf $(BUILDDIR)
 
-.PHONY:	all setup clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize
+.PHONY:	all setup clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
