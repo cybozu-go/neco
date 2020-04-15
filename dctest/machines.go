@@ -1,6 +1,8 @@
 package dctest
 
 import (
+	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -19,8 +21,14 @@ func TestMachines() {
 
 	It("should setup boot server hardware", func() {
 		for _, host := range []string{boot0, boot1, boot2} {
-			stdout, stderr, err := execAt(host, "sudo", "neco", "bmc", "setup-hw")
-			Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+			// "neco bmc setup-hw" occasionally fails due to unstable startup of sabakan, so use Eventually()
+			Eventually(func() error {
+				stdout, stderr, err := execAt(host, "sudo", "neco", "bmc", "setup-hw")
+				if err != nil {
+					return fmt.Errorf("neco bmc setup-hw failed; host: %s, err: %s, stdout: %s, stderr: %s", host, err, stdout, stderr)
+				}
+				return nil
+			}).Should(Succeed())
 		}
 	})
 }
