@@ -106,8 +106,8 @@ teleport:
 	$(CURL) -o $(OPDOCDIR)/$@/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
 	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
 	$(CURL) -o /tmp/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip
-	unzip /tmp/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip teleport/tsh.exe -d $(WINDOWS_BINDIR)
-	unzip /tmp/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip teleport/README.md -d $(WINDOWS_DOCDIR)
+	unzip -o /tmp/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip teleport/tsh.exe -d $(WINDOWS_BINDIR)
+	unzip -o /tmp/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip teleport/README.md -d $(WINDOWS_DOCDIR)
 	cp $(OPDOCDIR)/$@/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 
 clean:

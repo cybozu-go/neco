@@ -62,9 +62,9 @@ mod:
 	git add -f vendor
 	git add go.mod
 
-deb: $(DEB) $(OP_DEB)
+deb: $(DEB)
 
-zip: $(OP_ZIP)
+tools: $(OP_DEB) $(OP_ZIP)
 
 setup-tools:
 	$(MAKE) -f Makefile.tools SUDO=$(SUDO)
@@ -117,4 +117,4 @@ clean:
 	$(MAKE) -f Makefile.tools clean
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OP_DEB) $(OP_ZIP)
 
-.PHONY:	all start-etcd stop-etcd test mod deb zip setup-tools setup-files-for-deb gcp-deb necogcp git-neco setup clean
+.PHONY:	all start-etcd stop-etcd test mod deb setup-tools setup-files-for-deb gcp-deb necogcp git-neco setup clean tools
