@@ -120,9 +120,7 @@ jobs:
           command: |
             VERSION=$(echo $CIRCLE_TAG | sed 's/^release-//')
             time make deb SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
-      - run:
-          name: download binaries to workspace
-          command: go run ./pkg/download-binaries/main.go
+            time make zip SUDO=""
       - persist_to_workspace:
           root: .
           paths:

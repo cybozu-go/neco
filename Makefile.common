@@ -12,3 +12,5 @@ OPWORKDIR := $(CURDIR)/op-work
 OPCONTROL := $(OPWORKDIR)/DEBIAN/control
 OPBINDIR := $(OPWORKDIR)/usr/bin
 OPDOCDIR := $(OPWORKDIR)/usr/share/doc
+WINDOWS_BINDIR := $(WORKDIR)/windows/bin
+WINDOWS_DOCDIR := $(WORKDIR)/windows/doc
