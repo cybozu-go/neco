@@ -70,7 +70,7 @@ fi
 # Run dctest
 cd dctest
 make setup
-make placemat TAGS=${TAG_NAME} MENU=${MENU_NAME}
+make placemat TAGS=${TAG_NAME} MENU_ARG=${MENU}
 sleep 3
 exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME} DATACENTER=${DATACENTER}
 EOF
