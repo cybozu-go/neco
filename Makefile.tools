@@ -20,7 +20,6 @@ K8S_VERSION = 1.17.4
 
 ### for lvmd
 TOPOLVM_VERSION = 0.4.3
-
 ### for stern
 STERN_VERSION = 1.11.0
 
@@ -32,7 +31,7 @@ KUSTOMIZE_VERSION = 3.5.3
 ## for teleport
 TELEPORT_VERSION = 4.2.8
 
-all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize
+all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
 
 node_exporter:
 	rm -f $(LIBEXECDIR)/node_exporter
@@ -100,6 +99,8 @@ kustomize:
 	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
 
 teleport:
+	$(SUDO) apt-get update
+	$(SUDO) apt-get -y install --no-install-recommends unzip
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(OPDOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
 	$(CURL) https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz | tar xzf - -C $(BINDIR) --strip 1 $@/tsh
 	$(CURL) -o $(OPDOCDIR)/$@/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
