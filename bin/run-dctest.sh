@@ -4,6 +4,7 @@
 SUITE_NAME=$1
 TAG_NAME=$2
 DATACENTER=$3
+MENU=$4
 
 # Create GCE instance
 $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} --quiet || true
@@ -69,7 +70,7 @@ fi
 # Run dctest
 cd dctest
 make setup
-make placemat TAGS=${TAG_NAME}
+make placemat TAGS=${TAG_NAME} MENU=${MENU_NAME}
 sleep 3
 exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME} DATACENTER=${DATACENTER}
 EOF
