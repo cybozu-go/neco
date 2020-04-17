@@ -18,7 +18,11 @@ else
 endif
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
-MENU = menu.yml
+ifeq ($(MENU_ARG),)
+  MENU = menu.yml
+else
+  MENU = $(MENU_ARG)
+endif
 
 export BOOT0 BOOT1 BOOT2 BOOT3 PLACEMAT GINKGO SUITE_PACKAGE
 
