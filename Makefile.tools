@@ -20,6 +20,7 @@ K8S_VERSION = 1.17.4
 
 ### for lvmd
 TOPOLVM_VERSION = 0.4.3
+
 ### for stern
 STERN_VERSION = 1.11.0
 
@@ -66,7 +67,7 @@ argocd:
 	chmod +x $(BINDIR)/argocd
 	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/LICENSE
 	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/README.md
-	$(CURL) -o $(WINDOWS_BINDIR)/$@/argocd https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-windows-amd64.exe
+	$(CURL) -o $(WINDOWS_BINDIR)/$@/argocd.exe https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-windows-amd64.exe
 	cp $(DOCDIR)/$@/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(DOCDIR)/$@/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
@@ -99,16 +100,14 @@ kustomize:
 	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
 
 teleport:
-	$(SUDO) apt-get update
-	$(SUDO) apt-get -y install --no-install-recommends unzip
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(OPDOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
 	$(CURL) https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz | tar xzf - -C $(BINDIR) --strip 1 $@/tsh
-	$(CURL) -o $(OPDOCDIR)/$@/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
+	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
 	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
 	$(CURL) -o /tmp/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip
 	unzip -o /tmp/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip teleport/tsh.exe -d $(WINDOWS_BINDIR)
 	unzip -o /tmp/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip teleport/README.md -d $(WINDOWS_DOCDIR)
-	cp $(OPDOCDIR)/$@/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(DOCDIR)/$@/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 
 clean:
 	rm -rf $(BUILDDIR)

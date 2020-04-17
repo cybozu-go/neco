@@ -12,7 +12,7 @@ GOTAGS = $(TAGS) containers_image_openpgp containers_image_ostree_stub
 export GOFLAGS
 
 ### for debian package
-PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev libostree-dev libgpgme-dev libgpgme11 zip
+PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev libostree-dev libgpgme-dev libgpgme11 unzip zip
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
@@ -32,7 +32,8 @@ all:
 	@echo "    stop-etcd   - stop etcd."
 	@echo "    test        - run single host tests."
 	@echo "    mod         - update and vendor Go modules."
-	@echo "    deb         - build Debian packages."
+	@echo "    deb         - build Debian package."
+	@echo "    tools       - build neco-operation-cli packages."
 	@echo "    setup       - install dependencies."
 
 start-etcd:
@@ -87,7 +88,7 @@ $(DEB): setup-files-for-deb
 $(OP_DEB): setup-files-for-deb
 	mkdir -p $(OPBINDIR) $(OPDOCDIR) $(OPWORKDIR)/DEBIAN
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/; /Package: neco/s/$$/-operation-cli-linux/; s/Continuous delivery tool/Operation tools/' debian/DEBIAN/control > $(OPCONTROL)
-	for BINNAME in argocd kubectl kustomize stern; do \
+	for BINNAME in argocd kubectl kustomize stern teleport; do \
 		cp $(BINDIR)/$$BINNAME $(OPBINDIR) ; \
 		cp -r $(DOCDIR)/$$BINNAME $(OPDOCDIR) ; \
 	done
