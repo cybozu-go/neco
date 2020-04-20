@@ -97,6 +97,7 @@ jobs:
       - run: time make SUDO="" setup
       - run: time make test
       - run: time make deb SUDO="" FAKEROOT=
+      - run: time make tools SUDO="" FAKEROOT=
       - run:
           command: |
             if [ "${CIRCLE_BRANCH}" != "master" ]; then
@@ -121,8 +122,10 @@ jobs:
             VERSION=$(echo $CIRCLE_TAG | sed 's/^release-//')
             time make deb SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
       - run:
-          name: download binaries to workspace
-          command: go run ./pkg/download-binaries/main.go
+          name: Build neco-operation-cli packages
+          command: |
+            VERSION=$(echo $CIRCLE_TAG | sed 's/^release-//')
+            time make tools SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
       - persist_to_workspace:
           root: .
           paths:
