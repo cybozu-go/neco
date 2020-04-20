@@ -35,8 +35,17 @@ func TestInitData() {
 		}
 
 		By("initialize data for sabakan and CKE")
-		execSafeAt(boot0, "neco", "cke", "weight", "set", "cs", "2")
-		execSafeAt(boot0, "neco", "cke", "weight", "set", "ss", "1")
+		cs, err := getMachinesSpecifiedRole("cs")
+		Expect(err).NotTo(HaveOccurred())
+		ss, err := getMachinesSpecifiedRole("ss")
+		Expect(err).NotTo(HaveOccurred())
+		// substruct the number of control planes
+		csweight := len(cs) - 3
+		ssweight := len(ss)
+		Expect(csweight).Should(BeNumerically(">", 0))
+		Expect(ssweight).Should(BeNumerically(">", 0))
+		execSafeAt(boot0, "neco", "cke", "weight", "set", "cs", strconv.Itoa(csweight))
+		execSafeAt(boot0, "neco", "cke", "weight", "set", "ss", strconv.Itoa(ssweight))
 		stdout, stderr, err := execAt(boot0, "neco", "cke", "weight", "list")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		var result map[string]int
