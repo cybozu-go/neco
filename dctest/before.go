@@ -2,9 +2,13 @@ package dctest
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
+
+	"github.com/ghodss/yaml"
 
 	"github.com/cybozu-go/log"
 	. "github.com/onsi/ginkgo"
@@ -18,7 +22,32 @@ func RunBeforeSuite() {
 	SetDefaultEventuallyPollingInterval(time.Second)
 	SetDefaultEventuallyTimeout(10 * time.Minute)
 
-	err := prepareSSHClients(allBootServers...)
+	data, err := ioutil.ReadFile("./output/machines.yml")
+	Expect(err).NotTo(HaveOccurred())
+
+	machines := struct {
+		Racks []struct {
+			Workers struct {
+				CS int `yaml:"cs"`
+				SS int `yaml:"ss"`
+			} `yaml:"workers"`
+			Boot struct {
+				Bastion string `yaml:"bastion"`
+			} `yaml:"boot"`
+		} `yaml:"racks"`
+	}{}
+	err = yaml.Unmarshal(data, machines)
+	Expect(err).NotTo(HaveOccurred())
+
+	for i, rack := range machines.Racks {
+		addr := rack.Boot.Bastion[:strings.LastIndex(rack.Boot.Bastion, "/")]
+		if i < 3 {
+			bootServers = append(bootServers, addr)
+		}
+		allBootServers = append(bootServers, addr)
+	}
+
+	err = prepareSSHClients(allBootServers...)
 	Expect(err).NotTo(HaveOccurred())
 
 	// sync VM root filesystem to store newly generated SSH host keys.
