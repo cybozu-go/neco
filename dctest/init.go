@@ -17,23 +17,23 @@ func TestInit() {
 		// wait for vault leader election
 		time.Sleep(10 * time.Second)
 
-		stdout, stderr, err := execAt(boot0, "neco", "vault", "show-root-token")
+		stdout, stderr, err := execAt(bootServers[0], "neco", "vault", "show-root-token")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 		token := string(bytes.TrimSpace(stdout))
 
-		execSafeAt(boot0, "env", "VAULT_TOKEN="+token, "vault", "auth", "enable",
+		execSafeAt(bootServers[0], "env", "VAULT_TOKEN="+token, "vault", "auth", "enable",
 			"-default-lease-ttl=2h", "-max-lease-ttl=24h", "userpass")
-		execSafeAt(boot0, "env", "VAULT_TOKEN="+token, "vault", "write",
+		execSafeAt(bootServers[0], "env", "VAULT_TOKEN="+token, "vault", "write",
 			"auth/userpass/users/admin", "policies=admin,ca-admin", "password=cybozu")
-		execSafeAt(boot0, "env", "VAULT_TOKEN="+token, "vault", "token", "revoke", "-self")
+		execSafeAt(bootServers[0], "env", "VAULT_TOKEN="+token, "vault", "token", "revoke", "-self")
 	})
 
 	It("should success initialize etcdpasswd", func() {
 		token := getVaultToken()
 
-		execSafeAt(boot0, "neco", "init", "etcdpasswd")
+		execSafeAt(bootServers[0], "neco", "init", "etcdpasswd")
 
-		for _, host := range []string{boot0, boot1, boot2} {
+		for _, host := range bootServers {
 			stdout, stderr, err := execAt(
 				host, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "etcdpasswd")
 			if err != nil {
@@ -55,9 +55,9 @@ func TestInit() {
 	It("should initialize teleport", func() {
 		token := getVaultToken()
 
-		execSafeAt(boot0, "neco", "init", "teleport")
+		execSafeAt(bootServers[0], "neco", "init", "teleport")
 
-		for _, host := range []string{boot0, boot1, boot2} {
+		for _, host := range bootServers {
 			stdout, stderr, err := execAt(
 				host, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "teleport")
 			if err != nil {
@@ -77,14 +77,14 @@ func TestInit() {
 	})
 
 	It("should success initialize Serf", func() {
-		for _, host := range []string{boot0, boot1, boot2} {
+		for _, host := range bootServers {
 			execSafeAt(host, "test", "-f", neco.SerfConfFile)
 			execSafeAt(host, "systemctl", "-q", "is-active", "serf.service")
 		}
 	})
 
 	It("should success initialize setup-serf-tags", func() {
-		for _, host := range []string{boot0, boot1, boot2} {
+		for _, host := range bootServers {
 			execSafeAt(host, "test", "-f", "/usr/local/bin/setup-serf-tags")
 			execSafeAt(host, "systemctl", "-q", "is-active", "setup-serf-tags.timer")
 		}
@@ -114,9 +114,9 @@ func TestInit() {
 	It("should success initialize sabakan", func() {
 		token := getVaultToken()
 
-		execSafeAt(boot0, "neco", "init", "sabakan")
+		execSafeAt(bootServers[0], "neco", "init", "sabakan")
 
-		for _, host := range []string{boot0, boot1, boot2} {
+		for _, host := range bootServers {
 			stdout, stderr, err := execAt(
 				host, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "sabakan")
 			if err != nil {
@@ -142,9 +142,9 @@ func TestInit() {
 		token := getVaultToken()
 
 		By("initializing etcd for CKE")
-		execSafeAt(boot0, "neco", "init", "cke")
+		execSafeAt(bootServers[0], "neco", "init", "cke")
 
-		for _, host := range []string{boot0, boot1, boot2} {
+		for _, host := range bootServers {
 			stdout, stderr, err := execAt(
 				host, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "cke")
 			if err != nil {
@@ -164,15 +164,15 @@ func TestInit() {
 		}
 
 		By("initializing Vault for CKE")
-		execSafeAt(boot0, "env", "VAULT_TOKEN="+token, "ckecli", "vault", "init")
+		execSafeAt(bootServers[0], "env", "VAULT_TOKEN="+token, "ckecli", "vault", "init")
 	})
 
 	It("should success retrieve cke leader", func() {
-		stdout := execSafeAt(boot0, "ckecli", "leader")
+		stdout := execSafeAt(bootServers[0], "ckecli", "leader")
 		Expect(stdout).To(ContainSubstring("boot-"))
 	})
 
 	It("should generate SSH key for worker nodes", func() {
-		execSafeAt(boot0, "neco", "ssh", "generate")
+		execSafeAt(bootServers[0], "neco", "ssh", "generate")
 	})
 }

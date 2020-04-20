@@ -46,14 +46,14 @@ func TestIgnitions() {
 
 	It("should create by-path based symlinks for encrypted devices", func() {
 		By("checking the number of symlinks")
-		stdout, stderr, err := execAt(boot0, "ckecli", "ssh", "cybozu@"+ssNodeIP, "ls", cryptDiskDir)
+		stdout, stderr, err := execAt(bootServers[0], "ckecli", "ssh", "cybozu@"+ssNodeIP, "ls", cryptDiskDir)
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		devices := strings.Fields(strings.TrimSpace(string(stdout)))
 		Expect(devices).To(HaveLen(len(targetSymlinks)))
 
 		for _, t := range targetSymlinks {
 			By("checking the disk device of " + t.symlink)
-			stdout, stderr, err = execAt(boot0, "ckecli", "ssh", "cybozu@"+ssNodeIP, "--", "sudo", "dmsetup", "deps", t.symlink, "-o", "devname")
+			stdout, stderr, err = execAt(bootServers[0], "ckecli", "ssh", "cybozu@"+ssNodeIP, "--", "sudo", "dmsetup", "deps", t.symlink, "-o", "devname")
 			Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 			cryptDev := parentDev(string(stdout))
 			Expect(cryptDev).To(Equal(t.diskDev))

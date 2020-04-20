@@ -12,11 +12,12 @@ GOTAGS = $(TAGS) containers_image_openpgp containers_image_ostree_stub
 export GOFLAGS
 
 ### for debian package
-PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev libostree-dev libgpgme-dev libgpgme11
+PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev libostree-dev libgpgme-dev libgpgme11 unzip zip
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
-OP_DEB = neco-operation-cli_$(VERSION)_amd64.deb
+OP_DEB = neco-operation-cli-linux_$(VERSION)_amd64.deb
+OP_ZIP = neco-operation-cli-windows_$(VERSION)_amd64.zip
 DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
@@ -31,7 +32,8 @@ all:
 	@echo "    stop-etcd   - stop etcd."
 	@echo "    test        - run single host tests."
 	@echo "    mod         - update and vendor Go modules."
-	@echo "    deb         - build Debian packages."
+	@echo "    deb         - build Debian package."
+	@echo "    tools       - build neco-operation-cli packages."
 	@echo "    setup       - install dependencies."
 
 start-etcd:
@@ -61,10 +63,14 @@ mod:
 	git add -f vendor
 	git add go.mod
 
-deb: $(DEB) $(OP_DEB)
+deb: $(DEB)
 
-setup-files-for-deb:
+tools: $(OP_DEB) $(OP_ZIP)
+
+setup-tools:
 	$(MAKE) -f Makefile.tools SUDO=$(SUDO)
+
+setup-files-for-deb: setup-tools
 	cp -r debian/* $(WORKDIR)
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
@@ -79,15 +85,18 @@ setup-files-for-deb:
 $(DEB): setup-files-for-deb
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(WORKDIR) $(DEST)
 
-$(OP_DEB):
+$(OP_DEB): setup-files-for-deb
 	mkdir -p $(OPBINDIR) $(OPDOCDIR) $(OPWORKDIR)/DEBIAN
-	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/; /Package: neco/s/$$/-operation-cli/; s/Continuous delivery tool/Operation tools/' debian/DEBIAN/control > $(OPCONTROL)
-	for BINNAME in argocd kubectl kustomize stern; do \
+	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/; /Package: neco/s/$$/-operation-cli-linux/; s/Continuous delivery tool/Operation tools/' debian/DEBIAN/control > $(OPCONTROL)
+	for BINNAME in argocd kubectl kustomize stern teleport; do \
 		cp $(BINDIR)/$$BINNAME $(OPBINDIR) ; \
 		cp -r $(DOCDIR)/$$BINNAME $(OPDOCDIR) ; \
 	done
 	$(MAKE) -f Makefile.tools SUDO=$(SUDO) BINDIR=$(OPBINDIR) DOCDIR=$(OPDOCDIR) teleport
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(OPWORKDIR) $(DEST)
+
+$(OP_ZIP): setup-tools
+	cd $(WORKDIR)/windows/ && zip -r $(abspath .)/$@ *
 
 gcp-deb: setup-files-for-deb
 	cp dctest/passwd.yml $(SHAREDIR)/ignitions/common/passwd.yml
@@ -107,6 +116,6 @@ setup:
 
 clean:
 	$(MAKE) -f Makefile.tools clean
-	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OP_DEB)
+	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OP_DEB) $(OP_ZIP)
 
-.PHONY:	all start-etcd stop-etcd test mod deb setup-files-for-deb gcp-deb necogcp git-neco setup clean
+.PHONY:	all start-etcd stop-etcd test mod deb setup-tools setup-files-for-deb gcp-deb necogcp git-neco setup clean tools
