@@ -176,7 +176,7 @@ func waitRequestComplete(check string) {
 	time.Sleep(time.Second * 2)
 
 	EventuallyWithOffset(1, func() error {
-		stdout, stderr, err := execAt(boot0, "neco", "status")
+		stdout, stderr, err := execAt(bootServers[0], "neco", "status")
 		if err != nil {
 			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		}
@@ -195,7 +195,7 @@ func waitRequestComplete(check string) {
 func getVaultToken() string {
 	var token string
 	Eventually(func() error {
-		stdout, stderr, err := execAtWithInput(boot0, []byte("cybozu"), "vault", "login",
+		stdout, stderr, err := execAtWithInput(bootServers[0], []byte("cybozu"), "vault", "login",
 			"-token-only", "-method=userpass", "username=admin", "password=-")
 		if err != nil {
 			return errors.New(string(stderr))
@@ -215,7 +215,7 @@ func checkSystemdServicesOnBoot() {
 		"chrony-wait.service",
 	}
 	Eventually(func() error {
-		for _, host := range []string{boot0, boot1, boot2} {
+		for _, host := range bootServers {
 			for _, service := range services {
 				_, _, err := execAt(host, "systemctl", "-q", "is-active", service)
 				if err != nil {
@@ -228,7 +228,7 @@ func checkSystemdServicesOnBoot() {
 }
 
 func getSerfMembers() (*serfMemberContainer, error) {
-	stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json")
+	stdout, stderr, err := execAt(bootServers[0], "serf", "members", "-format", "json")
 	if err != nil {
 		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
 	}
@@ -241,7 +241,7 @@ func getSerfMembers() (*serfMemberContainer, error) {
 }
 
 func getSerfBootMembers() (*serfMemberContainer, error) {
-	stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "boot-server=true")
+	stdout, stderr, err := execAt(bootServers[0], "serf", "members", "-format", "json", "-tag", "boot-server=true")
 	if err != nil {
 		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
 	}
@@ -254,7 +254,7 @@ func getSerfBootMembers() (*serfMemberContainer, error) {
 }
 
 func getSerfWorkerMembers() (*serfMemberContainer, error) {
-	stdout, stderr, err := execAt(boot0, "serf", "members", "-format", "json", "-tag", "boot-server=false")
+	stdout, stderr, err := execAt(bootServers[0], "serf", "members", "-format", "json", "-tag", "boot-server=false")
 	if err != nil {
 		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
 	}

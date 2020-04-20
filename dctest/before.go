@@ -18,7 +18,7 @@ func RunBeforeSuite() {
 	SetDefaultEventuallyPollingInterval(time.Second)
 	SetDefaultEventuallyTimeout(10 * time.Minute)
 
-	err := prepareSSHClients(boot0, boot1, boot2, boot3)
+	err := prepareSSHClients(allBootServers...)
 	Expect(err).NotTo(HaveOccurred())
 
 	// sync VM root filesystem to store newly generated SSH host keys.
@@ -34,7 +34,7 @@ func RunBeforeSuiteInstall() {
 	// waiting for auto-config
 	fmt.Println("waiting for auto-config has completed")
 	Eventually(func() error {
-		for _, host := range []string{boot0, boot1, boot2, boot3} {
+		for _, host := range allBootServers {
 			_, _, err := execAt(host, "test -f /tmp/auto-config-done")
 			if err != nil {
 				return err
@@ -47,7 +47,7 @@ func RunBeforeSuiteInstall() {
 	// cloud-init reaches time-sync.target before starting chrony-wait.service
 	// Hence, restart chrony-wait.service to faster bootstrap
 	// Actually, chrony-wait.service should be started after boot and is tested by TestRebootAllBootServers
-	for _, host := range []string{boot0, boot1, boot2, boot3} {
+	for _, host := range allBootServers {
 		execSafeAt(host, "sudo", "systemctl", "restart", "chrony-wait.service")
 		execSafeAt(host, "sudo", "systemctl", "reset-failed")
 	}
@@ -61,7 +61,7 @@ func RunBeforeSuiteInstall() {
 	Expect(err).NotTo(HaveOccurred())
 	defer f.Close()
 	remoteFilename := filepath.Join("/tmp", filepath.Base(debFile))
-	for _, host := range []string{boot0, boot1, boot2, boot3} {
+	for _, host := range allBootServers {
 		_, err := f.Seek(0, os.SEEK_SET)
 		Expect(err).NotTo(HaveOccurred())
 		_, _, err = execAtWithStream(host, f, "dd", "of="+remoteFilename)
@@ -80,7 +80,7 @@ func RunBeforeSuiteCopy() {
 	Expect(err).NotTo(HaveOccurred())
 	defer f.Close()
 	remoteFilename := filepath.Join("/tmp", filepath.Base(debFile))
-	for _, host := range []string{boot0, boot1, boot2, boot3} {
+	for _, host := range allBootServers {
 		_, err := f.Seek(0, os.SEEK_SET)
 		Expect(err).NotTo(HaveOccurred())
 		_, _, err = execAtWithStream(host, f, "dd", "of="+remoteFilename)
