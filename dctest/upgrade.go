@@ -60,7 +60,7 @@ func TestUpgrade() {
 	// This process makes no effects even if after upgrading to "with label version."
 	// However, we should delete after upgrading.
 	It("should set `machine-type` label", func() {
-		stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get")
+		stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 		var machines []sabakan.Machine
 		err = json.Unmarshal(stdout, &machines)
@@ -71,7 +71,7 @@ func TestUpgrade() {
 				continue
 			}
 			By("setting label: " + m.Spec.IPv4[0])
-			stdout, _, err := execAt(boot0, "curl", "-sS", "--stderr", "-", "-X", "PUT",
+			stdout, _, err := execAt(bootServers[0], "curl", "-sS", "--stderr", "-", "-X", "PUT",
 				"-d", `'{ "machine-type": "qemu" }'`, "http://localhost:10080/api/v1/labels/"+m.Spec.Serial)
 			Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 			Expect(string(stdout)).To(Equal(""))
@@ -85,9 +85,9 @@ func TestUpgrade() {
 			By("setting github-token")
 
 			token := string(bytes.TrimSpace(data))
-			_, _, err = execAt(boot0, "neco", "config", "set", "github-token", token)
+			_, _, err = execAt(bootServers[0], "neco", "config", "set", "github-token", token)
 			Expect(err).NotTo(HaveOccurred())
-			stdout, _, err := execAt(boot0, "neco", "config", "get", "github-token")
+			stdout, _, err := execAt(bootServers[0], "neco", "config", "get", "github-token")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(stdout)).To(Equal(token + "\n"))
 		case os.IsNotExist(err):
@@ -96,19 +96,19 @@ func TestUpgrade() {
 		}
 
 		By("Changing env for test")
-		stdout, stderr, err := execAt(boot0, "neco", "config", "set", "env", "test")
+		stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("Waiting for request to complete")
 		waitRequestComplete("version: " + debVer)
 
 		By("Checking installed Neco version")
-		output := execSafeAt(boot0, "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
+		output := execSafeAt(bootServers[0], "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
 		necoVersion := string(output)
 		Expect(necoVersion).Should(Equal(debVer))
 
 		By("Checking status of services enabled at postinst")
-		for _, h := range []string{boot0, boot1, boot2} {
+		for _, h := range bootServers {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
@@ -116,7 +116,7 @@ func TestUpgrade() {
 		}
 
 		By("Checking obsoleted files or services are deleted")
-		for _, h := range []string{boot0, boot1, boot2} {
+		for _, h := range bootServers {
 			_, _, err := execAt(h, "systemctl", "-q", "is-active", "sabakan-state-setter.timer")
 			Expect(err).To(HaveOccurred())
 			execSafeAt(h, "test", "!", "-f", neco.TimerFile("sabakan-state-setter"))
@@ -124,7 +124,7 @@ func TestUpgrade() {
 
 		By("Checking version of CKE")
 		Eventually(func() error {
-			ckeVersion, _, err := execAt(boot0, "ckecli", "--version")
+			ckeVersion, _, err := execAt(bootServers[0], "ckecli", "--version")
 			if err != nil {
 				return err
 			}
@@ -141,7 +141,7 @@ func TestUpgrade() {
 
 		By("Checking version of etcd cluster")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+			stdout, stderr, err := execAt(bootServers[0], "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
 				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key",
 				"--endpoints=10.69.0.3:2379,10.69.0.195:2379,10.69.1.131:2379",
 				"endpoint", "status")
@@ -175,7 +175,7 @@ func TestUpgrade() {
 	})
 
 	It("should re-configure vault for CKE >= 1.14.3", func() {
-		stdout, _, err := execAt(boot0, "ckecli", "--version")
+		stdout, _, err := execAt(bootServers[0], "ckecli", "--version")
 		Expect(err).ShouldNot(HaveOccurred())
 
 		fields := strings.Fields(string(stdout))
@@ -188,12 +188,12 @@ func TestUpgrade() {
 		}
 
 		token := getVaultToken()
-		_, _, err = execAt(boot0, "env", "VAULT_TOKEN="+token, "ckecli", "vault", "init")
+		_, _, err = execAt(bootServers[0], "env", "VAULT_TOKEN="+token, "ckecli", "vault", "init")
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
 	It("should running newer cke desired image version", func() {
-		stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
+		stdout, stderr, err := execAt(bootServers[0], "ckecli", "cluster", "get")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
 		cluster := new(ckeCluster)
@@ -201,10 +201,10 @@ func TestUpgrade() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		By("generating kubeconfig for cluster admin")
-		execSafeAt(boot0, "mkdir", "-p", ".kube")
-		execSafeAt(boot0, "ckecli", "kubernetes", "issue", ">", ".kube/config")
+		execSafeAt(bootServers[0], "mkdir", "-p", ".kube")
+		execSafeAt(bootServers[0], "ckecli", "kubernetes", "issue", ">", ".kube/config")
 
-		stdout, stderr, err = execAt(boot0, "ckecli", "images")
+		stdout, stderr, err = execAt(bootServers[0], "ckecli", "images")
 		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 
 		for _, img := range strings.Fields(string(stdout)) {
@@ -258,7 +258,7 @@ func TestUpgrade() {
 
 	It("should running newer neco desired image version", func() {
 		for _, img := range neco.CurrentArtifacts.Images {
-			stdout, stderr, err := execAt(boot0, "neco", "image", img.Name)
+			stdout, stderr, err := execAt(bootServers[0], "neco", "image", img.Name)
 			Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 			newImage := string(bytes.TrimSpace(stdout))
 			By("checking " + newImage + " is running")
@@ -273,13 +273,13 @@ func TestUpgrade() {
 				case "squid":
 					return checkVersionInDeployment("internet-egress", "squid", newImage)
 				case "teleport":
-					for _, h := range []string{boot0, boot1, boot2} {
+					for _, h := range bootServers {
 						if err := checkVersionOfTeleport(h, newImage); err != nil {
 							return err
 						}
 					}
 				default:
-					for _, h := range []string{boot0, boot1, boot2} {
+					for _, h := range bootServers {
 						if err := checkVersionByRkt(h, newImage); err != nil {
 							return err
 						}
@@ -292,9 +292,9 @@ func TestUpgrade() {
 
 	It("should SHA1 veth name is attached with newer coil", func() {
 		By("deploying testhttpd")
-		execSafeAt(boot0, "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0")
+		execSafeAt(bootServers[0], "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/testhttpd", "-o=json")
+			stdout, _, err := execAt(bootServers[0], "kubectl", "get", "deployments/testhttpd", "-o=json")
 			if err != nil {
 				return err
 			}
@@ -311,7 +311,7 @@ func TestUpgrade() {
 			return nil
 		}).Should(Succeed())
 
-		stdout, stderr, err := execAt(boot0, "kubectl", "get", "pods", "--selector=run=testhttpd", "-o=json")
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pods", "--selector=run=testhttpd", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 		podList := new(corev1.PodList)
 		err = json.Unmarshal(stdout, podList)
@@ -320,14 +320,14 @@ func TestUpgrade() {
 			By("checking SHA1 veth for namespace: " + pod.Namespace + ", name:" + pod.Name)
 			checkVethPeerNameIsSHA1(&pod)
 		}
-		execSafeAt(boot0, "kubectl", "delete", "deployments/testhttpd")
+		execSafeAt(bootServers[0], "kubectl", "delete", "deployments/testhttpd")
 	})
 
 	It("should SHA1 veth name is attached when container restarts with newer coil", func() {
 		By("stopping a squid pod")
 		var podName, notTarget string
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
+			stdout, stderr, err := execAt(bootServers[0], "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
 			if err != nil {
 				return fmt.Errorf("err: %v, stdout:%s, stderr: %s", err, stdout, stderr)
 			}
@@ -346,7 +346,7 @@ func TestUpgrade() {
 
 		// Eventually() will be no longer needed by https://github.com/cybozu-go/neco/issues/429
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "delete", "pod", podName)
+			stdout, stderr, err := execAt(bootServers[0], "kubectl", "-n=internet-egress", "delete", "pod", podName)
 			if err != nil {
 				return fmt.Errorf("err: %v, stdout:%s, stderr: %s", err, stdout, stderr)
 			}
@@ -355,7 +355,7 @@ func TestUpgrade() {
 
 		By("waiting squid deployment is ready")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "deployment", "squid", "-o=json")
+			stdout, stderr, err := execAt(bootServers[0], "kubectl", "-n=internet-egress", "get", "deployment", "squid", "-o=json")
 			if err != nil {
 				return fmt.Errorf("%v: stderr=%s", err, stderr)
 			}
@@ -372,7 +372,7 @@ func TestUpgrade() {
 			return nil
 		}).Should(Succeed())
 
-		stdout, stderr, err := execAt(boot0, "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 		podList := new(corev1.PodList)
 		err = json.Unmarshal(stdout, podList)
@@ -389,7 +389,7 @@ func TestUpgrade() {
 }
 
 func checkVersionByDocker(address, name, image string) error {
-	stdout, stderr, err := execAt(boot0, "ckecli", "ssh", address, "docker", "inspect", name)
+	stdout, stderr, err := execAt(bootServers[0], "ckecli", "ssh", address, "docker", "inspect", name)
 	if err != nil {
 		return fmt.Errorf("stderr: %s, err: %v", stderr, err)
 	}
@@ -496,7 +496,7 @@ func checkVersionByRkt(host, image string) error {
 }
 
 func checkVersionInDaemonSet(namespace, dsName, image string) error {
-	stdout, _, err := execAt(boot0, "kubectl", "get", "ds", "-n", namespace, dsName, "-o", "json")
+	stdout, _, err := execAt(bootServers[0], "kubectl", "get", "ds", "-n", namespace, dsName, "-o", "json")
 	if err != nil {
 		return err
 	}
@@ -526,7 +526,7 @@ func checkVersionInDaemonSet(namespace, dsName, image string) error {
 }
 
 func checkVersionInDeployment(namespace, deploymentName, image string) error {
-	stdout, _, err := execAt(boot0, "kubectl", "get", "deployment", "-n", namespace, deploymentName, "-o", "json")
+	stdout, _, err := execAt(bootServers[0], "kubectl", "get", "deployment", "-n", namespace, deploymentName, "-o", "json")
 	if err != nil {
 		return err
 	}
@@ -563,5 +563,5 @@ func checkVethPeerNameIsSHA1(pod *corev1.Pod) {
 	h := sha1.New()
 	h.Write([]byte(fmt.Sprintf("%s.%s", pod.Namespace, pod.Name)))
 	peerName := fmt.Sprintf("%s%s", "veth", hex.EncodeToString(h.Sum(nil))[:11])
-	execSafeAt(boot0, "ckecli", "ssh", pod.Status.HostIP, "ip", "link", "show", peerName)
+	execSafeAt(bootServers[0], "ckecli", "ssh", pod.Status.HostIP, "ip", "link", "show", peerName)
 }

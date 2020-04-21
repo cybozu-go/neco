@@ -15,7 +15,7 @@ func TestUnbound() {
 	It("should be available", func() {
 		By("checking unbound Deployment")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "--namespace=internet-egress",
+			stdout, _, err := execAt(bootServers[0], "kubectl", "--namespace=internet-egress",
 				"get", "deployments/unbound", "-o=json")
 			if err != nil {
 				return err
@@ -34,7 +34,7 @@ func TestUnbound() {
 		}).Should(Succeed())
 		By("checking PodDisruptionBudget for unbound Deployment")
 		pdb := policyv1beta1.PodDisruptionBudget{}
-		stdout, stderr, err := execAt(boot0, "kubectl", "get", "poddisruptionbudgets", "unbound-pdb", "-n", "internet-egress", "-o", "json")
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "poddisruptionbudgets", "unbound-pdb", "-n", "internet-egress", "-o", "json")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		err = json.Unmarshal(stdout, &pdb)
 		Expect(err).ShouldNot(HaveOccurred())
@@ -43,18 +43,18 @@ func TestUnbound() {
 
 	It("should resolve www.cybozu.com", func() {
 		By("running a test pod")
-		execSafeAt(boot0, "kubectl", "run", "test",
+		execSafeAt(bootServers[0], "kubectl", "run", "test",
 			"--image=$(ckecli images | grep quay.io/cybozu/unbound)",
 			"--generator=run-pod/v1", "--command", "--", "pause")
 
 		By("executing getent hosts www.cybozu.com in test pod")
 		Eventually(func() error {
-			_, _, err := execAt(boot0, "kubectl", "exec", "test",
+			_, _, err := execAt(bootServers[0], "kubectl", "exec", "test",
 				"getent", "hosts", "www.cybozu.com")
 			return err
 		}).Should(Succeed())
 
 		By("deleting a test pod")
-		execSafeAt(boot0, "kubectl", "delete", "pod", "test")
+		execSafeAt(bootServers[0], "kubectl", "delete", "pod", "test")
 	})
 }
