@@ -56,6 +56,7 @@ func assertTargets(t *testing.T, testdataDir, resultDir string) {
 		"seed_boot-1.yml",
 		"sabakan/machines.json",
 		"setup-iptables",
+		"machines.yml",
 	}
 
 	for _, f := range targets {

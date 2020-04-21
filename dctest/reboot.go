@@ -15,7 +15,7 @@ import (
 )
 
 func fetchClusterNodes() (map[string]bool, error) {
-	stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
+	stdout, stderr, err := execAt(bootServers[0], "ckecli", "cluster", "get")
 	if err != nil {
 		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
 	}
@@ -37,13 +37,13 @@ func fetchClusterNodes() (map[string]bool, error) {
 func TestRebootAllBootServers() {
 	It("runs systemd service on all boot servers after reboot", func() {
 		By("rebooting all boot servers")
-		for _, host := range []string{boot0, boot1, boot2} {
+		for _, host := range bootServers {
 			// Exit code is 255 when ssh is disconnected
 			execAt(host, "sudo", "reboot")
 		}
 
 		By("waiting all boot servers are online")
-		err := prepareSSHClients(boot0, boot1, boot2)
+		err := prepareSSHClients(bootServers...)
 		Expect(err).NotTo(HaveOccurred())
 
 		By("checking services on the boot servers are running after reboot")
@@ -51,7 +51,7 @@ func TestRebootAllBootServers() {
 
 		By("checking sabakan is available")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get")
+			stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
@@ -63,11 +63,11 @@ func TestRebootAllBootServers() {
 // TestRebootAllNodes tests all nodes stop scenario
 func TestRebootAllNodes() {
 	It("can access a pod from another pod running on different node", func() {
-		execSafeAt(boot0, "kubectl", "run", "nginx-reboot-test", "--image=quay.io/cybozu/testhttpd:0", "--generator=run-pod/v1")
-		execSafeAt(boot0, "kubectl", "run", "debug-reboot-test", "--generator=run-pod/v1", "--image=quay.io/cybozu/ubuntu-debug:18.04", "pause")
-		execSafeAt(boot0, "kubectl", "expose", "pod", "nginx-reboot-test", "--port=80", "--target-port=8000", "--name=nginx-reboot-test")
+		execSafeAt(bootServers[0], "kubectl", "run", "nginx-reboot-test", "--image=quay.io/cybozu/testhttpd:0", "--generator=run-pod/v1")
+		execSafeAt(bootServers[0], "kubectl", "run", "debug-reboot-test", "--generator=run-pod/v1", "--image=quay.io/cybozu/ubuntu-debug:18.04", "pause")
+		execSafeAt(bootServers[0], "kubectl", "expose", "pod", "nginx-reboot-test", "--port=80", "--target-port=8000", "--name=nginx-reboot-test")
 		Eventually(func() error {
-			_, _, err := execAt(boot0, "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
+			_, _, err := execAt(bootServers[0], "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
 			return err
 		}).Should(Succeed())
 	})
@@ -80,12 +80,12 @@ func TestRebootAllNodes() {
 	})
 
 	It("stop CKE sabakan integration", func() {
-		execSafeAt(boot0, "ckecli", "sabakan", "disable")
+		execSafeAt(bootServers[0], "ckecli", "sabakan", "disable")
 	})
 
 	It("reboots all nodes", func() {
 		By("getting machines list")
-		stdout, _, err := execAt(boot0, "sabactl", "machines", "get")
+		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get")
 		Expect(err).ShouldNot(HaveOccurred())
 		var machines []sabakan.Machine
 		err = json.Unmarshal(stdout, &machines)
@@ -97,7 +97,7 @@ func TestRebootAllNodes() {
 			if m.Spec.Role == "boot" || m.Spec.Rack == 3 {
 				continue
 			}
-			stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "stop", m.Spec.IPv4[0])
+			stdout, stderr, err := execAt(bootServers[0], "neco", "ipmipower", "stop", m.Spec.IPv4[0])
 			Expect(err).ShouldNot(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 		}
 
@@ -127,7 +127,7 @@ func TestRebootAllNodes() {
 			if len(preReboot) > 0 {
 				fmt.Println("retry to ipmipower-stop", preReboot)
 				for addr := range preReboot {
-					stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "stop", addr)
+					stdout, stderr, err := execAt(bootServers[0], "neco", "ipmipower", "stop", addr)
 					if err != nil {
 						fmt.Println("unable to ipmipower-stop", addr, "stdout:", string(stdout), "stderr:", string(stderr))
 					}
@@ -142,7 +142,7 @@ func TestRebootAllNodes() {
 			if m.Spec.Rack == 3 {
 				continue
 			}
-			stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "start", m.Spec.IPv4[0])
+			stdout, stderr, err := execAt(bootServers[0], "neco", "ipmipower", "start", m.Spec.IPv4[0])
 			Expect(err).ShouldNot(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 		}
 
@@ -176,7 +176,7 @@ func TestRebootAllNodes() {
 					if addr == k {
 						if m.Status != "alive" {
 							fmt.Println("retry to ipmipower-start", addr)
-							stdout, stderr, err := execAt(boot0, "neco", "ipmipower", "start", addr)
+							stdout, stderr, err := execAt(bootServers[0], "neco", "ipmipower", "start", addr)
 							if err != nil {
 								fmt.Println("unable to ipmipower-start", addr, "stdout:", string(stdout), "stderr:", string(stderr))
 							}
@@ -194,7 +194,7 @@ func TestRebootAllNodes() {
 	It("sets all nodes' machine state to healthy", func() {
 		By("getting machine state")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "sabactl", "machines", "get")
+			stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
@@ -219,7 +219,7 @@ func TestRebootAllNodes() {
 	})
 
 	It("re-enable CKE sabakan integration", func() {
-		execSafeAt(boot0, "ckecli", "sabakan", "enable")
+		execSafeAt(bootServers[0], "ckecli", "sabakan", "enable")
 	})
 
 	It("fetch cluster nodes", func() {
@@ -239,7 +239,7 @@ func TestRebootAllNodes() {
 
 	It("can access a pod from another pod running on different node, even after rebooting", func() {
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
+			stdout, stderr, err := execAt(bootServers[0], "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
@@ -250,11 +250,11 @@ func TestRebootAllNodes() {
 	It("can pull new image from internet", func() {
 		By("deploying a new pod whose image-pull-policy is Always")
 		testPod := "test-new-image"
-		execSafeAt(boot0, "kubectl", "run", testPod,
+		execSafeAt(bootServers[0], "kubectl", "run", testPod,
 			"--image=quay.io/cybozu/testhttpd:0", "--image-pull-policy=Always", "--generator=run-pod/v1")
 		By("checking the pod is running")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "kubectl", "get", "pod", testPod, "-o=json")
+			stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod", testPod, "-o=json")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
@@ -270,6 +270,6 @@ func TestRebootAllNodes() {
 		}).Should(Succeed())
 
 		By("deleting " + testPod)
-		execSafeAt(boot0, "kubectl", "delete", "pod", testPod)
+		execSafeAt(bootServers[0], "kubectl", "delete", "pod", testPod)
 	})
 }

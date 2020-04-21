@@ -185,7 +185,12 @@ func run() error {
 		return err
 	}
 
-	return copyStatics(staticFiles, *flagOutDir)
+	err = copyStatics(staticFiles, *flagOutDir)
+	if err != nil {
+		return err
+	}
+
+	return export("machines.tpl", "machines.yml", false, ta)
 }
 
 func exportFile(input string, output string, args interface{}) error {

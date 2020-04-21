@@ -16,13 +16,13 @@ import (
 func TestSabakanStateSetter() {
 	It("should wait for all nodes to join serf", func() {
 		By("getting machines list")
-		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role=cs")
+		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
 		Expect(err).ShouldNot(HaveOccurred())
 		var csMachines []sabakan.Machine
 		err = json.Unmarshal(stdout, &csMachines)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		stdout, _, err = execAt(boot0, "sabactl", "machines", "get", "--role=ss")
+		stdout, _, err = execAt(bootServers[0], "sabactl", "machines", "get", "--role=ss")
 		Expect(err).ShouldNot(HaveOccurred())
 		var ssMachines []sabakan.Machine
 		err = json.Unmarshal(stdout, &ssMachines)
@@ -76,10 +76,10 @@ func TestSabakanStateSetter() {
 func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
 	stdout, err := func(role string) ([]byte, error) {
 		if role == "" {
-			stdout, _, err := execAt(boot0, "sabactl", "machines", "get")
+			stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get")
 			return stdout, err
 		}
-		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role", role)
+		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role", role)
 		return stdout, err
 	}(role)
 

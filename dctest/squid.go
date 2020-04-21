@@ -15,7 +15,7 @@ func TestSquid() {
 	It("should be available", func() {
 		By("checking squid Deployment")
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "--namespace=internet-egress",
+			stdout, _, err := execAt(bootServers[0], "kubectl", "--namespace=internet-egress",
 				"get", "deployments/squid", "-o=json")
 			if err != nil {
 				return err
@@ -34,7 +34,7 @@ func TestSquid() {
 		}).Should(Succeed())
 		By("checking PodDisruptionBudget for squid Deployment")
 		pdb := policyv1beta1.PodDisruptionBudget{}
-		stdout, stderr, err := execAt(boot0, "kubectl", "get", "poddisruptionbudgets", "squid-pdb", "-n", "internet-egress", "-o", "json")
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "poddisruptionbudgets", "squid-pdb", "-n", "internet-egress", "-o", "json")
 		if err != nil {
 			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		}
@@ -45,10 +45,10 @@ func TestSquid() {
 
 	It("should serve for docker daemon", func() {
 		By("running testhttpd pods")
-		execSafeAt(boot0, "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0", "--replicas=2")
+		execSafeAt(bootServers[0], "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0", "--replicas=2")
 
 		Eventually(func() error {
-			stdout, _, err := execAt(boot0, "kubectl", "get", "deployments/testhttpd", "-o=json")
+			stdout, _, err := execAt(bootServers[0], "kubectl", "get", "deployments/testhttpd", "-o=json")
 			if err != nil {
 				return err
 			}
@@ -66,6 +66,6 @@ func TestSquid() {
 		}).Should(Succeed())
 
 		By("removing testhttpd deployments")
-		execSafeAt(boot0, "kubectl", "delete", "deployments/testhttpd")
+		execSafeAt(bootServers[0], "kubectl", "delete", "deployments/testhttpd")
 	})
 }

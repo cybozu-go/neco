@@ -34,13 +34,13 @@ type serfMemberContainer struct {
 func TestCKESetup() {
 	It("should generates cluster.yml automatically", func() {
 		By("setting configurations")
-		execSafeAt(boot0, "ckecli", "constraints", "set", "control-plane-count", "3")
-		execSafeAt(boot0, "ckecli", "constraints", "set", "minimum-workers", "2")
-		execSafeAt(boot0, "ckecli", "sabakan", "set-url", "http://localhost:10080")
+		execSafeAt(bootServers[0], "ckecli", "constraints", "set", "control-plane-count", "3")
+		execSafeAt(bootServers[0], "ckecli", "constraints", "set", "minimum-workers", "2")
+		execSafeAt(bootServers[0], "ckecli", "sabakan", "set-url", "http://localhost:10080")
 
 		By("waiting for cluster.yml generation")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "ckecli", "cluster", "get")
+			stdout, stderr, err := execAt(bootServers[0], "ckecli", "cluster", "get")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
@@ -53,13 +53,13 @@ func TestCKESetup() {
 func TestCKE() {
 	It("all systemd units are active", func() {
 		By("getting machines list")
-		stdout, _, err := execAt(boot0, "sabactl", "machines", "get", "--role=cs")
+		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
 		Expect(err).ShouldNot(HaveOccurred())
 		var csMachines []sabakan.Machine
 		err = json.Unmarshal(stdout, &csMachines)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		stdout, _, err = execAt(boot0, "sabactl", "machines", "get", "--role=ss")
+		stdout, _, err = execAt(bootServers[0], "sabactl", "machines", "get", "--role=ss")
 		Expect(err).ShouldNot(HaveOccurred())
 		var ssMachines []sabakan.Machine
 		err = json.Unmarshal(stdout, &ssMachines)
@@ -92,7 +92,7 @@ func TestCKE() {
 				if !ok {
 					return fmt.Errorf("member %s does not define tag serial", member.Name)
 				}
-				stdout := execSafeAt(boot0, "sabactl", "machines", "get-state", serial)
+				stdout := execSafeAt(bootServers[0], "sabactl", "machines", "get-state", serial)
 				state := string(bytes.TrimSpace(stdout))
 				if state != "healthy" {
 					return fmt.Errorf("sabakan machine state of member %s is not healthy: %s", member.Name, state)
@@ -105,12 +105,12 @@ func TestCKE() {
 
 	It("wait for Kubernetes cluster to become ready", func() {
 		By("generating kubeconfig for cluster admin")
-		execSafeAt(boot0, "mkdir", "-p", ".kube")
-		execSafeAt(boot0, "ckecli", "kubernetes", "issue", ">", ".kube/config")
+		execSafeAt(bootServers[0], "mkdir", "-p", ".kube")
+		execSafeAt(bootServers[0], "ckecli", "kubernetes", "issue", ">", ".kube/config")
 
 		By("waiting nodes")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+			stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "nodes", "-o", "json")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}

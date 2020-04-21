@@ -16,7 +16,7 @@ func TestSetup() {
 		env := well.NewEnvironment(context.Background())
 		env.Go(func(ctx context.Context) error {
 			stdout, stderr, err := execAt(
-				boot0, "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
+				bootServers[0], "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-0",
@@ -29,7 +29,7 @@ func TestSetup() {
 		})
 		env.Go(func(ctx context.Context) error {
 			stdout, stderr, err := execAt(
-				boot1, "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
+				bootServers[1], "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-1",
@@ -42,7 +42,7 @@ func TestSetup() {
 		})
 		env.Go(func(ctx context.Context) error {
 			stdout, stderr, err := execAt(
-				boot2, "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
+				bootServers[2], "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-2",
@@ -60,7 +60,7 @@ func TestSetup() {
 	}, 300)
 
 	It("should install files", func() {
-		for _, h := range []string{boot0, boot1, boot2} {
+		for _, h := range bootServers {
 			execSafeAt(h, "test", "-f", neco.NecoConfFile)
 			execSafeAt(h, "test", "-f", neco.NecoCertFile)
 			execSafeAt(h, "test", "-f", neco.NecoKeyFile)
@@ -80,7 +80,7 @@ func TestSetup() {
 	})
 
 	It("should run services", func() {
-		for _, h := range []string{boot0, boot1, boot2} {
+		for _, h := range bootServers {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
@@ -96,7 +96,7 @@ func TestSetup() {
 		waitRequestComplete("")
 
 		By("Installing sshd_config and sudoers")
-		for _, h := range []string{boot0, boot1, boot2} {
+		for _, h := range bootServers {
 			execSafeAt(h, "grep", "-q", "'^PasswordAuthentication.no$'", "/etc/ssh/sshd_config")
 			execSafeAt(h, "sudo", "test", "-f", "/etc/sudoers.d/cybozu")
 		}
