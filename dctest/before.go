@@ -51,12 +51,15 @@ func RunBeforeSuite() {
   boot:
     bastion: 10.72.48.3/32`
 
+	_, err := os.Stat("../output/machines.yml")
 	var data []byte
-	data, err := ioutil.ReadFile("../output/machines.yml")
-	//Expect(err).NotTo(HaveOccurred())
-	if err != nil {
+	if os.IsNotExist(err) {
 		data = []byte(dummyMachinesYaml)
+	} else {
+		data, err = ioutil.ReadFile("../output/machines.yml")
+		Expect(err).NotTo(HaveOccurred())
 	}
+
 	machines := struct {
 		Racks []struct {
 			Name    string `yaml:"name"`
