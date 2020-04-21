@@ -15,6 +15,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const numActiveBootServers = 3
+
 // RunBeforeSuite is for Ginkgo BeforeSuite.
 func RunBeforeSuite() {
 	fmt.Println("Preparing...")
@@ -27,22 +29,22 @@ func RunBeforeSuite() {
 
 	machines := struct {
 		Racks []struct {
-			Name    string `json:"name"`
+			Name    string `yaml:"name"`
 			Workers struct {
-				CS int `json:"cs"`
-				SS int `json:"ss"`
-			} `json:"workers"`
+				CS int `yaml:"cs"`
+				SS int `yaml:"ss"`
+			} `yaml:"workers"`
 			Boot struct {
-				Bastion string `json:"bastion"`
-			} `json:"boot"`
-		} `json:"racks"`
+				Bastion string `yaml:"bastion"`
+			} `yaml:"boot"`
+		} `yaml:"racks"`
 	}{}
-	err = yaml.Unmarshal(data, machines)
+	err = yaml.Unmarshal(data, &machines)
 	Expect(err).NotTo(HaveOccurred())
 
 	for i, rack := range machines.Racks {
 		addr := rack.Boot.Bastion[:strings.LastIndex(rack.Boot.Bastion, "/")]
-		if i < 3 {
+		if i < numActiveBootServers {
 			bootServers = append(bootServers, addr)
 		}
 		allBootServers = append(bootServers, addr)
