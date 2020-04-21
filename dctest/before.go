@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghodss/yaml"
+	"sigs.k8s.io/yaml"
 
 	"github.com/cybozu-go/log"
 	. "github.com/onsi/ginkgo"
@@ -22,19 +22,20 @@ func RunBeforeSuite() {
 	SetDefaultEventuallyPollingInterval(time.Second)
 	SetDefaultEventuallyTimeout(10 * time.Minute)
 
-	data, err := ioutil.ReadFile("./output/machines.yml")
+	data, err := ioutil.ReadFile("../output/machines.yml")
 	Expect(err).NotTo(HaveOccurred())
 
 	machines := struct {
 		Racks []struct {
+			Name    string `json:"name"`
 			Workers struct {
-				CS int `yaml:"cs"`
-				SS int `yaml:"ss"`
-			} `yaml:"workers"`
+				CS int `json:"cs"`
+				SS int `json:"ss"`
+			} `json:"workers"`
 			Boot struct {
-				Bastion string `yaml:"bastion"`
-			} `yaml:"boot"`
-		} `yaml:"racks"`
+				Bastion string `json:"bastion"`
+			} `json:"boot"`
+		} `json:"racks"`
 	}{}
 	err = yaml.Unmarshal(data, machines)
 	Expect(err).NotTo(HaveOccurred())
