@@ -1,7 +1,7 @@
 common:
   project: YOUR_PROJECT
   serviceaccount: YOUR_SERVICE_ACCOUNT
-  zone: asia-northeast1-c
+  zone: asia-northeast2-c
 app:
   shutdown:
     stop: []
