@@ -6,9 +6,9 @@ http_proxy=http://10.0.49.3:3128/
 https_proxy=http://10.0.49.3:3128/
 
 cat >/etc/apt/sources.list <<EOF
-deb http://asia-northeast2.gce.archive.ubuntu.com/ubuntu/ bionic main restricted universe multiverse
-deb http://asia-northeast2.gce.archive.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse
-deb http://asia-northeast2.gce.archive.ubuntu.com/ubuntu/ bionic-security main restricted universe multiverse
+deb http://asia-northeast2.gce.clouds.archive.ubuntu.com/ubuntu/ bionic main restricted universe multiverse
+deb http://asia-northeast2.gce.clouds.archive.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse
+deb http://asia-northeast2.gce.clouds.archive.ubuntu.com/ubuntu/ bionic-security main restricted universe multiverse
 EOF
 
 env http_proxy=$http_proxy apt-get update -o Acquire::Retries=5
