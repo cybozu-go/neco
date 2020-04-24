@@ -107,7 +107,7 @@ func NecoTestConfig() *Config {
 		Common: CommonConfig{
 			Project:        "neco-test",
 			ServiceAccount: "neco-test@neco-test.iam.gserviceaccount.com",
-			Zone:           "asia-northeast1-c",
+			Zone:           "asia-northeast2-c",
 		},
 		App: AppConfig{
 			Shutdown: ShutdownConfig{
