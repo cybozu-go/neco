@@ -4,19 +4,26 @@ import (
 	"context"
 
 	"github.com/cybozu-go/cke"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/discovery/cached/memory"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/restmapper"
 )
 
 type resourceApplyOp struct {
-	apiserver *cke.Node
-	resource  cke.ResourceDefinition
-	finished  bool
+	apiserver      *cke.Node
+	resource       cke.ResourceDefinition
+	forceConflicts bool
+
+	finished bool
 }
 
 // ResourceApplyOp creates or updates a Kubernetes object.
-func ResourceApplyOp(apiServer *cke.Node, resource cke.ResourceDefinition) cke.Operator {
+func ResourceApplyOp(apiServer *cke.Node, resource cke.ResourceDefinition, forceConflicts bool) cke.Operator {
 	return &resourceApplyOp{
-		apiserver: apiServer,
-		resource:  resource,
+		apiserver:      apiServer,
+		resource:       resource,
+		forceConflicts: forceConflicts,
 	}
 }
 
@@ -38,12 +45,22 @@ func (o *resourceApplyOp) Targets() []string {
 	}
 }
 
-func (o *resourceApplyOp) Run(ctx context.Context, inf cke.Infrastructure) error {
-	cs, err := inf.K8sClient(ctx, o.apiserver)
+func (o *resourceApplyOp) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
+	cfg, err := inf.K8sConfig(ctx, o.apiserver)
 	if err != nil {
 		return err
 	}
-	return cke.ApplyResource(cs, o.resource.Definition, o.resource.Revision)
+	dc, err := discovery.NewDiscoveryClientForConfig(cfg)
+	if err != nil {
+		return err
+	}
+	mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
+
+	dyn, err := dynamic.NewForConfig(cfg)
+	if err != nil {
+		return err
+	}
+	return cke.ApplyResource(dyn, mapper, o.resource.Definition, o.resource.Revision, true)
 }
 
 func (o *resourceApplyOp) Command() cke.Command {

@@ -79,7 +79,7 @@ type createEndpointsCommand struct {
 	endpoints *corev1.Endpoints
 }
 
-func (c createEndpointsCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c createEndpointsCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiserver)
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ type updateEndpointsCommand struct {
 	endpoints *corev1.Endpoints
 }
 
-func (c updateEndpointsCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c updateEndpointsCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiserver)
 	if err != nil {
 		return err

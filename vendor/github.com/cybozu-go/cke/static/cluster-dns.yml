@@ -94,6 +94,10 @@ spec:
             cpu: 100m
             memory: 70Mi
         args: [ "-conf", "/etc/coredns/Corefile" ]
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep", "5"]
         volumeMounts:
         - name: config-volume
           mountPath: /etc/coredns
@@ -107,6 +111,7 @@ spec:
           protocol: TCP
         - containerPort: 9153
           name: metrics
+          protocol: TCP
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

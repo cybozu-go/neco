@@ -39,7 +39,7 @@ func (o *controllerManagerBootOp) NextCommand() cke.Commander {
 	switch o.step {
 	case 0:
 		o.step++
-		return common.ImagePullCommand(o.nodes, cke.HyperkubeImage)
+		return common.ImagePullCommand(o.nodes, cke.KubernetesImage)
 	case 1:
 		o.step++
 		return prepareControllerManagerFilesCommand{o.cluster, o.files}
@@ -49,7 +49,7 @@ func (o *controllerManagerBootOp) NextCommand() cke.Commander {
 	case 3:
 		o.step++
 		return common.RunContainerCommand(o.nodes,
-			op.KubeControllerManagerContainerName, cke.HyperkubeImage,
+			op.KubeControllerManagerContainerName, cke.KubernetesImage,
 			common.WithParams(ControllerManagerParams(o.cluster, o.serviceSubnet)),
 			common.WithExtra(o.params))
 	default:
@@ -70,7 +70,7 @@ type prepareControllerManagerFilesCommand struct {
 	files   *common.FilesBuilder
 }
 
-func (c prepareControllerManagerFilesCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c prepareControllerManagerFilesCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	const kubeconfigPath = "/etc/kubernetes/controller-manager/kubeconfig"
 	storage := inf.Storage()
 

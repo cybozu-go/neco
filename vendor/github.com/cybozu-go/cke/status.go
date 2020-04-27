@@ -2,7 +2,7 @@ package cke
 
 import (
 	"github.com/coreos/etcd/etcdserver/etcdserverpb"
-	"github.com/cybozu-go/cke/scheduler"
+	schedulerv1 "k8s.io/kube-scheduler/config/v1"
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -46,7 +46,15 @@ type KubernetesClusterStatus struct {
 	EtcdService         *corev1.Service
 	EtcdEndpoints       *corev1.Endpoints
 	EtcdBackup          EtcdBackupStatus
-	ResourceStatuses    map[string]map[string]string
+	ResourceStatuses    map[string]ResourceStatus
+}
+
+// ResourceStatus represents the status of registered K8s resources
+type ResourceStatus struct {
+	// Annotations is the copy of metadata.annotations
+	Annotations map[string]string
+	// HasBeenSSA indicates that this resource has been already updated by server-side apply
+	HasBeenSSA bool
 }
 
 // IsReady returns the cluster condition whether or not Pod can be scheduled
@@ -74,15 +82,16 @@ func (s KubernetesClusterStatus) IsReady(cluster *Cluster) bool {
 }
 
 // SetResourceStatus sets status of the resource.
-func (s KubernetesClusterStatus) SetResourceStatus(rkey string, annotations map[string]string) {
-	s.ResourceStatuses[rkey] = annotations
+func (s KubernetesClusterStatus) SetResourceStatus(rkey string, ann map[string]string, isManaged bool) {
+	s.ResourceStatuses[rkey] = ResourceStatus{Annotations: ann, HasBeenSSA: isManaged}
 }
 
 // ClusterStatus represents the working cluster status.
 // The structure reflects Cluster, of course.
 type ClusterStatus struct {
-	Name         string
-	NodeStatuses map[string]*NodeStatus // keys are IP address strings.
+	ConfigVersion string
+	Name          string
+	NodeStatuses  map[string]*NodeStatus // keys are IP address strings.
 
 	Etcd       EtcdClusterStatus
 	Kubernetes KubernetesClusterStatus
@@ -129,15 +138,16 @@ type KubeComponentStatus struct {
 type SchedulerStatus struct {
 	ServiceStatus
 	IsHealthy bool
-	Extenders []*scheduler.ExtenderConfig
+	Extenders []schedulerv1.Extender
 }
 
 // KubeletStatus represents kubelet status and health
 type KubeletStatus struct {
 	ServiceStatus
-	IsHealthy            bool
-	Domain               string
-	AllowSwap            bool
-	ContainerLogMaxSize  string
-	ContainerLogMaxFiles int32
+	IsHealthy                   bool
+	Domain                      string
+	AllowSwap                   bool
+	ContainerLogMaxSize         string
+	ContainerLogMaxFiles        int32
+	NeedUpdateBlockPVsUpToV1_16 []string
 }

@@ -16,7 +16,7 @@ CRITOOLS_VERSION = 1.16.1
 ARGOCD_VERSION = 1.5.1
 
 ### for kubectl
-K8S_VERSION = 1.17.4
+K8S_VERSION = 1.17.5
 
 ### for lvmd
 TOPOLVM_VERSION = 0.4.3

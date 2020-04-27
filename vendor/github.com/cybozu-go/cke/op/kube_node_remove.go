@@ -47,7 +47,7 @@ type nodeRemoveCommand struct {
 	nodes     []*corev1.Node
 }
 
-func (c nodeRemoveCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c nodeRemoveCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiserver)
 	if err != nil {
 		return err

@@ -17,7 +17,7 @@ func VolumeCreateCommand(nodes []*cke.Node, name string) cke.Commander {
 	return volumeCreateCommand{nodes, name}
 }
 
-func (c volumeCreateCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c volumeCreateCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	env := well.NewEnvironment(ctx)
 	for _, n := range c.nodes {
 		ce := inf.Engine(n.Address)
@@ -46,7 +46,7 @@ func VolumeRemoveCommand(nodes []*cke.Node, name string) cke.Commander {
 	return volumeRemoveCommand{nodes, name}
 }
 
-func (c volumeRemoveCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c volumeRemoveCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	env := well.NewEnvironment(ctx)
 	for _, n := range c.nodes {
 		ce := inf.Engine(n.Address)

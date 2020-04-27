@@ -25,7 +25,7 @@ func MakeDirsCommandWithMode(nodes []*cke.Node, dirs []string, mode string) cke.
 	return makeDirsCommand{nodes, dirs, mode}
 }
 
-func (c makeDirsCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c makeDirsCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	bindMap := make(map[string]cke.Mount)
 	dests := make([]string, len(c.dirs))
 	for i, d := range c.dirs {

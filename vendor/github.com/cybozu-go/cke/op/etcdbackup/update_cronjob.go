@@ -46,7 +46,7 @@ type updateEtcdBackupCronJobCommand struct {
 	schedule  string
 }
 
-func (c updateEtcdBackupCronJobCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c updateEtcdBackupCronJobCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiserver)
 	if err != nil {
 		return err

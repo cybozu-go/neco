@@ -42,7 +42,7 @@ type removeEtcdBackupSecretCommand struct {
 	apiserver *cke.Node
 }
 
-func (c removeEtcdBackupSecretCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c removeEtcdBackupSecretCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiserver)
 	if err != nil {
 		return err

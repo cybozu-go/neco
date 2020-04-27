@@ -8,6 +8,7 @@ import (
 	"github.com/cybozu-go/cke"
 	"github.com/cybozu-go/cke/op"
 	"github.com/cybozu-go/cke/op/common"
+	"github.com/cybozu-go/log"
 )
 
 type addMemberOp struct {
@@ -48,26 +49,32 @@ func (o *addMemberOp) NextCommand() cke.Commander {
 		return common.StopContainerCommand(o.targetNode, op.EtcdContainerName)
 	case 2:
 		o.step++
-		return common.VolumeRemoveCommand(nodes, volname)
+		return common.VolumeRemoveCommand(nodes, op.EtcdAddedMemberVolumeName)
 	case 3:
 		o.step++
-		return common.VolumeCreateCommand(nodes, volname)
+		return common.VolumeRemoveCommand(nodes, volname)
 	case 4:
 		o.step++
-		return prepareEtcdCertificatesCommand{o.files, o.domain}
+		return common.VolumeCreateCommand(nodes, volname)
 	case 5:
 		o.step++
-		return o.files
+		return prepareEtcdCertificatesCommand{o.files, o.domain}
 	case 6:
+		o.step++
+		return o.files
+	case 7:
 		o.step++
 		opts := []string{
 			"--mount",
 			"type=volume,src=" + volname + ",dst=/var/lib/etcd",
 		}
 		return addMemberCommand{o.endpoints, o.targetNode, opts, extra}
-	case 7:
+	case 8:
 		o.step++
 		return waitEtcdSyncCommand{etcdEndpoints([]*cke.Node{o.targetNode}), false}
+	case 9:
+		o.step++
+		return common.VolumeCreateCommand(nodes, op.EtcdAddedMemberVolumeName)
 	}
 	return nil
 }
@@ -85,7 +92,7 @@ type addMemberCommand struct {
 	extra     cke.ServiceParams
 }
 
-func (c addMemberCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c addMemberCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cli, err := inf.NewEtcdClient(ctx, c.endpoints)
 	if err != nil {
 		return err
@@ -128,6 +135,10 @@ func (c addMemberCommand) Run(ctx context.Context, inf cke.Infrastructure) error
 		}
 		members = resp.Members
 	}
+	log.Debug("retrieved memgers from etcd", map[string]interface{}{
+		"members": members,
+	})
+
 	// gofail: var etcdAfterMemberAdd struct{}
 	ce := inf.Engine(c.node.Address)
 	ss, err := ce.Inspect([]string{op.EtcdContainerName})

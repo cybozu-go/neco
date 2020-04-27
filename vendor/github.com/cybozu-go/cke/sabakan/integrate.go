@@ -6,6 +6,7 @@ import (
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/cke"
+	"github.com/cybozu-go/cke/metrics"
 	"github.com/cybozu-go/cke/server"
 	"github.com/cybozu-go/log"
 )
@@ -116,12 +117,14 @@ func (ig integrator) Do(ctx context.Context, leaderKey string) error {
 		}
 	}
 	if err != nil {
+		metrics.UpdateSabakanIntegration(false, nil, 0, time.Now().UTC())
 		log.Warn("sabakan: failed to generate cluster", map[string]interface{}{
 			log.FnError: err,
 		})
 		// return nil
 		return nil
 	}
+	metrics.UpdateSabakanIntegration(true, g.workersByRole, len(g.unusedMachines), time.Now().UTC())
 
 	if newc == nil {
 		log.Debug("sabakan: nothing to do", nil)

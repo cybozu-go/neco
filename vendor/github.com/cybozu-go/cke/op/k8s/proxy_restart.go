@@ -34,7 +34,7 @@ func (o *kubeProxyRestartOp) NextCommand() cke.Commander {
 	switch o.step {
 	case 0:
 		o.step++
-		return common.ImagePullCommand(o.nodes, cke.HyperkubeImage)
+		return common.ImagePullCommand(o.nodes, cke.KubernetesImage)
 	case 1:
 		o.step++
 		return prepareProxyFilesCommand{o.cluster, o.files}
@@ -52,7 +52,7 @@ func (o *kubeProxyRestartOp) NextCommand() cke.Commander {
 			params := ProxyParams(n)
 			paramsMap[n.Address] = params
 		}
-		return common.RunContainerCommand(o.nodes, op.KubeProxyContainerName, cke.HyperkubeImage,
+		return common.RunContainerCommand(o.nodes, op.KubeProxyContainerName, cke.KubernetesImage,
 			common.WithOpts(opts),
 			common.WithParamsMap(paramsMap),
 			common.WithExtra(o.params),

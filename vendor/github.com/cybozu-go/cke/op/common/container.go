@@ -64,7 +64,7 @@ func WithExtra(params cke.ServiceParams) RunOption {
 	return func(c *runContainerCommand) { c.extra = params }
 }
 
-func (c runContainerCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c runContainerCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	env := well.NewEnvironment(ctx)
 	for _, n := range c.nodes {
 		n := n
@@ -118,7 +118,7 @@ func StopContainerCommand(node *cke.Node, name string) cke.Commander {
 	return stopContainerCommand{node, name}
 }
 
-func (c stopContainerCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c stopContainerCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	begin := time.Now()
 	ce := inf.Engine(c.node.Address)
 	exists, err := ce.Exists(c.name)
@@ -164,7 +164,7 @@ func KillContainersCommand(nodes []*cke.Node, name string) cke.Commander {
 	return killContainersCommand{nodes, name}
 }
 
-func (c killContainersCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c killContainersCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	begin := time.Now()
 	env := well.NewEnvironment(ctx)
 	for _, n := range c.nodes {

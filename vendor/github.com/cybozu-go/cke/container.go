@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -26,6 +25,8 @@ type ContainerEngine interface {
 	Run(img Image, binds []Mount, command string) error
 	// RunWithInput runs a container as a foreground process with stdin as a string.
 	RunWithInput(img Image, binds []Mount, command, input string) error
+	/// RunWithOutput runs a container as a foreground process and get stdout and stderr.
+	RunWithOutput(img Image, binds []Mount, command string) ([]byte, []byte, error)
 	// RunSystem runs the named container as a system service.
 	RunSystem(name string, img Image, opts []string, params, extra ServiceParams) error
 	// Exists returns if named system container exists.
@@ -63,7 +64,7 @@ type docker struct {
 func (c docker) PullImage(img Image) error {
 	stdout, stderr, err := c.agent.Run("docker image list --format '{{.Repository}}:{{.Tag}}'")
 	if err != nil {
-		return errors.Wrapf(err, "stdout: %s, stderr: %s", stdout, stderr)
+		return fmt.Errorf("%w, stdout: %s, stderr: %s", err, stdout, stderr)
 	}
 
 	for _, i := range strings.Split(string(stdout), "\n") {
@@ -74,7 +75,7 @@ func (c docker) PullImage(img Image) error {
 
 	stdout, stderr, err = c.agent.Run("docker image pull " + img.Name())
 	if err != nil {
-		return errors.Wrapf(err, "stdout: %s, stderr: %s", stdout, stderr)
+		return fmt.Errorf("%w, stdout: %s, stderr: %s", err, stdout, stderr)
 	}
 	return nil
 }
@@ -125,6 +126,30 @@ func (c docker) RunWithInput(img Image, binds []Mount, command, input string) er
 	return c.agent.RunWithInput(strings.Join(args, " "), input)
 }
 
+func (c docker) RunWithOutput(img Image, binds []Mount, command string) ([]byte, []byte, error) {
+	args := []string{
+		"docker",
+		"run",
+		"--log-driver=journald",
+		"--rm",
+		"--network=host",
+		"--uts=host",
+		"--read-only",
+	}
+	for _, m := range binds {
+		o := "rw"
+		if m.ReadOnly {
+			o = "ro"
+		}
+		args = append(args, fmt.Sprintf("--volume=%s:%s:%s", m.Source, m.Destination, o))
+	}
+	args = append(args, img.Name(), command)
+
+	stdout, stderr, err := c.agent.Run(strings.Join(args, " "))
+
+	return stdout, stderr, err
+}
+
 func (c docker) RunSystem(name string, img Image, opts []string, params, extra ServiceParams) error {
 	id, err := c.getID(name)
 	if err != nil {
@@ -132,9 +157,9 @@ func (c docker) RunSystem(name string, img Image, opts []string, params, extra S
 	}
 	if len(id) != 0 {
 		cmdline := "docker rm " + name
-		stderr, stdout, err := c.agent.Run(cmdline)
+		stdout, stderr, err := c.agent.Run(cmdline)
 		if err != nil {
-			return errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+			return fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 		}
 	}
 
@@ -192,7 +217,7 @@ func (c docker) RunSystem(name string, img Image, opts []string, params, extra S
 	cmdline := strings.Join(args, " ")
 	stdout, stderr, err := c.agent.Run(cmdline)
 	if err != nil {
-		return errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+		return fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 	}
 	return nil
 }
@@ -201,7 +226,7 @@ func (c docker) Stop(name string) error {
 	cmdline := "docker container stop " + name
 	stdout, stderr, err := c.agent.Run(cmdline)
 	if err != nil {
-		return errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+		return fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 	}
 	return nil
 }
@@ -210,7 +235,7 @@ func (c docker) Kill(name string) error {
 	cmdline := "docker container kill " + name
 	stdout, stderr, err := c.agent.Run(cmdline)
 	if err != nil {
-		return errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+		return fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 	}
 	return nil
 }
@@ -219,7 +244,7 @@ func (c docker) Remove(name string) error {
 	cmdline := "docker container rm " + name
 	stdout, stderr, err := c.agent.Run(cmdline)
 	if err != nil {
-		return errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+		return fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 	}
 	return nil
 }
@@ -242,7 +267,7 @@ func (c docker) getID(name string) (string, error) {
 	cmdline := "docker ps -a --no-trunc --filter name=^/" + name + "$ --format {{.ID}}"
 	stdout, stderr, err := c.agent.Run(cmdline)
 	if err != nil {
-		return "", errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+		return "", fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 	}
 	return strings.TrimSpace(string(stdout)), nil
 }
@@ -255,7 +280,7 @@ func (c docker) getIDs(names []string) (map[string]string, error) {
 	cmdline := "docker ps -a --no-trunc " + strings.Join(filters, " ") + " --format {{.Names}}:{{.ID}}"
 	stdout, stderr, err := c.agent.Run(cmdline)
 	if err != nil {
-		return nil, errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+		return nil, fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 	}
 
 	ids := make(map[string]string)
@@ -296,7 +321,7 @@ RETRY:
 	if err != nil {
 		retryCount++
 		if retryCount >= 3 {
-			return nil, errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+			return nil, fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 		}
 		goto RETRY
 	}
@@ -333,7 +358,7 @@ func (c docker) VolumeCreate(name string) error {
 	cmdline := "docker volume create " + name
 	stdout, stderr, err := c.agent.Run(cmdline)
 	if err != nil {
-		return errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+		return fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 	}
 	return nil
 }
@@ -342,7 +367,7 @@ func (c docker) VolumeRemove(name string) error {
 	cmdline := "docker volume remove " + name
 	stdout, stderr, err := c.agent.Run(cmdline)
 	if err != nil {
-		return errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+		return fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 	}
 	return nil
 }
@@ -351,7 +376,7 @@ func (c docker) VolumeExists(name string) (bool, error) {
 	cmdline := "docker volume list -q"
 	stdout, stderr, err := c.agent.Run(cmdline)
 	if err != nil {
-		return false, errors.Wrapf(err, "cmdline: %s, stdout: %s, stderr: %s", cmdline, stdout, stderr)
+		return false, fmt.Errorf("%w, cmdline: %s, stdout: %s, stderr: %s", err, cmdline, stdout, stderr)
 	}
 
 	for _, n := range strings.Split(string(stdout), "\n") {

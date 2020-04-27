@@ -1,11 +1,46 @@
 package k8s
 
 import (
-	"encoding/json"
+	"bytes"
+	"time"
 
 	"github.com/cybozu-go/cke"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+	apiserverv1 "k8s.io/apiserver/pkg/apis/config/v1"
 	"k8s.io/client-go/tools/clientcmd/api"
+	kubeletv1beta1 "k8s.io/kubelet/config/v1beta1"
 )
+
+var (
+	resourceEncoder runtime.Encoder
+	scm             = runtime.NewScheme()
+)
+
+func init() {
+	if err := apiserverv1.AddToScheme(scm); err != nil {
+		panic(err)
+	}
+	if err := kubeletv1beta1.AddToScheme(scm); err != nil {
+		panic(err)
+	}
+	resourceEncoder = json.NewSerializerWithOptions(json.DefaultMetaFactory, scm, scm, json.SerializerOptions{Yaml: true})
+}
+
+func encodeToYAML(obj runtime.Object) ([]byte, error) {
+	unst := &unstructured.Unstructured{}
+	if err := scm.Convert(obj, unst, nil); err != nil {
+		return nil, err
+	}
+
+	buf := &bytes.Buffer{}
+	if err := resourceEncoder.Encode(unst, buf); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
 
 func controllerManagerKubeconfig(cluster string, ca, clientCrt, clientKey string) *api.Config {
 	return cke.Kubeconfig(cluster, "system:kube-controller-manager", ca, clientCrt, clientKey)
@@ -41,128 +76,30 @@ func kubeletKubeconfig(cluster string, n *cke.Node, caPath, certPath, keyPath st
 	return cfg
 }
 
-// KubeletConfiguration is a simplified version of the struct defined in
-// https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/apis/config/types.go
-//
-// Rationate: kubernetes repository is too large and not intended for client usage.
-type KubeletConfiguration struct {
-	APIVersion        string `json:"apiVersion,omitempty"`
-	Kind              string `json:"kind,omitempty"`
-	Address           string `json:"address,omitempty"`
-	Port              int32  `json:"port,omitempty"`
-	ReadOnlyPort      int32  `json:"readOnlyPort"`
-	TLSCertFile       string `json:"tlsCertFile"`
-	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile"`
-
-	Authentication KubeletAuthentication `json:"authentication"`
-	Authorization  kubeletAuthorization  `json:"authorization"`
-
-	HealthzPort           int32    `json:"healthzPort,omitempty"`
-	HealthzBindAddress    string   `json:"healthzBindAddress,omitempty"`
-	OOMScoreAdj           int32    `json:"oomScoreAdj"`
-	ClusterDomain         string   `json:"clusterDomain,omitempty"`
-	ClusterDNS            []string `json:"clusterDNS,omitempty"`
-	PodCIDR               string   `json:"podCIDR,omitempty"`
-	RuntimeRequestTimeout string   `json:"runtimeRequestTimeout,omitempty"`
-
-	FeatureGates map[string]bool `json:"featureGates,omitempty"`
-	FailSwapOn   bool            `json:"failSwapOn"`
-
-	ContainerLogMaxSize  string `json:"containerLogMaxSize,omitempty"`
-	ContainerLogMaxFiles int32  `json:"containerLogMaxFiles,omitempty"`
-}
-
-func newKubeletConfiguration(cert, key, ca, domain, logSize string, logFiles int32, allowSwap bool) KubeletConfiguration {
-	return KubeletConfiguration{
-		APIVersion:            "kubelet.config.k8s.io/v1beta1",
-		Kind:                  "KubeletConfiguration",
-		ReadOnlyPort:          0,
-		TLSCertFile:           cert,
-		TLSPrivateKeyFile:     key,
-		Authentication:        KubeletAuthentication{ClientCAFile: ca},
-		Authorization:         kubeletAuthorization{Mode: "Webhook"},
+func newKubeletConfiguration(cert, key, ca, domain, logSize string, logFiles int32, allowSwap bool) kubeletv1beta1.KubeletConfiguration {
+	return kubeletv1beta1.KubeletConfiguration{
+		ReadOnlyPort:      0,
+		TLSCertFile:       cert,
+		TLSPrivateKeyFile: key,
+		Authentication: kubeletv1beta1.KubeletAuthentication{
+			X509:    kubeletv1beta1.KubeletX509Authentication{ClientCAFile: ca},
+			Webhook: kubeletv1beta1.KubeletWebhookAuthentication{Enabled: boolPointer(true)},
+		},
+		Authorization:         kubeletv1beta1.KubeletAuthorization{Mode: kubeletv1beta1.KubeletAuthorizationModeWebhook},
 		HealthzBindAddress:    "0.0.0.0",
-		OOMScoreAdj:           -1000,
+		OOMScoreAdj:           int32Pointer(-1000),
 		ClusterDomain:         domain,
-		RuntimeRequestTimeout: "15m",
-		FailSwapOn:            !allowSwap,
+		RuntimeRequestTimeout: metav1.Duration{Duration: 15 * time.Minute},
+		FailSwapOn:            boolPointer(!allowSwap),
 		ContainerLogMaxSize:   logSize,
-		ContainerLogMaxFiles:  logFiles,
+		ContainerLogMaxFiles:  int32Pointer(logFiles),
 	}
 }
 
-// KubeletAuthentication is a simplified version of the struct defined in
-// https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/apis/config/types.go
-//
-// Rationate: kubernetes repository is too large and not intended for client usage.
-type KubeletAuthentication struct {
-	ClientCAFile string
+func int32Pointer(input int32) *int32 {
+	return &input
 }
 
-// MarshalYAML implements yaml.Marshaler.
-func (a KubeletAuthentication) MarshalYAML() (interface{}, error) {
-	v := map[string]map[string]interface{}{}
-	v["x509"] = map[string]interface{}{"clientCAFile": a.ClientCAFile}
-	v["webhook"] = map[string]interface{}{"enabled": true}
-	v["anonymous"] = map[string]interface{}{"enabled": false}
-	return v, nil
-}
-
-// MarshalJSON implements json.Marshaler.
-func (a KubeletAuthentication) MarshalJSON() ([]byte, error) {
-	v, err := a.MarshalYAML()
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(v)
-}
-
-// kubeletAuthorization is a simplified version of the struct defined in
-// https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/apis/config/types.go
-type kubeletAuthorization struct {
-	Mode string `json:"mode"`
-}
-
-// EncryptionConfiguration is a simplified version of the struct defined in
-// https://github.com/kubernetes/apiserver/blob/master/pkg/apis/config/types.go
-//
-// Rationate: kubernetes repository is too large and not intended for client usage.
-type EncryptionConfiguration struct {
-	APIVersion string                  `json:"apiVersion,omitempty"`
-	Kind       string                  `json:"kind,omitempty"`
-	Resources  []ResourceConfiguration `json:"resources"`
-}
-
-func newEncryptionConfiguration() EncryptionConfiguration {
-	return EncryptionConfiguration{
-		APIVersion: "apiserver.config.k8s.io/v1",
-		Kind:       "EncryptionConfiguration",
-	}
-}
-
-// ResourceConfiguration is a simplified version of the struct defined in
-// https://github.com/kubernetes/apiserver/blob/master/pkg/apis/config/types.go
-type ResourceConfiguration struct {
-	Resources []string                `json:"resources"`
-	Providers []ProviderConfiguration `json:"providers"`
-}
-
-// ProviderConfiguration is a simplified version of the struct defined in
-// https://github.com/kubernetes/apiserver/blob/master/pkg/apis/config/types.go
-type ProviderConfiguration struct {
-	AESCBC   *AESConfiguration `json:"aescbc,omitempty"`
-	Identity *struct{}         `json:"identity,omitempty"`
-}
-
-// AESConfiguration is a simplified version of the struct defined in
-// https://github.com/kubernetes/apiserver/blob/master/pkg/apis/config/types.go
-type AESConfiguration struct {
-	Keys []Key `json:"keys"`
-}
-
-// Key is a simplified version of the struct defined in
-// https://github.com/kubernetes/apiserver/blob/master/pkg/apis/config/types.go
-type Key struct {
-	Name   string `json:"name"`
-	Secret string `json:"secret"`
+func boolPointer(input bool) *bool {
+	return &input
 }
