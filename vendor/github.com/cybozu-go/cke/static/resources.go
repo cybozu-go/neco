@@ -16,7 +16,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "cke-cluster-dns",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"ServiceAccount\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"cke-cluster-dns\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"annotations\":{\"cke.cybozu.com/revision\":\"1\"}}}\n"),
+		Definition: []byte("apiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: cke-cluster-dns\n  namespace: kube-system\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n"),
 	},
 	{
 		Key:        "ServiceAccount/kube-system/cke-etcdbackup",
@@ -25,7 +25,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "cke-etcdbackup",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"ServiceAccount\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"cke-etcdbackup\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"annotations\":{\"cke.cybozu.com/revision\":\"1\"}}}\n"),
+		Definition: []byte("apiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: cke-etcdbackup\n  namespace: kube-system\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n"),
 	},
 	{
 		Key:        "ServiceAccount/kube-system/cke-node-dns",
@@ -34,7 +34,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "cke-node-dns",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"ServiceAccount\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"cke-node-dns\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"annotations\":{\"cke.cybozu.com/revision\":\"1\"}}}\n"),
+		Definition: []byte("apiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: cke-node-dns\n  namespace: kube-system\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n"),
 	},
 	{
 		Key:        "PodSecurityPolicy/cke-node-dns",
@@ -43,7 +43,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "cke-node-dns",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"PodSecurityPolicy\",\"apiVersion\":\"policy/v1beta1\",\"metadata\":{\"name\":\"cke-node-dns\",\"creationTimestamp\":null,\"annotations\":{\"cke.cybozu.com/revision\":\"1\",\"seccomp.security.alpha.kubernetes.io/allowedProfileNames\":\"docker/default\",\"seccomp.security.alpha.kubernetes.io/defaultProfileName\":\"docker/default\"}},\"spec\":{\"allowedCapabilities\":[\"NET_BIND_SERVICE\"],\"volumes\":[\"configMap\",\"emptyDir\",\"projected\",\"secret\",\"downwardAPI\",\"persistentVolumeClaim\"],\"hostNetwork\":true,\"seLinux\":{\"rule\":\"RunAsAny\"},\"runAsUser\":{\"rule\":\"RunAsAny\"},\"supplementalGroups\":{\"rule\":\"RunAsAny\"},\"fsGroup\":{\"rule\":\"RunAsAny\"},\"readOnlyRootFilesystem\":true,\"allowPrivilegeEscalation\":false}}\n"),
+		Definition: []byte("apiVersion: policy/v1beta1\nkind: PodSecurityPolicy\nmetadata:\n  name: cke-node-dns\n  annotations:\n    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'\n    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'\n    cke.cybozu.com/revision: \"1\"\nspec:\n  privileged: false\n  # Required to prevent escalations to root.\n  allowPrivilegeEscalation: false\n  allowedCapabilities:\n    - NET_BIND_SERVICE\n  # Allow core volume types.\n  volumes:\n    - 'configMap'\n    - 'emptyDir'\n    - 'projected'\n    - 'secret'\n    - 'downwardAPI'\n    # Assume that persistentVolumes set up by the cluster admin are safe to use.\n    - 'persistentVolumeClaim'\n  hostNetwork: true\n  hostIPC: false\n  hostPID: false\n  runAsUser:\n    rule: 'RunAsAny'\n  seLinux:\n    rule: 'RunAsAny'\n  supplementalGroups:\n    rule: 'RunAsAny'\n  fsGroup:\n    rule: 'RunAsAny'\n  readOnlyRootFilesystem: true\n"),
 	},
 	{
 		Key:        "PodSecurityPolicy/cke-restricted",
@@ -52,7 +52,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "cke-restricted",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"PodSecurityPolicy\",\"apiVersion\":\"policy/v1beta1\",\"metadata\":{\"name\":\"cke-restricted\",\"creationTimestamp\":null,\"annotations\":{\"cke.cybozu.com/revision\":\"1\",\"seccomp.security.alpha.kubernetes.io/allowedProfileNames\":\"docker/default\",\"seccomp.security.alpha.kubernetes.io/defaultProfileName\":\"docker/default\"}},\"spec\":{\"requiredDropCapabilities\":[\"ALL\"],\"volumes\":[\"configMap\",\"emptyDir\",\"projected\",\"secret\",\"downwardAPI\",\"persistentVolumeClaim\"],\"seLinux\":{\"rule\":\"RunAsAny\"},\"runAsUser\":{\"rule\":\"MustRunAsNonRoot\"},\"supplementalGroups\":{\"rule\":\"MustRunAs\",\"ranges\":[{\"min\":1,\"max\":65535}]},\"fsGroup\":{\"rule\":\"MustRunAs\",\"ranges\":[{\"min\":1,\"max\":65535}]},\"readOnlyRootFilesystem\":true,\"allowPrivilegeEscalation\":false}}\n"),
+		Definition: []byte("apiVersion: policy/v1beta1\nkind: PodSecurityPolicy\nmetadata:\n  name: cke-restricted\n  annotations:\n    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'\n    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'\n    cke.cybozu.com/revision: \"1\"\nspec:\n  privileged: false\n  # Required to prevent escalations to root.\n  allowPrivilegeEscalation: false\n  # This is redundant with non-root + disallow privilege escalation,\n  # but we can provide it for defense in depth.\n  requiredDropCapabilities:\n    - ALL\n  # Allow core volume types.\n  volumes:\n    - 'configMap'\n    - 'emptyDir'\n    - 'projected'\n    - 'secret'\n    - 'downwardAPI'\n    # Assume that persistentVolumes set up by the cluster admin are safe to use.\n    - 'persistentVolumeClaim'\n  hostNetwork: false\n  hostIPC: false\n  hostPID: false\n  runAsUser:\n    # Require the container to run without root privileges.\n    rule: 'MustRunAsNonRoot'\n  seLinux:\n    # This policy assumes the nodes are using AppArmor rather than SELinux.\n    rule: 'RunAsAny'\n  supplementalGroups:\n    rule: 'MustRunAs'\n    ranges:\n      # Forbid adding the root group.\n      - min: 1\n        max: 65535\n  fsGroup:\n    rule: 'MustRunAs'\n    ranges:\n      # Forbid adding the root group.\n      - min: 1\n        max: 65535\n  readOnlyRootFilesystem: true\n"),
 	},
 	{
 		Key:        "ClusterRole/system:cluster-dns",
@@ -61,7 +61,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "system:cluster-dns",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"ClusterRole\",\"apiVersion\":\"rbac.authorization.k8s.io/v1\",\"metadata\":{\"name\":\"system:cluster-dns\",\"creationTimestamp\":null,\"labels\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\"},\"annotations\":{\"cke.cybozu.com/revision\":\"1\",\"rbac.authorization.kubernetes.io/autoupdate\":\"true\"}},\"rules\":[{\"verbs\":[\"list\",\"watch\"],\"apiGroups\":[\"\"],\"resources\":[\"endpoints\",\"services\",\"pods\",\"namespaces\"]},{\"verbs\":[\"use\"],\"apiGroups\":[\"policy\"],\"resources\":[\"podsecuritypolicies\"],\"resourceNames\":[\"cke-restricted\"]}]}\n"),
+		Definition: []byte("\nkind: ClusterRole\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: system:cluster-dns\n  labels:\n    kubernetes.io/bootstrapping: rbac-defaults\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n    # turn on auto-reconciliation\n    # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#auto-reconciliation\n    rbac.authorization.kubernetes.io/autoupdate: \"true\"\nrules:\n  - apiGroups: [\"\"]\n    resources:\n      - endpoints\n      - services\n      - pods\n      - namespaces\n    verbs: [\"list\", \"watch\"]\n  - apiGroups: [\"policy\"]\n    resources: [\"podsecuritypolicies\"]\n    verbs: [\"use\"]\n    resourceNames: [\"cke-restricted\"]\n"),
 	},
 	{
 		Key:        "ClusterRole/system:kube-apiserver-to-kubelet",
@@ -70,7 +70,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "system:kube-apiserver-to-kubelet",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"ClusterRole\",\"apiVersion\":\"rbac.authorization.k8s.io/v1\",\"metadata\":{\"name\":\"system:kube-apiserver-to-kubelet\",\"creationTimestamp\":null,\"labels\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\"},\"annotations\":{\"cke.cybozu.com/revision\":\"1\",\"rbac.authorization.kubernetes.io/autoupdate\":\"true\"}},\"rules\":[{\"verbs\":[\"*\"],\"apiGroups\":[\"\"],\"resources\":[\"nodes/proxy\",\"nodes/stats\",\"nodes/log\",\"nodes/spec\",\"nodes/metrics\"]}]}\n"),
+		Definition: []byte("kind: ClusterRole\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: system:kube-apiserver-to-kubelet\n  labels:\n    kubernetes.io/bootstrapping: rbac-defaults\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n    # turn on auto-reconciliation\n    # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#auto-reconciliation\n    rbac.authorization.kubernetes.io/autoupdate: \"true\"\nrules:\n  - apiGroups: [\"\"]\n    resources:\n      - nodes/proxy\n      - nodes/stats\n      - nodes/log\n      - nodes/spec\n      - nodes/metrics\n    verbs: [\"*\"]\n"),
 	},
 	{
 		Key:        "Role/kube-system/system:etcdbackup",
@@ -79,7 +79,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "system:etcdbackup",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"Role\",\"apiVersion\":\"rbac.authorization.k8s.io/v1\",\"metadata\":{\"name\":\"system:etcdbackup\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"labels\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\"},\"annotations\":{\"cke.cybozu.com/revision\":\"1\",\"rbac.authorization.kubernetes.io/autoupdate\":\"true\"}},\"rules\":[{\"verbs\":[\"use\"],\"apiGroups\":[\"policy\"],\"resources\":[\"podsecuritypolicies\"],\"resourceNames\":[\"cke-restricted\"]}]}\n"),
+		Definition: []byte("\nkind: Role\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: system:etcdbackup\n  namespace: kube-system\n  labels:\n    kubernetes.io/bootstrapping: rbac-defaults\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n    # turn on auto-reconciliation\n    # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#auto-reconciliation\n    rbac.authorization.kubernetes.io/autoupdate: \"true\"\nrules:\n  - apiGroups: [\"policy\"]\n    resources: [\"podsecuritypolicies\"]\n    verbs: [\"use\"]\n    resourceNames: [\"cke-restricted\"]\n"),
 	},
 	{
 		Key:        "Role/kube-system/system:node-dns",
@@ -88,7 +88,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "system:node-dns",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"Role\",\"apiVersion\":\"rbac.authorization.k8s.io/v1\",\"metadata\":{\"name\":\"system:node-dns\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"labels\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\"},\"annotations\":{\"cke.cybozu.com/revision\":\"1\",\"rbac.authorization.kubernetes.io/autoupdate\":\"true\"}},\"rules\":[{\"verbs\":[\"use\"],\"apiGroups\":[\"policy\"],\"resources\":[\"podsecuritypolicies\"],\"resourceNames\":[\"cke-node-dns\"]}]}\n"),
+		Definition: []byte("\nkind: Role\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: system:node-dns\n  namespace: kube-system\n  labels:\n    kubernetes.io/bootstrapping: rbac-defaults\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n    # turn on auto-reconciliation\n    # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#auto-reconciliation\n    rbac.authorization.kubernetes.io/autoupdate: \"true\"\nrules:\n  - apiGroups: [\"policy\"]\n    resources: [\"podsecuritypolicies\"]\n    verbs: [\"use\"]\n    resourceNames: [\"cke-node-dns\"]\n"),
 	},
 	{
 		Key:        "ClusterRoleBinding/system:cluster-dns",
@@ -97,7 +97,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "system:cluster-dns",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"ClusterRoleBinding\",\"apiVersion\":\"rbac.authorization.k8s.io/v1\",\"metadata\":{\"name\":\"system:cluster-dns\",\"creationTimestamp\":null,\"labels\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\"},\"annotations\":{\"cke.cybozu.com/revision\":\"1\",\"rbac.authorization.kubernetes.io/autoupdate\":\"true\"}},\"subjects\":[{\"kind\":\"ServiceAccount\",\"name\":\"cke-cluster-dns\",\"namespace\":\"kube-system\"}],\"roleRef\":{\"apiGroup\":\"rbac.authorization.k8s.io\",\"kind\":\"ClusterRole\",\"name\":\"system:cluster-dns\"}}\n"),
+		Definition: []byte("\nkind: ClusterRoleBinding\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: system:cluster-dns\n  labels:\n    kubernetes.io/bootstrapping: rbac-defaults\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n    rbac.authorization.kubernetes.io/autoupdate: \"true\"\nroleRef:\n  apiGroup: rbac.authorization.k8s.io\n  kind: ClusterRole\n  name: system:cluster-dns\nsubjects:\n- kind: ServiceAccount\n  name: cke-cluster-dns\n  namespace: kube-system\n"),
 	},
 	{
 		Key:        "ClusterRoleBinding/system:kube-apiserver",
@@ -106,7 +106,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "system:kube-apiserver",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"ClusterRoleBinding\",\"apiVersion\":\"rbac.authorization.k8s.io/v1\",\"metadata\":{\"name\":\"system:kube-apiserver\",\"creationTimestamp\":null,\"labels\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\"},\"annotations\":{\"cke.cybozu.com/revision\":\"1\",\"rbac.authorization.kubernetes.io/autoupdate\":\"true\"}},\"subjects\":[{\"kind\":\"User\",\"name\":\"kubernetes\"}],\"roleRef\":{\"apiGroup\":\"rbac.authorization.k8s.io\",\"kind\":\"ClusterRole\",\"name\":\"system:kube-apiserver-to-kubelet\"}}\n"),
+		Definition: []byte("kind: ClusterRoleBinding\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: system:kube-apiserver\n  labels:\n    kubernetes.io/bootstrapping: rbac-defaults\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n    rbac.authorization.kubernetes.io/autoupdate: \"true\"\nroleRef:\n  apiGroup: rbac.authorization.k8s.io\n  kind: ClusterRole\n  name: system:kube-apiserver-to-kubelet\nsubjects:\n- kind: User\n  name: kubernetes\n"),
 	},
 	{
 		Key:        "RoleBinding/kube-system/system:etcdbackup",
@@ -115,7 +115,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "system:etcdbackup",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"RoleBinding\",\"apiVersion\":\"rbac.authorization.k8s.io/v1\",\"metadata\":{\"name\":\"system:etcdbackup\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"labels\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\"},\"annotations\":{\"cke.cybozu.com/revision\":\"1\",\"rbac.authorization.kubernetes.io/autoupdate\":\"true\"}},\"subjects\":[{\"kind\":\"ServiceAccount\",\"name\":\"cke-etcdbackup\",\"namespace\":\"kube-system\"}],\"roleRef\":{\"apiGroup\":\"rbac.authorization.k8s.io\",\"kind\":\"Role\",\"name\":\"system:etcdbackup\"}}\n"),
+		Definition: []byte("\nkind: RoleBinding\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: system:etcdbackup\n  namespace: kube-system\n  labels:\n    kubernetes.io/bootstrapping: rbac-defaults\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n    rbac.authorization.kubernetes.io/autoupdate: \"true\"\nroleRef:\n  apiGroup: rbac.authorization.k8s.io\n  kind: Role\n  name: system:etcdbackup\nsubjects:\n- kind: ServiceAccount\n  name: cke-etcdbackup\n  namespace: kube-system\n"),
 	},
 	{
 		Key:        "RoleBinding/kube-system/system:node-dns",
@@ -124,7 +124,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "system:node-dns",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"RoleBinding\",\"apiVersion\":\"rbac.authorization.k8s.io/v1\",\"metadata\":{\"name\":\"system:node-dns\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"labels\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\"},\"annotations\":{\"cke.cybozu.com/revision\":\"1\",\"rbac.authorization.kubernetes.io/autoupdate\":\"true\"}},\"subjects\":[{\"kind\":\"ServiceAccount\",\"name\":\"cke-node-dns\",\"namespace\":\"kube-system\"}],\"roleRef\":{\"apiGroup\":\"rbac.authorization.k8s.io\",\"kind\":\"Role\",\"name\":\"system:node-dns\"}}\n"),
+		Definition: []byte("\nkind: RoleBinding\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: system:node-dns\n  namespace: kube-system\n  labels:\n    kubernetes.io/bootstrapping: rbac-defaults\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n    rbac.authorization.kubernetes.io/autoupdate: \"true\"\nroleRef:\n  apiGroup: rbac.authorization.k8s.io\n  kind: Role\n  name: system:node-dns\nsubjects:\n- kind: ServiceAccount\n  name: cke-node-dns\n  namespace: kube-system\n"),
 	},
 	{
 		Key:        "Deployment/kube-system/cluster-dns",
@@ -132,8 +132,8 @@ var Resources = []cke.ResourceDefinition{
 		Namespace:  "kube-system",
 		Name:       "cluster-dns",
 		Revision:   1,
-		Image:      "quay.io/cybozu/coredns:1.6.2.1",
-		Definition: []byte("{\"kind\":\"Deployment\",\"apiVersion\":\"apps/v1\",\"metadata\":{\"name\":\"cluster-dns\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"annotations\":{\"cke.cybozu.com/image\":\"quay.io/cybozu/coredns:1.6.2.1\",\"cke.cybozu.com/revision\":\"1\"}},\"spec\":{\"replicas\":2,\"selector\":{\"matchLabels\":{\"cke.cybozu.com/appname\":\"cluster-dns\"}},\"template\":{\"metadata\":{\"creationTimestamp\":null,\"labels\":{\"cke.cybozu.com/appname\":\"cluster-dns\",\"k8s-app\":\"coredns\"},\"annotations\":{\"prometheus.io/port\":\"9153\"}},\"spec\":{\"volumes\":[{\"name\":\"config-volume\",\"configMap\":{\"name\":\"cluster-dns\",\"items\":[{\"key\":\"Corefile\",\"path\":\"Corefile\"}]}}],\"containers\":[{\"name\":\"coredns\",\"image\":\"quay.io/cybozu/coredns:1.6.2.1\",\"args\":[\"-conf\",\"/etc/coredns/Corefile\"],\"ports\":[{\"name\":\"dns\",\"containerPort\":1053,\"protocol\":\"UDP\"},{\"name\":\"dns-tcp\",\"containerPort\":1053,\"protocol\":\"TCP\"},{\"name\":\"metrics\",\"containerPort\":9153}],\"resources\":{\"limits\":{\"memory\":\"170Mi\"},\"requests\":{\"cpu\":\"100m\",\"memory\":\"70Mi\"}},\"volumeMounts\":[{\"name\":\"config-volume\",\"readOnly\":true,\"mountPath\":\"/etc/coredns\"}],\"livenessProbe\":{\"httpGet\":{\"path\":\"/health\",\"port\":8080,\"scheme\":\"HTTP\"},\"initialDelaySeconds\":60,\"timeoutSeconds\":5,\"successThreshold\":1,\"failureThreshold\":5},\"readinessProbe\":{\"httpGet\":{\"path\":\"/health\",\"port\":8080,\"scheme\":\"HTTP\"},\"timeoutSeconds\":5},\"imagePullPolicy\":\"IfNotPresent\",\"securityContext\":{\"capabilities\":{\"drop\":[\"all\"]},\"readOnlyRootFilesystem\":true,\"allowPrivilegeEscalation\":false}}],\"dnsPolicy\":\"Default\",\"serviceAccountName\":\"cke-cluster-dns\",\"tolerations\":[{\"key\":\"node-role.kubernetes.io/master\",\"effect\":\"NoSchedule\"},{\"key\":\"CriticalAddonsOnly\",\"operator\":\"Exists\"}],\"priorityClassName\":\"system-cluster-critical\"}},\"strategy\":{\"type\":\"RollingUpdate\",\"rollingUpdate\":{\"maxUnavailable\":1}}},\"status\":{}}\n"),
+		Image:      "quay.io/cybozu/coredns:1.6.7.1",
+		Definition: []byte("\nkind: Deployment\napiVersion: apps/v1\nmetadata:\n  name: cluster-dns\n  namespace: kube-system\n  annotations:\n    cke.cybozu.com/image: \"quay.io/cybozu/coredns:1.6.7.1\"\n    cke.cybozu.com/revision: \"1\"\nspec:\n  replicas: 2\n  strategy:\n    type: RollingUpdate\n    rollingUpdate:\n      maxUnavailable: 1\n  selector:\n    matchLabels:\n      cke.cybozu.com/appname: cluster-dns\n  template:\n    metadata:\n      labels:\n        cke.cybozu.com/appname: cluster-dns\n        k8s-app: coredns # sonobuoy requires\n      annotations:\n        prometheus.io/port: \"9153\"\n    spec:\n      priorityClassName: system-cluster-critical\n      serviceAccountName: cke-cluster-dns\n      tolerations:\n        - key: node-role.kubernetes.io/master\n          effect: NoSchedule\n        - key: \"CriticalAddonsOnly\"\n          operator: \"Exists\"\n      containers:\n      - name: coredns\n        image: quay.io/cybozu/coredns:1.6.7.1\n        imagePullPolicy: IfNotPresent\n        resources:\n          limits:\n            memory: 170Mi\n          requests:\n            cpu: 100m\n            memory: 70Mi\n        args: [ \"-conf\", \"/etc/coredns/Corefile\" ]\n        lifecycle:\n          preStop:\n            exec:\n              command: [\"sh\", \"-c\", \"sleep\", \"5\"]\n        volumeMounts:\n        - name: config-volume\n          mountPath: /etc/coredns\n          readOnly: true\n        ports:\n        - containerPort: 1053\n          name: dns\n          protocol: UDP\n        - containerPort: 1053\n          name: dns-tcp\n          protocol: TCP\n        - containerPort: 9153\n          name: metrics\n          protocol: TCP\n        securityContext:\n          allowPrivilegeEscalation: false\n          capabilities:\n            drop:\n            - all\n          readOnlyRootFilesystem: true\n        readinessProbe:\n          httpGet:\n            path: /health\n            port: 8080\n            scheme: HTTP\n          timeoutSeconds: 5\n        livenessProbe:\n          httpGet:\n            path: /health\n            port: 8080\n            scheme: HTTP\n          initialDelaySeconds: 60\n          timeoutSeconds: 5\n          successThreshold: 1\n          failureThreshold: 5\n      dnsPolicy: Default\n      volumes:\n        - name: config-volume\n          configMap:\n            name: cluster-dns\n            items:\n            - key: Corefile\n              path: Corefile\n"),
 	},
 	{
 		Key:        "DaemonSet/kube-system/node-dns",
@@ -141,8 +141,8 @@ var Resources = []cke.ResourceDefinition{
 		Namespace:  "kube-system",
 		Name:       "node-dns",
 		Revision:   1,
-		Image:      "quay.io/cybozu/unbound:1.9.2.1",
-		Definition: []byte("{\"kind\":\"DaemonSet\",\"apiVersion\":\"apps/v1\",\"metadata\":{\"name\":\"node-dns\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"annotations\":{\"cke.cybozu.com/image\":\"quay.io/cybozu/unbound:1.9.2.1\",\"cke.cybozu.com/revision\":\"1\"}},\"spec\":{\"selector\":{\"matchLabels\":{\"cke.cybozu.com/appname\":\"node-dns\"}},\"template\":{\"metadata\":{\"creationTimestamp\":null,\"labels\":{\"cke.cybozu.com/appname\":\"node-dns\"}},\"spec\":{\"volumes\":[{\"name\":\"config-volume\",\"configMap\":{\"name\":\"node-dns\",\"items\":[{\"key\":\"unbound.conf\",\"path\":\"unbound.conf\"}]}}],\"containers\":[{\"name\":\"unbound\",\"image\":\"quay.io/cybozu/unbound:1.9.2.1\",\"args\":[\"-c\",\"/etc/unbound/unbound.conf\"],\"resources\":{},\"volumeMounts\":[{\"name\":\"config-volume\",\"mountPath\":\"/etc/unbound\"}],\"livenessProbe\":{\"tcpSocket\":{\"port\":53,\"host\":\"localhost\"},\"initialDelaySeconds\":1,\"periodSeconds\":1,\"failureThreshold\":6},\"readinessProbe\":{\"tcpSocket\":{\"port\":53,\"host\":\"localhost\"},\"periodSeconds\":1},\"securityContext\":{\"capabilities\":{\"add\":[\"NET_BIND_SERVICE\"],\"drop\":[\"all\"]},\"readOnlyRootFilesystem\":true,\"allowPrivilegeEscalation\":false}},{\"name\":\"reload\",\"image\":\"quay.io/cybozu/unbound:1.9.2.1\",\"command\":[\"/usr/local/bin/reload-unbound\"],\"resources\":{},\"volumeMounts\":[{\"name\":\"config-volume\",\"mountPath\":\"/etc/unbound\"}],\"securityContext\":{\"capabilities\":{\"drop\":[\"all\"]},\"readOnlyRootFilesystem\":true,\"allowPrivilegeEscalation\":false}}],\"terminationGracePeriodSeconds\":0,\"nodeSelector\":{\"kubernetes.io/os\":\"linux\"},\"serviceAccountName\":\"cke-node-dns\",\"hostNetwork\":true,\"tolerations\":[{\"operator\":\"Exists\",\"effect\":\"NoSchedule\"},{\"key\":\"CriticalAddonsOnly\",\"operator\":\"Exists\"},{\"operator\":\"Exists\",\"effect\":\"NoExecute\"}],\"priorityClassName\":\"system-node-critical\"}},\"updateStrategy\":{\"type\":\"RollingUpdate\",\"rollingUpdate\":{\"maxUnavailable\":1}}},\"status\":{\"currentNumberScheduled\":0,\"numberMisscheduled\":0,\"desiredNumberScheduled\":0,\"numberReady\":0}}\n"),
+		Image:      "quay.io/cybozu/unbound:1.10.0.1",
+		Definition: []byte("\nkind: DaemonSet\napiVersion: apps/v1\nmetadata:\n  name: node-dns\n  namespace: kube-system\n  annotations:\n    cke.cybozu.com/image: \"quay.io/cybozu/unbound:1.10.0.1\"\n    cke.cybozu.com/revision: \"1\"\nspec:\n  selector:\n    matchLabels:\n      cke.cybozu.com/appname: node-dns\n  updateStrategy:\n    type: RollingUpdate\n    rollingUpdate:\n      maxUnavailable: 1\n  template:\n    metadata:\n      labels:\n        cke.cybozu.com/appname: node-dns\n    spec:\n      priorityClassName: system-node-critical\n      nodeSelector:\n        kubernetes.io/os: linux\n      hostNetwork: true\n      tolerations:\n        # Make sure unbound gets scheduled on all nodes.\n        - effect: NoSchedule\n          operator: Exists\n        # Mark the pod as a critical add-on for rescheduling.\n        - key: CriticalAddonsOnly\n          operator: Exists\n        - effect: NoExecute\n          operator: Exists\n      terminationGracePeriodSeconds: 0\n      serviceAccountName: cke-node-dns\n      containers:\n        - name: unbound\n          image: quay.io/cybozu/unbound:1.10.0.1\n          args:\n            - -c\n            - /etc/unbound/unbound.conf\n          securityContext:\n            allowPrivilegeEscalation: false\n            capabilities:\n              add:\n              - NET_BIND_SERVICE\n              drop:\n              - all\n            readOnlyRootFilesystem: true\n          readinessProbe:\n            tcpSocket:\n              port: 53\n              host: localhost\n            periodSeconds: 1\n          livenessProbe:\n            tcpSocket:\n              port: 53\n              host: localhost\n            periodSeconds: 1\n            initialDelaySeconds: 1\n            failureThreshold: 6\n          volumeMounts:\n            - name: config-volume\n              mountPath: /etc/unbound\n        - name: reload\n          image: quay.io/cybozu/unbound:1.10.0.1\n          command:\n          - /usr/local/bin/reload-unbound\n          securityContext:\n            allowPrivilegeEscalation: false\n            capabilities:\n              drop:\n              - all\n            readOnlyRootFilesystem: true\n          volumeMounts:\n            - name: config-volume\n              mountPath: /etc/unbound\n      volumes:\n        - name: config-volume\n          configMap:\n            name: node-dns\n            items:\n            - key: unbound.conf\n              path: unbound.conf\n"),
 	},
 	{
 		Key:        "Service/kube-system/cluster-dns",
@@ -151,7 +151,7 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "cluster-dns",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"Service\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"cluster-dns\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"labels\":{\"cke.cybozu.com/appname\":\"cluster-dns\"},\"annotations\":{\"cke.cybozu.com/revision\":\"1\"}},\"spec\":{\"ports\":[{\"name\":\"dns\",\"protocol\":\"UDP\",\"port\":53,\"targetPort\":1053},{\"name\":\"dns-tcp\",\"protocol\":\"TCP\",\"port\":53,\"targetPort\":1053}],\"selector\":{\"cke.cybozu.com/appname\":\"cluster-dns\"}},\"status\":{\"loadBalancer\":{}}}\n"),
+		Definition: []byte("\nkind: Service\napiVersion: v1\nmetadata:\n  name: cluster-dns\n  namespace: kube-system\n  annotations:\n    cke.cybozu.com/revision: \"1\"\n  labels:\n    cke.cybozu.com/appname: cluster-dns\nspec:\n  selector:\n    cke.cybozu.com/appname: cluster-dns\n  ports:\n    - name: dns\n      port: 53\n      targetPort: 1053\n      protocol: UDP\n    - name: dns-tcp\n      port: 53\n      targetPort: 1053\n      protocol: TCP\n"),
 	},
 	{
 		Key:        "PodDisruptionBudget/kube-system/cluster-dns-pdb",
@@ -160,6 +160,6 @@ var Resources = []cke.ResourceDefinition{
 		Name:       "cluster-dns-pdb",
 		Revision:   1,
 		Image:      "",
-		Definition: []byte("{\"kind\":\"PodDisruptionBudget\",\"apiVersion\":\"policy/v1beta1\",\"metadata\":{\"name\":\"cluster-dns-pdb\",\"namespace\":\"kube-system\",\"creationTimestamp\":null,\"annotations\":{\"cke.cybozu.com/revision\":\"1\"}},\"spec\":{\"selector\":{\"matchLabels\":{\"cke.cybozu.com/appname\":\"cluster-dns\"}},\"maxUnavailable\":1},\"status\":{\"disruptionsAllowed\":0,\"currentHealthy\":0,\"desiredHealthy\":0,\"expectedPods\":0}}\n"),
+		Definition: []byte("\napiVersion: policy/v1beta1\nkind: PodDisruptionBudget\nmetadata:\n  name: cluster-dns-pdb\n  namespace: kube-system\n  annotations:\n    cke.cybozu.com/revision: \"1\"\nspec:\n  maxUnavailable: 1\n  selector:\n    matchLabels:\n      cke.cybozu.com/appname: cluster-dns\n"),
 	},
 }

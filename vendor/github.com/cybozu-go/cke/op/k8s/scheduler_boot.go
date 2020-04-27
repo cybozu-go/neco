@@ -8,9 +8,9 @@ import (
 	"github.com/cybozu-go/cke"
 	"github.com/cybozu-go/cke/op"
 	"github.com/cybozu-go/cke/op/common"
-	"github.com/cybozu-go/cke/scheduler"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
+	schedulerv1 "k8s.io/kube-scheduler/config/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -42,7 +42,7 @@ func (o *schedulerBootOp) NextCommand() cke.Commander {
 	switch o.step {
 	case 0:
 		o.step++
-		return common.ImagePullCommand(o.nodes, cke.HyperkubeImage)
+		return common.ImagePullCommand(o.nodes, cke.KubernetesImage)
 	case 1:
 		o.step++
 		return prepareSchedulerFilesCommand{o.cluster, o.files, o.params}
@@ -51,7 +51,7 @@ func (o *schedulerBootOp) NextCommand() cke.Commander {
 		return o.files
 	case 3:
 		o.step++
-		return common.RunContainerCommand(o.nodes, op.KubeSchedulerContainerName, cke.HyperkubeImage,
+		return common.RunContainerCommand(o.nodes, op.KubeSchedulerContainerName, cke.KubernetesImage,
 			common.WithParams(SchedulerParams()),
 			common.WithExtra(o.params.ServiceParams))
 	default:
@@ -73,7 +73,7 @@ type prepareSchedulerFilesCommand struct {
 	params  cke.SchedulerParams
 }
 
-func (c prepareSchedulerFilesCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c prepareSchedulerFilesCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	const kubeconfigPath = "/etc/kubernetes/scheduler/kubeconfig"
 	storage := inf.Storage()
 
@@ -95,16 +95,16 @@ func (c prepareSchedulerFilesCommand) Run(ctx context.Context, inf cke.Infrastru
 	}
 
 	g = func(ctx context.Context, n *cke.Node) ([]byte, error) {
-		var configs []*scheduler.ExtenderConfig
+		var configs []schedulerv1.Extender
 		for _, extStr := range c.params.Extenders {
-			conf := new(scheduler.ExtenderConfig)
+			conf := new(schedulerv1.Extender)
 			err = yaml.Unmarshal([]byte(extStr), conf)
 			if err != nil {
 				return nil, err
 			}
-			configs = append(configs, conf)
+			configs = append(configs, *conf)
 		}
-		policy := scheduler.Policy{TypeMeta: metav1.TypeMeta{Kind: "Policy", APIVersion: "v1"}, ExtenderConfigs: configs}
+		policy := schedulerv1.Policy{TypeMeta: metav1.TypeMeta{Kind: "Policy", APIVersion: "v1"}, Extenders: configs}
 		return json.Marshal(policy)
 	}
 	err = c.files.AddFile(ctx, op.PolicyConfigPath, g)

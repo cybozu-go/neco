@@ -24,7 +24,7 @@ func ImagePullCommand(nodes []*cke.Node, img cke.Image) cke.Commander {
 	return imagePullCommand{nodes, img}
 }
 
-func (c imagePullCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c imagePullCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	env := well.NewEnvironment(ctx)
 	for _, n := range c.nodes {
 		ce := inf.Engine(n.Address)

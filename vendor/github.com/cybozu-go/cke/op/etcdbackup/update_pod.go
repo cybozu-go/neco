@@ -47,7 +47,7 @@ type updateEtcdBackupPodCommand struct {
 	pvcname   string
 }
 
-func (c updateEtcdBackupPodCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c updateEtcdBackupPodCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiserver)
 	if err != nil {
 		return err

@@ -38,7 +38,7 @@ func (o *apiServerRestartOp) NextCommand() cke.Commander {
 	switch o.step {
 	case 0:
 		o.step++
-		return common.ImagePullCommand(o.nodes, cke.HyperkubeImage)
+		return common.ImagePullCommand(o.nodes, cke.KubernetesImage)
 	case 1:
 		o.step++
 		return prepareAPIServerFilesCommand{o.files, o.serviceSubnet, o.domain, o.params}
@@ -57,7 +57,7 @@ func (o *apiServerRestartOp) NextCommand() cke.Commander {
 			"--mount", "type=tmpfs,dst=/run/kubernetes",
 		}
 		return common.RunContainerCommand([]*cke.Node{node},
-			op.KubeAPIServerContainerName, cke.HyperkubeImage,
+			op.KubeAPIServerContainerName, cke.KubernetesImage,
 			common.WithOpts(opts),
 			common.WithParams(APIServerParams(o.cps, node.Address, o.serviceSubnet, o.params.AuditLogEnabled, o.params.AuditLogPolicy)),
 			common.WithExtra(o.params.ServiceParams),

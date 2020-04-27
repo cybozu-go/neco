@@ -15,7 +15,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/retry"
-	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -58,7 +57,7 @@ func (o *kubeletBootOp) NextCommand() cke.Commander {
 	switch o.step {
 	case 0:
 		o.step++
-		return common.ImagePullCommand(o.nodes, cke.HyperkubeImage)
+		return common.ImagePullCommand(o.nodes, cke.KubernetesImage)
 	case 1:
 		o.step++
 		if len(o.params.CNIConfFile.Name) != 0 {
@@ -112,7 +111,7 @@ func (o *kubeletBootOp) NextCommand() cke.Commander {
 			}
 			paramsMap[n.Address] = params
 		}
-		return common.RunContainerCommand(o.nodes, op.KubeletContainerName, cke.HyperkubeImage,
+		return common.RunContainerCommand(o.nodes, op.KubeletContainerName, cke.KubernetesImage,
 			common.WithOpts(opts),
 			common.WithParamsMap(paramsMap),
 			common.WithExtra(o.params.ServiceParams))
@@ -137,7 +136,7 @@ type emptyDirCommand struct {
 	dir   string
 }
 
-func (c emptyDirCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c emptyDirCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	dest := filepath.Join("/mnt", c.dir)
 	arg := "/usr/local/cke-tools/bin/empty-dir " + dest
 
@@ -172,7 +171,7 @@ type prepareKubeletFilesCommand struct {
 	files     *common.FilesBuilder
 }
 
-func (c prepareKubeletFilesCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c prepareKubeletFilesCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	caPath := op.K8sPKIPath("ca.crt")
 	tlsCertPath := op.K8sPKIPath("kubelet.crt")
 	tlsKeyPath := op.K8sPKIPath("kubelet.key")
@@ -194,7 +193,7 @@ func (c prepareKubeletFilesCommand) Run(ctx context.Context, inf cke.Infrastruct
 	g := func(ctx context.Context, n *cke.Node) ([]byte, error) {
 		cfg := cfg
 		cfg.ClusterDNS = []string{n.Address}
-		return yaml.Marshal(cfg)
+		return encodeToYAML(&cfg)
 	}
 	err := c.files.AddFile(ctx, kubeletConfigPath, g)
 	if err != nil {
@@ -243,7 +242,7 @@ type installCNICommand struct {
 	nodes []*cke.Node
 }
 
-func (c installCNICommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c installCNICommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	env := well.NewEnvironment(ctx)
 
 	binds := []cke.Mount{
@@ -273,7 +272,7 @@ type retaintBeforeKubeletBootCommand struct {
 	params    cke.KubeletParams
 }
 
-func (c retaintBeforeKubeletBootCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c retaintBeforeKubeletBootCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiServer)
 	if err != nil {
 		return err
@@ -329,7 +328,7 @@ type waitForKubeletReadyCommand struct {
 	nodes []*cke.Node
 }
 
-func (c waitForKubeletReadyCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c waitForKubeletReadyCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	for i := 0; i < 9; i++ {
 		err := c.try(ctx, inf)
 		if err == nil {

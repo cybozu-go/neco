@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -14,7 +15,6 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/well"
 	vault "github.com/hashicorp/vault/api"
-	"github.com/pkg/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -80,6 +80,7 @@ type Infrastructure interface {
 	Storage() Storage
 
 	NewEtcdClient(ctx context.Context, endpoints []string) (*clientv3.Client, error)
+	K8sConfig(ctx context.Context, n *Node) (*rest.Config, error)
 	K8sClient(ctx context.Context, n *Node) (*kubernetes.Clientset, error)
 	HTTPClient() *well.HTTPClient
 	HTTPSClient(ctx context.Context) (*well.HTTPClient, error)
@@ -269,21 +270,26 @@ func (i *ckeInfrastructure) NewEtcdClient(ctx context.Context, endpoints []strin
 	return etcdutil.NewClient(cfg)
 }
 
-func (i *ckeInfrastructure) K8sClient(ctx context.Context, n *Node) (*kubernetes.Clientset, error) {
-	err := i.init(ctx)
-	if err != nil {
+func (i *ckeInfrastructure) K8sConfig(ctx context.Context, n *Node) (*rest.Config, error) {
+	if err := i.init(ctx); err != nil {
 		return nil, err
 	}
 
-	tlsCfg := rest.TLSClientConfig{
-		CertData: i.kubeCert,
-		KeyData:  i.kubeKey,
-		CAData:   []byte(kubeHTTP.ca),
-	}
-	cfg := &rest.Config{
-		Host:            "https://" + n.Address + ":6443",
-		TLSClientConfig: tlsCfg,
-		Timeout:         5 * time.Second,
+	return &rest.Config{
+		Host: "https://" + n.Address + ":6443",
+		TLSClientConfig: rest.TLSClientConfig{
+			CertData: i.kubeCert,
+			KeyData:  i.kubeKey,
+			CAData:   []byte(kubeHTTP.ca),
+		},
+		Timeout: 5 * time.Second,
+	}, nil
+}
+
+func (i *ckeInfrastructure) K8sClient(ctx context.Context, n *Node) (*kubernetes.Clientset, error) {
+	cfg, err := i.K8sConfig(ctx, n)
+	if err != nil {
+		return nil, err
 	}
 	return kubernetes.NewForConfig(cfg)
 }

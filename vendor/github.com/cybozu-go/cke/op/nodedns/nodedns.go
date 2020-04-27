@@ -35,6 +35,7 @@ server:
   pidfile: "/tmp/unbound.pid"
   infra-host-ttl: 60
   prefetch: yes
+  tcp-upstream: yes
   local-zone: "10.in-addr.arpa." transparent
   local-zone: "168.192.in-addr.arpa." transparent
   local-zone: "16.172.in-addr.arpa." transparent

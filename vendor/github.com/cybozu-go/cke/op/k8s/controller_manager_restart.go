@@ -34,12 +34,12 @@ func (o *controllerManagerRestartOp) Name() string {
 func (o *controllerManagerRestartOp) NextCommand() cke.Commander {
 	if !o.pulled {
 		o.pulled = true
-		return common.ImagePullCommand(o.nodes, cke.HyperkubeImage)
+		return common.ImagePullCommand(o.nodes, cke.KubernetesImage)
 	}
 
 	if !o.finished {
 		o.finished = true
-		return common.RunContainerCommand(o.nodes, op.KubeControllerManagerContainerName, cke.HyperkubeImage,
+		return common.RunContainerCommand(o.nodes, op.KubeControllerManagerContainerName, cke.KubernetesImage,
 			common.WithParams(ControllerManagerParams(o.cluster, o.serviceSubnet)),
 			common.WithExtra(o.params),
 			common.WithRestart())

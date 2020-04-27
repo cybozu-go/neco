@@ -34,7 +34,7 @@ func (o *schedulerRestartOp) NextCommand() cke.Commander {
 	switch o.step {
 	case 0:
 		o.step++
-		return common.ImagePullCommand(o.nodes, cke.HyperkubeImage)
+		return common.ImagePullCommand(o.nodes, cke.KubernetesImage)
 	case 1:
 		o.step++
 		return prepareSchedulerFilesCommand{o.cluster, o.files, o.params}
@@ -43,7 +43,7 @@ func (o *schedulerRestartOp) NextCommand() cke.Commander {
 		return o.files
 	case 3:
 		o.step++
-		return common.RunContainerCommand(o.nodes, op.KubeSchedulerContainerName, cke.HyperkubeImage,
+		return common.RunContainerCommand(o.nodes, op.KubeSchedulerContainerName, cke.KubernetesImage,
 			common.WithParams(SchedulerParams()),
 			common.WithExtra(o.params.ServiceParams),
 			common.WithRestart())

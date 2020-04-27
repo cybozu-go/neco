@@ -74,7 +74,7 @@ type createEtcdServiceCommand struct {
 	apiserver *cke.Node
 }
 
-func (c createEtcdServiceCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c createEtcdServiceCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiserver)
 	if err != nil {
 		return err
@@ -104,7 +104,7 @@ type updateEtcdServiceCommand struct {
 	apiserver *cke.Node
 }
 
-func (c updateEtcdServiceCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c updateEtcdServiceCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiserver)
 	if err != nil {
 		return err

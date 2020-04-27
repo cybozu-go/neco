@@ -94,7 +94,7 @@ type prepareEtcdCertificatesCommand struct {
 	domain string
 }
 
-func (c prepareEtcdCertificatesCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c prepareEtcdCertificatesCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	f := func(ctx context.Context, n *cke.Node) (cert, key []byte, err error) {
 		c, k, e := cke.EtcdCA{}.IssueServerCert(ctx, inf, n, c.domain)
 		if e != nil {
@@ -191,7 +191,7 @@ func (c waitEtcdSyncCommand) try(ctx context.Context, inf cke.Infrastructure) er
 	return nil
 }
 
-func (c waitEtcdSyncCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c waitEtcdSyncCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	for i := 0; i < 9; i++ {
 		err := c.try(ctx, inf)
 		if err == nil {

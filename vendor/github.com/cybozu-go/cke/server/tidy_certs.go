@@ -22,12 +22,6 @@ func (c Controller) TidyExpiredCertificates(ctx context.Context, client *vault.C
 		return err
 	}
 
-	log.Debug(path.Join(ca, "tidy")+" is called", map[string]interface{}{
-		"tidy_params": tidyParams,
-		"ca":          ca,
-		"res":         res,
-	})
-
 	// TODO: More appropriate error detection.
 	// Vault client does not provide an interface to detect whether errors have occurred or not.
 	if len(res.Warnings) == 0 {

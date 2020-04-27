@@ -1,53 +1,49 @@
 module github.com/cybozu-go/neco
 
 require (
-	cloud.google.com/go v0.37.4 // indirect
 	github.com/14rcole/gopopulate v0.0.0-20180821133914-b175b219e774 // indirect
 	github.com/Microsoft/go-winio v0.0.0-20180501170546-ab35fc04b636 // indirect
 	github.com/Microsoft/hcsshim v0.0.0-20180606212836-eca7177590cd // indirect
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/beorn7/perks v1.0.0 // indirect
 	github.com/containerd/continuity v0.0.0-20190426062206-aaeac12a7ffc // indirect
 	github.com/containers/image v0.0.0-20181129122009-63a1cbdc5e65
 	github.com/containers/storage v0.0.0-20181203181726-ad0f9c4dfa38 // indirect
 	github.com/coreos/etcd v3.3.19+incompatible
-	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/coreos/ignition v0.32.0 // indirect
-	github.com/cybozu-go/cke v1.15.5
+	github.com/cybozu-go/cke v1.17.3
 	github.com/cybozu-go/etcdutil v1.3.4
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
 	github.com/cybozu-go/placemat v1.3.7
 	github.com/cybozu-go/sabakan/v2 v2.4.8
 	github.com/cybozu-go/well v1.8.1
-	github.com/docker/distribution v0.0.0-20170817175659-5f6282db7d65 // indirect
 	github.com/docker/docker-credential-helpers v0.6.0 // indirect
+	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef // indirect
 	github.com/google/go-cmp v0.3.0
 	github.com/google/go-github/v18 v18.2.0
 	github.com/gorilla/mux v1.7.1 // indirect
-	github.com/grpc-ecosystem/grpc-gateway v1.8.5 // indirect
 	github.com/hashicorp/go-msgpack v0.5.4 // indirect
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/serf v0.8.3
-	github.com/hashicorp/vault/api v1.0.2
+	github.com/hashicorp/vault/api v1.0.4
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
-	github.com/mattn/go-runewidth v0.0.0-20170201023540-14207d285c6c // indirect
 	github.com/mattn/go-shellwords v1.0.3 // indirect
 	github.com/miekg/dns v1.1.8 // indirect
 	github.com/mistifyio/go-zfs v0.0.0-20161103015429-c0224de804d4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.1.2
+	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/mtrmac/gpgme v0.0.0-20170102180018-b2432428689c // indirect
 	github.com/nlopes/slack v0.6.0
-	github.com/onsi/ginkgo v1.8.0
-	github.com/onsi/gomega v1.5.0
+	github.com/onsi/ginkgo v1.10.1
+	github.com/onsi/gomega v1.7.0
 	github.com/opencontainers/runc v0.0.0-20170216015123-6b1d0e76f239 // indirect
 	github.com/opencontainers/selinux v0.0.0-20181018180444-077c8b6d1c18 // indirect
 	github.com/ostreedev/ostree-go v0.0.0-20170616214430-aeb02c6b6aa2 // indirect
@@ -58,8 +54,6 @@ require (
 	github.com/prometheus/prom2json v1.1.0
 	github.com/rakyll/statik v0.1.5
 	github.com/satori/go.uuid v1.2.0 // indirect
-	github.com/sirupsen/logrus v1.4.1 // indirect
-	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.3.2
@@ -74,18 +68,13 @@ require (
 	github.com/xeipuuv/gojsonschema v0.0.0-20181112162635-ac52e6811b56 // indirect
 	go4.org v0.0.0-20190313082347-94abd6928b1d // indirect
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
-	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
-	golang.org/x/sys v0.0.0-20190516110030-61b9204099cb // indirect
-	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	google.golang.org/api v0.4.0
 	google.golang.org/appengine v1.5.0
-	google.golang.org/genproto v0.0.0-20190425155659-357c62f0e4bb // indirect
-	gopkg.in/cheggaaa/pb.v1 v1.0.7 // indirect
-	gopkg.in/yaml.v2 v2.2.2
-	k8s.io/api v0.0.0-20190819141258-3544db3b9e44
-	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
-	k8s.io/client-go v0.0.0-20190819141724-e14f31a72a77 // indirect
-	sigs.k8s.io/yaml v1.1.0
+	gopkg.in/yaml.v2 v2.2.8
+	k8s.io/api v0.17.5
+	k8s.io/apimachinery v0.17.5
+	sigs.k8s.io/yaml v1.2.0
 )
 
 replace github.com/golang/lint v0.0.0-20190409202823-959b441ac422 => golang.org/x/lint v0.0.0-20190409202823-959b441ac422

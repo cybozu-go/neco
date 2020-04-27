@@ -9,7 +9,6 @@ import (
 	"github.com/cybozu-go/cke"
 	"github.com/cybozu-go/cke/op"
 	"github.com/cybozu-go/cke/op/common"
-	"sigs.k8s.io/yaml"
 )
 
 var (
@@ -67,7 +66,7 @@ func (o *apiServerBootOp) NextCommand() cke.Commander {
 	switch o.step {
 	case 0:
 		o.step++
-		return common.ImagePullCommand(o.nodes, cke.HyperkubeImage)
+		return common.ImagePullCommand(o.nodes, cke.KubernetesImage)
 	case 1:
 		o.step++
 		return common.MakeDirsCommandWithMode(o.nodes, []string{encryptionConfigDir}, "700")
@@ -86,7 +85,7 @@ func (o *apiServerBootOp) NextCommand() cke.Commander {
 		for _, n := range o.nodes {
 			paramsMap[n.Address] = APIServerParams(o.cps, n.Address, o.serviceSubnet, o.params.AuditLogEnabled, o.params.AuditLogPolicy)
 		}
-		return common.RunContainerCommand(o.nodes, op.KubeAPIServerContainerName, cke.HyperkubeImage,
+		return common.RunContainerCommand(o.nodes, op.KubeAPIServerContainerName, cke.KubernetesImage,
 			common.WithOpts(opts),
 			common.WithParamsMap(paramsMap),
 			common.WithExtra(o.params.ServiceParams))
@@ -110,7 +109,7 @@ type prepareAPIServerFilesCommand struct {
 	params        cke.APIServerParams
 }
 
-func (c prepareAPIServerFilesCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c prepareAPIServerFilesCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	storage := inf.Storage()
 
 	// server (and client) certs of API server.
@@ -213,7 +212,7 @@ func (c prepareAPIServerFilesCommand) Run(ctx context.Context, inf cke.Infrastru
 	if err != nil {
 		return err
 	}
-	enccfgData, err := yaml.Marshal(enccfg)
+	enccfgData, err := encodeToYAML(enccfg)
 	if err != nil {
 		return err
 	}
@@ -289,7 +288,6 @@ func APIServerParams(controlPlanes []*cke.Node, advertiseAddress, serviceSubnet 
 		"--endpoint-reconciler-type=none",
 
 		"--service-cluster-ip-range=" + serviceSubnet,
-		"--machine-id-file=/etc/machine-id",
 		"--encryption-provider-config=" + encryptionConfigFile,
 	}
 	if auditLogEnabeled {

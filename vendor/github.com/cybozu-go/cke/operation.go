@@ -18,7 +18,7 @@ type Operator interface {
 // Commander is a single step to proceed an operation
 type Commander interface {
 	// Run executes the command
-	Run(ctx context.Context, inf Infrastructure) error
+	Run(ctx context.Context, inf Infrastructure, leaderKey string) error
 	// Command returns the command information
 	Command() Command
 }
