@@ -42,7 +42,7 @@ type removeEtcdBackupPodCommand struct {
 	apiserver *cke.Node
 }
 
-func (c removeEtcdBackupPodCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c removeEtcdBackupPodCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiserver)
 	if err != nil {
 		return err

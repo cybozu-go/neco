@@ -7,7 +7,6 @@ import (
 	"github.com/cybozu-go/cke/op"
 	"github.com/cybozu-go/cke/op/common"
 	"k8s.io/client-go/tools/clientcmd"
-	"sigs.k8s.io/yaml"
 )
 
 type kubeletRestartOp struct {
@@ -40,7 +39,7 @@ func (o *kubeletRestartOp) NextCommand() cke.Commander {
 	switch o.step {
 	case 0:
 		o.step++
-		return common.ImagePullCommand(o.nodes, cke.HyperkubeImage)
+		return common.ImagePullCommand(o.nodes, cke.KubernetesImage)
 	case 1:
 		o.step++
 		return prepareKubeletConfigCommand{o.cluster, o.params, o.files}
@@ -58,7 +57,7 @@ func (o *kubeletRestartOp) NextCommand() cke.Commander {
 		for _, n := range o.nodes {
 			paramsMap[n.Address] = KubeletServiceParams(n, o.params)
 		}
-		return common.RunContainerCommand(o.nodes, op.KubeletContainerName, cke.HyperkubeImage,
+		return common.RunContainerCommand(o.nodes, op.KubeletContainerName, cke.KubernetesImage,
 			common.WithOpts(opts),
 			common.WithParamsMap(paramsMap),
 			common.WithExtra(o.params.ServiceParams),
@@ -85,7 +84,7 @@ type prepareKubeletConfigCommand struct {
 	files   *common.FilesBuilder
 }
 
-func (c prepareKubeletConfigCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c prepareKubeletConfigCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	caPath := op.K8sPKIPath("ca.crt")
 	tlsCertPath := op.K8sPKIPath("kubelet.crt")
 	tlsKeyPath := op.K8sPKIPath("kubelet.key")
@@ -95,7 +94,7 @@ func (c prepareKubeletConfigCommand) Run(ctx context.Context, inf cke.Infrastruc
 	g := func(ctx context.Context, n *cke.Node) ([]byte, error) {
 		cfg := cfg
 		cfg.ClusterDNS = []string{n.Address}
-		return yaml.Marshal(cfg)
+		return encodeToYAML(&cfg)
 	}
 	err := c.files.AddFile(ctx, kubeletConfigPath, g)
 	if err != nil {

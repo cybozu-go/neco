@@ -50,6 +50,12 @@ func MachineToNode(m *Machine, tmpl *cke.Node) *cke.Node {
 	n.Labels["cke.cybozu.com/rack"] = strconv.Itoa(m.Spec.Rack)
 	n.Labels["cke.cybozu.com/index-in-rack"] = strconv.Itoa(m.Spec.IndexInRack)
 	n.Labels["cke.cybozu.com/role"] = m.Spec.Role
+	n.Labels["node-role.kubernetes.io/"+m.Spec.Role] = "true"
+	if n.ControlPlane {
+		n.Labels["node-role.kubernetes.io/master"] = "true"
+	}
+	n.Labels["topology.kubernetes.io/zone"] = "rack" + strconv.Itoa(m.Spec.Rack)
+	n.Labels["failure-domain.beta.kubernetes.io/zone"] = "rack" + strconv.Itoa(m.Spec.Rack)
 
 	for _, taint := range tmpl.Taints {
 		n.Taints = append(n.Taints, taint)

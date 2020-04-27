@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	"github.com/containernetworking/cni/libcni"
-	"github.com/cybozu-go/cke/scheduler"
 	corev1 "k8s.io/api/core/v1"
 	v1validation "k8s.io/apimachinery/pkg/apis/meta/v1/validation"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	schedulerv1 "k8s.io/kube-scheduler/config/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -429,7 +429,7 @@ func validateOptions(opts Options) error {
 	}
 
 	for _, e := range opts.Scheduler.Extenders {
-		config := scheduler.ExtenderConfig{}
+		config := schedulerv1.Extender{}
 		err = yaml.Unmarshal([]byte(e), &config)
 		if err != nil {
 			return err

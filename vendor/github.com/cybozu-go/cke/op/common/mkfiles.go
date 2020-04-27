@@ -94,7 +94,7 @@ func (c *FilesBuilder) AddKeyPair(ctx context.Context, name string,
 }
 
 // Run implements cke.Commander.
-func (c *FilesBuilder) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c *FilesBuilder) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	bindMap := make(map[string]cke.Mount)
 	for _, f := range c.files {
 		parentDir := filepath.Dir(f.name)

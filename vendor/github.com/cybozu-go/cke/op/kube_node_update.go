@@ -44,7 +44,7 @@ type nodeUpdateCommand struct {
 	nodes     []*corev1.Node
 }
 
-func (c nodeUpdateCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c nodeUpdateCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cs, err := inf.K8sClient(ctx, c.apiserver)
 	if err != nil {
 		return err

@@ -66,7 +66,7 @@ type removeMemberCommand struct {
 	ids       []uint64
 }
 
-func (c removeMemberCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c removeMemberCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cli, err := inf.NewEtcdClient(ctx, c.endpoints)
 	if err != nil {
 		return err

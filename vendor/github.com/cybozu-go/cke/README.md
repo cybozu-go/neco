@@ -3,8 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/cybozu-go/cke?status.svg)][godoc]
 [![Go Report Card](https://goreportcard.com/badge/github.com/cybozu-go/cke)](https://goreportcard.com/report/github.com/cybozu-go/cke)
 [![Docker Repository on Quay](https://quay.io/repository/cybozu/cke/status "Docker Repository on Quay")](https://quay.io/repository/cybozu/cke)
-
-
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3391/badge)](https://bestpractices.coreinfrastructure.org/projects/3391)
 
 Cybozu Kubernetes Engine
 ========================
@@ -25,10 +24,7 @@ Requirements
 
 ### Node OS Requirements
 
-* Docker
-
-    Data in Docker volumes must persist between reboots.
-
+* Docker: etcd data is stored in Docker volumes.
 * A user who belongs to `docker` group
 * SSH access for the user
 
@@ -39,6 +35,16 @@ Features
 
     CKE can bootstrap a Kubernetes and [etcd][] cluster from scratch.
     CKE can also add or remove nodes to/from the Kubernetes and etcd cluster.
+
+* In-place and fast upgrade of Kubernetes
+
+    A version of CKE corresponds strictly to a single version of Kubernetes.
+    Therefore, upgrading CKE will upgrade the managed Kubernetes.
+
+    Unlike [kubeadm][] or similar tools, CKE can automatically upgrade
+    its managed Kubernetes without draining nodes.  The time taken for
+    the upgrade is not proportional to the number of nodes, so it is
+    very fast.
 
 * Managed etcd cluster
 
@@ -118,7 +124,7 @@ Usage
 ```console
 $ docker run -d --read-only \
     --network host --name cke \
-    quay.io/cybozu/cke:1.14 [options...]
+    quay.io/cybozu/cke:1.17 [options...]
 ```
 
 ### Install `ckecli` to host file system
@@ -127,8 +133,15 @@ $ docker run -d --read-only \
 $ docker run --rm -u root:root \
     --entrypoint /usr/local/cke/install-tools \
     --mount type=bind,src=DIR,target=/host \
-    quay.io/cybozu/cke:1.14
+    quay.io/cybozu/cke:1.17
 ```
+
+Feedback
+--------
+
+Please report bugs / issues to [GitHub issues](https://github.com/cybozu-go/cke/issues).
+
+Feel free to send your pull requests!
 
 License
 -------
@@ -139,6 +152,7 @@ CKE is licensed under MIT license.
 [godoc]: https://godoc.org/github.com/cybozu-go/cke
 [Kubernetes]: https://kubernetes.io/
 [etcd]: https://github.com/etcd-io/etcd
+[kubeadm]: https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm/
 [containerd]: https://containerd.io/
 [cri-o]: https://cri-o.io/
 [Vault]: https://www.vaultproject.io

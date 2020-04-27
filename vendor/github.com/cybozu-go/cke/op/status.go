@@ -2,6 +2,7 @@ package op
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -14,11 +15,12 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/etcdserver/etcdserverpb"
 	"github.com/cybozu-go/cke"
-	"github.com/cybozu-go/cke/scheduler"
 	"github.com/cybozu-go/cke/static"
 	"github.com/cybozu-go/log"
+	corev1 "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	schedulerv1 "k8s.io/kube-scheduler/config/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -51,9 +53,14 @@ func GetNodeStatus(ctx context.Context, inf cke.Infrastructure, node *cke.Node, 
 		return nil, err
 	}
 
+	isAddedmember, err := ce.VolumeExists(EtcdAddedMemberVolumeName)
+	if err != nil {
+		return nil, err
+	}
+
 	status.Etcd = cke.EtcdStatus{
 		ServiceStatus: ss[EtcdContainerName],
-		HasData:       etcdVolumeExists,
+		HasData:       etcdVolumeExists && isAddedmember,
 	}
 	status.Rivers = ss[RiversContainerName]
 	status.EtcdRivers = ss[EtcdRiversContainerName]
@@ -100,7 +107,7 @@ func GetNodeStatus(ctx context.Context, inf cke.Infrastructure, node *cke.Node, 
 			})
 		}
 
-		var policy scheduler.Policy
+		var policy schedulerv1.Policy
 		// Testing policy file existence is needed for backward compatibility
 		policyStr, _, err := agent.Run(fmt.Sprintf("if [ -f %s ]; then cat %s; fi",
 			PolicyConfigPath, PolicyConfigPath))
@@ -120,7 +127,7 @@ func GetNodeStatus(ctx context.Context, inf cke.Infrastructure, node *cke.Node, 
 			})
 			return nil, err
 		}
-		status.Scheduler.Extenders = policy.ExtenderConfigs
+		status.Scheduler.Extenders = policy.Extenders
 	}
 
 	// TODO: due to the following bug, health status cannot be checked for proxy.
@@ -165,6 +172,112 @@ func GetNodeStatus(ctx context.Context, inf cke.Infrastructure, node *cke.Node, 
 	}
 
 	return status, nil
+}
+
+// GetNodeStatusUpToV1_16 sets node status about k8s v1.16 or below
+func GetNodeStatusUpToV1_16(ctx context.Context, inf cke.Infrastructure, node *cke.Node, cluster *cke.Cluster, status *cke.NodeStatus, apiServer *cke.Node) (*cke.NodeStatus, error) {
+	var err error
+	if status.Kubelet.Running {
+		// Block device paths have been changed between k8s v1.16 and v1.17.
+		// https://github.com/kubernetes/kubernetes/pull/74026
+		// So, old device paths and symlinks must be updated before upgrading.
+		status.Kubelet.NeedUpdateBlockPVsUpToV1_16, err = needUpdateBlockPVsUpToV1_16(ctx, inf, apiServer, node)
+		if err != nil {
+			log.Warn("failed to check outdated block device paths", map[string]interface{}{
+				log.FnError: err,
+				"node":      node.Address,
+			})
+		}
+	}
+
+	return status, nil
+}
+
+func needUpdateBlockPVsUpToV1_16(ctx context.Context, inf cke.Infrastructure, apiServer *cke.Node, node *cke.Node) ([]string, error) {
+	type ckeToolResult struct {
+		Result string `json:"result"`
+	}
+
+	clientset, err := inf.K8sClient(ctx, apiServer)
+	if err != nil {
+		return nil, err
+	}
+
+	n, err := clientset.CoreV1().Nodes().Get(node.Address, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	agent := inf.Agent(node.Address)
+	if agent == nil {
+		return nil, errors.New("unable to get agent for " + node.Address)
+	}
+
+	pvList, err := clientset.CoreV1().PersistentVolumes().List(metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	pvMap := make(map[string]corev1.PersistentVolume)
+	for _, pv := range pvList.Items {
+		if pv.Spec.CSI != nil && pv.Spec.CSI.VolumeHandle != "" {
+			// VolumeHandle represents a unique name of CSI volume
+			// https://github.com/kubernetes/api/blob/1fc28ea2498c5c1bc60693fab7a6741b0b4973bc/core/v1/types.go#L1657-L1659
+			pvMap[pv.Spec.CSI.VolumeHandle] = pv
+		}
+	}
+
+	var needUpdatePVs []string
+	ce := inf.Engine(node.Address)
+
+	for _, v := range n.Status.VolumesInUse {
+		// e.g. kubernetes.io/csi/topolvm.cybozu.com^720fab08-e197-4855-ad77-dad24970e3de
+		res := strings.Split(string(v), "^")
+		if len(res) != 2 {
+			continue
+		}
+
+		volumeHandle := res[1]
+		pv, ok := pvMap[volumeHandle]
+		if !ok {
+			continue
+		}
+		if pv.Spec.VolumeMode == nil {
+			continue
+		}
+		if *pv.Spec.VolumeMode != corev1.PersistentVolumeBlock {
+			continue
+		}
+
+		pvName := pv.GetName()
+		arg := strings.Join([]string{
+			"/usr/local/cke-tools/bin/updateblock117",
+			"need-update",
+			pvName,
+		}, " ")
+		binds := []cke.Mount{
+			{
+				Source:      "/var/lib/kubelet",
+				Destination: "/var/lib/kubelet",
+				Label:       cke.LabelPrivate,
+			},
+		}
+		stdout, stderr, err := ce.RunWithOutput(cke.ToolsImage, binds, arg)
+		if err != nil || len(stderr) != 0 {
+			return nil, fmt.Errorf("updateblock117 need-update failed, %w, stdout: %s, stderr: %s", err, string(stdout), string(stderr))
+		}
+		// parse stdout
+		var result ckeToolResult
+		err = json.Unmarshal(stdout, &result)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshal error, %w, stdout: %s", err, string(stdout))
+		}
+		if result.Result == "yes" {
+			needUpdatePVs = append(needUpdatePVs, pvName)
+		}
+	}
+
+	return needUpdatePVs, nil
 }
 
 // GetEtcdClusterStatus returns EtcdClusterStatus
@@ -357,7 +470,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 	if err != nil {
 		return cke.KubernetesClusterStatus{}, err
 	}
-	s.ResourceStatuses = make(map[string]map[string]string)
+	s.ResourceStatuses = make(map[string]cke.ResourceStatus)
 	for _, rkey := range rkeys {
 		parts := strings.Split(rkey, "/")
 		switch parts[0] {
@@ -369,7 +482,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "ServiceAccount":
 			obj, err := k8s.CoreV1().ServiceAccounts(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -378,7 +491,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "ConfigMap":
 			obj, err := k8s.CoreV1().ConfigMaps(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -387,7 +500,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "Service":
 			obj, err := k8s.CoreV1().Services(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -396,7 +509,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "PodSecurityPolicy":
 			obj, err := k8s.PolicyV1beta1().PodSecurityPolicies().Get(parts[1], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -405,7 +518,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "NetworkPolicy":
 			obj, err := k8s.NetworkingV1().NetworkPolicies(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -414,7 +527,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "Role":
 			obj, err := k8s.RbacV1().Roles(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -423,7 +536,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "RoleBinding":
 			obj, err := k8s.RbacV1().RoleBindings(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -432,7 +545,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "ClusterRole":
 			obj, err := k8s.RbacV1().ClusterRoles().Get(parts[1], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -441,7 +554,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "ClusterRoleBinding":
 			obj, err := k8s.RbacV1().ClusterRoleBindings().Get(parts[1], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -450,7 +563,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "Deployment":
 			obj, err := k8s.AppsV1().Deployments(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -459,7 +572,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "DaemonSet":
 			obj, err := k8s.AppsV1().DaemonSets(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -468,7 +581,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "CronJob":
 			obj, err := k8s.BatchV2alpha1().CronJobs(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -477,7 +590,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		case "PodDisruptionBudget":
 			obj, err := k8s.PolicyV1beta1().PodDisruptionBudgets(parts[1]).Get(parts[2], metav1.GetOptions{})
 			if k8serr.IsNotFound(err) {
@@ -486,7 +599,7 @@ func GetKubernetesClusterStatus(ctx context.Context, inf cke.Infrastructure, n *
 			if err != nil {
 				return cke.KubernetesClusterStatus{}, err
 			}
-			s.SetResourceStatus(rkey, obj.Annotations)
+			s.SetResourceStatus(rkey, obj.Annotations, len(obj.GetManagedFields()) != 0)
 		default:
 			log.Warn("unknown resource kind", map[string]interface{}{
 				"kind": parts[0],

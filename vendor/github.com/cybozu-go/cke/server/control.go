@@ -9,6 +9,7 @@ import (
 
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/cke"
+	"github.com/cybozu-go/cke/metrics"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/well"
 )
@@ -47,10 +48,12 @@ RETRY:
 	default:
 	}
 
+	metrics.UpdateLeader(false)
 	err = e.Campaign(ctx, hostname)
 	if err != nil {
 		return err
 	}
+	metrics.UpdateLeader(true)
 
 	leaderKey := e.Key()
 	log.Info("I am the leader", map[string]interface{}{
@@ -179,6 +182,19 @@ func (c Controller) runOnce(ctx context.Context, leaderKey string, tick <-chan t
 	storage := cke.Storage{
 		Client: c.session.Client(),
 	}
+
+	// Check my leadership.
+	// This check is not mandatory because every update operation checks leadership by itself.
+	// This check helps early detection of losing leadership even if no update occurs for a while.
+	isLeader, err := storage.IsLeader(ctx, leaderKey)
+	if err != nil {
+		return err
+	}
+	if !isLeader {
+		return cke.ErrNoLeader
+	}
+
+	ts := time.Now().UTC()
 	cluster, err := storage.GetCluster(ctx)
 	switch err {
 	case cke.ErrNotFound:
@@ -248,7 +264,18 @@ func (c Controller) runOnce(ctx context.Context, leaderKey string, tick <-chan t
 		return err
 	}
 
-	ops := DecideOps(cluster, status, rcs)
+	ops, phase := DecideOps(cluster, status, rcs)
+
+	st := &cke.ServerStatus{
+		Phase:     phase,
+		Timestamp: ts,
+	}
+	err = storage.SetStatus(ctx, c.session.Lease(), st)
+	if err != nil {
+		return err
+	}
+	metrics.UpdateOperationPhase(phase, ts)
+
 	if len(ops) == 0 {
 		wait = true
 		if c.addon != nil {
@@ -322,7 +349,7 @@ func runOp(ctx context.Context, op cke.Operator, leaderKey string, storage cke.S
 			"op":      op.Name(),
 			"command": commander.Command().String(),
 		})
-		err = commander.Run(ctx, inf)
+		err = commander.Run(ctx, inf, leaderKey)
 		if err == nil {
 			continue
 		}

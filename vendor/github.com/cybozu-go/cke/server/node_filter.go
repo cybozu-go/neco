@@ -9,9 +9,9 @@ import (
 	"github.com/cybozu-go/cke/op"
 	"github.com/cybozu-go/cke/op/etcd"
 	"github.com/cybozu-go/cke/op/k8s"
-	"github.com/cybozu-go/cke/scheduler"
 	"github.com/cybozu-go/log"
 	corev1 "k8s.io/api/core/v1"
+	schedulerv1 "k8s.io/kube-scheduler/config/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -303,7 +303,7 @@ func (nf *NodeFilter) APIServerOutdatedNodes() (nodes []*cke.Node) {
 		switch {
 		case !st.Running:
 			// stopped nodes are excluded
-		case cke.HyperkubeImage.Name() != st.Image:
+		case cke.KubernetesImage.Name() != st.Image:
 			fallthrough
 		case !currentBuiltIn.Equal(st.BuiltInParams):
 			fallthrough
@@ -334,7 +334,7 @@ func (nf *NodeFilter) ControllerManagerOutdatedNodes() (nodes []*cke.Node) {
 		switch {
 		case !st.Running:
 			// stopped nodes are excluded
-		case cke.HyperkubeImage.Name() != st.Image:
+		case cke.KubernetesImage.Name() != st.Image:
 			fallthrough
 		case !currentBuiltIn.Equal(st.BuiltInParams):
 			fallthrough
@@ -360,9 +360,9 @@ func (nf *NodeFilter) SchedulerOutdatedNodes(extenders []string) (nodes []*cke.N
 	currentBuiltIn := k8s.SchedulerParams()
 	currentExtra := nf.cluster.Options.Scheduler
 
-	var extConfigs []*scheduler.ExtenderConfig
+	var extConfigs []schedulerv1.Extender
 	for _, ext := range extenders {
-		conf := new(scheduler.ExtenderConfig)
+		conf := new(schedulerv1.Extender)
 		err := yaml.Unmarshal([]byte(ext), conf)
 		if err != nil {
 			log.Warn("failed to unmarshal extender config", map[string]interface{}{
@@ -371,7 +371,7 @@ func (nf *NodeFilter) SchedulerOutdatedNodes(extenders []string) (nodes []*cke.N
 			})
 			panic(err)
 		}
-		extConfigs = append(extConfigs, conf)
+		extConfigs = append(extConfigs, *conf)
 	}
 
 	for _, n := range nf.cp {
@@ -379,13 +379,13 @@ func (nf *NodeFilter) SchedulerOutdatedNodes(extenders []string) (nodes []*cke.N
 		switch {
 		case !st.Running:
 			// stopped nodes are excluded
-		case cke.HyperkubeImage.Name() != st.Image:
+		case cke.KubernetesImage.Name() != st.Image:
 			fallthrough
 		case !currentBuiltIn.Equal(st.BuiltInParams):
 			fallthrough
 		case !currentExtra.ServiceParams.Equal(st.ExtraParams):
 			fallthrough
-		case !equalExtenderConfigs(extConfigs, st.Extenders):
+		case !equalExtenders(extConfigs, st.Extenders):
 			log.Debug("node has been appended", map[string]interface{}{
 				"node":                    n.Nodename(),
 				"st_builtin_args":         st.BuiltInParams.ExtraArguments,
@@ -406,7 +406,7 @@ func (nf *NodeFilter) SchedulerOutdatedNodes(extenders []string) (nodes []*cke.N
 	return nodes
 }
 
-func equalExtenderConfigs(configs1, configs2 []*scheduler.ExtenderConfig) bool {
+func equalExtenders(configs1, configs2 []schedulerv1.Extender) bool {
 	if len(configs1) != len(configs2) {
 		return false
 	}
@@ -456,7 +456,7 @@ func (nf *NodeFilter) KubeletOutdatedNodes() (nodes []*cke.Node) {
 			// stopped nodes are excluded
 		case kubeletRuntimeChanged(st.BuiltInParams, currentBuiltIn):
 			log.Warn("kubelet's container runtime can not be changed", nil)
-		case cke.HyperkubeImage.Name() != st.Image:
+		case cke.KubernetesImage.Name() != st.Image:
 			fallthrough
 		case currentOpts.Domain != st.Domain:
 			fallthrough
@@ -580,7 +580,7 @@ func (nf *NodeFilter) ProxyOutdatedNodes() (nodes []*cke.Node) {
 		switch {
 		case !st.Running:
 			// stopped nodes are excluded
-		case cke.HyperkubeImage.Name() != st.Image:
+		case cke.KubernetesImage.Name() != st.Image:
 			fallthrough
 		case !currentBuiltIn.Equal(st.BuiltInParams):
 			fallthrough
@@ -838,4 +838,19 @@ func (nf *NodeFilter) SSHConnectedNodes(targets []*cke.Node, includeControlPlane
 		nodes = append(nodes, n)
 	}
 	return nodes
+}
+
+// NeedUpdateUpBlockPVsToV1_16 returns nodes which need to update block device path
+func (nf *NodeFilter) NeedUpdateUpBlockPVsToV1_16() ([]*cke.Node, map[string][]string) {
+	var nodes []*cke.Node
+	pvs := make(map[string][]string)
+
+	for _, n := range nf.cluster.Nodes {
+		st := nf.nodeStatus(n).Kubelet
+		if len(st.NeedUpdateBlockPVsUpToV1_16) != 0 {
+			nodes = append(nodes, n)
+			pvs[n.Address] = st.NeedUpdateBlockPVsUpToV1_16
+		}
+	}
+	return nodes, pvs
 }

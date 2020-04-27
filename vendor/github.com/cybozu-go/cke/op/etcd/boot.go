@@ -74,6 +74,9 @@ func (o *bootOp) NextCommand() cke.Commander {
 	case 6:
 		o.step++
 		return setupEtcdAuthCommand{o.endpoints}
+	case 7:
+		o.step++
+		return common.VolumeCreateCommand(o.nodes, op.EtcdAddedMemberVolumeName)
 	default:
 		return nil
 	}
@@ -91,7 +94,7 @@ type setupEtcdAuthCommand struct {
 	endpoints []string
 }
 
-func (c setupEtcdAuthCommand) Run(ctx context.Context, inf cke.Infrastructure) error {
+func (c setupEtcdAuthCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
 	cli, err := inf.NewEtcdClient(ctx, c.endpoints)
 	if err != nil {
 		return err
