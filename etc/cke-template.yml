@@ -46,6 +46,8 @@ options:
     extra_args:
       - "--feature-gates=EvenPodsSpread=true"
   kubelet:
+    extra_args:
+      - "--containerd=/var/run/k8s-containerd.sock"
     extra_binds:
       - source: /var/lib/k8s-containerd
         destination: /var/lib/k8s-containerd
