@@ -28,7 +28,7 @@ require (
 	github.com/hashicorp/go-msgpack v0.5.4 // indirect
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/serf v0.8.3
-	github.com/hashicorp/vault/api v1.0.4
+	github.com/hashicorp/vault/api v1.0.5-0.20200117231345-460d63e36490
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
