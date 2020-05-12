@@ -24,7 +24,7 @@ func RunBeforeSuite() {
 	SetDefaultEventuallyPollingInterval(time.Second)
 	SetDefaultEventuallyTimeout(10 * time.Minute)
 
-	data, err := ioutil.ReadFile("../output/machines.yml")
+	data, err := ioutil.ReadFile(machinesFile)
 	Expect(err).NotTo(HaveOccurred())
 
 	machines := struct {
