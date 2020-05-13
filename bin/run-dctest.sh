@@ -69,6 +69,7 @@ fi
 
 # Run dctest
 cd dctest
+export MACHINES_FILE=${PWD}/output/machines.yml
 make setup
 make placemat TAGS=${TAG_NAME} MENU_ARG=${MENU}
 sleep 3
