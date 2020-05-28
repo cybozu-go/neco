@@ -43,6 +43,52 @@ options:
           "ignoredByScheduler": true
         }]
       }
+    priorities:
+    - |
+      {
+        "name": "SelectorSpreadPriority",
+        "weight": 1
+      }
+    - |
+      {
+        "name": "InterPodAffinityPriority",
+        "weight": 1
+      }
+    - |
+      {
+        "name": "LeastRequestedPriority",
+        "weight": 1
+      }
+    - |
+      {
+        "name": "BalancedResourceAllocation",
+        "weight": 1
+      }
+    - |
+      {
+        "name": "NodePreferAvoidPodsPriority",
+        "weight": 100000
+      }
+    - |
+      {
+        "name": "NodeAffinityPriority",
+        "weight": 1
+      }
+    - |
+      {
+        "name": "TaintTolerationPriority",
+        "weight": 1
+      }
+    - |
+      {
+        "name": "ImageLocalityPriority",
+        "weight": 1
+      }
+    - |
+      {
+        "name": "EvenPodsSpreadPriority",
+        "weight": 500
+      }
     extra_args:
       - "--feature-gates=EvenPodsSpread=true"
   kubelet:
