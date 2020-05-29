@@ -137,8 +137,10 @@ type KubeComponentStatus struct {
 // SchedulerStatus represents kube-scheduler status and health
 type SchedulerStatus struct {
 	ServiceStatus
-	IsHealthy bool
-	Extenders []schedulerv1.Extender
+	IsHealthy  bool
+	Extenders  []schedulerv1.Extender
+	Predicates []schedulerv1.PredicatePolicy
+	Priorities []schedulerv1.PriorityPolicy
 }
 
 // KubeletStatus represents kubelet status and health
@@ -147,6 +149,7 @@ type KubeletStatus struct {
 	IsHealthy                   bool
 	Domain                      string
 	AllowSwap                   bool
+	CgroupDriver                string
 	ContainerLogMaxSize         string
 	ContainerLogMaxFiles        int32
 	NeedUpdateBlockPVsUpToV1_16 []string

@@ -22,7 +22,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20181024230925-c65c006176ff // indirect
 	github.com/google/go-cmp v0.3.0
 	github.com/googleapis/gnostic v0.3.1 // indirect
-	github.com/hashicorp/vault/api v1.0.4
+	github.com/hashicorp/vault/api v1.0.5-0.20200117231345-460d63e36490
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/onsi/ginkgo v1.10.1
@@ -37,12 +37,12 @@ require (
 	github.com/vektah/gqlparser v1.1.2
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	k8s.io/api v0.17.5
-	k8s.io/apimachinery v0.17.5
-	k8s.io/apiserver v0.17.5
-	k8s.io/client-go v0.17.5
-	k8s.io/kube-scheduler v0.17.5
-	k8s.io/kubelet v0.17.5
+	k8s.io/api v0.17.6
+	k8s.io/apimachinery v0.17.6
+	k8s.io/apiserver v0.17.6
+	k8s.io/client-go v0.17.6
+	k8s.io/kube-scheduler v0.17.6
+	k8s.io/kubelet v0.17.6
 	sigs.k8s.io/yaml v1.2.0
 )
 

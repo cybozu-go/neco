@@ -11,7 +11,7 @@ require (
 	github.com/coreos/etcd v3.3.19+incompatible
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/coreos/ignition v0.32.0 // indirect
-	github.com/cybozu-go/cke v1.17.3
+	github.com/cybozu-go/cke v1.17.6
 	github.com/cybozu-go/etcdutil v1.3.4
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/netutil v1.2.0
@@ -72,8 +72,8 @@ require (
 	google.golang.org/api v0.4.0
 	google.golang.org/appengine v1.5.0
 	gopkg.in/yaml.v2 v2.2.8
-	k8s.io/api v0.17.5
-	k8s.io/apimachinery v0.17.5
+	k8s.io/api v0.17.6
+	k8s.io/apimachinery v0.17.6
 	sigs.k8s.io/yaml v1.2.0
 )
 

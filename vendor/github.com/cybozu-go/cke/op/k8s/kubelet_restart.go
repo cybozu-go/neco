@@ -12,22 +12,20 @@ import (
 type kubeletRestartOp struct {
 	nodes []*cke.Node
 
-	cluster   string
-	podSubnet string
-	params    cke.KubeletParams
+	cluster string
+	params  cke.KubeletParams
 
 	step  int
 	files *common.FilesBuilder
 }
 
 // KubeletRestartOp returns an Operator to restart kubelet
-func KubeletRestartOp(nodes []*cke.Node, cluster, podSubnet string, params cke.KubeletParams) cke.Operator {
+func KubeletRestartOp(nodes []*cke.Node, cluster string, params cke.KubeletParams) cke.Operator {
 	return &kubeletRestartOp{
-		nodes:     nodes,
-		cluster:   cluster,
-		podSubnet: podSubnet,
-		params:    params,
-		files:     common.NewFilesBuilder(nodes),
+		nodes:   nodes,
+		cluster: cluster,
+		params:  params,
+		files:   common.NewFilesBuilder(nodes),
 	}
 }
 
@@ -89,8 +87,7 @@ func (c prepareKubeletConfigCommand) Run(ctx context.Context, inf cke.Infrastruc
 	tlsCertPath := op.K8sPKIPath("kubelet.crt")
 	tlsKeyPath := op.K8sPKIPath("kubelet.key")
 
-	cfg := newKubeletConfiguration(tlsCertPath, tlsKeyPath, caPath, c.params.Domain,
-		c.params.ContainerLogMaxSize, c.params.ContainerLogMaxFiles, c.params.AllowSwap)
+	cfg := newKubeletConfiguration(tlsCertPath, tlsKeyPath, caPath, c.params)
 	g := func(ctx context.Context, n *cke.Node) ([]byte, error) {
 		cfg := cfg
 		cfg.ClusterDNS = []string{n.Address}

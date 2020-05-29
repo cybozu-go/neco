@@ -95,16 +95,42 @@ func (c prepareSchedulerFilesCommand) Run(ctx context.Context, inf cke.Infrastru
 	}
 
 	g = func(ctx context.Context, n *cke.Node) ([]byte, error) {
-		var configs []schedulerv1.Extender
+		var extenders []schedulerv1.Extender
 		for _, extStr := range c.params.Extenders {
 			conf := new(schedulerv1.Extender)
 			err = yaml.Unmarshal([]byte(extStr), conf)
 			if err != nil {
 				return nil, err
 			}
-			configs = append(configs, *conf)
+			extenders = append(extenders, *conf)
 		}
-		policy := schedulerv1.Policy{TypeMeta: metav1.TypeMeta{Kind: "Policy", APIVersion: "v1"}, Extenders: configs}
+
+		var predicates []schedulerv1.PredicatePolicy
+		for _, extStr := range c.params.Predicates {
+			conf := new(schedulerv1.PredicatePolicy)
+			err = yaml.Unmarshal([]byte(extStr), conf)
+			if err != nil {
+				return nil, err
+			}
+			predicates = append(predicates, *conf)
+		}
+
+		var priorities []schedulerv1.PriorityPolicy
+		for _, extStr := range c.params.Priorities {
+			conf := new(schedulerv1.PriorityPolicy)
+			err = yaml.Unmarshal([]byte(extStr), conf)
+			if err != nil {
+				return nil, err
+			}
+			priorities = append(priorities, *conf)
+		}
+
+		policy := schedulerv1.Policy{
+			TypeMeta:   metav1.TypeMeta{Kind: "Policy", APIVersion: "v1"},
+			Extenders:  extenders,
+			Predicates: predicates,
+			Priorities: priorities,
+		}
 		return json.Marshal(policy)
 	}
 	err = c.files.AddFile(ctx, op.PolicyConfigPath, g)

@@ -120,11 +120,14 @@ type CNIConfFile struct {
 type SchedulerParams struct {
 	ServiceParams `json:",inline"`
 	Extenders     []string `json:"extenders"`
+	Predicates    []string `json:"predicates"`
+	Priorities    []string `json:"priorities"`
 }
 
 // KubeletParams is a set of extra parameters for kubelet.
 type KubeletParams struct {
 	ServiceParams            `json:",inline"`
+	CgroupDriver             string         `json:"cgroup_driver,omitempty"`
 	ContainerRuntime         string         `json:"container_runtime"`
 	ContainerRuntimeEndpoint string         `json:"container_runtime_endpoint"`
 	ContainerLogMaxSize      string         `json:"container_log_max_size"`
@@ -161,7 +164,6 @@ type Cluster struct {
 	Nodes         []*Node    `json:"nodes"`
 	TaintCP       bool       `json:"taint_control_plane"`
 	ServiceSubnet string     `json:"service_subnet"`
-	PodSubnet     string     `json:"pod_subnet"`
 	DNSServers    []string   `json:"dns_servers"`
 	DNSService    string     `json:"dns_service"`
 	EtcdBackup    EtcdBackup `json:"etcd_backup"`
@@ -175,10 +177,6 @@ func (c *Cluster) Validate(isTmpl bool) error {
 	}
 
 	_, _, err := net.ParseCIDR(c.ServiceSubnet)
-	if err != nil {
-		return err
-	}
-	_, _, err = net.ParseCIDR(c.PodSubnet)
 	if err != nil {
 		return err
 	}
@@ -299,10 +297,17 @@ func validateTaint(taint corev1.Taint, fldPath *field.Path) error {
 	return nil
 }
 
-// ControlPlanes returns control plane []*Node
+// ControlPlanes returns control planes []*Node
 func ControlPlanes(nodes []*Node) []*Node {
 	return filterNodes(nodes, func(n *Node) bool {
 		return n.ControlPlane
+	})
+}
+
+// Workers returns workers []*Node
+func Workers(nodes []*Node) []*Node {
+	return filterNodes(nodes, func(n *Node) bool {
+		return !n.ControlPlane
 	})
 }
 
@@ -439,6 +444,28 @@ func validateOptions(opts Options) error {
 		}
 		if _, err = url.Parse(config.URLPrefix); err != nil {
 			return err
+		}
+	}
+
+	for _, e := range opts.Scheduler.Predicates {
+		config := schedulerv1.PredicatePolicy{}
+		err = yaml.Unmarshal([]byte(e), &config)
+		if err != nil {
+			return err
+		}
+		if len(config.Name) == 0 {
+			return errors.New("no name is provided")
+		}
+	}
+
+	for _, e := range opts.Scheduler.Priorities {
+		config := schedulerv1.PriorityPolicy{}
+		err = yaml.Unmarshal([]byte(e), &config)
+		if err != nil {
+			return err
+		}
+		if len(config.Name) == 0 {
+			return errors.New("no name is provided")
 		}
 	}
 
