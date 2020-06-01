@@ -76,7 +76,7 @@ func kubeletKubeconfig(cluster string, n *cke.Node, caPath, certPath, keyPath st
 	return cfg
 }
 
-func newKubeletConfiguration(cert, key, ca, domain, logSize string, logFiles int32, allowSwap bool) kubeletv1beta1.KubeletConfiguration {
+func newKubeletConfiguration(cert, key, ca string, params cke.KubeletParams) kubeletv1beta1.KubeletConfiguration {
 	return kubeletv1beta1.KubeletConfiguration{
 		ReadOnlyPort:      0,
 		TLSCertFile:       cert,
@@ -88,11 +88,12 @@ func newKubeletConfiguration(cert, key, ca, domain, logSize string, logFiles int
 		Authorization:         kubeletv1beta1.KubeletAuthorization{Mode: kubeletv1beta1.KubeletAuthorizationModeWebhook},
 		HealthzBindAddress:    "0.0.0.0",
 		OOMScoreAdj:           int32Pointer(-1000),
-		ClusterDomain:         domain,
+		ClusterDomain:         params.Domain,
 		RuntimeRequestTimeout: metav1.Duration{Duration: 15 * time.Minute},
-		FailSwapOn:            boolPointer(!allowSwap),
-		ContainerLogMaxSize:   logSize,
-		ContainerLogMaxFiles:  int32Pointer(logFiles),
+		FailSwapOn:            boolPointer(!params.AllowSwap),
+		CgroupDriver:          params.CgroupDriver,
+		ContainerLogMaxSize:   params.ContainerLogMaxSize,
+		ContainerLogMaxFiles:  int32Pointer(params.ContainerLogMaxFiles),
 	}
 }
 

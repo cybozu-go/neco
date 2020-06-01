@@ -149,8 +149,9 @@ func ConnectVault(ctx context.Context, data []byte) error {
 		return err
 	}
 
-	renewer, err := client.NewRenewer(&vault.RenewerInput{
-		Secret: secret,
+	watcher, err := client.NewLifetimeWatcher(&vault.LifetimeWatcherInput{
+		Secret:        secret,
+		RenewBehavior: vault.RenewBehaviorIgnoreErrors,
 	})
 	if err != nil {
 		log.Error("failed to create vault renewer", anyMap{
@@ -160,10 +161,10 @@ func ConnectVault(ctx context.Context, data []byte) error {
 		return err
 	}
 
-	go renewer.Renew()
+	go watcher.Start()
 	go func() {
 		<-ctx.Done()
-		renewer.Stop()
+		watcher.Stop()
 	}()
 
 	setVaultClient(client)

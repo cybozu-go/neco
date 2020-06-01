@@ -7,6 +7,7 @@ type OperationPhase string
 
 // Processing statuses of CKE server.
 const (
+	PhaseUpgradeAborted  = OperationPhase("upgrade-aborted")
 	PhaseUpgrade         = OperationPhase("upgrade")
 	PhaseRivers          = OperationPhase("rivers")
 	PhaseEtcdBootAborted = OperationPhase("etcd-boot-aborted")
@@ -22,6 +23,7 @@ const (
 
 // AllOperationPhases contains all kinds of OperationPhases.
 var AllOperationPhases = []OperationPhase{
+	PhaseUpgradeAborted,
 	PhaseUpgrade,
 	PhaseRivers,
 	PhaseEtcdBootAborted,
