@@ -28,22 +28,20 @@ type kubeletBootOp struct {
 	registeredNodes []*cke.Node
 	apiServer       *cke.Node
 
-	cluster   string
-	podSubnet string
-	params    cke.KubeletParams
+	cluster string
+	params  cke.KubeletParams
 
 	step  int
 	files *common.FilesBuilder
 }
 
 // KubeletBootOp returns an Operator to boot kubelet.
-func KubeletBootOp(nodes, registeredNodes []*cke.Node, apiServer *cke.Node, cluster, podSubnet string, params cke.KubeletParams) cke.Operator {
+func KubeletBootOp(nodes, registeredNodes []*cke.Node, apiServer *cke.Node, cluster string, params cke.KubeletParams) cke.Operator {
 	return &kubeletBootOp{
 		nodes:           nodes,
 		registeredNodes: registeredNodes,
 		apiServer:       apiServer,
 		cluster:         cluster,
-		podSubnet:       podSubnet,
 		params:          params,
 		files:           common.NewFilesBuilder(nodes),
 	}
@@ -78,7 +76,7 @@ func (o *kubeletBootOp) NextCommand() cke.Commander {
 		return common.MakeDirsCommand(o.nodes, dirs)
 	case 3:
 		o.step++
-		return prepareKubeletFilesCommand{o.cluster, o.podSubnet, o.params, o.files}
+		return prepareKubeletFilesCommand{o.cluster, o.params, o.files}
 	case 4:
 		o.step++
 		return o.files
@@ -165,10 +163,9 @@ func (c emptyDirCommand) Command() cke.Command {
 }
 
 type prepareKubeletFilesCommand struct {
-	cluster   string
-	podSubnet string
-	params    cke.KubeletParams
-	files     *common.FilesBuilder
+	cluster string
+	params  cke.KubeletParams
+	files   *common.FilesBuilder
 }
 
 func (c prepareKubeletFilesCommand) Run(ctx context.Context, inf cke.Infrastructure, _ string) error {
@@ -188,8 +185,7 @@ func (c prepareKubeletFilesCommand) Run(ctx context.Context, inf cke.Infrastruct
 		}
 	}
 
-	cfg := newKubeletConfiguration(tlsCertPath, tlsKeyPath, caPath, c.params.Domain,
-		c.params.ContainerLogMaxSize, c.params.ContainerLogMaxFiles, c.params.AllowSwap)
+	cfg := newKubeletConfiguration(tlsCertPath, tlsKeyPath, caPath, c.params)
 	g := func(ctx context.Context, n *cke.Node) ([]byte, error) {
 		cfg := cfg
 		cfg.ClusterDNS = []string{n.Address}

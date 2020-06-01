@@ -15,7 +15,7 @@ type sabakanContextKey string
 
 const (
 	// WaitSecs is a context key to pass to change the wait seconds
-	// before removing retiring nodes from the cluster.
+	// before removing retired nodes from the cluster.
 	WaitSecs = sabakanContextKey("wait secs")
 )
 
@@ -98,7 +98,7 @@ func (ig integrator) Do(ctx context.Context, leaderKey string) error {
 		return err
 	}
 
-	g := NewGenerator(cluster, tmpl, cstr, machines, time.Now())
+	g := NewGenerator(tmpl, cstr, machines, time.Now())
 
 	val := ctx.Value(WaitSecs)
 	if val != nil {
@@ -111,9 +111,9 @@ func (ig integrator) Do(ctx context.Context, leaderKey string) error {
 	if cluster == nil {
 		newc, err = g.Generate()
 	} else {
-		newc, err = g.Update()
+		newc, err = g.Update(cluster)
 		if newc == nil && err == nil && tmplUpdated {
-			newc, err = g.Regenerate()
+			newc, err = g.Regenerate(cluster)
 		}
 	}
 	if err != nil {
@@ -124,7 +124,7 @@ func (ig integrator) Do(ctx context.Context, leaderKey string) error {
 		// return nil
 		return nil
 	}
-	metrics.UpdateSabakanIntegration(true, g.workersByRole, len(g.unusedMachines), time.Now().UTC())
+	metrics.UpdateSabakanIntegration(true, g.countWorkerByRole, len(g.nextUnused), time.Now().UTC())
 
 	if newc == nil {
 		log.Debug("sabakan: nothing to do", nil)

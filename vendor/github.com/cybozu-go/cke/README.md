@@ -2,7 +2,6 @@
 [![CircleCI](https://circleci.com/gh/cybozu-go/cke.svg?style=svg)](https://circleci.com/gh/cybozu-go/cke)
 [![GoDoc](https://godoc.org/github.com/cybozu-go/cke?status.svg)][godoc]
 [![Go Report Card](https://goreportcard.com/badge/github.com/cybozu-go/cke)](https://goreportcard.com/report/github.com/cybozu-go/cke)
-[![Docker Repository on Quay](https://quay.io/repository/cybozu/cke/status "Docker Repository on Quay")](https://quay.io/repository/cybozu/cke)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3391/badge)](https://bestpractices.coreinfrastructure.org/projects/3391)
 
 Cybozu Kubernetes Engine
@@ -162,3 +161,8 @@ CKE is licensed under MIT license.
 [CoreDNS]: https://coredns.io/
 [sabakan]: https://github.com/cybozu-go/sabakan
 [Taints]: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+
+Docker images
+-------------
+
+Docker images are available on [Quay.io](https://quay.io/repository/cybozu/cke)

@@ -356,12 +356,12 @@ func (nf *NodeFilter) SchedulerStoppedNodes() (nodes []*cke.Node) {
 }
 
 // SchedulerOutdatedNodes returns nodes that are running kube-scheduler with outdated image or params.
-func (nf *NodeFilter) SchedulerOutdatedNodes(extenders []string) (nodes []*cke.Node) {
+func (nf *NodeFilter) SchedulerOutdatedNodes(params cke.SchedulerParams) (nodes []*cke.Node) {
 	currentBuiltIn := k8s.SchedulerParams()
 	currentExtra := nf.cluster.Options.Scheduler
 
-	var extConfigs []schedulerv1.Extender
-	for _, ext := range extenders {
+	var extenders []schedulerv1.Extender
+	for _, ext := range params.Extenders {
 		conf := new(schedulerv1.Extender)
 		err := yaml.Unmarshal([]byte(ext), conf)
 		if err != nil {
@@ -371,7 +371,35 @@ func (nf *NodeFilter) SchedulerOutdatedNodes(extenders []string) (nodes []*cke.N
 			})
 			panic(err)
 		}
-		extConfigs = append(extConfigs, *conf)
+		extenders = append(extenders, *conf)
+	}
+
+	var predicates []schedulerv1.PredicatePolicy
+	for _, ext := range params.Predicates {
+		conf := new(schedulerv1.PredicatePolicy)
+		err := yaml.Unmarshal([]byte(ext), conf)
+		if err != nil {
+			log.Warn("failed to unmarshal predicates config", map[string]interface{}{
+				log.FnError: err,
+				"config":    ext,
+			})
+			panic(err)
+		}
+		predicates = append(predicates, *conf)
+	}
+
+	var priorities []schedulerv1.PriorityPolicy
+	for _, ext := range params.Priorities {
+		conf := new(schedulerv1.PriorityPolicy)
+		err := yaml.Unmarshal([]byte(ext), conf)
+		if err != nil {
+			log.Warn("failed to unmarshal priorities config", map[string]interface{}{
+				log.FnError: err,
+				"config":    ext,
+			})
+			panic(err)
+		}
+		priorities = append(priorities, *conf)
 	}
 
 	for _, n := range nf.cp {
@@ -385,20 +413,30 @@ func (nf *NodeFilter) SchedulerOutdatedNodes(extenders []string) (nodes []*cke.N
 			fallthrough
 		case !currentExtra.ServiceParams.Equal(st.ExtraParams):
 			fallthrough
-		case !equalExtenders(extConfigs, st.Extenders):
+		case !equalExtenders(extenders, st.Extenders):
+			fallthrough
+		case !equalPredicates(predicates, st.Predicates):
+			fallthrough
+		case !equalPriorities(priorities, st.Priorities):
 			log.Debug("node has been appended", map[string]interface{}{
-				"node":                    n.Nodename(),
-				"st_builtin_args":         st.BuiltInParams.ExtraArguments,
-				"st_builtin_env":          st.BuiltInParams.ExtraEnvvar,
-				"st_extra_args":           st.ExtraParams.ExtraArguments,
-				"st_extra_env":            st.ExtraParams.ExtraEnvvar,
-				"st_extra_extenders":      st.Extenders,
-				"current_builtin_args":    currentBuiltIn.ExtraArguments,
-				"current_builtin_env":     currentBuiltIn.ExtraEnvvar,
-				"current_extra_args":      currentExtra.ExtraArguments,
-				"current_extra_env":       currentExtra.ExtraEnvvar,
-				"current_extra_extenders": currentExtra.Extenders,
-				"current_ext_configs":     extConfigs,
+				"node":                       n.Nodename(),
+				"st_builtin_args":            st.BuiltInParams.ExtraArguments,
+				"st_builtin_env":             st.BuiltInParams.ExtraEnvvar,
+				"st_extra_args":              st.ExtraParams.ExtraArguments,
+				"st_extra_env":               st.ExtraParams.ExtraEnvvar,
+				"st_extra_extenders":         st.Extenders,
+				"st_extra_predicates":        st.Predicates,
+				"st_extra_priorities":        st.Priorities,
+				"current_builtin_args":       currentBuiltIn.ExtraArguments,
+				"current_builtin_env":        currentBuiltIn.ExtraEnvvar,
+				"current_extra_args":         currentExtra.ExtraArguments,
+				"current_extra_env":          currentExtra.ExtraEnvvar,
+				"current_extra_extenders":    currentExtra.Extenders,
+				"current_extra_predicates":   currentExtra.Predicates,
+				"current_extra_priorities":   currentExtra.Priorities,
+				"current_extenders_configs":  extenders,
+				"current_predicates_configs": predicates,
+				"current_priorities_configs": priorities,
 			})
 			nodes = append(nodes, n)
 		}
@@ -407,6 +445,30 @@ func (nf *NodeFilter) SchedulerOutdatedNodes(extenders []string) (nodes []*cke.N
 }
 
 func equalExtenders(configs1, configs2 []schedulerv1.Extender) bool {
+	if len(configs1) != len(configs2) {
+		return false
+	}
+	for i := range configs1 {
+		if !reflect.DeepEqual(configs1[i], configs2[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func equalPredicates(configs1, configs2 []schedulerv1.PredicatePolicy) bool {
+	if len(configs1) != len(configs2) {
+		return false
+	}
+	for i := range configs1 {
+		if !reflect.DeepEqual(configs1[i], configs2[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func equalPriorities(configs1, configs2 []schedulerv1.PriorityPolicy) bool {
 	if len(configs1) != len(configs2) {
 		return false
 	}
@@ -455,12 +517,14 @@ func (nf *NodeFilter) KubeletOutdatedNodes() (nodes []*cke.Node) {
 		case !st.Running:
 			// stopped nodes are excluded
 		case kubeletRuntimeChanged(st.BuiltInParams, currentBuiltIn):
-			log.Warn("kubelet's container runtime can not be changed", nil)
+			log.Warn("kubelet's container runtime cannot be changed", nil)
 		case cke.KubernetesImage.Name() != st.Image:
 			fallthrough
 		case currentOpts.Domain != st.Domain:
 			fallthrough
 		case currentOpts.AllowSwap != st.AllowSwap:
+			fallthrough
+		case currentOpts.CgroupDriver != st.CgroupDriver:
 			fallthrough
 		case currentOpts.ContainerLogMaxSize != st.ContainerLogMaxSize:
 			fallthrough
@@ -629,6 +693,9 @@ func isInternal(name string) bool {
 		return true
 	}
 	if strings.Contains(name, ".cke.cybozu.com/") {
+		return true
+	}
+	if strings.HasPrefix(name, "node-role.kubernetes.io/") {
 		return true
 	}
 	return false
