@@ -1,0 +1,3 @@
+images:
+- name: cke
+  versions: ["1.17.8"]
