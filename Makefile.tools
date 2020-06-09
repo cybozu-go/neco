@@ -30,7 +30,7 @@ STERN_VERSION = 1.11.0
 KUSTOMIZE_VERSION = 3.6.1
 
 ## for teleport
-TELEPORT_VERSION = 4.2.8
+TELEPORT_VERSION = 4.2.10
 
 all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
 
