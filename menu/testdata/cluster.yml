@@ -438,7 +438,7 @@ apps:
   - volume: squid-spool
     target: /var/spool/squid
 - name: ntp
-  image: docker://quay.io/cybozu/chrony:3.4
+  image: docker://quay.io/cybozu/chrony:3.5
   readonly-rootfs: false
   args:
   - -f
