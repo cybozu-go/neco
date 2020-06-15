@@ -139,16 +139,18 @@ func TestRebootAllNodes() {
 		}).Should(Succeed())
 
 		By("start all nodes")
-		//　Wait 10 seconds for each machine to balance the load on the instance
-		ticker := time.NewTicker(10 * time.Second)
+		//　Wait for each booting to balance the load on the instance
+		ticker := time.NewTicker(30 * time.Second)
 		for _, m := range machines {
 			if m.Spec.Rack == 3 {
 				continue
 			}
+			fmt.Println("ipmipower-start", m.Spec.IPv4[0])
+			stdout, stderr, err := execAt(bootServers[0], "neco", "ipmipower", "start", m.Spec.IPv4[0])
+			Expect(err).ShouldNot(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 			select {
 			case <-ticker.C:
-				stdout, stderr, err := execAt(bootServers[0], "neco", "ipmipower", "start", m.Spec.IPv4[0])
-				Expect(err).ShouldNot(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
+				fmt.Println("slept 30 seconds")
 			}
 		}
 
