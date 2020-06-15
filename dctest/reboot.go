@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -138,12 +139,17 @@ func TestRebootAllNodes() {
 		}).Should(Succeed())
 
 		By("start all nodes")
+		//　Wait 10 seconds for each machine to balance the load on the instance
+		ticker := time.NewTicker(10 * time.Second)
 		for _, m := range machines {
 			if m.Spec.Rack == 3 {
 				continue
 			}
-			stdout, stderr, err := execAt(bootServers[0], "neco", "ipmipower", "start", m.Spec.IPv4[0])
-			Expect(err).ShouldNot(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
+			select {
+			case <-ticker.C:
+				stdout, stderr, err := execAt(bootServers[0], "neco", "ipmipower", "start", m.Spec.IPv4[0])
+				Expect(err).ShouldNot(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
+			}
 		}
 
 		By("wait for recovery of all nodes")
