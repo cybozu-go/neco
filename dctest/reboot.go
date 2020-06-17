@@ -140,7 +140,8 @@ func TestRebootAllNodes() {
 
 		By("start all nodes")
 		//　Wait for each booting to balance the load on the instance
-		ticker := time.NewTicker(190 * time.Second)
+		const waitInterval = 190
+		ticker := time.NewTicker(waitInterval * time.Second)
 		defer ticker.Stop()
 		for _, m := range machines {
 			if m.Spec.Rack == 3 {
@@ -151,7 +152,7 @@ func TestRebootAllNodes() {
 			Expect(err).ShouldNot(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 			select {
 			case <-ticker.C:
-				fmt.Println("slept 30 seconds")
+				fmt.Printf("slept %d seconds\n", waitInterval)
 			}
 		}
 
