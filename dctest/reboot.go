@@ -140,7 +140,8 @@ func TestRebootAllNodes() {
 
 		By("start all nodes")
 		//　Wait for each booting to balance the load on the instance
-		ticker := time.NewTicker(30 * time.Second)
+		ticker := time.NewTicker(190 * time.Second)
+		defer ticker.Stop()
 		for _, m := range machines {
 			if m.Spec.Rack == 3 {
 				continue
