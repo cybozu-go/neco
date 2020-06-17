@@ -69,6 +69,7 @@ require (
 	go4.org v0.0.0-20190313082347-94abd6928b1d // indirect
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	golang.org/x/text v0.3.3 // indirect
 	google.golang.org/api v0.4.0
 	google.golang.org/appengine v1.5.0
 	gopkg.in/yaml.v2 v2.2.8
