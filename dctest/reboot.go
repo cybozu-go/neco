@@ -64,12 +64,59 @@ func TestRebootAllBootServers() {
 // TestRebootAllNodes tests all nodes stop scenario
 func TestRebootAllNodes() {
 	It("can access a pod from another pod running on different node", func() {
-		execSafeAt(bootServers[0], "kubectl", "run", "nginx-reboot-test", "--image=quay.io/cybozu/testhttpd:0", "--generator=run-pod/v1")
-		execSafeAt(bootServers[0], "kubectl", "run", "debug-reboot-test", "--generator=run-pod/v1", "--image=quay.io/cybozu/ubuntu-debug:18.04", "pause")
-		execSafeAt(bootServers[0], "kubectl", "expose", "pod", "nginx-reboot-test", "--port=80", "--target-port=8000", "--name=nginx-reboot-test")
+		manifest := `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-reboot-test
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx-reboot-test
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nginx-reboot-test
+    spec:
+      containers:
+      - image: quay.io/cybozu/testhttpd:0
+        name: testhttpd
+        ports:
+        - containerPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debug-reboot-test
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: debug-reboot-test
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: debug-reboot-test
+    spec:
+      securityContext:
+        runAsUser: 10000
+      containers:
+      - image: quay.io/cybozu/ubuntu-debug:18.04
+        command:
+        - pause
+        name: pause
+`
+		stdout, stderr, err := execAtWithInput(bootServers[0], []byte(manifest), "kubectl", "apply", "-f", "-")
+		Expect(err).NotTo(HaveOccurred(), "failed to apply manifests. stdout=%s, stderr=%s", stdout, stderr)
+		execSafeAt(bootServers[0], "kubectl", "expose", "deploy", "nginx-reboot-test", "--port=80", "--target-port=8000", "--name=nginx-reboot-test")
 		Eventually(func() error {
-			_, _, err := execAt(bootServers[0], "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
-			return err
+			debugPodName, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod", "-l=app.kubernetes.io/name=debug-reboot-test", "-o=jsonpath='{.items[0].metadata.name}'")
+			if err != nil {
+				return fmt.Errorf("failed to get debug-reboot-test. stderr: %s, err: %v", stderr, err)
+			}
+			stdout, stderr, err := execAt(bootServers[0], "kubectl", "exec", string(debugPodName), "curl", "-s", "http://nginx-reboot-test")
+			if err != nil {
+				return fmt.Errorf("unable to exec curl. stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			return nil
 		}).Should(Succeed())
 	})
 
@@ -249,7 +296,11 @@ func TestRebootAllNodes() {
 
 	It("can access a pod from another pod running on different node, even after rebooting", func() {
 		Eventually(func() error {
-			stdout, stderr, err := execAt(bootServers[0], "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
+			debugPodName, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod", "-l=app.kubernetes.io/name=debug-reboot-test", "-o=jsonpath='{.items[0].metadata.name}'")
+			if err != nil {
+				return fmt.Errorf("failed to get debug-reboot-test pod. stderr: %s, err: %v", stderr, err)
+			}
+			stdout, stderr, err := execAt(bootServers[0], "kubectl", "exec", string(debugPodName), "curl", "http://nginx-reboot-test")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
