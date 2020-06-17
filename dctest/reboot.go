@@ -187,7 +187,7 @@ spec:
 
 		By("start all nodes")
 		//　Wait for each booting to balance the load on the instance
-		const waitInterval = 190
+		const waitInterval = 60
 		ticker := time.NewTicker(waitInterval * time.Second)
 		defer ticker.Stop()
 		for _, m := range machines {
