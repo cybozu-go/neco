@@ -112,7 +112,7 @@ spec:
 			if err != nil {
 				return fmt.Errorf("failed to get debug-reboot-test. stderr: %s, err: %v", stderr, err)
 			}
-			stdout, stderr, err := execAt(bootServers[0], "kubectl", "exec", string(debugPodName), "curl", "-s", "http://nginx-reboot-test")
+			stdout, stderr, err := execAt(bootServers[0], "kubectl", "exec", string(debugPodName), "--", "curl", "-s", "http://nginx-reboot-test")
 			if err != nil {
 				return fmt.Errorf("unable to exec curl. stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
