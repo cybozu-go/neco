@@ -135,6 +135,7 @@ func TestInit() {
 
 			execSafeAt(host, "systemctl", "-q", "is-active", "sabakan.service")
 			execSafeAt(host, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
+			execSafeAt(host, "systemctl", "-q", "is-active", "ingress-watcher-bastion.service")
 		}
 	})
 
