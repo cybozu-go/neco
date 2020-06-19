@@ -11,7 +11,7 @@ import (
 	"github.com/cybozu-go/neco/progs/ingresswatcher"
 )
 
-func (o *operator) UpdateIngressWatcherBastion(ctx context.Context, req *neco.UpdateRequest) error {
+func (o *operator) UpdateIngressWatcher(ctx context.Context, req *neco.UpdateRequest) error {
 	containerName := "ingress-watcher"
 	need, err := o.needContainerImageUpdate(ctx, containerName)
 	if err != nil {
@@ -25,7 +25,7 @@ func (o *operator) UpdateIngressWatcherBastion(ctx context.Context, req *neco.Up
 		}
 	}
 
-	replaced, err := o.replaceIngressWatcherBastionFiles(ctx)
+	replaced, err := o.replaceIngressWatcherFiles(ctx)
 	if err != nil {
 		return err
 	}
@@ -33,21 +33,21 @@ func (o *operator) UpdateIngressWatcherBastion(ctx context.Context, req *neco.Up
 		return nil
 	}
 
-	err = neco.RestartService(ctx, neco.IngressWatcherBastion)
+	err = neco.RestartService(ctx, neco.IngressWatcher)
 	if err != nil {
 		return err
 	}
-	log.Info("ingress-watcher-bastion: updated", nil)
+	log.Info("ingress-watcher: updated", nil)
 	return nil
 }
 
-func (o *operator) replaceIngressWatcherBastionFiles(ctx context.Context) (bool, error) {
+func (o *operator) replaceIngressWatcherFiles(ctx context.Context) (bool, error) {
 	buf := new(bytes.Buffer)
 	err := ingresswatcher.GenerateService(buf)
 	if err != nil {
 		return false, err
 	}
-	r1, err := replaceFile(neco.ServiceFile(neco.IngressWatcherBastion), buf.Bytes(), 0644)
+	r1, err := replaceFile(neco.ServiceFile(neco.IngressWatcher), buf.Bytes(), 0644)
 	if err != nil {
 		return false, err
 	}

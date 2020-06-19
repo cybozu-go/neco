@@ -103,10 +103,10 @@ const (
 	CKEPrefix  = "/cke/"
 )
 
-// Ingress-watcher-bastion params
+// ingress-watcher params
 const (
-	IngressWatcherBastion = "ingress-watcher-bastion"
-	IngressWatcherDir     = "/etc/ingress-watcher-bastion"
+	IngressWatcher    = "ingress-watcher"
+	IngressWatcherDir = "/etc/ingress-watcher"
 )
 
 // Assets path for worker node
@@ -159,7 +159,7 @@ var (
 
 	SerfConfFile = filepath.Join(SerfDir, "serf.json")
 
-	IngressWatcherConfFile = filepath.Join(IngressWatcherDir, "ingress-watcher-bastion.yaml")
+	IngressWatcherConfFile = filepath.Join(IngressWatcherDir, "ingress-watcher.yaml")
 
 	CKECertFile              = filepath.Join(CKEDir, "etcd.crt")
 	CKEKeyFile               = filepath.Join(CKEDir, "etcd.key")

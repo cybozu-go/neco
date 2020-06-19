@@ -7,7 +7,7 @@ import (
 	"github.com/cybozu-go/neco"
 )
 
-// GenerateConfBase generates ingress-watcher-bastion.yaml.base from template.
+// GenerateConfBase generates ingress-watcher.yaml.base from template.
 func GenerateConfBase(w io.Writer, lrn int) error {
 	cluster, err := neco.MyCluster()
 	if err != nil {

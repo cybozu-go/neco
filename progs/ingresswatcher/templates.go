@@ -2,7 +2,7 @@ package ingresswatcher
 
 import "text/template"
 
-var confTmpl = template.Must(template.New("ingress-watcher-bastion.yaml").
+var confTmpl = template.Must(template.New("ingress-watcher.yaml").
 	Parse(`# Ingress watcher configurations.
 targetURLs:
 - http://{{ .TargetURL }}
@@ -10,11 +10,11 @@ targetURLs:
 watchInterval: 10s
 
 pushAddr: {{ .PushAddress }}
-jobName: ingress-watcher-bastion-{{ .LRN }}
+jobName: ingress-watcher-{{ .LRN }}
 pushInterval: 10s
 `))
 
-var serviceTmpl = template.Must(template.New("ingress-watcher-bastion.service").
+var serviceTmpl = template.Must(template.New("ingress-watcher.service").
 	Parse(`[Unit]
 Description=Ingress Watcher for Bastion Network
 Wants=network-online.target
@@ -32,10 +32,10 @@ ExecStart=/usr/bin/rkt run \
   --net=host \
   --dns=host \
   --hosts-entry=host \
-  --volume conf,kind=host,source=/etc/ingress-watcher-bastion,readOnly=true \
-  --mount volume=conf,target=/etc/ingress-watcher-bastion \
+  --volume conf,kind=host,source=/etc/ingress-watcher,readOnly=true \
+  --mount volume=conf,target=/etc/ingress-watcher \
   {{ .Image }} \
-    --name ingress-watcher-bastion \
+    --name ingress-watcher \
     --readonly-rootfs=true \
   -- \
 	push \

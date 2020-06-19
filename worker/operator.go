@@ -130,7 +130,7 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 18:
 		return o.UpdateUserResources(ctx, req)
 	case 19:
-		return o.UpdateIngressWatcherBastion(ctx, req)
+		return o.UpdateIngressWatcher(ctx, req)
 	case 20:
 		// THIS MUST BE THE FINAL STEP!!!!!
 		// to synchronize before restarting etcd.
