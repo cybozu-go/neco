@@ -14,6 +14,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "coil", Repository: "quay.io/cybozu/coil", Tag: "1.1.9", Private: false},
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "3.5.27.1.10", Private: false},
 		{Name: "teleport", Repository: "quay.io/cybozu/teleport", Tag: "4.2.10.1", Private: false},
+		{Name: "ingress-watcher", Repository: "quay.io/cybozu/ingress-watcher", Tag: "0.1.1", Private: false},
 	},
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.0.0"},
