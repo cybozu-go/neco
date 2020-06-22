@@ -20,11 +20,10 @@ if [ "${SUITE_NAME}" = "upgrade" ]; then
 else
   MACHINES_FILE=\${GOPATH}/src/github.com/cybozu-go/neco/dctest/output/machines.yml
 fi
-export MACHINES_FILE
 
 # Run dctest
 cd \${GOPATH}/src/github.com/cybozu-go/neco/dctest
-exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME}
+exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME} MACHINES_FILE=\${MACHINES_FILE}
 EOF
 chmod +x run.sh
 
