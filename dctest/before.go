@@ -8,11 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"sigs.k8s.io/yaml"
-
 	"github.com/cybozu-go/log"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"sigs.k8s.io/yaml"
 )
 
 const numActiveBootServers = 3
@@ -43,11 +42,11 @@ func RunBeforeSuite() {
 	Expect(err).NotTo(HaveOccurred())
 
 	for i, rack := range machines.Racks {
-		addr := rack.Boot.Bastion[:strings.LastIndex(rack.Boot.Bastion, "/")]
+		addr := strings.Split(rack.Boot.Bastion, "/")[0]
 		if i < numActiveBootServers {
 			bootServers = append(bootServers, addr)
 		}
-		allBootServers = append(bootServers, addr)
+		allBootServers = append(allBootServers, addr)
 	}
 
 	err = prepareSSHClients(allBootServers...)
