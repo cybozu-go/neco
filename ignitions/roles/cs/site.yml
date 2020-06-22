@@ -1,7 +1,7 @@
 include: ../../common/common.yml
 files:
   - /opt/sbin/setup-lvmd
-  - /etc/lvmd/lvmd.yaml
+  - /etc/topolvm/lvmd.yaml
 systemd:
   - name: setup-lvmd.service
   - name: lvmd.service
