@@ -1,5 +1,6 @@
 [Unit]
 Description=Request udev device events
+DefaultDependencies=no
 Wants=systemd-udevd.service
 After=systemd-udevd-kernel.socket systemd-udevd-control.socket
 Before=setup-var.service
