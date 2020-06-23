@@ -1,0 +1,13 @@
+[Unit]
+Description=Request udev device events periodically
+DefaultDependencies=no
+Wants=systemd-udevd.service
+After=systemd-udevd-kernel.socket systemd-udevd-control.socket
+Before=setup-var.service
+
+[Timer]
+OnActiveSec=60
+OnUnitActiveSec=60
+
+[Install]
+WantedBy=multi-user.target

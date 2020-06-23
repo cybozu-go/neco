@@ -1,0 +1,10 @@
+[Unit]
+Description=Request udev device events
+Wants=systemd-udevd.service
+After=systemd-udevd-kernel.socket systemd-udevd-control.socket
+Before=setup-var.service
+PartOf=udev-trigger.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/udevadm trigger
