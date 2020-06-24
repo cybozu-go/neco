@@ -10,6 +10,7 @@ var (
 	sshKeyFile    = os.Getenv("SSH_PRIVKEY")
 	bobPublicKey  = os.Getenv("BOB_PUBKEY")
 	bobPrivateKey = os.Getenv("BOB_PRIVKEY")
+	machinesFile  = os.Getenv("MACHINES_FILE")
 )
 
 var (

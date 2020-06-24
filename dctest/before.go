@@ -8,11 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"sigs.k8s.io/yaml"
-
 	"github.com/cybozu-go/log"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"sigs.k8s.io/yaml"
 )
 
 const numActiveBootServers = 3
@@ -24,41 +23,8 @@ func RunBeforeSuite() {
 	SetDefaultEventuallyPollingInterval(time.Second)
 	SetDefaultEventuallyTimeout(10 * time.Minute)
 
-	// Temporary fix for upgrade test
-	dummyMachinesYaml := `racks:
-- name: rack0
-  workers:
-    cs: 2
-    ss: 1
-  boot:
-    bastion: 10.72.48.0/32
-- name: rack1
-  workers:
-    cs: 2
-    ss: 0
-  boot:
-    bastion: 10.72.48.1/32
-- name: rack2
-  workers:
-    cs: 1
-    ss: 0
-  boot:
-    bastion: 10.72.48.2/32
-- name: rack3
-  workers:
-    cs: 1
-    ss: 0
-  boot:
-    bastion: 10.72.48.3/32`
-
-	_, err := os.Stat("../output/machines.yml")
-	var data []byte
-	if os.IsNotExist(err) {
-		data = []byte(dummyMachinesYaml)
-	} else {
-		data, err = ioutil.ReadFile("../output/machines.yml")
-		Expect(err).NotTo(HaveOccurred())
-	}
+	data, err := ioutil.ReadFile(machinesFile)
+	Expect(err).NotTo(HaveOccurred())
 
 	machines := struct {
 		Racks []struct {
@@ -76,11 +42,11 @@ func RunBeforeSuite() {
 	Expect(err).NotTo(HaveOccurred())
 
 	for i, rack := range machines.Racks {
-		addr := rack.Boot.Bastion[:strings.LastIndex(rack.Boot.Bastion, "/")]
+		addr := strings.Split(rack.Boot.Bastion, "/")[0]
 		if i < numActiveBootServers {
 			bootServers = append(bootServers, addr)
 		}
-		allBootServers = append(bootServers, addr)
+		allBootServers = append(allBootServers, addr)
 	}
 
 	err = prepareSSHClients(allBootServers...)
