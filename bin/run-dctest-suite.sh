@@ -15,10 +15,15 @@ GOPATH=\${HOME}/go
 export GOPATH
 PATH=/usr/local/go/bin:\${GOPATH}/bin:\${PATH}
 export PATH
+if [ "${SUITE_NAME}" = "upgrade" ]; then
+  MACHINES_FILE=/tmp/release/dctest/output/machines.yml
+else
+  MACHINES_FILE=\${GOPATH}/src/github.com/cybozu-go/neco/dctest/output/machines.yml
+fi
 
 # Run dctest
 cd \${GOPATH}/src/github.com/cybozu-go/neco/dctest
-exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME}
+exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME} MACHINES_FILE=\${MACHINES_FILE}
 EOF
 chmod +x run.sh
 

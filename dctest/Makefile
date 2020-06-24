@@ -1,6 +1,7 @@
 # Makefile for neco-test
 
 # configuration variables
+OUTPUT = ./output
 PLACEMAT = /usr/bin/placemat
 GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo --failFast -v
 SUITE = ./bootstrap
@@ -16,8 +17,9 @@ ifeq ($(MENU_ARG),)
 else
   MENU = $(MENU_ARG)
 endif
+MACHINES_FILE ?= $(abspath $(OUTPUT)/machines.yml)
 
-export PLACEMAT GINKGO SUITE_PACKAGE
+export PLACEMAT GINKGO SUITE_PACKAGE MACHINES_FILE
 
 CUSTOM_UBUNTU = cybozu-ubuntu-18.04-server-cloudimg-amd64.img
 CUSTOM_UBUNTU_API_URL = https://api.github.com/repos/cybozu/neco-ubuntu/releases/latest
@@ -28,7 +30,6 @@ GOFLAGS = -mod=vendor
 export GOFLAGS
 
 # non-configuration variables
-OUTPUT = ./output
 SABAKAN_DIR = $(OUTPUT)/sabakan
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
 AUTOCONFIG = $(SABAKAN_DIR)/auto-config
