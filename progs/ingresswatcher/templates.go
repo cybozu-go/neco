@@ -5,8 +5,10 @@ import "text/template"
 var confTmpl = template.Must(template.New("ingress-watcher.yaml").
 	Parse(`# Ingress watcher configurations.
 targetURLs:
-- http://{{ .TargetURL }}
-- https://{{ .TargetURL }}
+{{- range .TargetURLs }}
+- http://{{ . }}
+- https://{{ . }}
+{{- end }}
 watchInterval: 10s
 
 pushAddr: {{ .PushAddress }}
