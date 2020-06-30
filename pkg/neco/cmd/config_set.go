@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"time"
@@ -24,7 +25,8 @@ var configSetCmd = &cobra.Command{
 Possible keys are:
     env                   - "staging" or "prod".
     slack                 - Slack WebHook URL.
-    proxy                 - HTTP proxy server URL to access Internet.
+    proxy                 - HTTP proxy server URL to access Internet for boot servers.
+    dns                   - DNS server address for boot servers.
     quay-username         - Username to authenticate to quay.io from QUAY_USER.  This does not take VALUE.
     quay-password         - Password to authenticate to quay.io from QUAY_PASSWORD.  This does not take VALUE.
     check-update-interval - Polling interval for checking new neco release.
@@ -52,6 +54,7 @@ Possible keys are:
 		"env",
 		"slack",
 		"proxy",
+		"dns",
 		"quay-username",
 		"quay-password",
 		"check-update-interval",
@@ -96,6 +99,16 @@ Possible keys are:
 					return errors.New("invalid URL")
 				}
 				return st.PutProxyConfig(ctx, value)
+			case "dns":
+				value = args[1]
+				a := net.ParseIP(value)
+				if a == nil {
+					return errors.New("invalid IP addr: " + value)
+				}
+				if len(a) != 4 {
+					return errors.New("not IPv4 addr: " + value)
+				}
+				return st.PutDNSConfig(ctx, value)
 			case "quay-username":
 				value = os.Getenv("QUAY_USER")
 				return st.PutQuayUsername(ctx, value)
