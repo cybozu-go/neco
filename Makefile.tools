@@ -87,11 +87,14 @@ lvmd:
 	tar xzf - -C $(LIBEXECDIR)
 
 stern:
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
 	$(CURL) -o $(BINDIR)/stern https://github.com/wercker/stern/releases/download/$(STERN_VERSION)/stern_linux_amd64
 	chmod +x $(BINDIR)/stern
 	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/wercker/stern/$(STERN_VERSION)/LICENSE
 	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/wercker/stern/$(STERN_VERSION)/README.md
+	$(CURL) -o $(WINDOWS_BINDIR)/$@/stern.exe https://github.com/wercker/stern/releases/download/${STERN_VERSION}/stern_windows_amd64.exe
+	cp $(DOCDIR)/$@/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(DOCDIR)/$@/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
 kustomize:
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
