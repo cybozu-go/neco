@@ -87,7 +87,7 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 }
 
 func (o *operator) FinalStep() int {
-	return 20
+	return 21
 }
 
 func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error {

@@ -105,7 +105,7 @@ Possible keys are:
 				if a == nil {
 					return errors.New("invalid IP addr: " + value)
 				}
-				if len(a) != 4 {
+				if a.To4() == nil {
 					return errors.New("not IPv4 addr: " + value)
 				}
 				return st.PutDNSConfig(ctx, value)

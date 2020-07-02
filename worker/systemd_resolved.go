@@ -14,10 +14,6 @@ import (
 
 func (o *operator) UpdateSystemdResolved(ctx context.Context, req *neco.UpdateRequest) error {
 	replaced, err := o.replaceSystemdResolvedFiles(ctx)
-	if err == storage.ErrNotFound {
-		log.Info("systemd-resolved: dns config not found", nil)
-		return nil
-	}
 	if err != nil {
 		return err
 	}
@@ -41,6 +37,10 @@ func (o *operator) replaceSystemdResolvedFiles(ctx context.Context) (bool, error
 		return false, err
 	}
 	dnsAddress, err := o.storage.GetDNSConfig(ctx)
+	if err == storage.ErrNotFound {
+		log.Info("systemd-resolved: dns config not found", nil)
+		return false, nil
+	}
 	if err != nil {
 		return false, err
 	}
