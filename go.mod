@@ -9,22 +9,21 @@ require (
 	github.com/containers/image v0.0.0-20181129122009-63a1cbdc5e65
 	github.com/containers/storage v0.0.0-20181203181726-ad0f9c4dfa38 // indirect
 	github.com/coreos/etcd v3.3.19+incompatible
-	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/coreos/ignition v0.32.0 // indirect
 	github.com/cybozu-go/cke v1.17.6
 	github.com/cybozu-go/etcdutil v1.3.4
-	github.com/cybozu-go/log v1.5.0
+	github.com/cybozu-go/log v1.6.0
 	github.com/cybozu-go/netutil v1.2.0
 	github.com/cybozu-go/placemat v1.3.7
 	github.com/cybozu-go/sabakan/v2 v2.4.8
-	github.com/cybozu-go/well v1.8.1
+	github.com/cybozu-go/well v1.10.0
 	github.com/docker/docker-credential-helpers v0.6.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
-	github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef // indirect
-	github.com/google/go-cmp v0.3.0
+	github.com/ema/qdisc v0.0.0-20200603082823-62d0308e3e00 // indirect
+	github.com/godbus/dbus v4.1.0+incompatible // indirect
+	github.com/google/go-cmp v0.4.0
 	github.com/google/go-github/v18 v18.2.0
-	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/hashicorp/go-msgpack v0.5.4 // indirect
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/serf v0.8.3
@@ -35,6 +34,7 @@ require (
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/mattn/go-shellwords v1.0.3 // indirect
+	github.com/mdlayher/wifi v0.0.0-20200527114002-84f0b9457fdd // indirect
 	github.com/miekg/dns v1.1.8 // indirect
 	github.com/mistifyio/go-zfs v0.0.0-20161103015429-c0224de804d4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
@@ -47,16 +47,19 @@ require (
 	github.com/opencontainers/runc v0.0.0-20170216015123-6b1d0e76f239 // indirect
 	github.com/opencontainers/selinux v0.0.0-20181018180444-077c8b6d1c18 // indirect
 	github.com/ostreedev/ostree-go v0.0.0-20170616214430-aeb02c6b6aa2 // indirect
-	github.com/pborman/uuid v0.0.0-20170112150404-1b00554d8222 // indirect
 	github.com/pelletier/go-toml v1.3.0 // indirect
 	github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 // indirect
-	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
+	github.com/prometheus/client_golang v1.6.0
+	github.com/prometheus/client_model v0.2.0
+	github.com/prometheus/common v0.10.0
+	github.com/prometheus/node_exporter v1.0.1 // indirect
+	github.com/prometheus/procfs v0.1.3
 	github.com/prometheus/prom2json v1.1.0
 	github.com/rakyll/statik v0.1.5
 	github.com/satori/go.uuid v1.2.0 // indirect
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v1.0.0
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/spf13/viper v1.3.2
+	github.com/spf13/viper v1.7.0
 	github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2 // indirect
 	github.com/tchap/go-patricia v2.2.6+incompatible // indirect
 	github.com/tcnksm/go-input v0.0.0-20180404061846-548a7d7a8ee8
@@ -67,12 +70,13 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v0.0.0-20181112162635-ac52e6811b56 // indirect
 	go4.org v0.0.0-20190313082347-94abd6928b1d // indirect
-	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
+	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/text v0.3.3 // indirect
-	google.golang.org/api v0.4.0
-	google.golang.org/appengine v1.5.0
-	gopkg.in/yaml.v2 v2.2.8
+	google.golang.org/api v0.13.0
+	google.golang.org/appengine v1.6.1
+	gopkg.in/alecthomas/kingpin.v2 v2.2.6
+	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.17.6
 	k8s.io/apimachinery v0.17.6
 	sigs.k8s.io/yaml v1.2.0
