@@ -12,24 +12,11 @@ import (
 )
 
 func (o *operator) UpdateIngressWatcher(ctx context.Context, req *neco.UpdateRequest) error {
-	containerName := "ingress-watcher"
-	need, err := o.needContainerImageUpdate(ctx, containerName)
-	if err != nil {
-		return err
-	}
-	if need {
-
-		err = o.storage.RecordContainerTag(ctx, o.mylrn, containerName)
-		if err != nil {
-			return err
-		}
-	}
-
 	replaced, err := o.replaceIngressWatcherFiles(ctx)
 	if err != nil {
 		return err
 	}
-	if !need && !replaced {
+	if !replaced {
 		return nil
 	}
 
