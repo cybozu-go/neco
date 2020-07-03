@@ -29,7 +29,6 @@ var quayRepos = []string{
 	"coil",
 	"squid",
 	"teleport",
-	"ingress-watcher",
 }
 
 var privateImages = map[string]bool{
