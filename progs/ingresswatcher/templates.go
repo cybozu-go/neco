@@ -29,7 +29,7 @@ Slice=system.slice
 Type=simple
 Restart=on-failure
 RestartSec=30s
-ExecStart=/usr/sbin/ingress-watcher --config={{ .ConfigFile }}
+ExecStart=/usr/sbin/ingress-watcher push --config={{ .ConfigFile }}
 
 [Install]
 WantedBy=multi-user.target
