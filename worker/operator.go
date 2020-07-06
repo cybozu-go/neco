@@ -175,7 +175,7 @@ func (o *operator) StartServices(ctx context.Context) error {
 		return err
 	}
 
-	return o.restoreService(ctx, neco.SystemdResolvedService)
+	return neco.RestartService(ctx, neco.SystemdResolvedService)
 }
 
 func (o *operator) ReplaceSystemdResolvedFiles(ctx context.Context) error {
