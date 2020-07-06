@@ -1,15 +1,18 @@
 package worker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
+	"github.com/cybozu-go/neco/progs/systemdresolved"
 	"github.com/cybozu-go/neco/storage"
 )
 
@@ -29,6 +32,9 @@ type Operator interface {
 
 	// RestartEtcd restarts etcd in case it is necessary.
 	RestartEtcd(index int, req *neco.UpdateRequest) error
+
+	// ReplaceSystemdResolvedFiles restarts systemd-resolved for ingress-watcher
+	ReplaceSystemdResolvedFiles(ctx context.Context) error
 }
 
 type operator struct {
@@ -87,7 +93,7 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 }
 
 func (o *operator) FinalStep() int {
-	return 21
+	return 20
 }
 
 func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error {
@@ -104,36 +110,34 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 5:
 		return o.UpdateSetupHW(ctx, req)
 	case 6:
-		return o.UpdateSystemdResolved(ctx, req)
-	case 7:
 		return o.UpdateSerf(ctx, req)
-	case 8:
+	case 7:
 		return o.UpdateSetupSerfTags(ctx, req)
-	case 9:
+	case 8:
 		return o.UpdateEtcdpasswd(ctx, req)
-	case 10:
+	case 9:
 		return o.UpdateTeleport(ctx, req)
-	case 11:
+	case 10:
 		return o.UpdateSabakan(ctx, req)
-	case 12:
+	case 11:
 		return o.UpdateSabakanStateSetter(ctx, req)
-	case 13:
+	case 12:
 		return o.StopCKE(ctx, req)
-	case 14:
+	case 13:
 		return o.UpdateCKE(ctx, req)
-	case 15:
+	case 14:
 		return o.UpdateCKEContents(ctx, req)
-	case 16:
+	case 15:
 		return o.UpdateSabakanContents(ctx, req)
-	case 17:
+	case 16:
 		return o.UpdateDHCPJSON(ctx, req)
-	case 18:
+	case 17:
 		return o.UpdateCKETemplate(ctx, req)
-	case 19:
+	case 18:
 		return o.UpdateUserResources(ctx, req)
-	case 20:
+	case 19:
 		return o.UpdateIngressWatcher(ctx, req)
-	case 21:
+	case 20:
 		// THIS MUST BE THE FINAL STEP!!!!!
 		// to synchronize before restarting etcd.
 		return nil
@@ -166,6 +170,38 @@ func (o *operator) StartServices(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	err = o.restoreService(ctx, neco.VaultService)
+	if err != nil {
+		return err
+	}
 
-	return o.restoreService(ctx, neco.VaultService)
+	return o.restoreService(ctx, neco.SystemdResolvedService)
+}
+
+func (o *operator) ReplaceSystemdResolvedFiles(ctx context.Context) error {
+	buf := new(bytes.Buffer)
+
+	err := os.MkdirAll(filepath.Dir(neco.SystemdResolvedConfFile), 0755)
+	if err != nil {
+		return err
+	}
+	dnsAddress, err := o.storage.GetDNSConfig(ctx)
+	if err == storage.ErrNotFound {
+		log.Info("systemd-resolved: dns config not found", nil)
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	err = systemdresolved.GenerateConfBase(buf, dnsAddress)
+	if err != nil {
+		return err
+	}
+
+	_, err = replaceFile(neco.SystemdResolvedConfFile, buf.Bytes(), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

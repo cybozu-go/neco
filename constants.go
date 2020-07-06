@@ -111,7 +111,7 @@ const (
 
 // systemd-resolved params
 const (
-	SystemdResolved        = "systemd-resolved"
+	SystemdResolvedService = "systemd-resolved"
 	SystemdResolvedConfDir = "/etc/systemd/resolved.conf.d"
 )
 
