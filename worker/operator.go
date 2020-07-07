@@ -179,12 +179,6 @@ func (o *operator) StartServices(ctx context.Context) error {
 }
 
 func (o *operator) ReplaceSystemdResolvedFiles(ctx context.Context) error {
-	buf := new(bytes.Buffer)
-
-	err := os.MkdirAll(filepath.Dir(neco.SystemdResolvedConfFile), 0755)
-	if err != nil {
-		return err
-	}
 	dnsAddress, err := o.storage.GetDNSConfig(ctx)
 	if err == storage.ErrNotFound {
 		log.Info("systemd-resolved: dns config not found", nil)
@@ -193,6 +187,13 @@ func (o *operator) ReplaceSystemdResolvedFiles(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	err = os.MkdirAll(filepath.Dir(neco.SystemdResolvedConfFile), 0755)
+	if err != nil {
+		return err
+	}
+
+	buf := new(bytes.Buffer)
 	err = systemdresolved.GenerateConfBase(buf, dnsAddress)
 	if err != nil {
 		return err

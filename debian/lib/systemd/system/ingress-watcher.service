@@ -2,16 +2,15 @@
 Description=Ingress Watcher for Bastion Network
 Wants=network-online.target
 After=network-online.target
-StartLimitIntervalSec=600s
+ConditionPathExists=/etc/ingress-watcher/ingress-watcher.yaml
 
 [Service]
 Slice=system.slice
 Type=simple
 Restart=on-failure
+RestartForceExitStatus=SIGPIPE
 RestartSec=30s
-ExecStart=/bin/sleep infinity
+ExecStart=/usr/sbin/ingress-watcher push --config=/etc/ingress-watcher/ingress-watcher.yaml
 
 [Install]
 WantedBy=multi-user.target
-
-# this file is required to "systemctl start ingress-watcher" in postinst
