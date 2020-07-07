@@ -57,8 +57,3 @@ pushAddr: localhost:9091
 jobName: job
 pushInterval: 10s
 ```
-
-Docker images
--------------
-
-Docker images are available on [Quay.io](https://quay.io/repository/cybozu/ingress-watcher)
