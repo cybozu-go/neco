@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sort"
-	"strings"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -37,14 +35,6 @@ func TestSabakanStateSetter() {
 			if err != nil {
 				return err
 			}
-
-			// Debug log
-			var serfMember []string
-			for _, mem := range m.Members {
-				serfMember = append(serfMember, mem.Name+":"+mem.Status)
-			}
-			sort.Strings(serfMember)
-			fmt.Printf("%d: %s\n", len(m.Members), strings.Join(serfMember, ","))
 
 			if len(m.Members) != availableNodes {
 				return fmt.Errorf("too few serf members. expected %d, actual %d", availableNodes, len(m.Members))
