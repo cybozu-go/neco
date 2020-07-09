@@ -152,11 +152,11 @@ jobs:
           command: ./bin/run-dctest-suite.sh functions
           no_output_timeout: 20m
       - run:
-          name: Set the instance lifetime to 10 minutes
+          name: Set the instance lifetime
           command: |
             . ./bin/env
             $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
-              --metadata shutdown-at=$(date -Iseconds -d+10minutes)
+              --metadata shutdown-at=$(date -Iseconds -d+30minutes)
           when: on_fail
       - notify-slack-to-extend
       - run:
@@ -182,11 +182,11 @@ jobs:
           command: ./bin/run-dctest-suite.sh upgrade
           no_output_timeout: 20m
       - run:
-          name: Set the instance lifetime to 10 minutes
+          name: Set the instance lifetime
           command: |
             . ./bin/env
             $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
-              --metadata shutdown-at=$(date -Iseconds -d+10minutes)
+              --metadata shutdown-at=$(date -Iseconds -d+30minutes)
           when: on_fail
       - notify-slack-to-extend
       - run:
@@ -239,11 +239,11 @@ jobs:
             ./bin/run-dctest-suite.sh functions release
           no_output_timeout: 20m
       - run:
-          name: Set the instance lifetime to 10 minutes
+          name: Set the instance lifetime
           command: |
             . ./bin/env
             $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
-              --metadata shutdown-at=$(date -Iseconds -d+10minutes)
+              --metadata shutdown-at=$(date -Iseconds -d+30minutes)
           when: on_fail
       - notify-slack-to-extend
       - run:
@@ -277,11 +277,11 @@ jobs:
           command: ./bin/run-dctest-suite.sh upgrade release
           no_output_timeout: 20m
       - run:
-          name: Set the instance lifetime to 10 minutes
+          name: Set the instance lifetime
           command: |
             . ./bin/env
             $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
-              --metadata shutdown-at=$(date -Iseconds -d+10minutes)
+              --metadata shutdown-at=$(date -Iseconds -d+30minutes)
           when: on_fail
       - notify-slack-to-extend
       - run:

@@ -18,5 +18,5 @@ mounts:
 runcmd:
   - "echo 127.0.0.1 {{.Name}} >>/etc/hosts"
   - "cd /extras/setup; ./setup-rkt"
-  - "cd /extras/setup; ./setup-neco-network --dns 8.8.8.8 {{.Rack.Index}}"
+  - "cd /extras/setup; ./setup-neco-network {{.Rack.Index}}"
   - "sh /mnt/auto-config"

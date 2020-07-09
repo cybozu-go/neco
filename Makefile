@@ -20,7 +20,8 @@ OP_DEB = neco-operation-cli-linux_$(VERSION)_amd64.deb
 OP_ZIP = neco-operation-cli-windows_$(VERSION)_amd64.zip
 DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco
-SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
+SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/ingress-watcher
+OPDEB_BINNAMES = argocd kubectl kustomize stern teleport
 
 STATIK = gcp/statik/statik.go
 STATIK_FILES := $(shell find gcp/public -type f)
@@ -88,7 +89,7 @@ $(DEB): setup-files-for-deb
 $(OP_DEB): setup-files-for-deb
 	mkdir -p $(OPBINDIR) $(OPDOCDIR) $(OPWORKDIR)/DEBIAN
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/; /Package: neco/s/$$/-operation-cli-linux/; s/Continuous delivery tool/Operation tools/' debian/DEBIAN/control > $(OPCONTROL)
-	for BINNAME in argocd kubectl kustomize stern teleport; do \
+	for BINNAME in $(OPDEB_BINNAMES); do \
 		cp $(BINDIR)/$$BINNAME $(OPBINDIR) ; \
 		cp -r $(DOCDIR)/$$BINNAME $(OPDOCDIR) ; \
 	done

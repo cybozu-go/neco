@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-SERVICES="neco-updater neco-worker node-exporter sabakan-state-setter"
+SERVICES="neco-updater neco-worker node-exporter sabakan-state-setter ingress-watcher"
 TIMERS="rkt-gc kill-old-login-sessions"
 
 prerm() {

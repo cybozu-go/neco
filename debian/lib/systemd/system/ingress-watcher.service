@@ -1,0 +1,16 @@
+[Unit]
+Description=Ingress Watcher
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/etc/ingress-watcher/ingress-watcher.yaml
+
+[Service]
+Slice=system.slice
+Type=simple
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+RestartSec=30s
+ExecStart=/usr/sbin/ingress-watcher push --config=/etc/ingress-watcher/ingress-watcher.yaml
+
+[Install]
+WantedBy=multi-user.target

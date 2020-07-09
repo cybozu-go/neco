@@ -103,6 +103,18 @@ const (
 	CKEPrefix  = "/cke/"
 )
 
+// ingress-watcher params
+const (
+	IngressWatcher    = "ingress-watcher"
+	IngressWatcherDir = "/etc/ingress-watcher"
+)
+
+// systemd-resolved params
+const (
+	SystemdResolvedService = "systemd-resolved"
+	SystemdResolvedConfDir = "/etc/systemd/resolved.conf.d"
+)
+
 // Assets path for worker node
 const (
 	WorkerAssetsPath = "/usr/libexec/neco"
@@ -152,6 +164,10 @@ var (
 	SabakanDHCPJSONFile       = filepath.Join(NecoDataDir, "dhcp.json")
 
 	SerfConfFile = filepath.Join(SerfDir, "serf.json")
+
+	IngressWatcherConfFile = filepath.Join(IngressWatcherDir, "ingress-watcher.yaml")
+
+	SystemdResolvedConfFile = filepath.Join(SystemdResolvedConfDir, "neco.conf")
 
 	CKECertFile              = filepath.Join(CKEDir, "etcd.crt")
 	CKEKeyFile               = filepath.Join(CKEDir, "etcd.key")
