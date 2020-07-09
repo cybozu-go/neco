@@ -52,7 +52,8 @@ func (s Server) HandleShutdown(w http.ResponseWriter, r *http.Request) {
 
 func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 	project := s.cfg.Common.Project
-	zone := s.cfg.Common.Zone
+	commonZone := s.cfg.Common.Zone
+	addZones := s.cfg.App.Shutdown.AdditionalZones
 	exclude := s.cfg.App.Shutdown.Exclude
 	stop := s.cfg.App.Shutdown.Stop
 	status := ShutdownStatus{}
@@ -64,26 +65,57 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 		RenderError(r.Context(), w, InternalServerError(err))
 		return
 	}
-	instanceList, err := service.Instances.List(project, zone).Do()
-	if err != nil {
-		RenderError(r.Context(), w, InternalServerError(err))
-		return
-	}
 
-	for _, instance := range instanceList.Items {
-		if contain(instance.Name, exclude) {
-			continue
+	targetZones := append([]string{commonZone}, addZones...)
+	for _, zone := range targetZones {
+		instanceList, err := service.Instances.List(project, zone).Do()
+		if err != nil {
+			RenderError(r.Context(), w, InternalServerError(err))
+			return
 		}
 
-		shutdownAt, err := getShutdownAt(instance)
-		if err != nil {
+		for _, instance := range instanceList.Items {
+			if contain(instance.Name, exclude) {
+				continue
+			}
+
+			shutdownAt, err := getShutdownAt(instance)
+			if err != nil {
+				if err != errShutdownMetadataNotFound {
+					RenderError(r.Context(), w, InternalServerError(err))
+					return
+				}
+			}
 			if err != errShutdownMetadataNotFound {
+				if now.Sub(shutdownAt) >= 0 {
+					_, err := service.Instances.Delete(project, zone, instance.Name).Do()
+					if err != nil {
+						RenderError(r.Context(), w, InternalServerError(err))
+						continue
+					}
+					status.Deleted = append(status.Deleted, instance.Name)
+				}
+				continue
+			}
+
+			extendedAt, err := getExtendedAt(instance)
+			if err != nil {
 				RenderError(r.Context(), w, InternalServerError(err))
 				return
 			}
-		}
-		if err != errShutdownMetadataNotFound {
-			if now.Sub(shutdownAt) >= 0 {
+			elapsed := now.Sub(extendedAt)
+			if elapsed.Seconds() < expiration.Seconds() {
+				continue
+			}
+
+			if contain(instance.Name, stop) {
+				_, err := service.Instances.Stop(project, zone, instance.Name).Do()
+				if err != nil {
+					RenderError(r.Context(), w, InternalServerError(err))
+					continue
+				}
+				status.Stopped = append(status.Stopped, instance.Name)
+			} else {
 				_, err := service.Instances.Delete(project, zone, instance.Name).Do()
 				if err != nil {
 					RenderError(r.Context(), w, InternalServerError(err))
@@ -91,33 +123,6 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 				}
 				status.Deleted = append(status.Deleted, instance.Name)
 			}
-			continue
-		}
-
-		extendedAt, err := getExtendedAt(instance)
-		if err != nil {
-			RenderError(r.Context(), w, InternalServerError(err))
-			return
-		}
-		elapsed := now.Sub(extendedAt)
-		if elapsed.Seconds() < expiration.Seconds() {
-			continue
-		}
-
-		if contain(instance.Name, stop) {
-			_, err := service.Instances.Stop(project, zone, instance.Name).Do()
-			if err != nil {
-				RenderError(r.Context(), w, InternalServerError(err))
-				continue
-			}
-			status.Stopped = append(status.Stopped, instance.Name)
-		} else {
-			_, err := service.Instances.Delete(project, zone, instance.Name).Do()
-			if err != nil {
-				RenderError(r.Context(), w, InternalServerError(err))
-				continue
-			}
-			status.Deleted = append(status.Deleted, instance.Name)
 		}
 	}
 
@@ -160,6 +165,28 @@ func (s Server) HandleExtend(w http.ResponseWriter, r *http.Request) {
 	s.extend(w, r)
 }
 
+func (s Server) findGCPInstanceByName(service *compute.Service, project string, instance string) (*compute.Instance, string, error) {
+	commonZone := s.cfg.Common.Zone
+	addZones := s.cfg.App.Shutdown.AdditionalZones
+	targetZones := append([]string{commonZone}, addZones...)
+
+	var err error
+	for _, zone := range targetZones {
+		var target *compute.Instance
+		target, err = service.Instances.Get(project, zone, instance).Do()
+		if err == nil {
+			return target, zone, nil
+		}
+	}
+	log.Error("failed to get target instance", map[string]interface{}{
+		log.FnError: err,
+		"project":   project,
+		"zones":     targetZones,
+		"instance":  instance,
+	})
+	return nil, "", err
+}
+
 func (s Server) extend(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	bodyRaw, err := ioutil.ReadAll(r.Body)
@@ -182,7 +209,6 @@ func (s Server) extend(w http.ResponseWriter, r *http.Request) {
 	body = strings.Replace(body, "payload=", "", 1)
 
 	project := s.cfg.Common.Project
-	zone := s.cfg.Common.Zone
 
 	service, err := compute.NewService(r.Context(), option.WithHTTPClient(s.client))
 	if err != nil {
@@ -235,18 +261,15 @@ func (s Server) extend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	instance := message.ActionCallback.BlockActions[0].Value
-	target, err := service.Instances.Get(project, zone, instance).Do()
+
+	// Find GCP instance from all target zones
+	target, zone, err := s.findGCPInstanceByName(service, project, instance)
 	if err != nil {
-		log.Error("failed to get target instance", map[string]interface{}{
-			log.FnError: err,
-			"project":   project,
-			"zone":      zone,
-			"instance":  instance,
-		})
 		RenderError(r.Context(), w, InternalServerError(err))
 		return
 	}
 
+	// Extend instance lifetime
 	shutdownAt := time.Now().UTC().Add(2 * time.Hour).Format(time.RFC3339)
 	found := false
 	metadata := target.Metadata
