@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 )
@@ -190,7 +191,7 @@ func appendJSON(buf []byte, v interface{}) ([]byte, error) {
 	case string:
 		if !utf8.ValidString(t) {
 			// the next line replaces invalid characters.
-			t = string([]rune(t))
+			t = strings.ToValidUTF8(t, string(utf8.RuneError))
 		}
 		// escaped length = 2*len(t) + 2 double quotes
 		if cap(buf) < (len(t)*2 + 2) {
@@ -226,7 +227,7 @@ func appendJSON(buf []byte, v interface{}) ([]byte, error) {
 		s := t.Error()
 		if !utf8.ValidString(s) {
 			// the next line replaces invalid characters.
-			s = string([]rune(s))
+			s = strings.ToValidUTF8(s, string(utf8.RuneError))
 		}
 		// escaped length = 2*len(s) + 2 double quotes
 		if cap(buf) < (len(s)*2 + 2) {

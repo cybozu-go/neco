@@ -81,6 +81,10 @@ func (op *mockOp) RestartEtcd(index int, req *neco.UpdateRequest) error {
 	return nil
 }
 
+func (op *mockOp) ReplaceSystemdResolvedFiles(ctx context.Context) error {
+	return nil
+}
+
 type testInput func(ctx context.Context, st storage.Storage, bch <-chan struct{}) error
 
 func inputRequest(req *neco.UpdateRequest, wait bool) testInput {
