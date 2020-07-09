@@ -1,5 +1,5 @@
 [Unit]
-Description=Ingress Watcher for Bastion Network
+Description=Ingress Watcher
 Wants=network-online.target
 After=network-online.target
 ConditionPathExists=/etc/ingress-watcher/ingress-watcher.yaml

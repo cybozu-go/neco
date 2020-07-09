@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/cybozu-go/log"
-	"github.com/cybozu-go/neco/pkg/ingress-watcher/pkg/watch"
+	"github.com/cybozu-go/neco/pkg/ingress-watcher/watch"
 	"github.com/cybozu-go/well"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
