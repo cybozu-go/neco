@@ -67,11 +67,12 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 	}
 
 	targetZones := append([]string{commonZone}, addZones...)
+	var errList []error
 	for _, zone := range targetZones {
 		instanceList, err := service.Instances.List(project, zone).Do()
 		if err != nil {
-			RenderError(r.Context(), w, InternalServerError(err))
-			return
+			errList = append(errList, err)
+			continue
 		}
 
 		for _, instance := range instanceList.Items {
@@ -82,15 +83,15 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 			shutdownAt, err := getShutdownAt(instance)
 			if err != nil {
 				if err != errShutdownMetadataNotFound {
-					RenderError(r.Context(), w, InternalServerError(err))
-					return
+					errList = append(errList, err)
+					continue
 				}
 			}
 			if err != errShutdownMetadataNotFound {
 				if now.Sub(shutdownAt) >= 0 {
 					_, err := service.Instances.Delete(project, zone, instance.Name).Do()
 					if err != nil {
-						RenderError(r.Context(), w, InternalServerError(err))
+						errList = append(errList, err)
 						continue
 					}
 					status.Deleted = append(status.Deleted, instance.Name)
@@ -100,8 +101,8 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 
 			extendedAt, err := getExtendedAt(instance)
 			if err != nil {
-				RenderError(r.Context(), w, InternalServerError(err))
-				return
+				errList = append(errList, err)
+				continue
 			}
 			elapsed := now.Sub(extendedAt)
 			if elapsed.Seconds() < expiration.Seconds() {
@@ -130,6 +131,13 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 		"deleted": status.Deleted,
 		"stopped": status.Stopped,
 	})
+	if len(errList) != 0 {
+		log.Error("shutdown failed", map[string]interface{}{
+			"errors": errList,
+		})
+		RenderError(r.Context(), w, InternalServerError(errList[0]))
+		return
+	}
 	RenderJSON(w, status, http.StatusOK)
 }
 
