@@ -41,9 +41,10 @@ type AppConfig struct {
 
 // ShutdownConfig is automatic shutdown configuration
 type ShutdownConfig struct {
-	Stop       []string      `yaml:"stop"`
-	Exclude    []string      `yaml:"exclude"`
-	Expiration time.Duration `yaml:"expiration"`
+	Stop            []string      `yaml:"stop"`
+	Exclude         []string      `yaml:"exclude"`
+	Expiration      time.Duration `yaml:"expiration"`
+	AdditionalZones []string      `yaml:"additional-zones"`
 }
 
 // ComputeConfig is configuration for GCE
@@ -117,6 +118,9 @@ func NecoTestConfig() *Config {
 					"neco-apps-master",
 				},
 				Expiration: 2 * time.Hour,
+				AdditionalZones: []string{
+					"asia-northeast1-c",
+				},
 			},
 		},
 		Compute: ComputeConfig{
