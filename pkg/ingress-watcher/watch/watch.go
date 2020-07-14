@@ -33,6 +33,7 @@ func NewWatcher(
 // Run repeats to get server health and send it via channel.
 func (w *Watcher) Run(ctx context.Context) error {
 	env := well.NewEnvironment(ctx)
+	metrics.WatchInterval.Set(w.interval.Seconds())
 	for _, t := range w.targetAddrs {
 		// Initialize counter value as 0.
 		// Not initialize HTTPGetSuccessfulTotal because it needs status code.

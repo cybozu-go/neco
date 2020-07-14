@@ -19,10 +19,23 @@ import (
 const timeoutDuration = 550 * time.Millisecond
 
 const (
+	watchIntervalName          = "ingresswatcher_watch_interval"
 	httpGetTotalName           = "ingresswatcher_http_get_total"
 	httpGetSuccessfulTotalName = "ingresswatcher_http_get_successful_total"
 	httpGetFailTotalName       = "ingresswatcher_http_get_fail_total"
 )
+
+var namesWithPath = []string{httpGetTotalName, httpGetSuccessfulTotalName, httpGetFailTotalName}
+var namesWithoutPath = []string{watchIntervalName}
+
+func containsSliceString(s []string, str string) bool {
+	for _, x := range s {
+		if x == str {
+			return true
+		}
+	}
+	return false
+}
 
 func TestWatcherRun(t *testing.T) {
 	type fields struct {
@@ -32,9 +45,10 @@ func TestWatcherRun(t *testing.T) {
 	}
 
 	tests := []struct {
-		name   string
-		fields fields
-		result map[string]float64
+		name              string
+		fields            fields
+		resultWithPath    map[string]float64
+		resultWithoutPath map[string]float64
 	}{
 		{
 			name: "GET success every 100ms in 550ms",
@@ -49,10 +63,13 @@ func TestWatcherRun(t *testing.T) {
 					}, nil
 				}),
 			},
-			result: map[string]float64{
+			resultWithPath: map[string]float64{
 				httpGetTotalName:           5,
 				httpGetSuccessfulTotalName: 5,
 				httpGetFailTotalName:       0,
+			},
+			resultWithoutPath: map[string]float64{
+				watchIntervalName: 0.1,
 			},
 		},
 
@@ -65,10 +82,13 @@ func TestWatcherRun(t *testing.T) {
 					return nil, errors.New("error")
 				}),
 			},
-			result: map[string]float64{
+			resultWithPath: map[string]float64{
 				httpGetTotalName:           5,
 				httpGetSuccessfulTotalName: 0,
 				httpGetFailTotalName:       5,
+			},
+			resultWithoutPath: map[string]float64{
+				watchIntervalName: 0.1,
 			},
 		},
 	}
@@ -79,6 +99,7 @@ func TestWatcherRun(t *testing.T) {
 			metrics.HTTPGetSuccessfulTotal.Reset()
 			metrics.HTTPGetFailTotal.Reset()
 			registry.MustRegister(
+				metrics.WatchInterval,
 				metrics.HTTPGetTotal,
 				metrics.HTTPGetSuccessfulTotal,
 				metrics.HTTPGetFailTotal,
@@ -112,38 +133,43 @@ func TestWatcherRun(t *testing.T) {
 				name string
 				path string
 			}
-			mfMap := make(map[metricKey]*dto.Metric)
+			mfMapWithPath := make(map[metricKey]*dto.Metric)
+			mfMapWithoutPath := make(map[string]*dto.Metric)
 			for _, mf := range metricsFamily {
-				if len(mf.Metric) != len(tt.fields.targetURLs) {
-					t.Fatalf("%s: metric %s should contain only one element.", tt.name, *mf.Name)
-				}
-				for _, met := range mf.Metric {
-					p := labelToMap(met.Label)["path"]
-					mfMap[metricKey{*mf.Name, p}] = met
+				if containsSliceString(namesWithPath, *mf.Name) {
+					if len(mf.Metric) != len(tt.fields.targetURLs) {
+						t.Fatalf("%s: metric %s should contain only one element.", tt.name, *mf.Name)
+					}
+					for _, met := range mf.Metric {
+						p := labelToMap(met.Label)["path"]
+						mfMapWithPath[metricKey{*mf.Name, p}] = met
+					}
+				} else {
+					mfMapWithoutPath[*mf.Name] = mf.Metric[0]
 				}
 			}
 
 			// assert results
-			for _, n := range []string{httpGetTotalName, httpGetSuccessfulTotalName, httpGetFailTotalName} {
+			for _, n := range namesWithPath {
 				for _, ta := range w.targetAddrs {
-					m, ok := mfMap[metricKey{n, ta}]
-					if !ok && tt.result[n] != 0 {
+					m, ok := mfMapWithPath[metricKey{n, ta}]
+					if !ok && tt.resultWithPath[n] != 0 {
 						t.Errorf(
 							"%s: value for %s{path=%s} should be %f but not found.",
 							tt.name,
 							n,
 							ta,
-							tt.result[n],
+							tt.resultWithPath[n],
 						)
 						continue
 					}
-					if !ok && tt.result[n] == 0 {
+					if !ok && tt.resultWithPath[n] == 0 {
 						continue
 					}
 
-					v, ok := tt.result[n]
+					v, ok := tt.resultWithPath[n]
 					if !ok {
-						t.Fatalf("%s: value for %s{path=%s not found", tt.name, n, ta)
+						t.Fatalf("%s: value for %s{path=%s} not found", tt.name, n, ta)
 					}
 					if v != *m.Counter.Value {
 						t.Errorf(
@@ -155,6 +181,36 @@ func TestWatcherRun(t *testing.T) {
 							*m.Counter.Value,
 						)
 					}
+				}
+			}
+
+			for _, n := range namesWithoutPath {
+				m, ok := mfMapWithoutPath[n]
+				if !ok && tt.resultWithoutPath[n] != 0 {
+					t.Errorf(
+						"%s: value for %s should be %f but not found.",
+						tt.name,
+						n,
+						tt.resultWithPath[n],
+					)
+					continue
+				}
+				if !ok && tt.resultWithoutPath[n] == 0 {
+					continue
+				}
+
+				v, ok := tt.resultWithoutPath[n]
+				if !ok {
+					t.Fatalf("%s: value for %s not found", tt.name, n)
+				}
+				if v != *m.Gauge.Value {
+					t.Errorf(
+						"%s: value for %s is wrong.  expected: %f, actual: %f",
+						tt.name,
+						n,
+						v,
+						*m.Gauge.Value,
+					)
 				}
 			}
 		})
