@@ -10,6 +10,8 @@ const (
 	// DefaultPreemptible is default value for enabling preemptible
 	// https://cloud.google.com/compute/docs/instances/preemptible
 	defaultPreemptible = false
+	// defaultAppShutdownAt is default time for test instance auto-shutdown
+	defaultAppShutdownAt = "20:00"
 	// DefaultShutdownAt is default time for instance auto-shutdown
 	defaultShutdownAt = "21:00"
 	// DefaultTimeZone is default timezone for instance auto-shutdown
@@ -77,7 +79,7 @@ func NewConfig() (*Config, error) {
 		App: AppConfig{
 			Shutdown: ShutdownConfig{
 				Timezone:   defaultTimeZone,
-				ShutdownAt: defaultShutdownAt,
+				ShutdownAt: defaultAppShutdownAt,
 			},
 		},
 		Compute: ComputeConfig{
@@ -110,8 +112,8 @@ func NecoTestConfig() *Config {
 					"neco-apps-release",
 					"neco-apps-master",
 				},
-				Timezone:   "Asia/Tokyo",
-				ShutdownAt: "20:00",
+				Timezone:   defaultTimeZone,
+				ShutdownAt: defaultAppShutdownAt,
 				AdditionalZones: []string{
 					"asia-northeast1-c",
 				},
