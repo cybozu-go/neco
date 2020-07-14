@@ -30,6 +30,8 @@ Edit [artifacts.go](../../gcp/artifacts.go)
 
 ### Deploy GAE app
 
+`google-cloud-sdk-app-engine-go` should be installed before the deployment.
+
 ```console
 make -f Makefile.gcp PROJECT=neco-test create
 ```
