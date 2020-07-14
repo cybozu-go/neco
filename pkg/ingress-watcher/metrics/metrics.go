@@ -6,6 +6,15 @@ const (
 	namespace = "ingresswatcher"
 )
 
+// WatchInterval returns the interval of watch.
+var WatchInterval = prometheus.NewGauge(
+	prometheus.GaugeOpts{
+		Namespace: namespace,
+		Name:      "watch_interval",
+		Help:      "interval of watch.",
+	},
+)
+
 // HTTPGetTotal returns the total successful count of http get.
 var HTTPGetTotal = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
