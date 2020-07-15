@@ -1,10 +1,6 @@
 package gcp
 
-import "time"
-
 const (
-	// DefaultExpiration is default expiration time
-	defaultExpiration = "0s"
 	// DefaultBootDiskSizeGB is default instance boot disk size
 	defaultBootDiskSizeGB = 20
 	// DefaultHomeDisk is default value for attaching home disk image in host-vm
@@ -14,6 +10,8 @@ const (
 	// DefaultPreemptible is default value for enabling preemptible
 	// https://cloud.google.com/compute/docs/instances/preemptible
 	defaultPreemptible = false
+	// defaultAppShutdownAt is default time for test instance auto-shutdown
+	defaultAppShutdownAt = "20:00"
 	// DefaultShutdownAt is default time for instance auto-shutdown
 	defaultShutdownAt = "21:00"
 	// DefaultTimeZone is default timezone for instance auto-shutdown
@@ -41,10 +39,11 @@ type AppConfig struct {
 
 // ShutdownConfig is automatic shutdown configuration
 type ShutdownConfig struct {
-	Stop            []string      `yaml:"stop"`
-	Exclude         []string      `yaml:"exclude"`
-	Expiration      time.Duration `yaml:"expiration"`
-	AdditionalZones []string      `yaml:"additional-zones"`
+	Stop            []string `yaml:"stop"`
+	Exclude         []string `yaml:"exclude"`
+	Timezone        string   `yaml:"timezone"`
+	ShutdownAt      string   `yaml:"shutdown-at"`
+	AdditionalZones []string `yaml:"additional-zones"`
 }
 
 // ComputeConfig is configuration for GCE
@@ -76,15 +75,11 @@ type AutoShutdownConfig struct {
 
 // NewConfig returns Config
 func NewConfig() (*Config, error) {
-	expiration, err := time.ParseDuration(defaultExpiration)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Config{
 		App: AppConfig{
 			Shutdown: ShutdownConfig{
-				Expiration: expiration,
+				Timezone:   defaultTimeZone,
+				ShutdownAt: defaultAppShutdownAt,
 			},
 		},
 		Compute: ComputeConfig{
@@ -117,7 +112,8 @@ func NecoTestConfig() *Config {
 					"neco-apps-release",
 					"neco-apps-master",
 				},
-				Expiration: 2 * time.Hour,
+				Timezone:   defaultTimeZone,
+				ShutdownAt: defaultAppShutdownAt,
 				AdditionalZones: []string{
 					"asia-northeast1-c",
 				},

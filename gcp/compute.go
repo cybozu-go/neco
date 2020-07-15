@@ -106,36 +106,37 @@ func (cc *ComputeClient) CreateVMXEnabledInstance(ctx context.Context) error {
 	return c.Run()
 }
 
-func convertLocalTimeToUTC(timezone, shutdownAt string) (string, error) {
+// ConvertLocalTimeToUTC converts local time to UTC
+func ConvertLocalTimeToUTC(timezone, shutdownAt string) (time.Time, error) {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {
-		return "", err
+		return time.Time{}, err
 	}
 	now := time.Now().In(loc)
 	localTime := fmt.Sprintf("%d-%02d-%02d "+shutdownAt+":00",
 		now.Year(), now.Month(), now.Day())
 	t, err := time.ParseInLocation(timeFormat, localTime, loc)
 	if err != nil {
-		return "", err
+		return time.Time{}, err
 	}
-	utcTime := t.UTC().Format("15:04")
-	return utcTime, nil
+	return t.UTC(), nil
 }
 
 // CreateHostVMInstance creates host-vm instance
 func (cc *ComputeClient) CreateHostVMInstance(ctx context.Context) error {
 	gcmd := cc.gCloudComputeInstances()
 	bootDiskSize := strconv.Itoa(cc.cfg.Compute.BootDiskSizeGB) + "GB"
-	shotdownAt, err := convertLocalTimeToUTC(cc.cfg.Compute.AutoShutdown.Timezone, cc.cfg.Compute.AutoShutdown.ShutdownAt)
+	shutdownTime, err := ConvertLocalTimeToUTC(cc.cfg.Compute.AutoShutdown.Timezone, cc.cfg.Compute.AutoShutdown.ShutdownAt)
 	if err != nil {
 		return err
 	}
-	log.Info("the instance will shutdown at UTC "+shotdownAt, map[string]interface{}{})
+	shutdownAt := shutdownTime.Format("15:04")
+	log.Info("the instance will shutdown at UTC "+shutdownAt, map[string]interface{}{})
 	buf := new(bytes.Buffer)
 	err = startUpScriptTmpl.Execute(buf, struct {
 		ShutdownAt string
 	}{
-		ShutdownAt: shotdownAt,
+		ShutdownAt: shutdownAt,
 	})
 	if err != nil {
 		return err

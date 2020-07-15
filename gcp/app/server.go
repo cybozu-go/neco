@@ -58,7 +58,6 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 	stop := s.cfg.App.Shutdown.Stop
 	status := ShutdownStatus{}
 	now := time.Now().UTC()
-	expiration := s.cfg.App.Shutdown.Expiration
 
 	service, err := compute.NewService(r.Context(), option.WithHTTPClient(s.client))
 	if err != nil {
@@ -96,16 +95,6 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 					}
 					status.Deleted = append(status.Deleted, instance.Name)
 				}
-				continue
-			}
-
-			extendedAt, err := getExtendedAt(instance)
-			if err != nil {
-				errList = append(errList, err)
-				continue
-			}
-			elapsed := now.Sub(extendedAt)
-			if elapsed.Seconds() < expiration.Seconds() {
 				continue
 			}
 
@@ -278,7 +267,15 @@ func (s Server) extend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Extend instance lifetime
-	shutdownAt := time.Now().UTC().Add(2 * time.Hour).Format(time.RFC3339)
+	shutdownTime, err := gcp.ConvertLocalTimeToUTC(s.cfg.App.Shutdown.Timezone, s.cfg.App.Shutdown.ShutdownAt)
+	if err != nil {
+		RenderError(r.Context(), w, InternalServerError(err))
+		return
+	}
+	if shutdownTime.Before(time.Now()) {
+		shutdownTime = shutdownTime.AddDate(0, 0, 1)
+	}
+	shutdownAt := shutdownTime.Format(time.RFC3339)
 	found := false
 	metadata := target.Metadata
 	for _, m := range metadata.Items {
