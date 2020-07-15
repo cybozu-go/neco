@@ -58,6 +58,7 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 	stop := s.cfg.App.Shutdown.Stop
 	status := ShutdownStatus{}
 	now := time.Now().UTC()
+	expiration := s.cfg.App.Shutdown.Expiration
 
 	service, err := compute.NewService(r.Context(), option.WithHTTPClient(s.client))
 	if err != nil {
@@ -80,13 +81,9 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 			}
 
 			shutdownAt, err := getShutdownAt(instance)
-			if err != nil {
-				if err != errShutdownMetadataNotFound {
-					errList = append(errList, err)
-					continue
-				}
-			}
-			if err != errShutdownMetadataNotFound {
+			switch err {
+			case errShutdownMetadataNotFound:
+			case nil:
 				if now.Sub(shutdownAt) >= 0 {
 					_, err := service.Instances.Delete(project, zone, instance.Name).Do()
 					if err != nil {
@@ -95,6 +92,19 @@ func (s Server) shutdown(w http.ResponseWriter, r *http.Request) {
 					}
 					status.Deleted = append(status.Deleted, instance.Name)
 				}
+				continue
+			default:
+				errList = append(errList, err)
+				continue
+			}
+
+			creationTime, err := time.Parse(time.RFC3339, instance.CreationTimestamp)
+			if err != nil {
+				errList = append(errList, err)
+				continue
+			}
+			elapsed := now.Sub(creationTime)
+			if elapsed.Seconds() < expiration.Seconds() {
 				continue
 			}
 
@@ -137,15 +147,6 @@ func contain(name string, items []string) bool {
 		}
 	}
 	return false
-}
-
-func getExtendedAt(instance *compute.Instance) (time.Time, error) {
-	for _, metadata := range instance.Metadata.Items {
-		if metadata.Key == gcp.MetadataKeyExtended {
-			return time.Parse(time.RFC3339, *metadata.Value)
-		}
-	}
-	return time.Parse(time.RFC3339, instance.CreationTimestamp)
 }
 
 func getShutdownAt(instance *compute.Instance) (time.Time, error) {

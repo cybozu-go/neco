@@ -35,8 +35,6 @@ at {{ .ShutdownAt }} -f $STARTUP_PATH
 const (
 	retryCount   = 300
 	imageLicense = "https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx"
-	// MetadataKeyExtended is the key for extended time in metadata
-	MetadataKeyExtended = "extended"
 	// MetadataKeyShutdownAt is the instance key to represents the time that this instance should be deleted.
 	MetadataKeyShutdownAt = "shutdown-at"
 	timeFormat            = "2006-01-02 15:04:05"
@@ -372,7 +370,7 @@ func (cc *ComputeClient) RunSetup(ctx context.Context, progFile, cfgFile string)
 	return c.Run()
 }
 
-// ExtendInstance extends 1 hour from now for given instance to prevent auto deletion
+// ExtendInstance extends 2 hours from now for given instance to prevent auto deletion
 func (cc *ComputeClient) ExtendInstance(ctx context.Context) error {
 	gcmd := cc.gCloudComputeInstances()
 	gcmd = append(gcmd, "add-metadata", cc.instance,

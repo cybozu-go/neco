@@ -14,8 +14,10 @@ GAE app
 
 `/shutdown` for `neco-test` project does:
 
-- Delete instances which are created more than 1 hour ago other than them which is extended by `necogcp neco-test extend`.
-- Set cron schedule to run above action every hour.
+- If instances have `shutdown-at` metadata and exceed that timestamp, delete them.
+- If instances do not have `shutdown-at` metadata and run longer than configured lifetime (`app.shutdown.expiration`), delete them.
+
+Cron is scheduled to run above actions every 5 minutes.
 
 Usage
 -----
@@ -42,7 +44,7 @@ make -f Makefile.gcp PROJECT=neco-test create
 necogcp neco-test create-image
 ```
 
-### Extend 1 hour from now to prevent auto deletion
+### Extend 2 hours from now to prevent auto deletion
 
 ```console
 necogcp neco-test extend INSTANCE_NAME
