@@ -11,14 +11,14 @@ import (
 
 // NodeVolumeSpec represents a Node's Volume specification in YAML
 type NodeVolumeSpec struct {
-	Kind          string `yaml:"kind"`
-	Name          string `yaml:"name"`
-	Image         string `yaml:"image,omitempty"`
-	UserData      string `yaml:"user-data,omitempty"`
-	NetworkConfig string `yaml:"network-config,omitempty"`
-	Size          string `yaml:"size,omitempty"`
-	Folder        string `yaml:"folder,omitempty"`
-	CopyOnWrite   bool   `yaml:"copy-on-write,omitempty"`
+	Kind          string `json:"kind"`
+	Name          string `json:"name"`
+	Image         string `json:"image,omitempty"`
+	UserData      string `json:"user-data,omitempty"`
+	NetworkConfig string `json:"network-config,omitempty"`
+	Size          string `json:"size,omitempty"`
+	Folder        string `json:"folder,omitempty"`
+	CopyOnWrite   bool   `json:"copy-on-write,omitempty"`
 }
 
 // NodeVolume defines the interface for Node volumes.

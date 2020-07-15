@@ -10,17 +10,17 @@ import (
 
 // DataFolderFileSpec represents a DataFolder's File definition in YAML
 type DataFolderFileSpec struct {
-	Name string `yaml:"name"`
-	URL  string `yaml:"url,omitempty"`
-	File string `yaml:"file,omitempty"`
+	Name string `json:"name"`
+	URL  string `json:"url,omitempty"`
+	File string `json:"file,omitempty"`
 }
 
 // DataFolderSpec represents a DataFolder definition in YAML
 type DataFolderSpec struct {
-	Kind  string               `yaml:"kind"`
-	Name  string               `yaml:"name"`
-	Dir   string               `yaml:"dir,omitempty"`
-	Files []DataFolderFileSpec `yaml:"files,omitempty"`
+	Kind  string               `json:"kind"`
+	Name  string               `json:"name"`
+	Dir   string               `json:"dir,omitempty"`
+	Files []DataFolderFileSpec `json:"files,omitempty"`
 }
 
 // DataFolder represents a data folder configuration

@@ -265,7 +265,7 @@ func (c *Cluster) Start(ctx context.Context, r *Runtime) error {
 		return err
 	}
 
-	bmcServer := newBMCServer(vms, c.Networks, nodeCh)
+	bmcServer := newBMCServer(vms, c.Networks, r.bmcCert, r.bmcKey, nodeCh)
 
 	env = well.NewEnvironment(ctx)
 	env.Go(bmcServer.handleNode)
