@@ -63,6 +63,10 @@ process (by sending a signal or Control-C).
 $ placemat [OPTIONS] YAML [YAML ...]
 
 Options:
+  -bmc-cert string
+        Certificate file for BMC HTTPS servers.
+  -bmc-key string
+        Key file for BMC HTTPS servers.
   -cache-dir string
         directory for cache data
   -data-dir string

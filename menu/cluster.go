@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/cybozu-go/placemat"
-	yaml "gopkg.in/yaml.v2" // intentionally used to generate YAML file for placemat
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -54,33 +54,52 @@ type cluster struct {
 func ExportCluster(w io.Writer, ta *TemplateArgs) error {
 	cluster := generateCluster(ta)
 
-	encoder := yaml.NewEncoder(w)
+	isFirstDocument := true
+	writeDocument := func(o interface{}) error {
+		if !isFirstDocument {
+			_, err := w.Write([]byte("---\n"))
+			if err != nil {
+				return err
+			}
+		}
+		isFirstDocument = false
+		data, err := yaml.Marshal(o)
+		if err != nil {
+			return err
+		}
+		_, err = w.Write(data)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
 	for _, n := range cluster.networks {
-		err := encoder.Encode(n)
+		err := writeDocument(n)
 		if err != nil {
 			return err
 		}
 	}
 	for _, i := range ta.Images {
-		err := encoder.Encode(i)
+		err := writeDocument(i)
 		if err != nil {
 			return err
 		}
 	}
 	for _, f := range cluster.dataFolders {
-		err := encoder.Encode(f)
+		err := writeDocument(f)
 		if err != nil {
 			return err
 		}
 	}
 	for _, n := range cluster.nodes {
-		err := encoder.Encode(n)
+		err := writeDocument(n)
 		if err != nil {
 			return err
 		}
 	}
 	for _, p := range cluster.pods {
-		err := encoder.Encode(p)
+		err := writeDocument(p)
 		if err != nil {
 			return err
 		}

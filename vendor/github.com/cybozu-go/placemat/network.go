@@ -24,11 +24,11 @@ const (
 
 // NetworkSpec represents a Network specification in YAML
 type NetworkSpec struct {
-	Kind    string `yaml:"kind"`
-	Name    string `yaml:"name"`
-	Type    string `yaml:"type"`
-	UseNAT  bool   `yaml:"use-nat"`
-	Address string `yaml:"address,omitempty"`
+	Kind    string `json:"kind"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	UseNAT  bool   `json:"use-nat"`
+	Address string `json:"address,omitempty"`
 }
 
 // Network represents a network configuration
@@ -136,7 +136,17 @@ func (n *Network) Create(ng *nameGenerator) error {
 		return err
 	}
 
+	cmds = [][]string{
+		{"iptables", "-t", "filter", "-A", "PLACEMAT", "-i", n.Name, "-j", "ACCEPT"},
+		{"iptables", "-t", "filter", "-A", "PLACEMAT", "-o", n.Name, "-j", "ACCEPT"},
+		{"ip6tables", "-t", "filter", "-A", "PLACEMAT", "-i", n.Name, "-j", "ACCEPT"},
+		{"ip6tables", "-t", "filter", "-A", "PLACEMAT", "-o", n.Name, "-j", "ACCEPT"},
+	}
+
 	if !n.UseNAT {
+		if n.Type == "internal" {
+			return execCommands(context.Background(), cmds)
+		}
 		return nil
 	}
 
@@ -156,14 +166,9 @@ func (n *Network) Create(ng *nameGenerator) error {
 		n.v6forwarded = true
 	}
 
-	cmds = [][]string{
-		{"iptables", "-t", "filter", "-A", "PLACEMAT", "-i", n.Name, "-j", "ACCEPT"},
-		{"iptables", "-t", "filter", "-A", "PLACEMAT", "-o", n.Name, "-j", "ACCEPT"},
-		{"ip6tables", "-t", "filter", "-A", "PLACEMAT", "-i", n.Name, "-j", "ACCEPT"},
-		{"ip6tables", "-t", "filter", "-A", "PLACEMAT", "-o", n.Name, "-j", "ACCEPT"},
-		{iptables(n.ip), "-t", "nat", "-A", "PLACEMAT", "-j", "MASQUERADE",
-			"--source", n.ipNet.String(), "!", "--destination", n.ipNet.String()},
-	}
+	cmds = append(cmds, []string{iptables(n.ip), "-t", "nat", "-A", "PLACEMAT", "-j", "MASQUERADE",
+		"--source", n.ipNet.String(), "!", "--destination", n.ipNet.String()})
+
 	return execCommands(context.Background(), cmds)
 }
 

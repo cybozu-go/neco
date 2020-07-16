@@ -8,11 +8,11 @@ import (
 
 // ImageSpec represents an Image specification in YAML.
 type ImageSpec struct {
-	Kind              string `yaml:"kind"`
-	Name              string `yaml:"name"`
-	URL               string `yaml:"url,omitempty"`
-	File              string `yaml:"file,omitempty"`
-	CompressionMethod string `yaml:"compression,omitempty"`
+	Kind              string `json:"kind"`
+	Name              string `json:"name"`
+	URL               string `json:"url,omitempty"`
+	File              string `json:"file,omitempty"`
+	CompressionMethod string `json:"compression,omitempty"`
 }
 
 // Image represents an image configuration

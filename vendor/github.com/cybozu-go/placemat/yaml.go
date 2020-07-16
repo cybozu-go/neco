@@ -5,12 +5,12 @@ import (
 	"errors"
 	"io"
 
-	yaml "gopkg.in/yaml.v2"
 	k8sYaml "k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/yaml"
 )
 
 type baseConfig struct {
-	Kind string `yaml:"kind"`
+	Kind string `json:"kind"`
 }
 
 // ReadYaml reads a yaml file and constructs Cluster

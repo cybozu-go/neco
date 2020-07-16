@@ -18,49 +18,49 @@ import (
 
 // PodInterfaceSpec represents a Pod's Interface definition in YAML
 type PodInterfaceSpec struct {
-	Network   string   `yaml:"network"`
-	Addresses []string `yaml:"addresses,omitempty"`
+	Network   string   `json:"network"`
+	Addresses []string `json:"addresses,omitempty"`
 }
 
 // PodVolumeSpec represents a Pod's Volume definition in YAML
 type PodVolumeSpec struct {
-	Name     string `yaml:"name"`
-	Kind     string `yaml:"kind"`
-	Folder   string `yaml:"folder,omitempty"`
-	ReadOnly bool   `yaml:"readonly"`
-	Mode     string `yaml:"mode,omitempty"`
-	UID      string `yaml:"uid,omitempty"`
-	GID      string `yaml:"gid,omitempty"`
+	Name     string `json:"name"`
+	Kind     string `json:"kind"`
+	Folder   string `json:"folder,omitempty"`
+	ReadOnly bool   `json:"readonly"`
+	Mode     string `json:"mode,omitempty"`
+	UID      string `json:"uid,omitempty"`
+	GID      string `json:"gid,omitempty"`
 }
 
 // PodAppMountSpec represents a App's Mount definition in YAML
 type PodAppMountSpec struct {
-	Volume string `yaml:"volume"`
-	Target string `yaml:"target"`
+	Volume string `json:"volume"`
+	Target string `json:"target"`
 }
 
 // PodAppSpec represents a Pod's App definition in YAML
 type PodAppSpec struct {
-	Name           string            `yaml:"name"`
-	Image          string            `yaml:"image"`
-	ReadOnlyRootfs bool              `yaml:"readonly-rootfs"`
-	User           string            `yaml:"user,omitempty"`
-	Group          string            `yaml:"group,omitempty"`
-	Exec           string            `yaml:"exec,omitempty"`
-	Args           []string          `yaml:"args,omitempty"`
-	Env            map[string]string `yaml:"env,omitempty"`
-	CapsRetain     []string          `yaml:"caps-retain,omitempty"`
-	Mount          []PodAppMountSpec `yaml:"mount,omitempty"`
+	Name           string            `json:"name"`
+	Image          string            `json:"image"`
+	ReadOnlyRootfs bool              `json:"readonly-rootfs"`
+	User           string            `json:"user,omitempty"`
+	Group          string            `json:"group,omitempty"`
+	Exec           string            `json:"exec,omitempty"`
+	Args           []string          `json:"args,omitempty"`
+	Env            map[string]string `json:"env,omitempty"`
+	CapsRetain     []string          `json:"caps-retain,omitempty"`
+	Mount          []PodAppMountSpec `json:"mount,omitempty"`
 }
 
 // PodSpec represents a Pod specification in YAML
 type PodSpec struct {
-	Kind        string             `yaml:"kind"`
-	Name        string             `yaml:"name"`
-	InitScripts []string           `yaml:"init-scripts,omitempty"`
-	Interfaces  []PodInterfaceSpec `yaml:"interfaces,omitempty"`
-	Volumes     []*PodVolumeSpec   `yaml:"volumes,omitempty"`
-	Apps        []*PodAppSpec      `yaml:"apps"`
+	Kind        string             `json:"kind"`
+	Name        string             `json:"name"`
+	InitScripts []string           `json:"init-scripts,omitempty"`
+	Interfaces  []PodInterfaceSpec `json:"interfaces,omitempty"`
+	Volumes     []*PodVolumeSpec   `json:"volumes,omitempty"`
+	Apps        []*PodAppSpec      `json:"apps"`
 }
 
 // PodVolume is an interface of a volume for Pod.
