@@ -27,7 +27,7 @@ Usage
     --target-urls https://example.org \
     --push-addr localhost:9091 \
     --watch-interval 10s \
-    --job-name job \
+    --instance 1.2.3.4 \
     --permit-insecure \
     --push-interval 10s
     ```
@@ -53,7 +53,7 @@ targetURLs:
 - https://foo.bar.baz
 watchInterval: 10s
 
+instance: 1.2.3.4
 pushAddr: localhost:9091
-jobName: job
 pushInterval: 10s
 ```
