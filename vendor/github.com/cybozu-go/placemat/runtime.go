@@ -44,10 +44,12 @@ type Runtime struct {
 	sharedDir    string
 	tempDir      string
 	listenAddr   string
+	bmcCert      string
+	bmcKey       string
 }
 
 // NewRuntime initializes a new Runtime.
-func NewRuntime(force, graphic, enableVirtFS bool, runDir, dataDir, cacheDir, sharedDir, listenAddr string) (*Runtime, error) {
+func NewRuntime(force, graphic, enableVirtFS bool, runDir, dataDir, cacheDir, sharedDir, listenAddr, bmcCert, bmcKey string) (*Runtime, error) {
 	r := &Runtime{
 		force:        force,
 		graphic:      graphic,
@@ -56,6 +58,8 @@ func NewRuntime(force, graphic, enableVirtFS bool, runDir, dataDir, cacheDir, sh
 		dataDir:      dataDir,
 		sharedDir:    sharedDir,
 		listenAddr:   listenAddr,
+		bmcCert:      bmcCert,
+		bmcKey:       bmcKey,
 	}
 
 	r.ng.prefix = "pm"
@@ -104,6 +108,23 @@ func NewRuntime(force, graphic, enableVirtFS bool, runDir, dataDir, cacheDir, sh
 		}
 	default:
 		return nil, err
+	}
+
+	for _, filename := range []string{bmcCert, bmcKey} {
+		if filename == "" {
+			continue
+		}
+		fi, err = os.Stat(filename)
+		switch {
+		case err == nil:
+			if fi.IsDir() {
+				return nil, errors.New(filename + " is not a normal file")
+			}
+		case os.IsNotExist(err):
+			return nil, errors.New(filename + " is not exist")
+		default:
+			return nil, err
+		}
 	}
 
 	volumeDir := filepath.Join(dataDir, "volumes")

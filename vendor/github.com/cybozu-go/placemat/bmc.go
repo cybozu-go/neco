@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"strconv"
 	"sync"
 
@@ -31,13 +32,18 @@ type bmcServer struct {
 
 	muSerials   sync.Mutex
 	nodeSerials map[string]string // key: address
+
+	cert string
+	key  string
 }
 
-func newBMCServer(vms map[string]*NodeVM, networks []*Network, ch <-chan bmcInfo) *bmcServer {
+func newBMCServer(vms map[string]*NodeVM, networks []*Network, cert, key string, ch <-chan bmcInfo) *bmcServer {
 	s := &bmcServer{
 		nodeCh:      ch,
 		nodeVMs:     vms,
 		nodeSerials: make(map[string]string),
+		cert:        cert,
+		key:         key,
 	}
 	for _, n := range networks {
 		if n.typ == NetworkBMC {
@@ -201,6 +207,22 @@ func (s *bmcServer) listenIPMI(ctx context.Context, addr string) error {
 	}
 }
 
+func (s *bmcServer) listenHTTPS(ctx context.Context, addr string) error {
+	serv := &well.HTTPServer{
+		Server: &http.Server{
+			Addr:    addr + ":443",
+			Handler: myHandler{},
+		},
+	}
+
+	err := serv.ListenAndServeTLS(s.cert, s.key)
+	if err != nil {
+		return err
+	}
+	<-ctx.Done()
+	return serv.Close()
+}
+
 func (s *bmcServer) handleNode(ctx context.Context) error {
 	env := well.NewEnvironment(ctx)
 
@@ -219,6 +241,16 @@ OUTER:
 			env.Go(func(ctx context.Context) error {
 				return s.listenIPMI(ctx, info.bmcAddress)
 			})
+
+			if s.cert != "" && s.key != "" {
+				log.Info("start HTTPS server for BMC", map[string]interface{}{
+					"cert": s.cert,
+					"key":  s.key,
+				})
+				env.Go(func(ctx context.Context) error {
+					return s.listenHTTPS(ctx, info.bmcAddress)
+				})
+			}
 		case <-ctx.Done():
 			break OUTER
 		}
@@ -302,4 +334,10 @@ func (g *guestConnection) Handle() {
 		}
 		g.sent = true
 	}
+}
+
+type myHandler struct{}
+
+func (b myHandler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprintln(w, "Hello I am BMC.")
 }
