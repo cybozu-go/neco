@@ -21,7 +21,7 @@ var pushConfigFile string
 var pushConfig struct {
 	TargetURLs     []string
 	WatchInterval  time.Duration
-	JobName        string
+	Instance       string
 	PushAddr       string
 	PushInterval   time.Duration
 	PermitInsecure bool
@@ -46,8 +46,8 @@ var pushCmd = &cobra.Command{
 			return errors.New(`required flag "target-urls" not set`)
 		}
 
-		if len(pushConfig.JobName) == 0 {
-			return errors.New(`required flag "job-name" not set`)
+		if len(pushConfig.Instance) == 0 {
+			return errors.New(`required flag "instance" not set`)
 		}
 
 		if len(pushConfig.PushAddr) == 0 {
@@ -80,6 +80,7 @@ var pushCmd = &cobra.Command{
 		client.Transport = ht
 
 		well.Go(watch.NewWatcher(
+			pushConfig.Instance,
 			pushConfig.TargetURLs,
 			pushConfig.WatchInterval,
 			&well.HTTPClient{Client: client},
@@ -88,7 +89,7 @@ var pushCmd = &cobra.Command{
 			tick := time.NewTicker(pushConfig.PushInterval)
 			defer tick.Stop()
 
-			pusher := push.New(pushConfig.PushAddr, pushConfig.JobName).Gatherer(registry)
+			pusher := push.New(pushConfig.PushAddr, "ingress-watcher").Gatherer(registry)
 			for {
 				select {
 				case <-ctx.Done():
@@ -123,7 +124,7 @@ func init() {
 	fs.DurationVarP(&pushConfig.WatchInterval, "watch-interval", "", 5*time.Second, "Watching interval.")
 	fs.StringVarP(&pushConfigFile, "config", "", "", "Configuration YAML file path.")
 	fs.StringVarP(&pushConfig.PushAddr, "push-addr", "", "", "Pushgateway address.")
-	fs.StringVarP(&pushConfig.JobName, "job-name", "", "", "Job name.")
+	fs.StringVarP(&pushConfig.Instance, "instance", "", "", "Instance name.")
 	fs.DurationVarP(&pushConfig.PushInterval, "push-interval", "", 10*time.Second, "Push interval.")
 	fs.BoolVar(&exportConfig.PermitInsecure, "permit-insecure", false, "Permit insecure access to targets.")
 
