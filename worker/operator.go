@@ -150,7 +150,8 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 func (o *operator) restoreService(ctx context.Context, svc string) error {
 	_, err := os.Stat(neco.ServiceFile(svc))
 	if err != nil {
-		return nil // return nil
+		// lint:ignore nilerr  Do nothing if service file does not exist.
+		return nil
 	}
 
 	return neco.StartService(ctx, svc)
@@ -159,7 +160,8 @@ func (o *operator) restoreService(ctx context.Context, svc string) error {
 func (o *operator) stopService(ctx context.Context, svc string) error {
 	_, err := os.Stat(neco.ServiceFile(svc))
 	if err != nil {
-		return nil // return nil
+		// lint:ignore nilerr  Do nothing if service file does not exist.
+		return nil
 	}
 
 	return neco.StopService(ctx, svc)
