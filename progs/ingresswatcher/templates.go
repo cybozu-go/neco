@@ -11,7 +11,7 @@ targetURLs:
 {{- end }}
 watchInterval: 10s
 
+instance: {{ .Instance }}
 pushAddr: {{ .PushAddress }}
-jobName: ingress-watcher-{{ .LRN }}
 pushInterval: 10s
 `))

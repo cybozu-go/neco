@@ -53,7 +53,7 @@ require (
 	github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 // indirect
 	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/client_model v0.2.0
-	github.com/prometheus/common v0.10.0 // indirect
+	github.com/prometheus/common v0.10.0
 	github.com/prometheus/procfs v0.1.3 // indirect
 	github.com/prometheus/prom2json v1.1.0
 	github.com/rakyll/statik v0.1.5
