@@ -43,7 +43,7 @@ Synopsis
 
 * `necogcp neco-test extend INSTANCE_NAME`
 
-    Extend 1 hours given instance on the neco-test project to prevent deleted by GAE app.
+    Extend 2 hours given instance on the neco-test project to prevent deleted by GAE app.
 
 ### Miscellaneous
 
