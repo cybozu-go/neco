@@ -107,7 +107,8 @@ func (c *Controller) run(ctx context.Context) error {
 		log.Warn("failed to get sabakan machines", map[string]interface{}{
 			log.FnError: err.Error(),
 		})
-		return nil // return nil
+		// lint:ignore nilerr  RunPeriodically tries this again.
+		return nil
 	}
 
 	if sm == nil || len(sm.SearchMachines) == 0 {
@@ -120,7 +121,8 @@ func (c *Controller) run(ctx context.Context) error {
 		log.Warn("failed to get serf members", map[string]interface{}{
 			log.FnError: err.Error(),
 		})
-		return nil // return nil
+		// lint:ignore nilerr  RunPeriodically tries this again.
+		return nil
 	}
 
 	// Construct a slice of machineStateSource
