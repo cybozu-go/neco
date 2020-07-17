@@ -11,8 +11,8 @@ import (
 
 var necotestExtendCmd = &cobra.Command{
 	Use:   "extend INSTANCE_NAME",
-	Short: "Extend 1 hour given instance on neco-test to prevent auto deletion",
-	Long:  `Extend 1 hour given instance on neco-test to prevent auto deletion.`,
+	Short: "Extend 2 hours given instance on neco-test to prevent auto deletion",
+	Long:  `Extend 2 hours given instance on neco-test to prevent auto deletion.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		necotestCfg := gcp.NecoTestConfig()
