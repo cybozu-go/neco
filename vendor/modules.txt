@@ -159,7 +159,7 @@ github.com/cybozu-go/etcdutil
 github.com/cybozu-go/log
 # github.com/cybozu-go/netutil v1.2.0
 github.com/cybozu-go/netutil
-# github.com/cybozu-go/placemat v1.4.0
+# github.com/cybozu-go/placemat v1.5.0
 github.com/cybozu-go/placemat
 github.com/cybozu-go/placemat/web
 # github.com/cybozu-go/sabakan/v2 v2.4.8
