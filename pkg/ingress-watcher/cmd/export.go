@@ -81,7 +81,6 @@ var exportCmd = &cobra.Command{
 		client.Transport = ht
 
 		well.Go(watch.NewWatcher(
-			"",
 			exportConfig.TargetURLs,
 			exportConfig.WatchInterval,
 			&well.HTTPClient{Client: client},

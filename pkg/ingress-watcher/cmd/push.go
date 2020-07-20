@@ -80,7 +80,6 @@ var pushCmd = &cobra.Command{
 		client.Transport = ht
 
 		well.Go(watch.NewWatcher(
-			pushConfig.Instance,
 			pushConfig.TargetURLs,
 			pushConfig.WatchInterval,
 			&well.HTTPClient{Client: client},
@@ -89,7 +88,7 @@ var pushCmd = &cobra.Command{
 			tick := time.NewTicker(pushConfig.PushInterval)
 			defer tick.Stop()
 
-			pusher := push.New(pushConfig.PushAddr, "ingress-watcher").Gatherer(registry)
+			pusher := push.New(pushConfig.PushAddr, "ingress-watcher").Grouping("instance", pushConfig.Instance).Gatherer(registry)
 			for {
 				select {
 				case <-ctx.Done():
