@@ -75,6 +75,7 @@ func (w *Watcher) Run(ctx context.Context) error {
 						metrics.HTTPGetSuccessfulTotal.WithLabelValues(strconv.Itoa(res.StatusCode), t).Inc()
 						res.Body.Close()
 					}
+					metrics.UpdateTime.Set(float64(time.Now().Unix()))
 				}
 			}
 		})

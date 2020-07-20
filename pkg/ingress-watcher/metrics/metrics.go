@@ -17,6 +17,15 @@ var WatchInterval = prometheus.NewGauge(
 	},
 )
 
+// UpdateTime returns the last update time of watched result.
+var UpdateTime = prometheus.NewGauge(
+	prometheus.GaugeOpts{
+		Namespace: namespace,
+		Name:      "update_time",
+		Help:      "last update time of watched result.",
+	},
+)
+
 // HTTPGetTotal returns the total successful count of http get.
 var HTTPGetTotal = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
