@@ -187,10 +187,20 @@ func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
 	if err != nil {
 		return err
 	}
+
+	nRetries := 0
 	for {
 		log.Info("waiting for all servers to restart vault", nil)
 		finished, err := st.GetFinished(ctx, stageAfterRestart)
 		if err != nil {
+			if nRetries < 10 {
+				log.Warn("checking finish status failed", map[string]interface{}{
+					log.FnError: err,
+				})
+				time.Sleep(10 * time.Second)
+				nRetries++
+				continue
+			}
 			return err
 		}
 		if len(finished) == len(lrns) {
