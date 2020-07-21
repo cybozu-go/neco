@@ -37,7 +37,7 @@ func TestCKESetup() {
 		execSafeAt(bootServers[0], "ckecli", "constraints", "set", "control-plane-count", "3")
 		execSafeAt(bootServers[0], "ckecli", "constraints", "set", "minimum-workers", "2")
 		execSafeAt(bootServers[0], "cp", "/usr/share/neco/cke-template.yml", "/tmp")
-		execSafeAt(bootServers[0], "sed", "-i", "'s/#REMOVEME //g'", "/tmp/cke-template.yml")
+		execSafeAt(bootServers[0], "sed", "-i", "'s/#GCPONLY //g'", "/tmp/cke-template.yml")
 		execSafeAt(bootServers[0], "ckecli", "sabakan", "set-template", "/tmp/cke-template.yml")
 		execSafeAt(bootServers[0], "ckecli", "sabakan", "set-url", "http://localhost:10080")
 

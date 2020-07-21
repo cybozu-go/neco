@@ -106,5 +106,5 @@ options:
       - "--listen-metrics-urls=http://0.0.0.0:2381"
       # 8 * 1024 * 1024 * 1024 = 8589934592 = 8GB
       - "--quota-backend-bytes=8589934592"
-      #REMOVEME - "--heartbeat-interval=500"
-      #REMOVEME - "--election-timeout=2500"
+      #GCPONLY - "--heartbeat-interval=500"
+      #GCPONLY - "--election-timeout=2500"
