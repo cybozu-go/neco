@@ -107,7 +107,6 @@ func TestWatcherRun(t *testing.T) {
 
 			// create watcher and run
 			w := NewWatcher(
-				"1.2.3.4",
 				tt.fields.targetURLs,
 				tt.fields.interval,
 				&well.HTTPClient{
@@ -137,12 +136,6 @@ func TestWatcherRun(t *testing.T) {
 			mfMapWithPath := make(map[metricKey]*dto.Metric)
 			mfMapWithoutPath := make(map[string]*dto.Metric)
 			for _, mf := range metricsFamily {
-				for _, met := range mf.Metric {
-					inst := labelToMap(met.Label)["instance"]
-					if inst != "1.2.3.4" {
-						t.Errorf("%s: metric %s has wrong instance label: %s", tt.name, *mf.Name, inst)
-					}
-				}
 				if containsSliceString(namesWithPath, *mf.Name) {
 					if len(mf.Metric) != len(tt.fields.targetURLs) {
 						t.Fatalf("%s: metric %s should contain only one element.", tt.name, *mf.Name)
