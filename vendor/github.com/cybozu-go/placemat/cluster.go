@@ -180,13 +180,7 @@ func (c *Cluster) Start(ctx context.Context, r *Runtime) error {
 		}
 	}
 
-	err := mount("tmpfs", "/run", "rw")
-	if err != nil {
-		return err
-	}
-	defer umount("/run")
-
-	err = createNatRules()
+	err := createNatRules()
 	if err != nil {
 		return err
 	}
@@ -266,6 +260,12 @@ func (c *Cluster) Start(ctx context.Context, r *Runtime) error {
 	}
 
 	bmcServer := newBMCServer(vms, c.Networks, r.bmcCert, r.bmcKey, nodeCh)
+
+	err = mount("tmpfs", "/run", "rw")
+	if err != nil {
+		return err
+	}
+	defer umount("/run")
 
 	env = well.NewEnvironment(ctx)
 	env.Go(bmcServer.handleNode)

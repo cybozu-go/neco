@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.5.0] - 2020-07-20
+
+### Added
+
+- Add cache mode parameter for node volume devices (#113).
+- Support creating node volume devices using raw format files (#113).
+- Support creating node volume devices using LVs on host machine (#113).
+
 ## [1.4.0] - 2019-12-09
 
 ### Added
@@ -105,7 +113,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Many things.  See git log.
 
-[Unreleased]: https://github.com/cybozu-go/placemat/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/cybozu-go/placemat/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/cybozu-go/placemat/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/cybozu-go/placemat/compare/v1.3.9...v1.4.0
 [1.3.9]: https://github.com/cybozu-go/placemat/compare/v1.3.8...v1.3.9
 [1.3.8]: https://github.com/cybozu-go/placemat/compare/v1.3.7...v1.3.8
