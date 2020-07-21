@@ -15,7 +15,7 @@ require (
 	github.com/cybozu-go/etcdutil v1.3.4
 	github.com/cybozu-go/log v1.6.0
 	github.com/cybozu-go/netutil v1.2.0
-	github.com/cybozu-go/placemat v1.4.0
+	github.com/cybozu-go/placemat v1.5.0
 	github.com/cybozu-go/sabakan/v2 v2.4.8
 	github.com/cybozu-go/well v1.10.0
 	github.com/docker/docker-credential-helpers v0.6.0 // indirect
@@ -80,7 +80,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
 	golang.org/x/sys v0.0.0-20200602225109-6fdc65e7d980 // indirect
-	golang.org/x/text v0.3.3 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	golang.org/x/tools v0.0.0-20200513201620-d5fe73897c97 // indirect
 	google.golang.org/api v0.13.0

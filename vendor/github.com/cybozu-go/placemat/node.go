@@ -53,22 +53,49 @@ type Node struct {
 }
 
 func createNodeVolume(spec NodeVolumeSpec) (NodeVolume, error) {
+	var cache string
+	switch spec.Cache {
+	case "":
+		cache = nodeVolumeCacheNone
+	case nodeVolumeCacheWriteback, nodeVolumeCacheNone, nodeVolumeCacheWritethrough, nodeVolumeCacheDirectSync, nodeVolumeCacheUnsafe:
+		cache = spec.Cache
+	default:
+		return nil, errors.New("invalid cache type for volume")
+	}
+
 	switch spec.Kind {
 	case "image":
 		if spec.Image == "" {
 			return nil, errors.New("image volume must specify an image name")
 		}
-		return NewImageVolume(spec.Name, spec.Image, spec.CopyOnWrite), nil
+		return NewImageVolume(spec.Name, cache, spec.Image, spec.CopyOnWrite), nil
 	case "localds":
 		if spec.UserData == "" {
 			return nil, errors.New("localds volume must specify user-data")
 		}
-		return NewLocalDSVolume(spec.Name, spec.UserData, spec.NetworkConfig), nil
+		return NewLocalDSVolume(spec.Name, cache, spec.UserData, spec.NetworkConfig), nil
 	case "raw":
 		if spec.Size == "" {
 			return nil, errors.New("raw volume must specify size")
 		}
-		return NewRawVolume(spec.Name, spec.Size), nil
+		var format string
+		switch spec.Format {
+		case "":
+			format = nodeVolumeFormatQcow2
+		case nodeVolumeFormatQcow2, nodeVolumeFormatRaw:
+			format = spec.Format
+		default:
+			return nil, errors.New("invalid format for raw volume")
+		}
+		return NewRawVolume(spec.Name, cache, spec.Size, format), nil
+	case "lv":
+		if spec.Size == "" {
+			return nil, errors.New("lv volume must specify size")
+		}
+		if spec.VG == "" {
+			return nil, errors.New("lv volume must specify vg")
+		}
+		return NewLVVolume(spec.Name, cache, spec.Size, spec.VG), nil
 	case "vvfat":
 		if spec.Folder == "" {
 			return nil, errors.New("VVFAT volume must specify a folder name")

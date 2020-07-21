@@ -2,9 +2,12 @@ package placemat
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/cybozu-go/well"
 )
@@ -19,6 +22,9 @@ type NodeVolumeSpec struct {
 	Size          string `json:"size,omitempty"`
 	Folder        string `json:"folder,omitempty"`
 	CopyOnWrite   bool   `json:"copy-on-write,omitempty"`
+	Cache         string `json:"cache,omitempty"`
+	Format        string `json:"format,omitempty"`
+	VG            string `json:"vg,omitempty"`
 }
 
 // NodeVolume defines the interface for Node volumes.
@@ -29,8 +35,20 @@ type NodeVolume interface {
 	Create(context.Context, string) ([]string, error)
 }
 
+const (
+	nodeVolumeCacheWriteback    = "writeback"
+	nodeVolumeCacheNone         = "none"
+	nodeVolumeCacheWritethrough = "writethrough"
+	nodeVolumeCacheDirectSync   = "directsync"
+	nodeVolumeCacheUnsafe       = "unsafe"
+
+	nodeVolumeFormatQcow2 = "qcow2"
+	nodeVolumeFormatRaw   = "raw"
+)
+
 type baseVolume struct {
-	name string
+	name  string
+	cache string
 }
 
 func (v baseVolume) Name() string {
@@ -44,7 +62,7 @@ func volumePath(dataDir, name string) string {
 func (v baseVolume) qemuArgs(p string) []string {
 	return []string{
 		"-drive",
-		"if=virtio,cache=none,aio=native,file=" + p,
+		fmt.Sprintf("if=virtio,cache=%s,aio=native,file=%s", v.cache, p),
 	}
 }
 
@@ -56,9 +74,9 @@ type imageVolume struct {
 }
 
 // NewImageVolume creates a volume for type "image".
-func NewImageVolume(name string, imageName string, cow bool) NodeVolume {
+func NewImageVolume(name string, cache string, imageName string, cow bool) NodeVolume {
 	return &imageVolume{
-		baseVolume:  baseVolume{name: name},
+		baseVolume:  baseVolume{name: name, cache: cache},
 		imageName:   imageName,
 		copyOnWrite: cow,
 	}
@@ -149,9 +167,9 @@ type localDSVolume struct {
 }
 
 // NewLocalDSVolume creates a volume for type "localds".
-func NewLocalDSVolume(name string, u, n string) NodeVolume {
+func NewLocalDSVolume(name, cache string, u, n string) NodeVolume {
 	return &localDSVolume{
-		baseVolume:    baseVolume{name: name},
+		baseVolume:    baseVolume{name: name, cache: cache},
 		userData:      u,
 		networkConfig: n,
 	}
@@ -192,14 +210,16 @@ func (v *localDSVolume) Create(ctx context.Context, dataDir string) ([]string, e
 
 type rawVolume struct {
 	baseVolume
-	size string
+	size   string
+	format string
 }
 
 // NewRawVolume creates a volume for type "raw".
-func NewRawVolume(name string, size string) NodeVolume {
+func NewRawVolume(name string, cache string, size, format string) NodeVolume {
 	return &rawVolume{
-		baseVolume: baseVolume{name: name},
+		baseVolume: baseVolume{name: name, cache: cache},
 		size:       size,
+		format:     format,
 	}
 }
 
@@ -216,7 +236,7 @@ func (v *rawVolume) Create(ctx context.Context, dataDir string) ([]string, error
 	_, err := os.Stat(p)
 	switch {
 	case os.IsNotExist(err):
-		err = well.CommandContext(ctx, "qemu-img", "create", "-f", "qcow2", p, v.size).Run()
+		err = well.CommandContext(ctx, "qemu-img", "create", "-f", v.format, p, v.size).Run()
 		if err != nil {
 			return nil, err
 		}
@@ -225,6 +245,74 @@ func (v *rawVolume) Create(ctx context.Context, dataDir string) ([]string, error
 		return nil, err
 	}
 	return v.qemuArgs(p), nil
+}
+
+func (v *rawVolume) qemuArgs(p string) []string {
+	return []string{
+		"-drive",
+		fmt.Sprintf("if=virtio,cache=%s,aio=native,format=%s,file=%s", v.cache, v.format, p),
+	}
+}
+
+type lvVolume struct {
+	baseVolume
+	size string
+	vg   string
+}
+
+// NewLVVolume creates a volume for type "lv".
+func NewLVVolume(name string, cache string, size, vg string) NodeVolume {
+	return &lvVolume{
+		baseVolume: baseVolume{name: name, cache: cache},
+		size:       size,
+		vg:         vg,
+	}
+}
+
+func (v lvVolume) Kind() string {
+	return "lv"
+}
+
+func (v *lvVolume) Resolve(c *Cluster) error {
+	return nil
+}
+
+func (v *lvVolume) Create(ctx context.Context, dataDir string) ([]string, error) {
+	nodeName := filepath.Base(dataDir)
+	lvName := nodeName + "." + v.name
+
+	output, err := exec.Command("lvs", "--noheadings", "--unbuffered", "-o", "lv_name", v.vg).Output()
+	if err != nil {
+		return nil, err
+	}
+
+	found := false
+	for _, line := range strings.Split(string(output), "\n") {
+		if strings.TrimSpace(line) == lvName {
+			found = true
+		}
+	}
+	if !found {
+		err := exec.Command("lvcreate", "-n", lvName, "-L", v.size, v.vg).Run()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	output, err = exec.Command("lvs", "--noheadings", "--unbuffered", "-o", "lv_path", v.vg+"/"+lvName).Output()
+	if err != nil {
+		return nil, err
+	}
+	p := strings.TrimSpace(string(output))
+
+	return v.qemuArgs(p), nil
+}
+
+func (v *lvVolume) qemuArgs(p string) []string {
+	return []string{
+		"-drive",
+		fmt.Sprintf("if=virtio,cache=%s,aio=native,format=raw,file=%s", v.cache, p),
+	}
 }
 
 type vvfatVolume struct {
