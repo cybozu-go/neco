@@ -29,6 +29,7 @@ func init() {
 	registry = prometheus.NewRegistry()
 	registry.MustRegister(
 		metrics.WatchInterval,
+		metrics.UpdateTime,
 		metrics.HTTPGetTotal,
 		metrics.HTTPGetSuccessfulTotal,
 		metrics.HTTPGetFailTotal,

@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/model"
 )
 
 const (
@@ -10,13 +9,21 @@ const (
 )
 
 // WatchInterval returns the interval of watch.
-var WatchInterval = prometheus.NewGaugeVec(
+var WatchInterval = prometheus.NewGauge(
 	prometheus.GaugeOpts{
 		Namespace: namespace,
 		Name:      "watch_interval",
 		Help:      "interval of watch.",
 	},
-	[]string{model.InstanceLabel},
+)
+
+// UpdateTime returns the last update time of watched result.
+var UpdateTime = prometheus.NewGauge(
+	prometheus.GaugeOpts{
+		Namespace: namespace,
+		Name:      "update_time",
+		Help:      "last update time of watched result.",
+	},
 )
 
 // HTTPGetTotal returns the total successful count of http get.
@@ -26,7 +33,7 @@ var HTTPGetTotal = prometheus.NewCounterVec(
 		Name:      "http_get_total",
 		Help:      "The total count of http get.",
 	},
-	[]string{"path", model.InstanceLabel},
+	[]string{"path"},
 )
 
 // HTTPGetSuccessfulTotal returns the total successful count of http get.
@@ -36,7 +43,7 @@ var HTTPGetSuccessfulTotal = prometheus.NewCounterVec(
 		Name:      "http_get_successful_total",
 		Help:      "The total successful count of http get.",
 	},
-	[]string{"code", "path", model.InstanceLabel},
+	[]string{"code", "path"},
 )
 
 // HTTPGetFailTotal returns the total fail count of http get.
@@ -46,5 +53,5 @@ var HTTPGetFailTotal = prometheus.NewCounterVec(
 		Name:      "http_get_fail_total",
 		Help:      "The total fail count of http get.",
 	},
-	[]string{"path", model.InstanceLabel},
+	[]string{"path"},
 )
