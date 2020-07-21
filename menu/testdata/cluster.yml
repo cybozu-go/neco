@@ -173,7 +173,8 @@ name: boot-0
 smbios:
   serial: fb8f2417d0b4db30050719c31ce02a2e8141bbd8
 volumes:
-- copy-on-write: true
+- cache: writeback
+  copy-on-write: true
   image: ubuntu-cloud-image
   kind: image
   name: root
@@ -197,10 +198,12 @@ smbios:
 tpm: true
 uefi: true
 volumes:
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data1
   size: 30G
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data2
   size: 30G
 - copy-on-write: true
@@ -220,10 +223,12 @@ smbios:
 tpm: true
 uefi: true
 volumes:
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data1
   size: 30G
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data2
   size: 30G
 - copy-on-write: true
@@ -241,7 +246,8 @@ name: boot-1
 smbios:
   serial: fa362303b7af8c4291773ab496aaca16726beaa3
 volumes:
-- copy-on-write: true
+- cache: writeback
+  copy-on-write: true
   image: ubuntu-cloud-image
   kind: image
   name: root
@@ -265,10 +271,12 @@ smbios:
 tpm: true
 uefi: true
 volumes:
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data1
   size: 30G
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data2
   size: 30G
 - copy-on-write: true
@@ -288,10 +296,12 @@ smbios:
 tpm: true
 uefi: true
 volumes:
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data1
   size: 30G
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data2
   size: 30G
 - copy-on-write: true
@@ -310,16 +320,20 @@ smbios:
   serial: 1145129a085ecf521ab524028302a6b4a4e49a00
 tpm: true
 volumes:
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data1
   size: 30G
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data2
   size: 30G
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data3
   size: 30G
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data4
   size: 30G
 - copy-on-write: true
@@ -338,16 +352,20 @@ smbios:
   serial: 628c8c360d0113de66db14a225affcb85fb2a27f
 tpm: true
 volumes:
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data1
   size: 30G
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data2
   size: 30G
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data3
   size: 30G
-- kind: raw
+- cache: writeback
+  kind: raw
   name: data4
   size: 30G
 - copy-on-write: true

@@ -200,6 +200,7 @@ func bootNode(rack *Rack, resource *VMResource) *placemat.NodeSpec {
 				Name:        "root",
 				Image:       resource.Image,
 				CopyOnWrite: true,
+				Cache:       "writeback",
 			},
 		}
 		if resource.CloudInitTemplate != "" {
@@ -258,6 +259,7 @@ func emptyNode(rackName, rackShortName, nodeName, serial string, disks int, reso
 		volumes[i].Kind = "raw"
 		volumes[i].Name = fmt.Sprintf("data%d", i+1)
 		volumes[i].Size = "30G"
+		volumes[i].Cache = "writeback"
 	}
 
 	for i, dataImg := range resource.Data {
