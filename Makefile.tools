@@ -4,7 +4,7 @@ MAKEFLAGS += -j$(shell nproc)
 
 ### for containerd
 CONTAINERD_VERSION = 1.3.2
-CURL=curl -Lsf
+CURL=curl -Lsf --retry 3
 
 ### for node_exporter
 NODE_EXPORTER_VERSION = 0.18.1
