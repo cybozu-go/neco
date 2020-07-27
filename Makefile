@@ -12,7 +12,7 @@ GOTAGS = $(TAGS) containers_image_openpgp containers_image_ostree_stub
 export GOFLAGS
 
 ### for debian package
-PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev libostree-dev libgpgme-dev libgpgme11 unzip zip
+PACKAGES := fakeroot btrfs-tools pkg-config libdevmapper-dev libostree-dev libgpgme-dev libgpgme11 unzip zip wget
 VERSION = 0.0.1-master
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
