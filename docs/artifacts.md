@@ -3,15 +3,15 @@ Artifacts
 
 [Artifacts](../artifacts.go) is the collection of components tested in [dctest](../dctest/), which consists of container images, debian package, and CoreOS image.
 
-There are two artifacts files.
+There are two artifacts files.  When generating neco binaries and the neco deb package, `artifacts.go` is used
+in default.  A CI job uses `artifacts_release.go` by specifying `TAGS=release`
+for `make` command after checking-out the `release` branch.
 
 - [artifacts.go](../artifacts.go)
 
     This file describes artifacts to be tested in development.
-    It is normally updated with `generate-artifacts` command.
-    **PLEASE DO NOT EDIT MANUALLY** if you are trying to update components in staging or production environment.
-
-    You may test different combination of components by editing it manually.
+    It should be updated with `generate-artifacts` command.
+    You may edit the file **ONLY IF** you would like to test different combination of components.
 
 - [artifacts_release.go](../artifacts.go)
 
@@ -22,10 +22,6 @@ There are two artifacts files.
     merge conflicts in CI flow.
 
     This file exists only in the `release` branch.
-
-When generating neco binaries and the neco deb package, `artifacts.go` is used
-in default.  A CI job uses `artifacts_release.go` by specifying `TAGS=release`
-for `make` command after checking-out the `release` branch.
 
 ## How to handle prerelease versions
 
