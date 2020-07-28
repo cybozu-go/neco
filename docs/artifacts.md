@@ -4,7 +4,7 @@ Artifacts
 [Artifacts](../artifacts.go) is the collection of components tested in [dctest](../dctest/), which consists of container images, debian package, and CoreOS image.
 
 There are two artifacts files.  When generating neco binaries and the neco deb package, `artifacts.go` is used
-in default.  A CI job uses `artifacts_release.go` by specifying `TAGS=release`
+by default.  `artifacts_release.go` is used only when `release` build tag is given.
 for `make` command after checking-out the `release` branch.
 
 - [artifacts.go](../artifacts.go)
