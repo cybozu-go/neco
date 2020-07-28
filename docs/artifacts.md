@@ -5,7 +5,6 @@ Artifacts
 
 There are two artifacts files.  When generating neco binaries and the neco deb package, `artifacts.go` is used
 by default.  `artifacts_release.go` is used only when `release` build tag is given.
-for `make` command after checking-out the `release` branch.
 
 - [artifacts.go](../artifacts.go)
 
