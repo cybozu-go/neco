@@ -103,11 +103,10 @@ $(OP_DEB): setup-files-for-deb
 		cp $(BINDIR)/$$BINNAME $(OPBINDIR) ; \
 		cp -r $(DOCDIR)/$$BINNAME $(OPDOCDIR) ; \
 	done
-	$(MAKE) -f Makefile.tools SUDO=$(SUDO) BINDIR=$(OPBINDIR) DOCDIR=$(OPDOCDIR) teleport
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(OPWORKDIR) $(DEST)
 
 $(OP_ZIP): check-tools
-	cd $(WORKDIR)/windows/ && zip -r $(abspath .)/$@ *
+	cd $(WINDOWS_ZIPDIR) && zip -r $(abspath .)/$@ *
 
 gcp-deb: setup-files-for-deb
 	cp dctest/passwd.yml $(SHAREDIR)/ignitions/common/passwd.yml
