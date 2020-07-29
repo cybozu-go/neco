@@ -35,6 +35,18 @@ TELEPORT_VERSION = 4.2.10
 
 all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
 
+check-all:
+	# check all tools are set up
+	if [ ! -e $(DOCDIR)/node_exporter/LICENSE ]; then exit 1; fi
+	if [ ! -e $(DOCDIR)/containerd/LICENSE ]; then exit 1; fi
+	if [ ! -e $(DOCDIR)/crictl/LICENSE ]; then exit 1; fi
+	if [ ! -e $(DOCDIR)/argocd/LICENSE ]; then exit 1; fi
+	if [ ! -e $(DOCDIR)/kubectl/LICENSE ]; then exit 1; fi
+	if [ ! -e $(DOCDIR)/lvmd/LICENSE ]; then exit 1; fi
+	if [ ! -e $(DOCDIR)/stern/LICENSE ]; then exit 1; fi
+	if [ ! -e $(DOCDIR)/kustomize/LICENSE ]; then exit 1; fi
+	if [ ! -e $(DOCDIR)/teleport/LICENSE ]; then exit 1; fi
+
 node_exporter:
 	rm -f $(LIBEXECDIR)/node_exporter
 	rm -rf $(BUILDDIR)/node_exporter
@@ -83,9 +95,11 @@ kubectl:
 	cp $(DOCDIR)/$@/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
 lvmd:
-	mkdir -p $(LIBEXECDIR)
+	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
 	$(CURL) https://github.com/cybozu-go/topolvm/releases/download/v$(TOPOLVM_VERSION)/lvmd-$(TOPOLVM_VERSION).tar.gz | \
 	tar xzf - -C $(LIBEXECDIR)
+	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/topolvm/topolvm/v$(TOPOLVM_VERSION)/LICENSE
+	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/topolvm/topolvm/v$(TOPOLVM_VERSION)/README.md
 
 stern:
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
@@ -117,6 +131,6 @@ teleport:
 	cp $(DOCDIR)/$@/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 
 clean:
-	rm -rf $(BUILDDIR)
+	rm -rf $(BUILDDIR) $(WORKDIR)
 
-.PHONY:	all clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
+.PHONY:	all check-all clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
