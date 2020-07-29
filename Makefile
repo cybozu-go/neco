@@ -76,9 +76,12 @@ deb: $(DEB)
 tools: $(OP_DEB) $(OP_ZIP)
 
 setup-tools:
-	$(MAKE) -f Makefile.tools SUDO=$(SUDO)
+	$(MAKE) -f Makefile.tools
 
-setup-files-for-deb: setup-tools
+check-tools:
+	$(MAKE) -f Makefile.tools check-all
+
+setup-files-for-deb: check-tools
 	cp -r debian/* $(WORKDIR)
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
@@ -103,7 +106,7 @@ $(OP_DEB): setup-files-for-deb
 	$(MAKE) -f Makefile.tools SUDO=$(SUDO) BINDIR=$(OPBINDIR) DOCDIR=$(OPDOCDIR) teleport
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(OPWORKDIR) $(DEST)
 
-$(OP_ZIP): setup-tools
+$(OP_ZIP): check-tools
 	cd $(WORKDIR)/windows/ && zip -r $(abspath .)/$@ *
 
 gcp-deb: setup-files-for-deb
@@ -126,4 +129,4 @@ clean:
 	$(MAKE) -f Makefile.tools clean
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OP_DEB) $(OP_ZIP)
 
-.PHONY:	all start-etcd stop-etcd test mod deb setup-tools setup-files-for-deb gcp-deb necogcp git-neco setup clean tools
+.PHONY:	all start-etcd stop-etcd test mod deb setup-tools check-tools setup-files-for-deb gcp-deb necogcp git-neco setup clean tools

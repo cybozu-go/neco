@@ -96,6 +96,7 @@ jobs:
       - checkout
       - run: time make SUDO="" setup
       - run: time make test
+      - run: time make setup-tools
       - run: time make deb SUDO="" FAKEROOT=
       - run: time make tools SUDO="" FAKEROOT=
       - run:
@@ -120,11 +121,13 @@ jobs:
           name: Build deb package
           command: |
             VERSION=$(echo $CIRCLE_TAG | sed 's/^release-//')
+            time make setup-tools
             time make deb SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
       - run:
           name: Build neco-operation-cli packages
           command: |
             VERSION=$(echo $CIRCLE_TAG | sed 's/^release-//')
+            time make setup-tools
             time make tools SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
       - persist_to_workspace:
           root: .
