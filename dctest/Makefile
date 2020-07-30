@@ -93,7 +93,7 @@ $(BMC_USER): bmc-user.json $(DHCP_JSON)
 # Other contents
 $(GENERATED_DEB):
 	mkdir -p $(OUTPUT)
-	cd ..; $(MAKE) clean; time -p $(MAKE) gcp-deb VERSION=$(DEBVER) DEST=$(abspath $(OUTPUT)) TAGS=$(TAGS)
+	cd ..; $(MAKE) clean; time -p $(MAKE) setup-tools; time -p $(MAKE) gcp-deb VERSION=$(DEBVER) DEST=$(abspath $(OUTPUT)) TAGS=$(TAGS)
 
 $(DOWNLOADED_DEB):
 	mkdir -p $(OUTPUT)
