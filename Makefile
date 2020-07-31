@@ -2,7 +2,6 @@
 
 include Makefile.common
 
-LSB_DISTRIB_ID      := $(shell . /etc/lsb-release ; echo $$DISTRIB_ID)
 LSB_DISTRIB_RELEASE := $(shell . /etc/lsb-release ; echo $$DISTRIB_RELEASE)
 
 FAKEROOT = fakeroot
