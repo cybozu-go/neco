@@ -33,104 +33,170 @@ KUSTOMIZE_VERSION = 3.6.1
 ## for teleport
 TELEPORT_VERSION = 4.2.10
 
+## Cache
+NODE_EXPORTER_DLDIR := $(DOWNLOADDIR)/node_exporter-v$(NODE_EXPORTER_VERSION)
+NODE_EXPORTER_DOWNLOAD := $(NODE_EXPORTER_DLDIR)/downloaded
+CONTAINERD_DLDIR := $(DOWNLOADDIR)/containerd-v$(CONTAINERD_VERSION)
+CONTAINERD_DOWNLOAD := $(CONTAINERD_DLDIR)/downloaded
+CRICTL_DLDIR := $(DOWNLOADDIR)/crictl-v$(CRITOOLS_VERSION)
+CRICTL_DOWNLOAD := $(CRICTL_DLDIR)/downloaded
+ARGOCD_DLDIR := $(DOWNLOADDIR)/argocd-v$(ARGOCD_VERSION)
+ARGOCD_DOWNLOAD := $(ARGOCD_DLDIR)/downloaded
+KUBECTL_DLDIR := $(DOWNLOADDIR)/kubectl-v$(K8S_VERSION)
+KUBECTL_DOWNLOAD := $(KUBECTL_DLDIR)/downloaded
+LVMD_DLDIR := $(DOWNLOADDIR)/lvmd-v$(TOPOLVM_VERSION)
+LVMD_DOWNLOAD := $(LVMD_DLDIR)/downloaded
+STERN_DLDIR := $(DOWNLOADDIR)/stern-v$(STERN_VERSION)
+STERN_DOWNLOAD := $(STERN_DLDIR)/downloaded
+KUSTOMIZE_DLDIR := $(DOWNLOADDIR)/kustomize-v$(KUSTOMIZE_VERSION)
+KUSTOMIZE_DOWNLOAD := $(KUSTOMIZE_DLDIR)/downloaded
+TELEPORT_DLDIR := $(DOWNLOADDIR)/teleport-v$(TELEPORT_VERSION)
+TELEPORT_DOWNLOAD := $(TELEPORT_DLDIR)/downloaded
+
 all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
 
-check-all:
-	# check all tools are set up
-	if [ ! -e $(DOCDIR)/node_exporter/LICENSE ]; then exit 1; fi
-	if [ ! -e $(DOCDIR)/containerd/LICENSE ]; then exit 1; fi
-	if [ ! -e $(DOCDIR)/crictl/LICENSE ]; then exit 1; fi
-	if [ ! -e $(DOCDIR)/argocd/LICENSE ]; then exit 1; fi
-	if [ ! -e $(DOCDIR)/kubectl/LICENSE ]; then exit 1; fi
-	if [ ! -e $(DOCDIR)/lvmd/LICENSE ]; then exit 1; fi
-	if [ ! -e $(DOCDIR)/stern/LICENSE ]; then exit 1; fi
-	if [ ! -e $(DOCDIR)/kustomize/LICENSE ]; then exit 1; fi
-	if [ ! -e $(DOCDIR)/teleport/LICENSE ]; then exit 1; fi
+$(NODE_EXPORTER_DOWNLOAD):
+	mkdir -p $(NODE_EXPORTER_DLDIR)
+	$(WGET) -O $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
+	touch $@
 
-node_exporter:
+node_exporter: $(NODE_EXPORTER_DOWNLOAD)
 	rm -f $(LIBEXECDIR)/node_exporter
 	rm -rf $(BUILDDIR)/node_exporter
 	mkdir -p $(BUILDDIR)/node_exporter $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
-	$(CURL) https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz | \
-	tar -C $(BUILDDIR)/node_exporter --strip-components=1 -xzf -
+	tar zxf $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz -C $(BUILDDIR)/node_exporter --strip-components=1
 	cd $(BUILDDIR)/node_exporter; GO111MODULE=on make build
 	cp $(BUILDDIR)/node_exporter/node_exporter $(SBINDIR)/
 	ln -s /usr/sbin/node_exporter $(LIBEXECDIR)/node_exporter
 	cd $(BUILDDIR)/node_exporter; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/$@/
 
-containerd:
-	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
-	$(CURL) https://github.com/containerd/containerd/releases/download/v$(CONTAINERD_VERSION)/containerd-$(CONTAINERD_VERSION).linux-amd64.tar.gz | \
-	tar xzf - --strip-components=1 -C $(LIBEXECDIR) bin/containerd bin/containerd-shim bin/containerd-shim-runc-v1 bin/containerd-shim-runc-v2 bin/ctr
-	$(CURL) -o $(DOCDIR)/$@/LICENSE   https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/NOTICE    https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/NOTICE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/README.md
+$(CONTAINERD_DOWNLOAD):
+	mkdir -p $(CONTAINERD_DLDIR)
+	$(WGET) -O $(CONTAINERD_DLDIR)/containerd.tar.gz https://github.com/containerd/containerd/releases/download/v$(CONTAINERD_VERSION)/containerd-$(CONTAINERD_VERSION).linux-amd64.tar.gz
+	$(WGET) -O $(CONTAINERD_DLDIR)/LICENSE   https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/LICENSE
+	$(WGET) -O $(CONTAINERD_DLDIR)/NOTICE    https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/NOTICE
+	$(WGET) -O $(CONTAINERD_DLDIR)/README.md https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/README.md
+	touch $@
 
-crictl:
+containerd: $(CONTAINERD_DOWNLOAD)
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
-	$(CURL) -o crictl.tar.gz https://github.com/kubernetes-sigs/cri-tools/releases/download/v$(CRITOOLS_VERSION)/crictl-v$(CRITOOLS_VERSION)-linux-amd64.tar.gz
-	tar zxf crictl.tar.gz --no-same-owner -C $(LIBEXECDIR)
-	rm -f crictl.tar.gz
-	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/README.md
+	tar xzf $(CONTAINERD_DLDIR)/containerd.tar.gz --strip-components=1 -C $(LIBEXECDIR) bin/containerd bin/containerd-shim bin/containerd-shim-runc-v1 bin/containerd-shim-runc-v2 bin/ctr
+	cp $(CONTAINERD_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
+	cp $(CONTAINERD_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
+	cp $(CONTAINERD_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
-argocd:
+$(CRICTL_DOWNLOAD):
+	mkdir -p $(CRICTL_DLDIR)
+	$(WGET) -O $(CRICTL_DLDIR)/crictl.tar.gz https://github.com/kubernetes-sigs/cri-tools/releases/download/v$(CRITOOLS_VERSION)/crictl-v$(CRITOOLS_VERSION)-linux-amd64.tar.gz
+	$(WGET) -O $(CRICTL_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/LICENSE
+	$(WGET) -O $(CRICTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/README.md
+	touch $@
+
+crictl: $(CRICTL_DOWNLOAD)
+	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
+	tar zxf $(CRICTL_DLDIR)/crictl.tar.gz --no-same-owner -C $(LIBEXECDIR)
+	cp $(CRICTL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(CRICTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
+
+$(ARGOCD_DOWNLOAD):
+	mkdir -p $(ARGOCD_DLDIR)
+	$(WGET) -O $(ARGOCD_DLDIR)/argocd     https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
+	$(WGET) -O $(ARGOCD_DLDIR)/argocd.exe https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-windows-amd64.exe
+	$(WGET) -O $(ARGOCD_DLDIR)/LICENSE   https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/LICENSE
+	$(WGET) -O $(ARGOCD_DLDIR)/README.md https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/README.md
+	touch $@
+
+argocd: $(ARGOCD_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
-	$(CURL) -o $(BINDIR)/argocd https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
+	cp $(ARGOCD_DLDIR)/argocd $(BINDIR)/argocd
 	chmod +x $(BINDIR)/argocd
-	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/README.md
-	$(CURL) -o $(WINDOWS_BINDIR)/$@/argocd.exe https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-windows-amd64.exe
-	cp $(DOCDIR)/$@/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(DOCDIR)/$@/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(ARGOCD_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(ARGOCD_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(ARGOCD_DLDIR)/argocd.exe $(WINDOWS_BINDIR)/$@/argocd.exe
+	cp $(ARGOCD_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(ARGOCD_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
-kubectl:
+$(KUBECTL_DOWNLOAD):
+	mkdir -p $(KUBECTL_DLDIR)
+	$(WGET) -O $(KUBECTL_DLDIR)/kubectl     https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
+	$(WGET) -O $(KUBECTL_DLDIR)/kubectl.exe https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/windows/amd64/kubectl.exe
+	$(WGET) -O $(KUBECTL_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/LICENSE
+	$(WGET) -O $(KUBECTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
+	touch $@
+
+kubectl: $(KUBECTL_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
-	$(CURL) -o $(BINDIR)/kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
+	cp $(KUBECTL_DLDIR)/kubectl $(BINDIR)/kubectl
 	chmod +x $(BINDIR)/kubectl
-	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
-	$(CURL) -o $(WINDOWS_BINDIR)/$@/kubectl.exe https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/windows/amd64/kubectl.exe
-	cp $(DOCDIR)/$@/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(DOCDIR)/$@/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(KUBECTL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(KUBECTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(KUBECTL_DLDIR)/kubectl.exe $(WINDOWS_BINDIR)/$@/kubectl.exe
+	cp $(KUBECTL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(KUBECTL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
-lvmd:
+$(LVMD_DOWNLOAD):
+	mkdir -p $(LVMD_DLDIR)
+	$(WGET) -O $(LVMD_DLDIR)/lvmd.tar.gz https://github.com/cybozu-go/topolvm/releases/download/v$(TOPOLVM_VERSION)/lvmd-$(TOPOLVM_VERSION).tar.gz
+	$(WGET) -O $(LVMD_DLDIR)/LICENSE   https://raw.githubusercontent.com/topolvm/topolvm/v$(TOPOLVM_VERSION)/LICENSE
+	$(WGET) -O $(LVMD_DLDIR)/README.md https://raw.githubusercontent.com/topolvm/topolvm/v$(TOPOLVM_VERSION)/README.md
+	touch $@
+
+lvmd: $(LVMD_DOWNLOAD)
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
-	$(CURL) https://github.com/cybozu-go/topolvm/releases/download/v$(TOPOLVM_VERSION)/lvmd-$(TOPOLVM_VERSION).tar.gz | \
-	tar xzf - -C $(LIBEXECDIR)
-	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/topolvm/topolvm/v$(TOPOLVM_VERSION)/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/topolvm/topolvm/v$(TOPOLVM_VERSION)/README.md
+	tar xzf $(LVMD_DLDIR)/lvmd.tar.gz -C $(LIBEXECDIR)
+	cp $(LVMD_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(LVMD_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
-stern:
+$(STERN_DOWNLOAD):
+	mkdir -p $(STERN_DLDIR)
+	$(WGET) -O $(STERN_DLDIR)/stern     https://github.com/wercker/stern/releases/download/$(STERN_VERSION)/stern_linux_amd64
+	$(WGET) -O $(STERN_DLDIR)/stern.exe https://github.com/wercker/stern/releases/download/${STERN_VERSION}/stern_windows_amd64.exe
+	$(WGET) -O $(STERN_DLDIR)/LICENSE   https://raw.githubusercontent.com/wercker/stern/$(STERN_VERSION)/LICENSE
+	$(WGET) -O $(STERN_DLDIR)/README.md https://raw.githubusercontent.com/wercker/stern/$(STERN_VERSION)/README.md
+	touch $@
+
+stern: $(STERN_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
-	$(CURL) -o $(BINDIR)/stern https://github.com/wercker/stern/releases/download/$(STERN_VERSION)/stern_linux_amd64
+	cp $(STERN_DLDIR)/stern $(BINDIR)/stern
 	chmod +x $(BINDIR)/stern
-	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/wercker/stern/$(STERN_VERSION)/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/wercker/stern/$(STERN_VERSION)/README.md
-	$(CURL) -o $(WINDOWS_BINDIR)/$@/stern.exe https://github.com/wercker/stern/releases/download/${STERN_VERSION}/stern_windows_amd64.exe
-	cp $(DOCDIR)/$@/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(DOCDIR)/$@/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(STERN_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(STERN_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(STERN_DLDIR)/stern.exe $(WINDOWS_BINDIR)/$@/stern.exe
+	cp $(STERN_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(STERN_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
-kustomize:
+$(KUSTOMIZE_DOWNLOAD):
+	mkdir -p $(KUSTOMIZE_DLDIR)
+	$(WGET) -O $(KUSTOMIZE_DLDIR)/kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz
+	$(WGET) -O $(KUSTOMIZE_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
+	$(WGET) -O $(KUSTOMIZE_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
+	touch $@
+
+kustomize: $(KUSTOMIZE_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
-	$(CURL) https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz | tar xzf - -C $(BINDIR)
-	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
+	tar xzf $(KUSTOMIZE_DLDIR)/kustomize.tar.gz -C $(BINDIR)
+	cp $(KUSTOMIZE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
-teleport:
+$(TELEPORT_DOWNLOAD):
+	mkdir -p $(TELEPORT_DLDIR)
+	$(WGET) -O $(TELEPORT_DLDIR)/teleport.tar.gz https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz
+	$(WGET) -O $(TELEPORT_DLDIR)/teleport.zip    https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip
+	$(WGET) -O $(TELEPORT_DLDIR)/LICENSE   https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
+	$(WGET) -O $(TELEPORT_DLDIR)/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
+	touch $@
+
+teleport: $(TELEPORT_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
-	$(WGET) -O /tmp/teleport.tar.gz https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz
-	tar xzf /tmp/teleport.tar.gz -C $(BINDIR) --strip 1 $@/tsh
-	rm -f /tmp/teleport.tar.gz
-	$(CURL) -o $(DOCDIR)/$@/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
-	$(CURL) -o $(DOCDIR)/$@/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
-	$(WGET) -O /tmp/teleport.zip https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip
-	unzip -o /tmp/teleport.zip teleport/tsh.exe -d $(WINDOWS_BINDIR)
-	unzip -o /tmp/teleport.zip teleport/README.md -d $(WINDOWS_DOCDIR)
-	rm -f /tmp/teleport.zip
-	cp $(DOCDIR)/$@/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	tar xzf $(TELEPORT_DLDIR)/teleport.tar.gz -C $(BINDIR) --strip 1 $@/tsh
+	cp $(TELEPORT_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(TELEPORT_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	unzip -o $(TELEPORT_DLDIR)/teleport.zip teleport/tsh.exe -d $(WINDOWS_BINDIR)
+	unzip -o $(TELEPORT_DLDIR)/teleport.zip teleport/README.md -d $(WINDOWS_DOCDIR)
+	cp $(TELEPORT_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(TELEPORT_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
 clean:
-	rm -rf $(BUILDDIR) $(WORKDIR)
+	rm -rf $(BUILDDIR) $(WORKDIR) $(DOWNLOADDIR)
 
-.PHONY:	all check-all clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
+.PHONY:	all clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport

@@ -65,14 +65,12 @@ commands:
       - restore_cache:
           key: setup-tools-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}
       - run:
-          name: Download tools if needed
-          command:
-            if [ ! -d work ]; then time make setup-tools; fi
+          name: setup tools
+          command: time make setup-tools
       - save_cache:
           key: setup-tools-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}
           paths:
-            - build
-            - work
+            - download
   notify-slack-to-extend:
     description: "notify slack to extend the lifetime of the GCP instance"
     steps:

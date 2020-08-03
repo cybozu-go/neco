@@ -1,6 +1,7 @@
 SUDO = sudo
 
 BUILDDIR := $(CURDIR)/build
+DOWNLOADDIR := $(CURDIR)/download
 
 WORKDIR := $(CURDIR)/work
 CONTROL := $(WORKDIR)/DEBIAN/control
