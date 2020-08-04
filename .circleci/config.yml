@@ -56,6 +56,21 @@ commands:
             if [ -f .skip ]; then exit 0; fi
             ./bin/run-dctest.sh bootstrap "<<parameters.tag>>" "<<parameters.datacenter>>"
           no_output_timeout: 20m
+  setup-tools:
+    description: "setup tools"
+    steps:
+      # CircleCI has not yet supported to use environment variables in cache keys, so we need to use a workaround.
+      # https://support.circleci.com/hc/en-us/articles/115015426888-Clear-project-dependency-cache
+      - run: echo $CACHE_VERSION > CACHE_VERSION
+      - restore_cache:
+          key: setup-tools-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}
+      - run:
+          name: setup tools
+          command: time make setup-tools
+      - save_cache:
+          key: setup-tools-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}
+          paths:
+            - download
   notify-slack-to-extend:
     description: "notify slack to extend the lifetime of the GCP instance"
     steps:
@@ -96,6 +111,7 @@ jobs:
       - checkout
       - run: time make SUDO="" setup
       - run: time make test
+      - setup-tools
       - run: time make deb SUDO="" FAKEROOT=
       - run: time make tools SUDO="" FAKEROOT=
       - run:
@@ -116,6 +132,7 @@ jobs:
       - checkout
       - run: time make SUDO="" setup
       - run: time make test
+      - setup-tools
       - run:
           name: Build deb package
           command: |

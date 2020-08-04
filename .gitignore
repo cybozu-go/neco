@@ -31,3 +31,4 @@ pkg/necogcp-app/cron.yaml
 
 # misc
 /build
+/download
