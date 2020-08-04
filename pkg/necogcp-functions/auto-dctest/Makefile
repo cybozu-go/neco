@@ -9,7 +9,8 @@ deploy-function:
 	gcloud functions deploy auto-dctest --project $(GCP_PROJECT) \
 		--entry-point PubSubEntryPoint --runtime go113 \
 		--trigger-topic autodctest-scheduler-events \
-		--set-env-vars ACCOUNT_JSON_PATH=$(ACCOUNT_JSON_PATH),GCP_PROJECT=$(GCP_PROJECT),SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME),ZONE=$(ZONE)
+		--set-env-vars ACCOUNT_JSON_PATH=$(ACCOUNT_JSON_PATH),GCP_PROJECT=$(GCP_PROJECT),SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME),ZONE=$(ZONE) \
+		--timeout 300s
 
 deploy-create-scheduler:
 	gcloud beta scheduler jobs create pubsub create-dctest \

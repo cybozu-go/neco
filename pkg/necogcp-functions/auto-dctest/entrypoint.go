@@ -13,6 +13,7 @@ import (
 	"cloud.google.com/go/pubsub"
 	"github.com/cybozu-go/well"
 	"github.com/kelseyhightower/envconfig"
+	compute "google.golang.org/api/compute/v1"
 )
 
 const (
@@ -44,6 +45,70 @@ type Env struct {
 	AccountJSONPath    string `envconfig:"ACCOUNT_JSON_PATH" required:"true"`
 }
 
+type gceClient struct {
+	service         *compute.Service
+	projectID       string
+	zone            string
+	projectEndpoint string
+}
+
+func newGCEClient(ctx context.Context, projectID, zone string) (*gceClient, error) {
+	s, err := compute.NewService(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gceClient{
+		service:         s,
+		projectID:       projectID,
+		zone:            zone,
+		projectEndpoint: "https://www.googleapis.com/compute/v1/projects/" + projectID,
+	}, nil
+}
+
+func (c *gceClient) create(instanceName, serviceAccountName, machineType string) error {
+	imageURL := "https://console.cloud.google.com/compute/imagesDetail/projects/neco-dev/global/images/vmx-enabled"
+
+	instance := &compute.Instance{
+		Name:        instanceName,
+		MachineType: c.projectEndpoint + "/zones/" + c.zone + "/machineTypes/" + machineType,
+		Disks: []*compute.AttachedDisk{
+			{
+				AutoDelete: true,
+				Boot:       true,
+				Type:       "PERSISTENT",
+				InitializeParams: &compute.AttachedDiskInitializeParams{
+					DiskName:    "root",
+					SourceImage: imageURL,
+				},
+			},
+		},
+		NetworkInterfaces: []*compute.NetworkInterface{
+			{
+				AccessConfigs: []*compute.AccessConfig{
+					{
+						Type: "ONE_TO_ONE_NAT",
+						Name: "External NAT",
+					},
+				},
+				Network: c.projectEndpoint + "/global/networks/default",
+			},
+		},
+		ServiceAccounts: []*compute.ServiceAccount{
+			{
+				Email: serviceAccountName,
+				Scopes: []string{
+					compute.DevstorageFullControlScope,
+					compute.ComputeScope,
+				},
+			},
+		},
+	}
+
+	_, err := c.service.Instances.Insert(c.projectID, c.zone, instance).Do()
+	return err
+}
+
 // PubSubEntryPoint consumes a Pub/Sub message
 func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 	log.Printf("debug: %s", string(m.Data))
@@ -63,6 +128,12 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 		return err
 	}
 	log.Printf("debug: %#v", e)
+
+	client, err := newGCEClient(ctx, e.ProjectID, e.Zone)
+	if err != nil {
+		log.Printf("error: %v", err)
+		return err
+	}
 
 	switch b.Mode {
 	case createInstancesMode:
@@ -84,6 +155,7 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 			b.InstanceNamePrefix,
 			e.ServiceAccountName,
 			e.AccountJSONPath,
+			client,
 		)
 	case deleteInstancesMode:
 		log.Printf("delete %v", b.DoForceDelete)
@@ -151,16 +223,17 @@ func createInstances(
 	instanceNamePrefix string,
 	serviceAccountName string,
 	accountJSONPath string,
+	client *gceClient,
 ) error {
-	instances, err := fetchInstanceNamesWithFilter(
-		ctx,
-		projectID,
-		zone,
-		"",
-	)
-	if err != nil {
-		return err
-	}
+	// instances, err := fetchInstanceNamesWithFilter(
+	// 	ctx,
+	// 	projectID,
+	// 	zone,
+	// 	"",
+	// )
+	// if err != nil {
+	// 	return err
+	// }
 
 	tmpfilePath, err := createStartupScript(accountJSONPath)
 	if err != nil {
@@ -171,27 +244,13 @@ func createInstances(
 	e := well.NewEnvironment(ctx)
 	for i := 0; i < instancesNum; i++ {
 		name := makeInstanceName(instanceNamePrefix, i)
-		if _, ok := instances[name]; ok {
-			log.Printf("info: skip creating %s because it already exists", name)
-			continue
-		}
+		// if _, ok := instances[name]; ok {
+		// 	log.Printf("info: skip creating %s because it already exists", name)
+		// 	continue
+		// }
 
 		e.Go(func(ctx context.Context) error {
-			cmd := []string{
-				"gcloud", "compute", "instances", "create", name,
-				"--project", projectID,
-				"--account", serviceAccountName,
-				"--zone", zone,
-				"--image", "vmx-enabled",
-				"--machine-type", machineType,
-				"--local-ssd", "interface=scsi",
-				"--metadata-from-file", "startup-script=" + tmpfilePath,
-			}
-			c := well.CommandContext(ctx, cmd[0], cmd[1:]...)
-			c.Stdin = os.Stdin
-			c.Stdout = os.Stdout
-			c.Stderr = os.Stderr
-			return c.Run()
+			return client.create(name, serviceAccountName, machineType)
 		})
 	}
 	well.Stop()
