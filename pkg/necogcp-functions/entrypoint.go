@@ -105,5 +105,5 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 
 // MakeVMXEnabledImageURL returns vmx-enabled image URL in the project
 func MakeVMXEnabledImageURL(projectID string) string {
-	return "https://console.cloud.google.com/compute/imagesDetail/projects/" + projectID + "/global/images/vmx-enabled"
+	return "https://www.googleapis.com/compute/v1/projects/" + projectID + "/global/images/vmx-enabled"
 }

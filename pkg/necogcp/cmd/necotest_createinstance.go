@@ -30,17 +30,24 @@ var necotestCreateInstanceCmd = &cobra.Command{
 		}
 
 		well.Go(func(ctx context.Context) error {
-			cc := gcp.NewComputeClient(ctx, projectID, zone)
-			err := cc.Create(
+			cc, err := gcp.NewComputeClient(ctx, projectID, zone)
+			if err != nil {
+				return err
+			}
+			log.Info("now creating instance", map[string]interface{}{
+				"project":        projectID,
+				"zone":           zone,
+				"name":           instanceName,
+				"serviceaccount": serviceAccountName,
+				"machinetype":    machineType,
+			})
+			return cc.Create(
 				instanceName,
 				serviceAccountName,
 				machineType,
 				functions.MakeVMXEnabledImageURL(projectID),
 				functions.MakeStartupScript("", "", ""),
 			)
-			if err != nil {
-				return err
-			}
 		})
 
 		well.Stop()
