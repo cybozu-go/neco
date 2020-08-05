@@ -1,4 +1,4 @@
-package necogcpfunctions
+package functions
 
 import (
 	"strings"

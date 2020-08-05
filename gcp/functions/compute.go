@@ -1,4 +1,4 @@
-package gcp
+package functions
 
 import (
 	"bytes"

@@ -8,8 +8,7 @@ import (
 	"log"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/cybozu-go/neco/pkg/necogcp-functions/gcp"
-	"github.com/cybozu-go/neco/pkg/necogcp-functions/runner"
+	"github.com/cybozu-go/neco/gcp/functions"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -63,12 +62,12 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 	}
 	log.Printf("debug: %#v", e)
 
-	client, err := gcp.NewComputeClient(ctx, e.ProjectID, e.Zone)
+	client, err := functions.NewComputeClient(ctx, e.ProjectID, e.Zone)
 	if err != nil {
 		log.Printf("error: %v", err)
 		return err
 	}
-	runner := runner.NewRunner(client)
+	runner := functions.NewRunner(client)
 
 	switch b.Mode {
 	case createInstancesMode:
@@ -84,7 +83,7 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 		}
 		log.Printf("info: create %d instance(s) for %s", b.InstancesNum, b.InstanceNamePrefix)
 
-		builder, err := NewNecoStartupScriptBuilder().
+		builder, err := functions.NewNecoStartupScriptBuilder().
 			WithFluentd().
 			WithNeco(necoBranch).
 			WithNecoApps(necoAppsBranch)
@@ -109,9 +108,4 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 		log.Fatalf("error: %v", err)
 		return err
 	}
-}
-
-// MakeVMXEnabledImageURL returns vmx-enabled image URL in the project
-func MakeVMXEnabledImageURL(projectID string) string {
-	return "https://www.googleapis.com/compute/v1/projects/" + projectID + "/global/images/vmx-enabled"
 }

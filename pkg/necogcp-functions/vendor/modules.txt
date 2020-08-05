@@ -11,6 +11,8 @@ cloud.google.com/go/pubsub/internal/distribution
 cloud.google.com/go/pubsub/internal/scheduler
 # github.com/cybozu-go/log v1.6.0
 github.com/cybozu-go/log
+# github.com/cybozu-go/neco v0.0.0-20200804040141-29ac5b698130 => ../../
+github.com/cybozu-go/neco/gcp/functions
 # github.com/cybozu-go/netutil v1.2.0
 github.com/cybozu-go/netutil
 # github.com/cybozu-go/well v1.10.0

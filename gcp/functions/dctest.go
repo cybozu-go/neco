@@ -1,21 +1,20 @@
-package runner
+package functions
 
 import (
 	"context"
 	"fmt"
 	"log"
 
-	"github.com/cybozu-go/neco/pkg/necogcp-functions/gcp"
 	"github.com/cybozu-go/well"
 )
 
 // Runner runs dctest environments on GCP instances
 type Runner struct {
-	compute *gcp.ComputeClient
+	compute *ComputeClient
 }
 
 // NewRunner creates Runner
-func NewRunner(computeClient *gcp.ComputeClient) *Runner {
+func NewRunner(computeClient *ComputeClient) *Runner {
 	return &Runner{compute: computeClient}
 }
 
