@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 
 	"google.golang.org/api/compute/v1"
+	"google.golang.org/api/iam/v1"
 )
 
 // ComputeClient is GCP compute client with go client
@@ -82,6 +83,9 @@ func (c *ComputeClient) Create(
 				Scopes: []string{
 					compute.DevstorageFullControlScope,
 					compute.ComputeScope,
+					// Scopes is legacy method. We should set appropriate permissions with IAM
+					// https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#best_practices
+					iam.CloudPlatformScope,
 				},
 			},
 		},
