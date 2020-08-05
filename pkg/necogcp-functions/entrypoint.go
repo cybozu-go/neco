@@ -91,7 +91,7 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 			e.ServiceAccountName,
 			machineType,
 			imageURL,
-			makeStartupScript(e.AccountJSONPath, necoBranch, necoAppsBranch),
+			MakeStartupScript(e.AccountJSONPath, necoBranch, necoAppsBranch),
 		)
 	case deleteInstancesMode:
 		log.Printf("info: delete all instances in %s with force=%t", e.ProjectID, b.DoForceDelete)
@@ -101,4 +101,9 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 		log.Fatalf("error: %v", err)
 		return err
 	}
+}
+
+// MakeVMXEnabledImageURL returns vmx-enabled image URL in the project
+func MakeVMXEnabledImageURL(projectID string) string {
+	return "https://console.cloud.google.com/compute/imagesDetail/projects/" + projectID + "/global/images/vmx-enabled"
 }

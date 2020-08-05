@@ -1,6 +1,7 @@
 package necogcpfunctions
 
-func makeStartupScript(
+// MakeStartupScript creates startup-script to run dctest
+func MakeStartupScript(
 	accountJSONPath string,
 	necoBranch string,
 	necoAppsBranch string,
