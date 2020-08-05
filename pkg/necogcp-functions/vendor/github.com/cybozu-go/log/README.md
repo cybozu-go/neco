@@ -40,6 +40,11 @@ Features
 
     Only for non-Windows systems.
 
+Requirements
+------------
+
+Go 1.13 or greater is required.
+
 Usage
 -----
 

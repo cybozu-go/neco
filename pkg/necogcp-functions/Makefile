@@ -5,9 +5,15 @@ SERVICE_ACCOUNT_NAME ?= fuga
 
 all:
 
+build:
+	mkdir -p build
+	go build -mod=vendor -o build/dctest ./pkg/dctest
+
 deploy-function:
-	gcloud functions deploy auto-dctest --project $(GCP_PROJECT) \
-		--entry-point PubSubEntryPoint --runtime go113 \
+	gcloud functions deploy auto-dctest \
+		--project $(GCP_PROJECT) \
+		--entry-point PubSubEntryPoint \
+		--runtime go113 \
 		--trigger-topic autodctest-scheduler-events \
 		--set-env-vars ACCOUNT_JSON_PATH=$(ACCOUNT_JSON_PATH),GCP_PROJECT=$(GCP_PROJECT),SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME),ZONE=$(ZONE) \
 		--timeout 300s
@@ -40,6 +46,7 @@ deploy-force-delete-scheduler:
 		--description 'automatically delete dctest all instances'
 
 .PHONY: \
+	build \
 	deploy-function \
 	deploy-create-scheduler \
 	deploy-delete-scheduler \

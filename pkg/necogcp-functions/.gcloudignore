@@ -1,0 +1,5 @@
+vendor/
+pkg/
+build/
+Makefile
+*_test.go

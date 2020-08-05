@@ -1,4 +1,4 @@
-package autodctest
+package necogcpfunctions
 
 import "testing"
 
