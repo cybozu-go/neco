@@ -41,7 +41,6 @@ type Env struct {
 	ProjectID          string `envconfig:"GCP_PROJECT" required:"true"`
 	Zone               string `envconfig:"ZONE" required:"true"`
 	ServiceAccountName string `envconfig:"SERVICE_ACCOUNT_NAME" required:"true"`
-	AccountJSONPath    string `envconfig:"ACCOUNT_JSON_PATH" required:"true"`
 }
 
 // PubSubEntryPoint consumes a Pub/Sub message
@@ -77,13 +76,22 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 		today, err := getDateStrInJST()
 		if err != nil {
 			log.Printf("error: %v", err)
-			return nil
+			return err
 		}
 		if isHoliday(today, jpHolidays) {
 			log.Printf("info: today %s is holiday! skip creating dctest", today)
 			return nil
 		}
 		log.Printf("info: create %d instance(s) for %s", b.InstancesNum, b.InstanceNamePrefix)
+
+		builder, err := NewNecoStartupScriptBuilder().
+			WithFluentd().
+			WithNeco(necoBranch).
+			WithNecoApps(necoAppsBranch)
+		if err != nil {
+			log.Printf("error: %v", err)
+			return err
+		}
 		return runner.CreateInstancesIfNotExist(
 			ctx,
 			b.InstanceNamePrefix,
@@ -91,7 +99,7 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 			e.ServiceAccountName,
 			machineType,
 			imageURL,
-			MakeStartupScript(e.AccountJSONPath, necoBranch, necoAppsBranch),
+			builder.Build(),
 		)
 	case deleteInstancesMode:
 		log.Printf("info: delete all instances in %s with force=%t", e.ProjectID, b.DoForceDelete)

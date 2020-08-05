@@ -5,10 +5,11 @@ import (
 	"fmt"
 )
 
+const accountJSONName = "neco-apps-gcp-account"
+
 // NecoStartupScriptBuilder creates startup-script builder to run dctest
 type NecoStartupScriptBuilder struct {
 	withFluentd    bool
-	withSSD        bool
 	necoBranch     string
 	necoAppsBranch string
 }
@@ -59,7 +60,7 @@ apt-cache madison google-fluentd
 apt-get install -y google-fluentd
 apt-get install -y google-fluentd-catch-all-config-structured
 service google-fluentd start
-# This line is needed to ensure that fluentd is runing
+# This line is needed to ensure that fluentd is running
 service google-fluentd restart
 `
 	}
@@ -88,10 +89,11 @@ make setup placemat test SUITE=./bootstrap
 # Run neco-apps
 cd ${GOPATH}/src/github.com/cybozu-go
 git clone https://github.com/cybozu-go/neco-apps
-cd ${GOPATH}/src/github.com/cybozu-go/neco-apps
+cd ${GOPATH}/src/github.com/cybozu-go/neco-apps/test
 git checkout %s
+gcloud secrets versions access latest --secret="%s" > account.json
 make setup dctest BOOTSTRAP=1
-`, b.necoAppsBranch)
+`, b.necoAppsBranch, accountJSONName)
 	}
 	return s
 }
