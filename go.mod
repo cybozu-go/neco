@@ -1,6 +1,7 @@
 module github.com/cybozu-go/neco
 
 require (
+	cloud.google.com/go/pubsub v1.6.1 // indirect
 	github.com/14rcole/gopopulate v0.0.0-20180821133914-b175b219e774 // indirect
 	github.com/Microsoft/go-winio v0.0.0-20180501170546-ab35fc04b636 // indirect
 	github.com/Microsoft/hcsshim v0.0.0-20180606212836-eca7177590cd // indirect
@@ -29,6 +30,7 @@ require (
 	github.com/hashicorp/serf v0.8.3
 	github.com/hashicorp/vault/api v1.0.5-0.20200117231345-460d63e36490
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
+	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
 	github.com/mattn/go-colorable v0.1.1 // indirect

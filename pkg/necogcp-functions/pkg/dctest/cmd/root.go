@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NOTE: this command is created mainly to test the creating/deleting logic on cloud functions accutually works.
+// NOTE: this command is created mainly for the testing purpose.
 var rootCmd = &cobra.Command{
 	Use:   "dctest",
 	Short: "create/delete dctest",

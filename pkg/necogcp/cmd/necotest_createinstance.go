@@ -50,7 +50,7 @@ var necotestCreateInstanceCmd = &cobra.Command{
 		well.Go(func(ctx context.Context) error {
 			cc, err := functions.NewComputeClient(ctx, projectID, zone)
 			if err != nil {
-				log.Error("failed to create compute client: %v", map[string]interface{}{
+				log.Error("failed to create compute client", map[string]interface{}{
 					log.FnError: err,
 				})
 				return err

@@ -102,7 +102,7 @@ func PubSubEntryPoint(ctx context.Context, m *pubsub.Message) error {
 		)
 	case deleteInstancesMode:
 		log.Printf("info: delete all instances in %s with force=%t", e.ProjectID, b.DoForceDelete)
-		return runner.DeleteInstancesWithFilter(ctx, excludeSkipAutoDeleteFilter)
+		return runner.DeleteInstancesMatchingFilter(ctx, excludeSkipAutoDeleteFilter)
 	default:
 		err := fmt.Errorf("invalid mode was given: %s", b.Mode)
 		log.Fatalf("error: %v", err)

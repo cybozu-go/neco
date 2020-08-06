@@ -61,8 +61,8 @@ func (r Runner) CreateInstancesIfNotExist(
 	return well.Wait()
 }
 
-// DeleteInstancesWithFilter deletes instances which match the given filter
-func (r Runner) DeleteInstancesWithFilter(ctx context.Context, filter string) error {
+// DeleteInstancesMatchingFilter deletes instances which match the given filter
+func (r Runner) DeleteInstancesMatchingFilter(ctx context.Context, filter string) error {
 	set, err := r.compute.GetNameSet(filter)
 	if err != nil {
 		log.Printf("error: failed to get instances list with %q because %q", filter, err)
@@ -85,4 +85,9 @@ func (r Runner) DeleteInstancesWithFilter(ctx context.Context, filter string) er
 	}
 	well.Stop()
 	return well.Wait()
+}
+
+// MakeVMXEnabledImageURL returns vmx-enabled image URL in the project
+func MakeVMXEnabledImageURL(projectID string) string {
+	return "https://www.googleapis.com/compute/v1/projects/" + projectID + "/global/images/vmx-enabled"
 }

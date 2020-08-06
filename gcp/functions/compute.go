@@ -1,9 +1,7 @@
 package functions
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/iam/v1"
@@ -61,7 +59,8 @@ func (c *ComputeClient) Create(
 				Boot:       true,
 				Type:       "PERSISTENT",
 				InitializeParams: &compute.AttachedDiskInitializeParams{
-					DiskName:    "root",
+					// DiskName must be unique to create multiple instances simultaneously
+					DiskName:    instanceName,
 					SourceImage: imageURL,
 				},
 			},
@@ -97,22 +96,13 @@ func (c *ComputeClient) Create(
 
 // GetNameSet gets a list of existing GCP instances with the given filter
 func (c *ComputeClient) GetNameSet(filter string) (map[string]struct{}, error) {
-	_, err := c.service.Instances.List(c.projectID, c.zone).Filter(filter).Do()
-	if err != nil {
-		return nil, err
-	}
-
-	buf := bytes.Buffer{}
-	names := []struct {
-		Name string `json:"name"`
-	}{}
-	err = json.Unmarshal(buf.Bytes(), &names)
+	list, err := c.service.Instances.List(c.projectID, c.zone).Filter(filter).Do()
 	if err != nil {
 		return nil, err
 	}
 
 	res := map[string]struct{}{}
-	for _, n := range names {
+	for _, n := range list.Items {
 		res[n.Name] = struct{}{}
 	}
 	return res, nil
