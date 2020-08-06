@@ -30,9 +30,6 @@ BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/ingress-watcher
 OPDEB_BINNAMES = argocd kubectl kustomize stern teleport
 
-STATIK = gcp/statik/statik.go
-STATIK_FILES := $(shell find gcp/public -type f)
-
 all:
 	@echo "Specify one of these targets:"
 	@echo
@@ -50,10 +47,7 @@ start-etcd:
 stop-etcd:
 	systemctl --user stop neco-etcd.service
 
-$(STATIK): $(STATIK_FILES)
-	mkdir -p $(dir $(STATIK))
-
-test: $(STATIK)
+test:
 	test -z "$$(gofmt -s -l . | grep -v '^vendor/\|^menu/assets.go\|^build/' | tee /dev/stderr)"
 	test -z "$$(golint $$(go list -tags='$(GOTAGS)' ./... | grep -v /vendor/) | grep -v '/dctest/.*: should not use dot imports' | tee /dev/stderr)"
 	test -z "$$(nilerr $$(go list -tags='$(GOTAGS)' ./... | grep -v /vendor/) 2>&1 | tee /dev/stderr)"
@@ -113,7 +107,6 @@ git-neco:
 	go install ./pkg/git-neco
 
 setup:
-	go install github.com/rakyll/statik
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
 

@@ -437,8 +437,6 @@ github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
 # github.com/prometheus/prom2json v1.1.0
 github.com/prometheus/prom2json
-# github.com/rakyll/statik v0.1.5
-github.com/rakyll/statik
 # github.com/rmxymh/go-virtualbox v0.0.0-20160520145709-e1ed85288c0a
 github.com/rmxymh/go-virtualbox
 # github.com/rmxymh/infra-ecosphere v0.0.0-20160601082221-353d14945925

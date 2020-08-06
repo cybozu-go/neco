@@ -344,36 +344,6 @@ jobs:
             if [ -f .skip ]; then exit 0; fi
             ./bin/commit-push.sh
 
-  build_necogcp:
-    docker:
-      - image: quay.io/cybozu/golang:1.13-bionic
-    working_directory: /work
-    steps:
-      - checkout
-      - run: time make SUDO="" setup
-      - run: time make necogcp
-      - persist_to_workspace:
-          root: /go/bin
-          paths:
-            - necogcp
-
-  update-vmx-enabled-image:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - run:
-          name: Store service account
-          command: |
-            echo $GCLOUD_SERVICE_ACCOUNT > account.json
-            gcloud auth activate-service-account --key-file=account.json
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          command: |
-            /tmp/workspace/necogcp neco-test create-image
-          no_output_timeout: 20m
-
 workflows:
   version: 2
   # Main workflow for feature branch.
@@ -451,18 +421,3 @@ workflows:
           requires:
             - dctest-functions-release
             - dctest-upgrade-release
-
-  # For updating ubuntu image.
-  weekly:
-    triggers:
-      - schedule:
-          cron: "0 15 * * 0"
-          filters:
-            branches:
-              only:
-                - master
-    jobs:
-      - build_necogcp
-      - update-vmx-enabled-image:
-          requires:
-            - build_necogcp
