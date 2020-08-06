@@ -1,7 +1,0 @@
-cron:
-  - description: delete instances
-    url: /shutdown
-    schedule: every 5 minutes
-    retry_parameters:
-      min_backoff_seconds: 30
-      job_retry_limit: 5

@@ -52,7 +52,6 @@ stop-etcd:
 
 $(STATIK): $(STATIK_FILES)
 	mkdir -p $(dir $(STATIK))
-	go generate ./pkg/necogcp/...
 
 test: $(STATIK)
 	test -z "$$(gofmt -s -l . | grep -v '^vendor/\|^menu/assets.go\|^build/' | tee /dev/stderr)"
@@ -110,9 +109,6 @@ gcp-deb: setup-files-for-deb
 	sed -i -e "s/TimeoutStartSec=infinity/TimeoutStartSec=1200/g" $(SHAREDIR)/ignitions/common/systemd/setup-var.service
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(WORKDIR) $(DEST)
 
-necogcp: $(STATIK)
-	go install ./pkg/necogcp
-
 git-neco:
 	go install ./pkg/git-neco
 
@@ -125,4 +121,4 @@ clean:
 	$(MAKE) -f Makefile.tools clean
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OP_DEB) $(OP_ZIP)
 
-.PHONY:	all start-etcd stop-etcd test mod deb setup-tools setup-files-for-deb gcp-deb necogcp git-neco setup clean tools
+.PHONY:	all start-etcd stop-etcd test mod deb setup-tools setup-files-for-deb gcp-deb git-neco setup clean tools
