@@ -49,6 +49,7 @@ type ComputeClient struct {
 	image    string
 }
 
+// Snapshot is GCP snapshot object
 type Snapshot struct {
 	Name   string `json:"name"`
 	Status string `json:"status"`
@@ -406,10 +407,7 @@ func (cc *ComputeClient) CreateVolumeSnapshot(ctx context.Context) error {
 }
 
 // RestoreVolumeFromSnapshot restores home volume in the target zone
-func (cc *ComputeClient) RestoreVolumeFromSnapshot(ctx context.Context, srcZone, destZone string) error {
-	if srcZone == "" {
-		srcZone = cc.cfg.Common.Zone
-	}
+func (cc *ComputeClient) RestoreVolumeFromSnapshot(ctx context.Context, destZone string) error {
 	gcmdSnapshot := []string{"gcloud", "--quiet", "--account", cc.cfg.Common.ServiceAccount,
 		"--project", cc.cfg.Common.Project, "compute", "snapshots", "list",
 		"--sort-by=date", "--limit=1", "--filter=sourceDisk:disks/home", "--format=json"}

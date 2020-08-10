@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	srcZone  string
 	destZone string
 )
 
@@ -25,7 +24,7 @@ var restoreSnapshotCmd = &cobra.Command{
 		}
 		cc := gcp.NewComputeClient(cfg, "host-vm")
 		well.Go(func(ctx context.Context) error {
-			err := cc.RestoreVolumeFromSnapshot(ctx, srcZone, destZone)
+			err := cc.RestoreVolumeFromSnapshot(ctx, destZone)
 			if err != nil {
 				return err
 			}
@@ -38,7 +37,6 @@ var restoreSnapshotCmd = &cobra.Command{
 }
 
 func init() {
-	restoreSnapshotCmd.Flags().StringVar(&srcZone, "src-zone", "", "zone name for the target snapshot ")
 	restoreSnapshotCmd.Flags().StringVar(&destZone, "dest-zone", "", "zone name for creating a new volume")
 	rootCmd.AddCommand(restoreSnapshotCmd)
 }

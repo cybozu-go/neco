@@ -62,11 +62,10 @@ Synopsis
 Flags
 -----
 
-| Flag          | Default value                         | Description                                                                      |
-| ------------- | ------------------------------------- | -------------------------------------------------------------------------------- |
-| `--config`    | `$HOME/.necogcp.yml`                  | [Viper configuration file](https://github.com/spf13/viper#reading-config-files). |
-| `--src-zone`  | `common.zone` in `$HOME/.necogcp.yml` | zone of the snapshot of `home` volume                                            |
-| `--dest-zone` | `an empty string`                     | zone to restore `home` volume                                                    |
+| Flag          | Default value        | Description                                                                      |
+| ------------- | -------------------- | -------------------------------------------------------------------------------- |
+| `--config`    | `$HOME/.necogcp.yml` | [Viper configuration file](https://github.com/spf13/viper#reading-config-files). |
+| `--dest-zone` | `an empty string`    | zone to restore `home` volume                                                    |
 
 Configuration file
 ------------------
