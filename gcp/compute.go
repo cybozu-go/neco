@@ -38,6 +38,7 @@ const (
 	// MetadataKeyShutdownAt is the instance key to represents the time that this instance should be deleted.
 	MetadataKeyShutdownAt = "shutdown-at"
 	timeFormat            = "2006-01-02 15:04:05"
+	defaultVolumeName     = "home"
 )
 
 // ComputeClient is GCP compute client using "gcloud compute"
@@ -46,6 +47,11 @@ type ComputeClient struct {
 	instance string
 	user     string
 	image    string
+}
+
+type Snapshot struct {
+	Name   string `json:"name"`
+	Status string `json:"status"`
 }
 
 // NewComputeClient returns ComputeClient
@@ -77,6 +83,10 @@ func (cc *ComputeClient) gCloudComputeImages() []string {
 
 func (cc *ComputeClient) gCloudComputeDisks() []string {
 	return []string{"gcloud", "--quiet", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute", "disks"}
+}
+
+func (cc *ComputeClient) gCloudDiskSnapshot() []string {
+	return []string{"gcloud", "--quiet", "--account", cc.cfg.Common.ServiceAccount, "--project", cc.cfg.Common.Project, "compute", "disks", "snapshot"}
 }
 
 func (cc *ComputeClient) gCloudComputeSSH(command []string) []string {
@@ -380,5 +390,80 @@ func (cc *ComputeClient) ExtendInstance(ctx context.Context) error {
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
+	return c.Run()
+}
+
+// CreateVolumeSnapshot creates home volume snapshot
+func (cc *ComputeClient) CreateVolumeSnapshot(ctx context.Context) error {
+	gcmd := cc.gCloudDiskSnapshot()
+	gcmd = append(gcmd, defaultVolumeName,
+		"--zone", cc.cfg.Common.Zone)
+	c := well.CommandContext(ctx, gcmd[0], gcmd[1:]...)
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	return c.Run()
+}
+
+// RestoreVolumeFromSnapshot restores home volume in the target zone
+func (cc *ComputeClient) RestoreVolumeFromSnapshot(ctx context.Context, srcZone, destZone string) error {
+	if srcZone == "" {
+		srcZone = cc.cfg.Common.Zone
+	}
+	gcmdSnapshot := []string{"gcloud", "--quiet", "--account", cc.cfg.Common.ServiceAccount,
+		"--project", cc.cfg.Common.Project, "compute", "snapshots", "list",
+		"--sort-by=date", "--limit=1", "--filter=sourceDisk:disks/home", "--format=json"}
+
+	outBuf := new(bytes.Buffer)
+	c := well.CommandContext(ctx, gcmdSnapshot[0], gcmdSnapshot[1:]...)
+	c.Stdin = os.Stdin
+	c.Stdout = outBuf
+	c.Stderr = os.Stderr
+	err := c.Run()
+	if err != nil {
+		return err
+	}
+
+	snapshot := []Snapshot{}
+	err = json.Unmarshal(outBuf.Bytes(), &snapshot)
+	if err != nil {
+		return err
+	}
+
+	if len(snapshot) == 0 {
+		return fmt.Errorf("no availabe snapshot exists")
+	}
+	if len(snapshot) > 1 {
+		return fmt.Errorf("more than 1 snapshot was selected. num: %v", len(snapshot))
+	}
+	target := snapshot[0]
+	if target.Status != "READY" {
+		return fmt.Errorf("target snapshot %v stauts is %v and not ready", target.Name, target.Status)
+	}
+
+	// Confirm there is no home disk in the target zone to prevent unexpected volume restore.
+	gcmdInfo := cc.gCloudComputeDisks()
+	gcmdInfo = append(gcmdInfo, "describe", "home",
+		"--zone", destZone,
+		"--format", "json")
+	c = well.CommandContext(ctx, gcmdInfo[0], gcmdInfo[1:]...)
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	err = c.Run()
+	if err == nil {
+		return fmt.Errorf("home disk already exists in the zone %v. please delete the disk first. ", destZone)
+	}
+
+	// Restore volume in the target zone
+	configSize := strconv.Itoa(cc.cfg.Compute.HostVM.HomeDiskSizeGB) + "GB"
+	gcmdCreate := cc.gCloudComputeDisks()
+	gcmdCreate = append(gcmdCreate, "create", "home", "--size", configSize,
+		"--type", "pd-ssd", "--zone", destZone, "--source-snapshot", target.Name)
+	c = well.CommandContext(ctx, gcmdCreate[0], gcmdCreate[1:]...)
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+
 	return c.Run()
 }
