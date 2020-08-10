@@ -30,6 +30,14 @@ Synopsis
 
     Setup `host-vm` or `vmx-enabled` instance. It can run on only them.
 
+* `necogcp create-snapshott`
+
+    Create `home` volume snapshot.
+
+* `necogcp restore-snapshot`
+
+    Restore `home` volume from the latest snapshot in the zone specified by the flag `--dest-zone`.
+
 ### GCE instance management on neco-test project
 
 * `necogcp neco-test create-image`
@@ -54,9 +62,11 @@ Synopsis
 Flags
 -----
 
-| Flag       | Default value        | Description                                                                      |
-| ---------- | -------------------- | -------------------------------------------------------------------------------- |
-| `--config` | `$HOME/.necogcp.yml` | [Viper configuration file](https://github.com/spf13/viper#reading-config-files). |
+| Flag          | Default value                         | Description                                                                      |
+| ------------- | ------------------------------------- | -------------------------------------------------------------------------------- |
+| `--config`    | `$HOME/.necogcp.yml`                  | [Viper configuration file](https://github.com/spf13/viper#reading-config-files). |
+| `--src-zone`  | `common.zone` in `$HOME/.necogcp.yml` | zone of the snapshot of `home` volume                                            |
+| `--dest-zone` | `an empty string`                     | zone to restore `home` volume                                                    |
 
 Configuration file
 ------------------
