@@ -16,15 +16,3 @@ do
     loginctl kill-session --signal 9 $session
   fi
 done
-
-# kill orphaned bash
-ps axo pid,ppid,start_time,tty,cmd | awk '$2=="1" && $4~/pts\// && $5=="-bash" {print $0}' | 
-while read pid ppid start_time tty cmd; do
-  target=$(date +%s --date $start_time)
-  diff=$(( $now - $target ))
-  if [ $diff -gt $limit ]; then
-    echo "kill bash:"
-    echo $cmd
-    kill -HUP $pid
-  fi
-done
