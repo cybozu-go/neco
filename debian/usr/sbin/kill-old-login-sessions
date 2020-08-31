@@ -1,18 +1,30 @@
 #!/bin/sh -e
 
 limit=86400 # 1 day
-sessions=$(loginctl list-sessions --no-legend | sed -e 's/^ *//g' | cut -f 1 -d ' ')
+now=$(date +%s)
 
+sessions=$(loginctl list-sessions --no-legend | sed -e 's/^ *//g' | cut -f 1 -d ' ')
 for session in $sessions
 do
   timestamp=$(loginctl show-session -p Timestamp --value $session)
-  now=$(date +%s)
   target=$(date +%s --date "$timestamp")
   diff=$(( $now - $target ))
   if [ $diff -gt $limit ]; then
     echo "kill session:"
     loginctl show-session $session
     echo
-    loginctl kill-session $session
+    loginctl kill-session --signal 9 $session
+  fi
+done
+
+# kill orphaned bash
+ps axo pid,ppid,start_time,tty,cmd | awk '$2=="1" && $4~/pts\// && $5=="-bash" {print $0}' | 
+while read pid ppid start_time tty cmd; do
+  target=$(date +%s --date $start_time)
+  diff=$(( $now - $target ))
+  if [ $diff -gt $limit ]; then
+    echo "kill bash:"
+    echo $cmd
+    kill -HUP $pid
   fi
 done
