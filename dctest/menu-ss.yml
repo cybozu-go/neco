@@ -44,7 +44,7 @@ kind: Node
 type: cs
 spec:
   cpu: 8
-  memory: 10G
+  memory: 16G
 ---
 kind: Node
 type: ss
