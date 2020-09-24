@@ -126,7 +126,7 @@ func (c CoreOSImage) MarshalGo() string {
 
 // URLs returns kernel and initrd URLs.
 func (c CoreOSImage) URLs() (string, string) {
-	kernel := fmt.Sprintf("https://%s.release.core-os.net/amd64-usr/%s/coreos_production_pxe.vmlinuz", c.Channel, c.Version)
-	initrd := fmt.Sprintf("https://%s.release.core-os.net/amd64-usr/%s/coreos_production_pxe_image.cpio.gz", c.Channel, c.Version)
+	kernel := fmt.Sprintf("https://%s.release.flatcar-linux.net/amd64-usr/%s/flatcar_production_pxe.vmlinuz", c.Channel, c.Version)
+	initrd := fmt.Sprintf("https://%s.release.flatcar-linux.net/amd64-usr/%s/flatcar_production_pxe_image.cpio.gz", c.Channel, c.Version)
 	return kernel, initrd
 }
