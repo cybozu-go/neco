@@ -213,11 +213,13 @@ type: ss
 spec:
   cpu: 1
   memory: 1G
+  tpm: true
 `,
 			expected: NodeMenu{
 				Type:   SSNode,
 				CPU:    1,
 				Memory: "1G",
+				TPM:    true,
 			},
 		},
 	}

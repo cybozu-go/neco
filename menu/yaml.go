@@ -64,6 +64,7 @@ type nodeConfig struct {
 		Data              []string `json:"data"`
 		UEFI              bool     `json:"uefi"`
 		CloudInitTemplate string   `json:"cloud-init-template"`
+		TPM               bool     `json:"tpm"`
 	} `json:"spec"`
 }
 
@@ -261,6 +262,7 @@ func unmarshalNode(data []byte) (*NodeMenu, error) {
 	node.Data = n.Spec.Data
 	node.UEFI = n.Spec.UEFI
 	node.CloudInitTemplate = n.Spec.CloudInitTemplate
+	node.TPM = n.Spec.TPM
 
 	return &node, nil
 }

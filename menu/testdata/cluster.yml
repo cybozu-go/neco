@@ -195,7 +195,6 @@ memory: 2G
 name: rack0-cs1
 smbios:
   serial: ba49d9a971c5a0344edfda5c8116745ea16fa4dd
-tpm: true
 uefi: true
 volumes:
 - cache: writeback
@@ -220,7 +219,6 @@ memory: 2G
 name: rack0-cs2
 smbios:
   serial: e6abb04b4645a765faf91f97536ec64f9cecfb61
-tpm: true
 uefi: true
 volumes:
 - cache: writeback
@@ -268,7 +266,6 @@ memory: 2G
 name: rack1-cs1
 smbios:
   serial: 4ae0771764376e0184274e24e0b18abd8fa5f285
-tpm: true
 uefi: true
 volumes:
 - cache: writeback
@@ -293,7 +290,6 @@ memory: 2G
 name: rack1-cs2
 smbios:
   serial: aec899fb87747909c95a2decaa4f25899f07516e
-tpm: true
 uefi: true
 volumes:
 - cache: writeback
@@ -318,7 +314,6 @@ memory: 1G
 name: rack1-ss1
 smbios:
   serial: 1145129a085ecf521ab524028302a6b4a4e49a00
-tpm: true
 volumes:
 - cache: writeback
   kind: raw
@@ -350,7 +345,6 @@ memory: 1G
 name: rack1-ss2
 smbios:
   serial: 628c8c360d0113de66db14a225affcb85fb2a27f
-tpm: true
 volumes:
 - cache: writeback
   kind: raw
