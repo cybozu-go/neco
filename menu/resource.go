@@ -60,6 +60,7 @@ type NodeMenu struct {
 	Data              []string
 	UEFI              bool
 	CloudInitTemplate string
+	TPM               bool
 }
 
 // Menu is a top-level structure that summarizes the settings of each menus

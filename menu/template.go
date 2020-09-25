@@ -159,6 +159,7 @@ type VMResource struct {
 	Data              []string
 	UEFI              bool
 	CloudInitTemplate string
+	TPM               bool
 }
 
 // ToTemplateArgs is converter Menu to TemplateArgs
@@ -183,6 +184,7 @@ func ToTemplateArgs(menu *Menu) (*TemplateArgs, error) {
 			templateArgs.CS.Data = node.Data
 			templateArgs.CS.UEFI = node.UEFI
 			templateArgs.CS.CloudInitTemplate = node.CloudInitTemplate
+			templateArgs.CS.TPM = node.TPM
 		case SSNode:
 			templateArgs.SS.Memory = node.Memory
 			templateArgs.SS.CPU = node.CPU
@@ -190,6 +192,7 @@ func ToTemplateArgs(menu *Menu) (*TemplateArgs, error) {
 			templateArgs.SS.Data = node.Data
 			templateArgs.SS.UEFI = node.UEFI
 			templateArgs.SS.CloudInitTemplate = node.CloudInitTemplate
+			templateArgs.SS.TPM = node.TPM
 		case BootNode:
 			templateArgs.Boot.Memory = node.Memory
 			templateArgs.Boot.CPU = node.CPU
@@ -197,6 +200,7 @@ func ToTemplateArgs(menu *Menu) (*TemplateArgs, error) {
 			templateArgs.Boot.Data = node.Data
 			templateArgs.Boot.UEFI = node.UEFI
 			templateArgs.Boot.CloudInitTemplate = node.CloudInitTemplate
+			templateArgs.Boot.TPM = node.TPM
 		default:
 			return nil, errors.New("invalid node type")
 		}
