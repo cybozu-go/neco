@@ -250,6 +250,7 @@ func bootNode(rack *Rack, resource *VMResource) *placemat.NodeSpec {
 		SMBIOS: placemat.SMBIOSConfig{
 			Serial: rack.BootNode.Serial,
 		},
+		TPM: resource.TPM,
 	}
 }
 
@@ -285,7 +286,7 @@ func emptyNode(rackName, rackShortName, nodeName, serial string, disks int, reso
 		SMBIOS: placemat.SMBIOSConfig{
 			Serial: serial,
 		},
-		TPM: true,
+		TPM: resource.TPM,
 	}
 }
 

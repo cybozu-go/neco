@@ -41,7 +41,7 @@ var debRepos = []string{
 
 var templ = template.Must(template.New("").Parse(artifactSetTemplate))
 
-const coreOSFeed = "https://coreos.com/releases/releases-stable.json"
+const coreOSFeed = "https://www.flatcar-linux.org/releases-json/releases-stable.json"
 
 func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*neco.DebianPackage, coreos *neco.CoreOSImage) error {
 	var data struct {
@@ -282,6 +282,9 @@ func getLatestCoreOS(ctx context.Context, ignoreVersions []string) (*neco.CoreOS
 	versions := make([]*version.Version, 0, len(feed))
 OUTER:
 	for k := range feed {
+		if k == "current" {
+			continue
+		}
 		v, err := version.NewVersion(k)
 		if err != nil {
 			log.Error("bad version", map[string]interface{}{

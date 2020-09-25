@@ -227,6 +227,7 @@ spec:
     - docker-lib-image
   uefi: true
   cloud-init-template: boot-seed.yml.template
+  tpm: true
 ```
 
 The available properties are as following:
@@ -239,8 +240,10 @@ The available properties are as following:
 - `memory`: The size of the memory.
 - `image`: The name of an image resource for boot (optional)
 - `data`: The name of image resources for additional data (optional)
-- `bios`: The name of BIOS mode (optional. See [Node resource of placemat](https://github.com/cybozu-go/placemat/blob/master/SPEC.md#node-resource))
+- `smbios`: The name of BIOS mode (optional. See [Node resource of placemat](https://github.com/cybozu-go/placemat/blob/master/docs/resource.md#node-resource))
+- `uefi`: Use UEFI boot.
 - `cloud-init-template`: The path of cloud-init template file.
+- `tpm`: Use virtual TPM.
 
 In a cloud-init template file, following attributes can be referenced.
 

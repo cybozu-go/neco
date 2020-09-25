@@ -103,7 +103,7 @@ func TestRebootAllNodes() {
 		By("wait for rebooting")
 		preReboot := make(map[string]bool)
 		for _, m := range machines {
-			if m.Spec.Role == "boot" {
+			if m.Spec.Role == "boot" || m.Spec.Rack == 3 {
 				continue
 			}
 			preReboot[m.Spec.IPv4[0]] = true
