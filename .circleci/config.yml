@@ -356,12 +356,12 @@ workflows:
               ignore:
                 - release
                 - master
-      - dctest-upgrade:
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
+#      - dctest-upgrade:
+#          filters:
+#            branches:
+#              ignore:
+#                - release
+#                - master
 
   # Update github release page.
   release:
@@ -392,13 +392,13 @@ workflows:
       - dctest-functions-release:
           requires:
             - generate-artifacts
-      - dctest-upgrade-release:
-          requires:
-            - generate-artifacts
+#      - dctest-upgrade-release:
+#          requires:
+#            - generate-artifacts
       - update-release:
           requires:
             - dctest-functions-release
-            - dctest-upgrade-release
+#            - dctest-upgrade-release
 
   # For updating `artifact_release.go` regularly, run the same job as `master` workflow.
   daily:
