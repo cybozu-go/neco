@@ -35,7 +35,7 @@ file: cybozu-ubuntu-18.04-server-cloudimg-amd64.img
 kind: Node
 type: boot
 spec:
-  cpu: 8
+  cpu: 1
   memory: 2G
   image: custom-ubuntu-image
   cloud-init-template: boot-seed.yml.template
@@ -43,11 +43,11 @@ spec:
 kind: Node
 type: cs
 spec:
-  cpu: 8
+  cpu: 1
   memory: 16G
 ---
 kind: Node
 type: ss
 spec:
-  cpu: 2
+  cpu: 1
   memory: 10G
