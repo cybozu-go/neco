@@ -21,11 +21,11 @@ spec:
   cluster-id: dev0
   spine: 2
   rack:
-    - cs: 1
-      ss: 1
-    - cs: 1
+    - cs: 2
       ss: 1
     - cs: 2
+      ss: 1
+    - cs: 3
       ss: 1
 ---
 kind: Image
@@ -44,7 +44,7 @@ kind: Node
 type: cs
 spec:
   cpu: 8
-  memory: 16G
+  memory: 12G
 ---
 kind: Node
 type: ss
