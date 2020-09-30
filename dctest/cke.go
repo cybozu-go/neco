@@ -53,6 +53,12 @@ func TestCKESetup() {
 func TestCKE() {
 	It("all systemd units are active", func() {
 		By("getting machines list")
+		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cp")
+		Expect(err).ShouldNot(HaveOccurred())
+		var cpMachines []sabakan.Machine
+		err = json.Unmarshal(stdout, &cpMachines)
+		Expect(err).ShouldNot(HaveOccurred())
+
 		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
 		Expect(err).ShouldNot(HaveOccurred())
 		var csMachines []sabakan.Machine
@@ -65,7 +71,7 @@ func TestCKE() {
 		err = json.Unmarshal(stdout, &ssMachines)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		availableNodes := len(csMachines) + len(ssMachines)
+		availableNodes := len(cpMachines) + len(csMachines) + len(ssMachines)
 		Expect(availableNodes).NotTo(Equal(0))
 
 		By("getting systemd unit statuses by serf members")
