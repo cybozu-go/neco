@@ -4,6 +4,10 @@ nodes:
   control_plane: true
   labels:
     cke.cybozu.com/role: "cs"
+  #GCPONLY taints:
+  #GCPONLY - key: cke.cybozu.com/role
+  #GCPONLY   value: control-plane
+  #GCPONLY   effect: NoExecute
 - user: cybozu
   control_plane: false
   labels:
