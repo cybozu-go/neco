@@ -21,11 +21,15 @@ spec:
   cluster-id: dev0
   spine: 2
   rack:
-    - cs: 2
+    - cp: 1
+      cs: 2
       ss: 1
-    - cs: 2
-    - cs: 1
-    - cs: 1
+    - cp: 1
+      cs: 2
+    - cp: 1
+      cs: 1
+    - cp: 1
+      cs: 1
 ---
 kind: Image
 name: custom-ubuntu-image
@@ -38,6 +42,12 @@ spec:
   memory: 2G
   image: custom-ubuntu-image
   cloud-init-template: boot-seed.yml.template
+---
+kind: Node
+type: cp
+spec:
+  cpu: 4
+  memory: 8G
 ---
 kind: Node
 type: cs

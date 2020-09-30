@@ -20,6 +20,26 @@
     }
   },
   {
+    "serial": "f3598bd6ee935ac0b0195c0bc81762c5148b02a8",
+    "labels": {
+      "datacenter": "dc1",
+      "machine-type": "qemu",
+      "product": "vm"
+    },
+    "rack": 0,
+    "index-in-rack": 0,
+    "role": "cp",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  },
+  {
     "serial": "ba49d9a971c5a0344edfda5c8116745ea16fa4dd",
     "labels": {
       "datacenter": "dc1",
@@ -69,6 +89,26 @@
     "rack": 1,
     "index-in-rack": 0,
     "role": "boot",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  },
+  {
+    "serial": "27c33bb0a52692c83c1446a4dceb09dcb068fd1b",
+    "labels": {
+      "datacenter": "dc1",
+      "machine-type": "qemu",
+      "product": "vm"
+    },
+    "rack": 1,
+    "index-in-rack": 0,
+    "role": "cp",
     "ipv4": null,
     "ipv6": null,
     "register-date": "0001-01-01T00:00:00Z",

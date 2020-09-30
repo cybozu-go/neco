@@ -4,12 +4,14 @@ import (
 	"net"
 )
 
-// NodeType represent node type(i.g. boot, CS, SS)
+// NodeType represent node type(i.g. boot, CP, CS, SS)
 type NodeType int
 
 const (
 	// BootNode represent node type of boot server
 	BootNode NodeType = iota
+	// CPNode represent node type of control plane
+	CPNode
 	// CSNode represent node type of compute server
 	CSNode
 	// SSNode represent node type of storage server
@@ -47,6 +49,7 @@ type InventoryMenu struct {
 
 // RackMenu represents how many nodes each rack contains
 type RackMenu struct {
+	CP int
 	CS int
 	SS int
 }

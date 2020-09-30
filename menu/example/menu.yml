@@ -21,9 +21,11 @@ spec:
   cluster-id: dev0
   spine: 2
   rack:
-    - cs: 2
+    - cp: 1
+      cs: 2
       ss: 0
-    - cs: 2
+    - cp: 1
+      cs: 2
       ss: 2
 ---
 kind: Image
@@ -41,6 +43,15 @@ spec:
   memory: 2G
   image: ubuntu-cloud-image
   cloud-init-template: boot-seed.yml.template
+---
+kind: Node
+type: cp
+spec:
+  cpu: 2
+  memory: 2G
+  data:
+    - docker-image
+  uefi: true
 ---
 kind: Node
 type: cs

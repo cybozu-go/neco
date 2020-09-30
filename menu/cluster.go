@@ -294,6 +294,9 @@ func (c *cluster) appendNodes(ta *TemplateArgs) {
 	for _, rack := range ta.Racks {
 		c.nodes = append(c.nodes, bootNode(&rack, &ta.Boot))
 
+		for _, cp := range rack.CPList {
+			c.nodes = append(c.nodes, emptyNode(rack.Name, rack.ShortName, cp.Name, cp.Serial, 2, &ta.CP))
+		}
 		for _, cs := range rack.CSList {
 			c.nodes = append(c.nodes, emptyNode(rack.Name, rack.ShortName, cs.Name, cs.Serial, 2, &ta.CS))
 		}

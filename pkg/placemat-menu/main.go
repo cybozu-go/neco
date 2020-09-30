@@ -123,6 +123,26 @@ func run() error {
 			}
 		}
 
+		if ta.CP.CloudInitTemplate != "" {
+			for _, cp := range rack.CPList {
+				arg := struct {
+					Name string
+					Rack menu.Rack
+				}{
+					fmt.Sprintf("%s-%s", rack.Name, cp.Name),
+					rack,
+				}
+				name := ta.CP.CloudInitTemplate
+				if !filepath.IsAbs(name) {
+					name = filepath.Join(dir, name)
+				}
+				err := exportFile(name, fmt.Sprintf("seed_%s-%s.yml", rack.Name, cp.Name), arg)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
 		if ta.CS.CloudInitTemplate != "" {
 			for _, cs := range rack.CSList {
 				arg := struct {

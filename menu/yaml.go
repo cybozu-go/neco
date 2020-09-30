@@ -47,6 +47,7 @@ type inventoryConfig struct {
 		ClusterID string `json:"cluster-id"`
 		Spine     int    `json:"spine"`
 		Rack      []struct {
+			CP int `json:"cp"`
 			CS int `json:"cs"`
 			SS int `json:"ss"`
 		} `json:"rack"`
@@ -70,6 +71,7 @@ type nodeConfig struct {
 
 var nodeType = map[string]NodeType{
 	"boot": BootNode,
+	"cp":   CPNode,
 	"cs":   CSNode,
 	"ss":   SSNode,
 }
@@ -219,6 +221,7 @@ func unmarshalInventory(data []byte) (*InventoryMenu, error) {
 	inventory.Rack = []RackMenu{}
 	for _, r := range i.Spec.Rack {
 		var rack RackMenu
+		rack.CP = r.CP
 		rack.CS = r.CS
 		rack.SS = r.SS
 		inventory.Rack = append(inventory.Rack, rack)

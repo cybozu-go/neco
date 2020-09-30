@@ -192,6 +192,30 @@ interfaces:
 - r0-node2
 kind: Node
 memory: 2G
+name: rack0-cp1
+smbios:
+  serial: f3598bd6ee935ac0b0195c0bc81762c5148b02a8
+uefi: true
+volumes:
+- cache: writeback
+  kind: raw
+  name: data1
+  size: 30G
+- cache: writeback
+  kind: raw
+  name: data2
+  size: 30G
+- copy-on-write: true
+  image: docker-image
+  kind: image
+  name: extra0
+---
+cpu: 2
+interfaces:
+- r0-node1
+- r0-node2
+kind: Node
+memory: 2G
 name: rack0-cs1
 smbios:
   serial: ba49d9a971c5a0344edfda5c8116745ea16fa4dd
@@ -256,6 +280,30 @@ volumes:
 - folder: sabakan-data
   kind: vvfat
   name: sabakan
+---
+cpu: 2
+interfaces:
+- r1-node1
+- r1-node2
+kind: Node
+memory: 2G
+name: rack1-cp1
+smbios:
+  serial: 27c33bb0a52692c83c1446a4dceb09dcb068fd1b
+uefi: true
+volumes:
+- cache: writeback
+  kind: raw
+  name: data1
+  size: 30G
+- cache: writeback
+  kind: raw
+  name: data2
+  size: 30G
+- copy-on-write: true
+  image: docker-image
+  kind: image
+  name: extra0
 ---
 cpu: 2
 interfaces:

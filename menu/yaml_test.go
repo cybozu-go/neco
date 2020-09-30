@@ -123,20 +123,23 @@ spec:
   cluster-id: dev0
   spine: 3
   rack:
-    - cs: 3
+    - cp: 1
+      cs: 3
       ss: 0
-    - cs: 2
+    - cp: 1
+      cs: 2
       ss: 2
-    - cs: 0
+    - cp: 1
+      cs: 0
       ss: 3
 `,
 			expected: InventoryMenu{
 				ClusterID: "dev0",
 				Spine:     3,
 				Rack: []RackMenu{
-					{CS: 3, SS: 0},
-					{CS: 2, SS: 2},
-					{CS: 0, SS: 3},
+					{CP: 1, CS: 3, SS: 0},
+					{CP: 1, CS: 2, SS: 2},
+					{CP: 1, CS: 0, SS: 3},
 				},
 			},
 		},
@@ -190,6 +193,20 @@ spec:
 				Type:   BootNode,
 				CPU:    1,
 				Memory: "2G",
+			},
+		},
+		{
+			source: `
+kind: Node
+type: cp
+spec:
+  cpu: 3
+  memory: 4G
+`,
+			expected: NodeMenu{
+				Type:   CPNode,
+				CPU:    3,
+				Memory: "4G",
 			},
 		},
 		{

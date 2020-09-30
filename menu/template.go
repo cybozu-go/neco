@@ -43,6 +43,7 @@ type Rack struct {
 	ToR1                  ToR
 	ToR2                  ToR
 	BootNode              BootNodeEntity
+	CPList                []Node
 	CSList                []Node
 	SSList                []Node
 	node0Network          *net.IPNet
@@ -133,6 +134,7 @@ type TemplateArgs struct {
 	Racks     []Rack
 	Spines    []Spine
 	Core      Core
+	CP        VMResource
 	CS        VMResource
 	SS        VMResource
 	Boot      VMResource
@@ -177,6 +179,14 @@ func ToTemplateArgs(menu *Menu) (*TemplateArgs, error) {
 
 	for _, node := range menu.Nodes {
 		switch node.Type {
+		case CPNode:
+			templateArgs.CP.Memory = node.Memory
+			templateArgs.CP.CPU = node.CPU
+			templateArgs.CP.Image = node.Image
+			templateArgs.CP.Data = node.Data
+			templateArgs.CP.UEFI = node.UEFI
+			templateArgs.CP.CloudInitTemplate = node.CloudInitTemplate
+			templateArgs.CP.TPM = node.TPM
 		case CSNode:
 			templateArgs.CS.Memory = node.Memory
 			templateArgs.CS.CPU = node.CPU
@@ -245,6 +255,10 @@ func ToTemplateArgs(menu *Menu) (*TemplateArgs, error) {
 		buildBootNode(rack, menu)
 		rack.NodeNetworkPrefixSize = menu.Network.NodeRangeMask
 
+		for cpIdx := 0; cpIdx < rackMenu.CP; cpIdx++ {
+			node := buildNode("cp", cpIdx, offsetNodenetServers, rack)
+			rack.CPList = append(rack.CPList, node)
+		}
 		for csIdx := 0; csIdx < rackMenu.CS; csIdx++ {
 			node := buildNode("cs", csIdx, offsetNodenetServers, rack)
 			rack.CSList = append(rack.CSList, node)
