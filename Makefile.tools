@@ -72,7 +72,7 @@ node_exporter: $(NODE_EXPORTER_DOWNLOAD)
 
 $(CONTAINERD_DOWNLOAD):
 	mkdir -p $(CONTAINERD_DLDIR)
-	$(WGET) -O $(CONTAINERD_DLDIR)/containerd.tar.gz https://github.com/containerd/containerd/releases/download/v$(CONTAINERD_VERSION)/containerd-$(CONTAINERD_VERSION).linux-amd64.tar.gz
+	$(WGET) -O $(CONTAINERD_DLDIR)/containerd.tar.gz https://github.com/containerd/containerd/releases/download/v$(CONTAINERD_VERSION)/containerd-$(CONTAINERD_VERSION)-linux-amd64.tar.gz
 	$(WGET) -O $(CONTAINERD_DLDIR)/LICENSE   https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/LICENSE
 	$(WGET) -O $(CONTAINERD_DLDIR)/NOTICE    https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/NOTICE
 	$(WGET) -O $(CONTAINERD_DLDIR)/README.md https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/README.md
