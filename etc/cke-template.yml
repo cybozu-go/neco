@@ -24,7 +24,6 @@ options:
   kube-api:
     extra_args:
       - "--enable-admission-plugins=PodSecurityPolicy"
-      - "--feature-gates=EvenPodsSpread=true"
   kube-proxy:
     extra_args: ["--ipvs-strict-arp=true"]
   kube-scheduler:
@@ -88,8 +87,6 @@ options:
         "name": "EvenPodsSpreadPriority",
         "weight": 500
       }
-    extra_args:
-      - "--feature-gates=EvenPodsSpread=true"
   kubelet:
     extra_args:
       - "--containerd=/var/run/k8s-containerd.sock"
