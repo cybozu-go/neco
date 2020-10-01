@@ -57,18 +57,18 @@ all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize telepor
 
 $(NODE_EXPORTER_DOWNLOAD):
 	mkdir -p $(NODE_EXPORTER_DLDIR)
-	$(WGET) -O $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
+	$(WGET) -O $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v$(NODE_EXPORTER_VERSION)/node_exporter-$(NODE_EXPORTER_VERSION).linux-amd64.tar.gz
 	touch $@
 
 node_exporter: $(NODE_EXPORTER_DOWNLOAD)
 	rm -f $(LIBEXECDIR)/node_exporter
 	rm -rf $(BUILDDIR)/node_exporter
-	mkdir -p $(BUILDDIR)/node_exporter $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
-	tar zxf $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz -C $(BUILDDIR)/node_exporter --strip-components=1
-	cd $(BUILDDIR)/node_exporter; GO111MODULE=on make build
-	cp $(BUILDDIR)/node_exporter/node_exporter $(SBINDIR)/
+	mkdir -p $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
+	tar zxf $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz -C $(NODE_EXPORTER_DLDIR) --strip-components=1
+	cp $(NODE_EXPORTER_DLDIR)/node_exporter $(SBINDIR)/
+	cp $(NODE_EXPORTER_DLDIR)/LICENSE       $(DOCDIR)/$@/
+	cp $(NODE_EXPORTER_DLDIR)/NOTICE        $(DOCDIR)/$@/
 	ln -s /usr/sbin/node_exporter $(LIBEXECDIR)/node_exporter
-	cd $(BUILDDIR)/node_exporter; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/$@/
 
 $(CONTAINERD_DOWNLOAD):
 	mkdir -p $(CONTAINERD_DLDIR)
