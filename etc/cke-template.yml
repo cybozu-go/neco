@@ -25,6 +25,9 @@ options:
     extra_args:
       - "--enable-admission-plugins=PodSecurityPolicy"
       - "--feature-gates=EphemeralContainers=true"
+  kube-controller-manager:
+    extra_args:
+      - "--feature-gates=EphemeralContainers=true"
   kube-proxy:
     extra_args:
       - "--ipvs-strict-arp=true"
