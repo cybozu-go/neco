@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 )
 
@@ -44,28 +45,28 @@ func TestSquid() {
 	})
 
 	It("should serve for docker daemon", func() {
-		By("running testhttpd pods")
-		execSafeAt(bootServers[0], "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0", "--replicas=2")
+		By("running a testhttpd pod")
+		execSafeAt(bootServers[0], "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0")
 
 		Eventually(func() error {
-			stdout, _, err := execAt(bootServers[0], "kubectl", "get", "deployments/testhttpd", "-o=json")
+			stdout, _, err := execAt(bootServers[0], "kubectl", "get", "pod/testhttpd", "-o=json")
 			if err != nil {
 				return err
 			}
 
-			deployment := new(appsv1.Deployment)
-			err = json.Unmarshal(stdout, deployment)
+			pod := new(corev1.Pod)
+			err = json.Unmarshal(stdout, pod)
 			if err != nil {
 				return err
 			}
 
-			if int(deployment.Status.AvailableReplicas) != 2 {
-				return fmt.Errorf("AvailableReplicas is not 2: %d", int(deployment.Status.AvailableReplicas))
+			if pod.Status.Phase != corev1.PodRunning {
+				return fmt.Errorf("Pod is not running: %s", pod.Status.Phase)
 			}
 			return nil
 		}).Should(Succeed())
 
-		By("removing testhttpd deployments")
-		execSafeAt(bootServers[0], "kubectl", "delete", "deployments/testhttpd")
+		By("removing the testhttpd pod")
+		execSafeAt(bootServers[0], "kubectl", "delete", "pod/testhttpd")
 	})
 }
