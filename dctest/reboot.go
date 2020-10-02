@@ -62,8 +62,8 @@ func TestRebootAllBootServers() {
 // TestRebootAllNodes tests all nodes stop scenario
 func TestRebootAllNodes() {
 	It("can access a pod from another pod running on different node", func() {
-		execSafeAt(bootServers[0], "kubectl", "run", "nginx-reboot-test", "--image=quay.io/cybozu/testhttpd:0", "--generator=run-pod/v1")
-		execSafeAt(bootServers[0], "kubectl", "run", "debug-reboot-test", "--generator=run-pod/v1", "--image=quay.io/cybozu/ubuntu-debug:18.04", "pause")
+		execSafeAt(bootServers[0], "kubectl", "run", "nginx-reboot-test", "--image=quay.io/cybozu/testhttpd:0")
+		execSafeAt(bootServers[0], "kubectl", "run", "debug-reboot-test", "--image=quay.io/cybozu/ubuntu-debug:18.04", "pause")
 		execSafeAt(bootServers[0], "kubectl", "expose", "pod", "nginx-reboot-test", "--port=80", "--target-port=8000", "--name=nginx-reboot-test")
 		Eventually(func() error {
 			_, _, err := execAt(bootServers[0], "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")
@@ -242,7 +242,7 @@ func TestRebootAllNodes() {
 		By("deploying a new pod whose image-pull-policy is Always")
 		testPod := "test-new-image"
 		execSafeAt(bootServers[0], "kubectl", "run", testPod,
-			"--image=quay.io/cybozu/testhttpd:0", "--image-pull-policy=Always", "--generator=run-pod/v1")
+			"--image=quay.io/cybozu/testhttpd:0", "--image-pull-policy=Always")
 		By("checking the pod is running")
 		Eventually(func() error {
 			stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod", testPod, "-o=json")
