@@ -28,7 +28,6 @@ options:
   kube-proxy:
     extra_args:
       - "--ipvs-strict-arp=true"
-      - "--detect-local-mode=NodeCIDR"
       - "--feature-gates=EphemeralContainers=true"
   kube-scheduler:
     extenders:
