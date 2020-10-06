@@ -294,33 +294,32 @@ func TestUpgrade() {
 		By("deploying testhttpd")
 		execSafeAt(bootServers[0], "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0")
 		Eventually(func() error {
-			stdout, _, err := execAt(bootServers[0], "kubectl", "get", "deployments/testhttpd", "-o=json")
+			stdout, _, err := execAt(bootServers[0], "kubectl", "get", "pod/testhttpd", "-o=json")
 			if err != nil {
 				return err
 			}
 
-			deployment := new(appsv1.Deployment)
-			err = json.Unmarshal(stdout, deployment)
+			pod := new(corev1.Pod)
+			err = json.Unmarshal(stdout, pod)
 			if err != nil {
 				return err
 			}
 
-			if int(deployment.Status.AvailableReplicas) != 1 {
-				return fmt.Errorf("AvailableReplicas is not 1: %d", int(deployment.Status.AvailableReplicas))
+			if pod.Status.Phase != corev1.PodRunning {
+				return fmt.Errorf("Pod is not running: %s", pod.Status.Phase)
 			}
 			return nil
 		}).Should(Succeed())
 
-		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pods", "--selector=run=testhttpd", "-o=json")
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod/testhttpd", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
-		podList := new(corev1.PodList)
-		err = json.Unmarshal(stdout, podList)
+		pod := new(corev1.Pod)
+		err = json.Unmarshal(stdout, pod)
 		Expect(err).NotTo(HaveOccurred())
-		for _, pod := range podList.Items {
-			By("checking SHA1 veth for namespace: " + pod.Namespace + ", name:" + pod.Name)
-			checkVethPeerNameIsSHA1(&pod)
-		}
-		execSafeAt(bootServers[0], "kubectl", "delete", "deployments/testhttpd")
+		By("checking SHA1 veth for namespace: " + pod.Namespace + ", name:" + pod.Name)
+		checkVethPeerNameIsSHA1(pod)
+
+		execSafeAt(bootServers[0], "kubectl", "delete", "pod/testhttpd")
 	})
 
 	It("should SHA1 veth name is attached when container restarts with newer coil", func() {
