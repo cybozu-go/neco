@@ -5,22 +5,22 @@ CURL=curl -Lsf
 WGET=wget --retry-connrefused --no-verbose
 
 ### for containerd
-CONTAINERD_VERSION = 1.3.2
+CONTAINERD_VERSION = 1.4.1
 
 ### for node_exporter
-NODE_EXPORTER_VERSION = 0.18.1
+NODE_EXPORTER_VERSION = 1.0.1
 
 ### for crictl
-CRITOOLS_VERSION = 1.16.1
+CRITOOLS_VERSION = 1.18.0
 
 ### for argocd
 ARGOCD_VERSION = 1.6.2
 
 ### for kubectl
-K8S_VERSION = 1.17.6
+K8S_VERSION = 1.18.9
 
 ### for lvmd
-TOPOLVM_VERSION = 0.5.0
+TOPOLVM_VERSION = 0.6.0
 
 ### for stern
 STERN_VERSION = 1.11.0
@@ -57,22 +57,22 @@ all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize telepor
 
 $(NODE_EXPORTER_DOWNLOAD):
 	mkdir -p $(NODE_EXPORTER_DLDIR)
-	$(WGET) -O $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz https://github.com/prometheus/node_exporter/archive/v$(NODE_EXPORTER_VERSION).tar.gz
+	$(WGET) -O $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v$(NODE_EXPORTER_VERSION)/node_exporter-$(NODE_EXPORTER_VERSION).linux-amd64.tar.gz
 	touch $@
 
 node_exporter: $(NODE_EXPORTER_DOWNLOAD)
 	rm -f $(LIBEXECDIR)/node_exporter
 	rm -rf $(BUILDDIR)/node_exporter
-	mkdir -p $(BUILDDIR)/node_exporter $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
-	tar zxf $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz -C $(BUILDDIR)/node_exporter --strip-components=1
-	cd $(BUILDDIR)/node_exporter; GO111MODULE=on make build
-	cp $(BUILDDIR)/node_exporter/node_exporter $(SBINDIR)/
+	mkdir -p $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
+	tar zxf $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz -C $(NODE_EXPORTER_DLDIR) --strip-components=1
+	cp $(NODE_EXPORTER_DLDIR)/node_exporter $(SBINDIR)/
+	cp $(NODE_EXPORTER_DLDIR)/LICENSE       $(DOCDIR)/$@/
+	cp $(NODE_EXPORTER_DLDIR)/NOTICE        $(DOCDIR)/$@/
 	ln -s /usr/sbin/node_exporter $(LIBEXECDIR)/node_exporter
-	cd $(BUILDDIR)/node_exporter; cp LICENSE NOTICE README.md VERSION $(DOCDIR)/$@/
 
 $(CONTAINERD_DOWNLOAD):
 	mkdir -p $(CONTAINERD_DLDIR)
-	$(WGET) -O $(CONTAINERD_DLDIR)/containerd.tar.gz https://github.com/containerd/containerd/releases/download/v$(CONTAINERD_VERSION)/containerd-$(CONTAINERD_VERSION).linux-amd64.tar.gz
+	$(WGET) -O $(CONTAINERD_DLDIR)/containerd.tar.gz https://github.com/containerd/containerd/releases/download/v$(CONTAINERD_VERSION)/containerd-$(CONTAINERD_VERSION)-linux-amd64.tar.gz
 	$(WGET) -O $(CONTAINERD_DLDIR)/LICENSE   https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/LICENSE
 	$(WGET) -O $(CONTAINERD_DLDIR)/NOTICE    https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/NOTICE
 	$(WGET) -O $(CONTAINERD_DLDIR)/README.md https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/README.md

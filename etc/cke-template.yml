@@ -24,9 +24,14 @@ options:
   kube-api:
     extra_args:
       - "--enable-admission-plugins=PodSecurityPolicy"
-      - "--feature-gates=EvenPodsSpread=true"
+      - "--feature-gates=EphemeralContainers=true"
+  kube-controller-manager:
+    extra_args:
+      - "--feature-gates=EphemeralContainers=true"
   kube-proxy:
-    extra_args: ["--ipvs-strict-arp=true"]
+    extra_args:
+      - "--ipvs-strict-arp=true"
+      - "--feature-gates=EphemeralContainers=true"
   kube-scheduler:
     extenders:
     - |
@@ -89,10 +94,11 @@ options:
         "weight": 500
       }
     extra_args:
-      - "--feature-gates=EvenPodsSpread=true"
+      - "--feature-gates=EphemeralContainers=true"
   kubelet:
     extra_args:
       - "--containerd=/var/run/k8s-containerd.sock"
+      - "--feature-gates=EphemeralContainers=true"
     extra_binds:
       - source: /var/lib/k8s-containerd
         destination: /var/lib/k8s-containerd
