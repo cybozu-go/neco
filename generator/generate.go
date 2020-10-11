@@ -19,20 +19,20 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var quayRepos = []string{
-	"cke",
-	"etcd",
-	"setup-hw",
-	"sabakan",
-	"serf",
-	"vault",
-	"coil",
-	"squid",
-	"teleport",
+var imageRepos = []string{
+	"quay.io/cybozu/cke",
+	"quay.io/cybozu/etcd",
+	"quay.io/cybozu/setup-hw",
+	"quay.io/cybozu/sabakan",
+	"quay.io/cybozu/serf",
+	"quay.io/cybozu/vault",
+	"ghcr.io/cybozu-go/coil",
+	"quay.io/cybozu/squid",
+	"quay.io/cybozu/teleport",
 }
 
 var privateImages = map[string]bool{
-	"setup-hw": true,
+	"quay.io/cybozu/setup-hw": true,
 }
 
 var debRepos = []string{
@@ -122,8 +122,8 @@ func (c *IgnoreConfig) getCoreOSVersions() []string {
 
 // Generate generates new artifacts.go contents and writes it to out.
 func Generate(ctx context.Context, cfg Config, out io.Writer) error {
-	images := make([]*neco.ContainerImage, len(quayRepos))
-	for i, name := range quayRepos {
+	images := make([]*neco.ContainerImage, len(imageRepos))
+	for i, name := range imageRepos {
 		img, err := getLatestImage(ctx, name, cfg.Release, cfg.Ignored.getImageVersions(name))
 		if err != nil {
 			return err
@@ -152,7 +152,7 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 }
 
 func getLatestImage(ctx context.Context, name string, release bool, ignoreVersions []string) (*neco.ContainerImage, error) {
-	ref, err := docker.ParseReference("//quay.io/cybozu/" + name)
+	ref, err := docker.ParseReference("//" + name)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func getLatestImage(ctx context.Context, name string, release bool, ignoreVersio
 	tags, err := docker.GetRepositoryTags(ctx, nil, ref)
 	if err != nil {
 		log.Error("failed to get the latest docker image tag", map[string]interface{}{
-			"repository": "quay.io/cybozu/" + name,
+			"repository": name,
 			log.FnError:  err,
 		})
 		return nil, err
@@ -203,9 +203,10 @@ OUTER:
 	}
 
 	sort.Sort(sort.Reverse(version.Collection(versions)))
+	parts := strings.Split(name, "/")
 	return &neco.ContainerImage{
-		Name:       name,
-		Repository: "quay.io/cybozu/" + name,
+		Name:       parts[len(parts)-1],
+		Repository: name,
 		Tag:        versions[0].Original(),
 		Private:    privateImages[name],
 	}, nil
