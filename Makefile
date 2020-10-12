@@ -50,7 +50,7 @@ update-coil:
 	curl -sfL https://github.com/cybozu-go/coil/archive/v$(COIL_VERSION).tar.gz | tar -C /tmp/work-coil -xzf -
 	cd /tmp/work-coil/*/v2; sed -i -E 's,^(- config/default),#\1, ; s,^#(- config/cke),\1, ; s,^#(- config/default/pod_security_policy.yaml),\1, ; s,^#(- config/pod/compat_calico.yaml),\1,' kustomization.yaml
 	cp etc/netconf.json /tmp/work-coil/*/v2/netconf.json
-	kustomize build /tmp/work-coil/*/v2 > etc/coil.yaml
+	bin/kustomize build /tmp/work-coil/*/v2 > etc/coil.yaml
 	rm -rf /tmp/work-coil
 
 start-etcd:
@@ -121,6 +121,9 @@ git-neco:
 setup:
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
+	mkdir -p bin
+	curl -sfL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz | tar -xz -C bin
+	chmod a+x bin/kustomize
 
 clean:
 	$(MAKE) -f Makefile.tools clean
