@@ -60,6 +60,7 @@ func TestCoilSetup() {
 // TestCoil tests Coil
 func TestCoil() {
 	It("should be available", func() {
+		// TODO: revert this after migration to Coil v2
 		// skip test if Coil v1 is detected
 		stdout, stderr, err := execAt(bootServers[0], "ckecli", "resource", "list")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)

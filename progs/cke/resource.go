@@ -35,6 +35,7 @@ OUT:
 			}
 
 			for _, resName := range strings.Fields(string(out)) {
+				// TODO: revert this after migration to Coil v2
 				// skip Coil v2 installation if Coil v1 is detected
 				if resName == "PodSecurityPolicy/coil" {
 					continue OUT
