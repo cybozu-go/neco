@@ -18,8 +18,9 @@ else
   MENU = $(MENU_ARG)
 endif
 MACHINES_FILE ?= $(abspath $(OUTPUT)/machines.yml)
+ADDRESS_POOLS_FILE = $(abspath ./address_pools.yaml)
 
-export PLACEMAT GINKGO SUITE_PACKAGE MACHINES_FILE
+export PLACEMAT GINKGO SUITE_PACKAGE MACHINES_FILE ADDRESS_POOLS_FILE
 
 CUSTOM_UBUNTU = cybozu-ubuntu-18.04-server-cloudimg-amd64.img
 CUSTOM_UBUNTU_API_URL = https://api.github.com/repos/cybozu/neco-ubuntu/releases/latest

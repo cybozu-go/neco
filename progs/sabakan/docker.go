@@ -50,7 +50,7 @@ func fetchDockerImageAsArchive(ctx context.Context, image neco.ContainerImage, a
 	}
 
 	var srcSystemCtx *types.SystemContext
-	if auth != nil {
+	if auth != nil && image.NeedAuth() {
 		srcSystemCtx = &types.SystemContext{
 			DockerAuthConfig: &types.DockerAuthConfig{
 				Username: auth.Username,
