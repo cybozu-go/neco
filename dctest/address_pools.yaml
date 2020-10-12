@@ -1,0 +1,17 @@
+apiVersion: coil.cybozu.com/v2
+kind: AddressPool
+metadata:
+  name: default
+spec:
+  blockSizeBits: 5
+  subnets:
+  - ipv4: 10.64.0.0/14
+---
+apiVersion: coil.cybozu.com/v2
+kind: AddressPool
+metadata:
+  name: internet-egress
+spec:
+  blockSizeBits: 0
+  subnets:
+  - ipv4: 172.19.0.0/28

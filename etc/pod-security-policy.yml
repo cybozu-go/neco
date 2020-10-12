@@ -76,38 +76,6 @@ subjects:
   name: system:authenticated
 ---
 
-# for coil
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: coil
-spec:
-  privileged: true
-  allowPrivilegeEscalation: true
-  volumes:
-    - 'configMap'
-    - 'emptyDir'
-    - 'projected'
-    - 'secret'
-    - 'downwardAPI'
-    - 'hostPath'
-  allowedHostPaths:
-  - pathPrefix: "/opt/cni/bin"
-    readOnly: false
-  - pathPrefix: "/etc/cni/net.d"
-    readOnly: false
-  hostNetwork: true
-  runAsUser:
-    rule: 'RunAsAny'
-  seLinux:
-    rule: 'RunAsAny'
-  supplementalGroups:
-    rule: 'RunAsAny'
-  fsGroup:
-    rule: 'RunAsAny'
-  readOnlyRootFilesystem: true
----
-
 # for squid + unbound
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy

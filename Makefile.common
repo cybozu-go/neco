@@ -1,3 +1,16 @@
+# tool versions used for both local bin and deb/zip packages
+CONTAINERD_VERSION = 1.4.1
+NODE_EXPORTER_VERSION = 1.0.1
+CRITOOLS_VERSION = 1.18.0
+ARGOCD_VERSION = 1.6.2
+K8S_VERSION = 1.18.9
+TOPOLVM_VERSION = 0.6.0
+STERN_VERSION = 1.11.0
+# Follow Argo CD installed kustomize version
+# https://github.com/cybozu/neco-containers/blob/master/argocd/Dockerfile#L27
+KUSTOMIZE_VERSION = 3.7.0
+TELEPORT_VERSION = 4.2.10
+
 SUDO = sudo
 
 BUILDDIR := $(CURDIR)/build

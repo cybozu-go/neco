@@ -91,6 +91,14 @@ func (c ContainerImage) MajorVersion() int {
 	return ver.Segments()[0]
 }
 
+// NeedAuth returns true if fetching this image needs authentication
+func (c ContainerImage) NeedAuth() bool {
+	if c.Private {
+		return true
+	}
+	return strings.HasPrefix(c.Repository, "quay.io/")
+}
+
 // DebianPackage represents a Debian package hosted in GitHub releases.
 type DebianPackage struct {
 	// Package name.

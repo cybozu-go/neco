@@ -2,6 +2,7 @@
 
 include Makefile.common
 
+COIL_VERSION := $(shell awk '/"coil"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
 LSB_DISTRIB_RELEASE := $(shell . /etc/lsb-release ; echo $$DISTRIB_RELEASE)
 
 FAKEROOT = fakeroot
@@ -33,6 +34,7 @@ OPDEB_BINNAMES = argocd kubectl kustomize stern teleport
 all:
 	@echo "Specify one of these targets:"
 	@echo
+	@echo "    update-coil - update Coil manifests under etc/."
 	@echo "    start-etcd  - run etcd on localhost."
 	@echo "    stop-etcd   - stop etcd."
 	@echo "    test        - run single host tests."
@@ -40,6 +42,16 @@ all:
 	@echo "    deb         - build Debian package."
 	@echo "    tools       - build neco-operation-cli packages."
 	@echo "    setup       - install dependencies."
+
+.PHONY: update-coil
+update-coil:
+	rm -rf /tmp/work-coil
+	mkdir -p /tmp/work-coil
+	curl -sfL https://github.com/cybozu-go/coil/archive/v$(COIL_VERSION).tar.gz | tar -C /tmp/work-coil -xzf -
+	cd /tmp/work-coil/*/v2; sed -i -E 's,^(- config/default),#\1, ; s,^#(- config/cke),\1, ; s,^#(- config/default/pod_security_policy.yaml),\1, ; s,^#(- config/pod/compat_calico.yaml),\1,' kustomization.yaml
+	cp etc/netconf.json /tmp/work-coil/*/v2/netconf.json
+	bin/kustomize build /tmp/work-coil/*/v2 > etc/coil.yaml
+	rm -rf /tmp/work-coil
 
 start-etcd:
 	systemd-run --user --unit neco-etcd.service etcd --data-dir $(ETCD_DIR)
@@ -109,6 +121,9 @@ git-neco:
 setup:
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
+	mkdir -p bin
+	curl -sfL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz | tar -xz -C bin
+	chmod a+x bin/kustomize
 
 clean:
 	$(MAKE) -f Makefile.tools clean

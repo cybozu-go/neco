@@ -19,20 +19,25 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var quayRepos = []string{
-	"cke",
-	"etcd",
-	"setup-hw",
-	"sabakan",
-	"serf",
-	"vault",
-	"coil",
-	"squid",
-	"teleport",
+var imageRepos = []string{
+	"quay.io/cybozu/cke",
+	"quay.io/cybozu/etcd",
+	"quay.io/cybozu/setup-hw",
+	"quay.io/cybozu/sabakan",
+	"quay.io/cybozu/serf",
+	"quay.io/cybozu/vault",
+	"ghcr.io/cybozu-go/coil",
+	"quay.io/cybozu/squid",
+	"quay.io/cybozu/teleport",
+}
+
+func imageName(repoURL string) string {
+	t := strings.Split(repoURL, "/")
+	return t[len(t)-1]
 }
 
 var privateImages = map[string]bool{
-	"setup-hw": true,
+	"quay.io/cybozu/setup-hw": true,
 }
 
 var debRepos = []string{
@@ -122,9 +127,10 @@ func (c *IgnoreConfig) getCoreOSVersions() []string {
 
 // Generate generates new artifacts.go contents and writes it to out.
 func Generate(ctx context.Context, cfg Config, out io.Writer) error {
-	images := make([]*neco.ContainerImage, len(quayRepos))
-	for i, name := range quayRepos {
-		img, err := getLatestImage(ctx, name, cfg.Release, cfg.Ignored.getImageVersions(name))
+	images := make([]*neco.ContainerImage, len(imageRepos))
+	for i, repoURL := range imageRepos {
+		name := imageName(repoURL)
+		img, err := getLatestImage(ctx, repoURL, cfg.Release, cfg.Ignored.getImageVersions(name))
 		if err != nil {
 			return err
 		}
@@ -151,8 +157,8 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 	return render(out, cfg.Release, images, debs, coreos)
 }
 
-func getLatestImage(ctx context.Context, name string, release bool, ignoreVersions []string) (*neco.ContainerImage, error) {
-	ref, err := docker.ParseReference("//quay.io/cybozu/" + name)
+func getLatestImage(ctx context.Context, repoURL string, release bool, ignoreVersions []string) (*neco.ContainerImage, error) {
+	ref, err := docker.ParseReference("//" + repoURL)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +166,7 @@ func getLatestImage(ctx context.Context, name string, release bool, ignoreVersio
 	tags, err := docker.GetRepositoryTags(ctx, nil, ref)
 	if err != nil {
 		log.Error("failed to get the latest docker image tag", map[string]interface{}{
-			"repository": "quay.io/cybozu/" + name,
+			"repository": repoURL,
 			log.FnError:  err,
 		})
 		return nil, err
@@ -187,6 +193,7 @@ OUTER:
 		versions = append(versions, v)
 	}
 
+	name := imageName(repoURL)
 	if release {
 		current, err := neco.CurrentArtifacts.FindContainerImage(name)
 		if err != nil {
@@ -205,9 +212,9 @@ OUTER:
 	sort.Sort(sort.Reverse(version.Collection(versions)))
 	return &neco.ContainerImage{
 		Name:       name,
-		Repository: "quay.io/cybozu/" + name,
+		Repository: repoURL,
 		Tag:        versions[0].Original(),
-		Private:    privateImages[name],
+		Private:    privateImages[repoURL],
 	}, nil
 }
 
