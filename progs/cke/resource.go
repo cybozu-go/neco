@@ -5,7 +5,6 @@ import (
 	"context"
 	"io/ioutil"
 	"path/filepath"
-	"strings"
 	"text/template"
 
 	"github.com/cybozu-go/neco"
@@ -26,23 +25,7 @@ func UpdateResources(ctx context.Context) error {
 		templateParams["cke-"+img.Name] = img.FullName(false)
 	}
 
-OUT:
 	for _, filename := range neco.CKEUserResourceFiles {
-		if strings.HasSuffix(filename, "/coil.yaml") {
-			out, err := well.CommandContext(ctx, neco.CKECLIBin, "resource", "list").Output()
-			if err != nil {
-				return err
-			}
-
-			for _, resName := range strings.Fields(string(out)) {
-				// TODO: revert this after migration to Coil v2
-				// skip Coil v2 installation if Coil v1 is detected
-				if resName == "PodSecurityPolicy/coil" {
-					continue OUT
-				}
-			}
-		}
-
 		content, err := ioutil.ReadFile(filename)
 		if err != nil {
 			return err
