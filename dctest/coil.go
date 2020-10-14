@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -60,16 +59,6 @@ func TestCoilSetup() {
 // TestCoil tests Coil
 func TestCoil() {
 	It("should be available", func() {
-		// TODO: revert this after migration to Coil v2
-		// skip test if Coil v1 is detected
-		stdout, stderr, err := execAt(bootServers[0], "ckecli", "resource", "list")
-		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		for _, f := range strings.Fields(string(stdout)) {
-			if f == "PodSecurityPolicy/coil" {
-				return
-			}
-		}
-
 		By("checking coild DaemonSet and coil-controller Deployment")
 		checkCoilNodeDaemonSet()
 		checkCoilControllerDeployment()
