@@ -31,6 +31,7 @@ options:
   kube-proxy:
     extra_args:
       - "--ipvs-strict-arp=true"
+      - "--ipvs-scheduler=sh"
       - "--feature-gates=EphemeralContainers=true"
   kube-scheduler:
     extenders:
