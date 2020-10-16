@@ -11,7 +11,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.5.2", Private: false},
 		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.9.5.1", Private: false},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.4.1.2", Private: false},
-		{Name: "coil", Repository: "ghcr.io/cybozu-go/coil", Tag: "2.0.1", Private: false},
+		{Name: "coil", Repository: "ghcr.io/cybozu-go/coil", Tag: "2.0.2", Private: false},
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "3.5.27.1.11", Private: false},
 		{Name: "teleport", Repository: "quay.io/cybozu/teleport", Tag: "4.3.7.1", Private: false},
 	},
