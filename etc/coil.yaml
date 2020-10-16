@@ -3999,7 +3999,7 @@ metadata:
     app.kubernetes.io/name: coil
   name: coil-egress
 spec:
-  allowPrivilegeEscalation: false
+  allowPrivilegeEscalation: true
   allowedCapabilities:
   - NET_ADMIN
   allowedHostPaths:
@@ -4457,6 +4457,7 @@ rules:
   - policy
   resourceNames:
   - coil-controller
+  - coil-egress
   resources:
   - podsecuritypolicies
   verbs:
@@ -4738,7 +4739,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        image: ghcr.io/cybozu-go/coil:2.0.1
+        image: ghcr.io/cybozu-go/coil:2.0.2
         livenessProbe:
           httpGet:
             host: localhost
@@ -4808,6 +4809,7 @@ spec:
       containers:
       - args:
         - --compat-calico
+        - --register-from-main
         command:
         - coild
         env:
@@ -4815,7 +4817,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: ghcr.io/cybozu-go/coil:2.0.1
+        image: ghcr.io/cybozu-go/coil:2.0.2
         livenessProbe:
           httpGet:
             host: localhost
@@ -4858,7 +4860,7 @@ spec:
             configMapKeyRef:
               key: cni_netconf
               name: coil-config-22b825t954
-        image: ghcr.io/cybozu-go/coil:2.0.1
+        image: ghcr.io/cybozu-go/coil:2.0.2
         name: coil-installer
         securityContext:
           privileged: true
