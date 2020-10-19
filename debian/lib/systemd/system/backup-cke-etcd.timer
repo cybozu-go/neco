@@ -1,0 +1,11 @@
+[Unit]
+Description=run ckecli etcd local-backup every hour
+After=cke.service
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1h
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target
