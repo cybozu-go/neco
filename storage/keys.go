@@ -32,7 +32,7 @@ const (
 	KeyWorkerTimeout          = "config/worker-timeout"
 	KeyGitHubToken            = "config/github-token"
 	KeyNodeProxy              = "config/node-proxy"
-	KeyExternalIpAddressBlock = "config/external-ip-address-block"
+	KeyExternalIPAddressBlock = "config/external-ip-address-block"
 	KeyVaultUnsealKey         = "vault-unseal-key"
 	KeyVaultRootToken         = "vault-root-token"
 	KeyFinishPrefix           = "finish/"

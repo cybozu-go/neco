@@ -2,10 +2,7 @@ include: ../../common/common.yml
 files:
   - /opt/sbin/setup-lvmd
   - /etc/topolvm/lvmd.yaml
-  - /var/lib/iptables/rules-save
 systemd:
   - name: setup-lvmd.service
   - name: lvmd.service
-    enabled: true
-  - name: iptables-restore.service
     enabled: true

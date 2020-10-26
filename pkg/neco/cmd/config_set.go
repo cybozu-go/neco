@@ -153,7 +153,7 @@ Possible keys are:
 				if ip.To4() == nil {
 					return errors.New("not IPv4 addr: " + value)
 				}
-				return st.PutExternalIpAddressBlock(ctx, value)
+				return st.PutExternalIPAddressBlock(ctx, value)
 			}
 			return errors.New("unknown key: " + key)
 		})
