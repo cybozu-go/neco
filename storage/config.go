@@ -144,3 +144,13 @@ func (s Storage) PutNodeProxy(ctx context.Context, token string) error {
 func (s Storage) GetNodeProxy(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyNodeProxy)
 }
+
+// PutExternalIpAddressBlock stores external ip address block config to storage.
+func (s Storage) PutExternalIpAddressBlock(ctx context.Context, username string) error {
+	return s.put(ctx, KeyExternalIpAddressBlock, username)
+}
+
+// GetExternalIpAddressBlock returns external ip address block from storage
+func (s Storage) GetExternalIpAddressBlock(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyExternalIpAddressBlock)
+}

@@ -23,23 +23,24 @@ var configSetCmd = &cobra.Command{
 	Long: `Store a configuration value to etcd.
 
 Possible keys are:
-    env                   - "staging" or "prod".
-    slack                 - Slack WebHook URL.
-    proxy                 - HTTP proxy server URL to access Internet for boot servers.
-    dns                   - DNS server address for boot servers.
-    quay-username         - Username to authenticate to quay.io from QUAY_USER.  This does not take VALUE.
-    quay-password         - Password to authenticate to quay.io from QUAY_PASSWORD.  This does not take VALUE.
-    check-update-interval - Polling interval for checking new neco release.
-    worker-timeout        - Timeout value to wait for workers.
-    github-token          - GitHub personal access token for checking GitHub release.
-    node-proxy            - HTTP proxy server URL to access Internet for worker nodes.`,
+    env                       - "staging" or "prod".
+    slack                     - Slack WebHook URL.
+    proxy                     - HTTP proxy server URL to access Internet for boot servers.
+    dns                       - DNS server address for boot servers.
+    quay-username             - Username to authenticate to quay.io from QUAY_USER.  This does not take VALUE.
+    quay-password             - Password to authenticate to quay.io from QUAY_PASSWORD.  This does not take VALUE.
+    check-update-interval     - Polling interval for checking new neco release.
+    worker-timeout            - Timeout value to wait for workers.
+    github-token              - GitHub personal access token for checking GitHub release.
+    node-proxy                - HTTP proxy server URL to access Internet for worker nodes.
+    external-ip-address-block - IP address block to be published externally.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return fmt.Errorf("accepts %d arg(s), received %d", 1, len(args))
 		}
 		switch args[0] {
-		case "env", "slack", "proxy", "check-update-interval", "worker-timeout", "node-proxy":
+		case "env", "slack", "proxy", "check-update-interval", "worker-timeout", "node-proxy", "external-ip-address-block":
 			if len(args) != 2 {
 				return fmt.Errorf("accepts %d arg(s), received %d", 2, len(args))
 			}
@@ -61,6 +62,7 @@ Possible keys are:
 		"worker-timeout",
 		"github-token",
 		"node-proxy",
+		"external-ip-address-block",
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
@@ -142,6 +144,16 @@ Possible keys are:
 					return errors.New("invalid URL")
 				}
 				return st.PutNodeProxy(ctx, value)
+			case "external-ip-address-block":
+				value = args[1]
+				ip, _, err := net.ParseCIDR(value)
+				if err != nil {
+					return err
+				}
+				if ip.To4() == nil {
+					return errors.New("not IPv4 addr: " + value)
+				}
+				return st.PutExternalIpAddressBlock(ctx, value)
 			}
 			return errors.New("unknown key: " + key)
 		})
