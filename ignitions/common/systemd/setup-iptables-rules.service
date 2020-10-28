@@ -1,0 +1,15 @@
+[Unit]
+Description=Setup iptables rules.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/setup-iptables-rules
+RemainAfterExit=yes
+
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target

@@ -26,6 +26,7 @@ files:
   - /opt/sbin/setup-bmc-user
   - /opt/sbin/setup-containerd
   - /opt/sbin/setup-hw
+  - /opt/sbin/setup-iptables-rules
   - /opt/sbin/setup-local-network
   - /opt/sbin/setup-node-exporter
   - /opt/sbin/setup-serf-conf
@@ -61,8 +62,9 @@ systemd:
     enabled: true
   - name: bird-wait.service
     enabled: true
+  - name: setup-iptables-rules.service
+    enabled: true
   - name: setup-node-exporter.service
-  - name: iptables-notrack-udp-53.service
   - name: node-exporter.service
     enabled: true
   - name: chronyd.service

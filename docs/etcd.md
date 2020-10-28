@@ -144,6 +144,10 @@ GitHub personal access token.
 
 HTTP proxy url for worker nodes to access Internet such as `http://squid:3128`.
 
+## `<prefix>/config/external-ip-address-block`
+
+IP address block to to be published externally.
+
 ## `<prefix>/vault-unseal-key`
 
 Vault unseal key for unsealing automatically.

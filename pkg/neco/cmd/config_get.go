@@ -19,15 +19,16 @@ var configGetCmd = &cobra.Command{
 	Long: `Show the current configuration value.
 
 Possible keys are:
-    env                   - "staging" or "prod".  Default is "staging".
-    slack                 - Slack WebHook URL.
-    proxy                 - HTTP proxy server URL to access Internet for boot servers.
-    dns                   - DNS server address for boot servers.
-    quay-username         - Username to authenticate to quay.io.
-    check-update-interval - Polling interval for checking new neco release.
-    worker-timeout        - Timeout value to wait for workers.
-    github-token          - GitHub personal access token for checking GitHub release.
-    node-proxy            - HTTP proxy server URL to access Internet for worker nodes.`,
+    env                       - "staging" or "prod".  Default is "staging".
+    slack                     - Slack WebHook URL.
+    proxy                     - HTTP proxy server URL to access Internet for boot servers.
+    dns                       - DNS server address for boot servers.
+    quay-username             - Username to authenticate to quay.io.
+    check-update-interval     - Polling interval for checking new neco release.
+    worker-timeout            - Timeout value to wait for workers.
+    github-token              - GitHub personal access token for checking GitHub release.
+    node-proxy                - HTTP proxy server URL to access Internet for worker nodes.
+    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.`,
 
 	Args: cobra.ExactArgs(1),
 	ValidArgs: []string{
@@ -40,6 +41,7 @@ Possible keys are:
 		"worker-timeout",
 		"github-token",
 		"node-proxy",
+		"external-ip-address-block",
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
@@ -105,6 +107,12 @@ Possible keys are:
 					return err
 				}
 				fmt.Println(proxy)
+			case "external-ip-address-block":
+				ipBlock, err := st.GetExternalIPAddressBlock(ctx)
+				if err != nil {
+					return err
+				}
+				fmt.Println(ipBlock)
 			default:
 				return errors.New("unknown key: " + key)
 			}
