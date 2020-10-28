@@ -385,6 +385,13 @@ func TestUpgrade() {
 			}
 		}
 	})
+
+	// TODO: Remove this block after the following PR is released.
+	// https://github.com/cybozu-go/neco/pull/1176
+	It("should set `external-ip-address-block` config", func() {
+		execSafeAt(bootServers[0], "neco", "config", "set", "external-ip-address-block", externalIPBlock)
+		execSafeAt(bootServers[0], "neco", "init-data", "--ignitions-only")
+	})
 }
 
 func checkVersionByDocker(address, name, image string) error {

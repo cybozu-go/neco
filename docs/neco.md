@@ -256,7 +256,12 @@ It will be used by `neco-updater` and `neco-worker`.
 ### `node-proxy`
 
 Specify HTTP proxy server to access Internet for worker nodes.
-This value is used as metadata key in the ignition template.
+This value is used as metadata in the ignition template.
+
+### `external-ip-address-block`
+
+Specify an IP address block assigned to Nodes by a LoadBalancer controller.
+This value is used as metadata in the ignition template.
 
 Use case
 --------

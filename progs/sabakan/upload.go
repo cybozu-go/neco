@@ -324,6 +324,16 @@ func uploadIgnitions(ctx context.Context, c *sabac.Client, id string, st storage
 		return err
 	}
 
+	ipBlock, err := st.GetExternalIPAddressBlock(ctx)
+	switch err {
+	case storage.ErrNotFound:
+		metadata["external_ip_address_block"] = ""
+	case nil:
+		metadata["external_ip_address_block"] = ipBlock
+	default:
+		return err
+	}
+
 	// set boot server addresses in metadata
 	req, err := st.GetRequest(ctx)
 	if err != nil {

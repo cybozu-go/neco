@@ -34,6 +34,9 @@ func TestInitData() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
+		By("setting external IP address block")
+		execSafeAt(bootServers[0], "neco", "config", "set", "external-ip-address-block", externalIPBlock)
+
 		By("initialize data for sabakan and CKE")
 		cs, err := getMachinesSpecifiedRole("cs")
 		Expect(err).NotTo(HaveOccurred())
