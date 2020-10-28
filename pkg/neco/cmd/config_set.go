@@ -33,7 +33,7 @@ Possible keys are:
     worker-timeout            - Timeout value to wait for workers.
     github-token              - GitHub personal access token for checking GitHub release.
     node-proxy                - HTTP proxy server URL to access Internet for worker nodes.
-    external-ip-address-block - IP address block to be published externally.`,
+    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -146,14 +146,14 @@ Possible keys are:
 				return st.PutNodeProxy(ctx, value)
 			case "external-ip-address-block":
 				value = args[1]
-				ip, _, err := net.ParseCIDR(value)
+				ip, block, err := net.ParseCIDR(value)
 				if err != nil {
 					return err
 				}
 				if ip.To4() == nil {
 					return errors.New("not IPv4 addr: " + value)
 				}
-				return st.PutExternalIPAddressBlock(ctx, value)
+				return st.PutExternalIPAddressBlock(ctx, block.String())
 			}
 			return errors.New("unknown key: " + key)
 		})

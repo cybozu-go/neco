@@ -26,7 +26,7 @@ const (
 	DefaultRunTimeout = 10 * time.Minute
 
 	proxy           = "http://10.0.49.3:3128"
-	externalIPBlock = "172.17.0.16/28"
+	externalIPBlock = "172.19.0.16/28"
 )
 
 var (

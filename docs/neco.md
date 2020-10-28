@@ -260,7 +260,7 @@ This value is used as metadata in the ignition template.
 
 ### `external-ip-address-block`
 
-Specify an IP address block to be published externally.
+Specify an IP address block assigned to Nodes by a LoadBalancer controller.
 This value is used as metadata in the ignition template.
 
 Use case

@@ -28,7 +28,7 @@ Possible keys are:
     worker-timeout            - Timeout value to wait for workers.
     github-token              - GitHub personal access token for checking GitHub release.
     node-proxy                - HTTP proxy server URL to access Internet for worker nodes.
-    external-ip-address-block - IP address block to be published externally.`,
+    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.`,
 
 	Args: cobra.ExactArgs(1),
 	ValidArgs: []string{
