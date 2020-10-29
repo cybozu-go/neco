@@ -46,7 +46,7 @@ var UpgradeSuite = func() {
 	})
 	Context("upgrade", TestUpgrade)
 	// TODO: Remove TestRebootAllNodes from the upgrade suite after the following PR is released.
-	// https://github.com/cybozu-go/neco/pull/1176
+	// https://github.com/cybozu-go/neco/pull/1180
 	Context("reboot-all-nodes", TestRebootAllNodes)
 	Context("upgraded cke", func() {
 		TestCKE()
