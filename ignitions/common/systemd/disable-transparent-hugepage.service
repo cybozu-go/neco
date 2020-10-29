@@ -3,6 +3,7 @@ Description=Disable transparent hugepage
 DefaultDependencies=false
 Before=basic.target
 AssertPathIsReadWrite=/sys/kernel/mm/transparent_hugepage/enabled
+ConditionVirtualization=false
 
 [Service]
 Type=oneshot
