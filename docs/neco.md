@@ -151,6 +151,9 @@ Synopsis
 
     Reboot all worker nodes.
 
+    This uses CKE's function of [graceful reboot](https://github.com/cybozu-go/cke/blob/master/docs/reboot.md) for the nodes used by CKE.
+    As for the other nodes, this reboots them immediately.
+
 ### CKE related functions
 
 The name of the cluster in [cke-template.yml](../etc/cke-template.yml) will be overwritten with the value read from `/etc/neco/cluster`.
