@@ -13,14 +13,13 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
-	sabakan "github.com/cybozu-go/sabakan/v2/client"
+	"github.com/cybozu-go/sabakan/v2"
+	sabaclient "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
 
-var ipmiVersion string
-
-func lookupMachineBMCAddress(ctx context.Context, id string) (string, error) {
+func lookupMachine(ctx context.Context, id string) (*sabakan.Machine, error) {
 	ip := net.ParseIP(id)
 	params := make(map[string]string)
 	if ip != nil {
@@ -33,21 +32,21 @@ func lookupMachineBMCAddress(ctx context.Context, id string) (string, error) {
 		params["serial"] = id
 	}
 
-	saba, err := sabakan.NewClient(neco.SabakanLocalEndpoint, ext.LocalHTTPClient())
+	saba, err := sabaclient.NewClient(neco.SabakanLocalEndpoint, ext.LocalHTTPClient())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	machines, err := saba.MachinesGet(ctx, params)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if len(machines) != 1 {
-		return "", errors.New("machine is not found in sabakan")
+		return nil, errors.New("machine is not found in sabakan")
 	}
 
-	return machines[0].Spec.BMC.IPv4, nil
+	return &machines[0], nil
 }
 
 func ipmiPower(ctx context.Context, action, driver, addr string) error {
@@ -108,12 +107,12 @@ var ipmiPowerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		driver := getDriver()
 		well.Go(func(ctx context.Context) error {
-			addr, err := lookupMachineBMCAddress(ctx, args[1])
+			machine, err := lookupMachine(ctx, args[1])
 			if err != nil {
 				return err
 			}
 
-			return ipmiPower(ctx, args[0], driver, addr)
+			return ipmiPower(ctx, args[0], driver, machine.Spec.BMC.IPv4)
 		})
 		well.Stop()
 		err := well.Wait()
