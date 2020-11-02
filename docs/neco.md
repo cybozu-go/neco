@@ -147,6 +147,10 @@ Synopsis
 
     Control power of a machine having `SERIAL` or `IP` address.
 
+* `neco reboot-and-wait SERIAL_OR_IP`
+
+    Reboot a machine having `SERIAL` or `IP` address, and wait for its boot-up.
+
 * `neco reboot-worker`
 
     Reboot all worker nodes.
