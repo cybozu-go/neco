@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -14,6 +15,7 @@ import (
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 	"github.com/tcnksm/go-input"
+	"sigs.k8s.io/yaml"
 )
 
 var httpClient = &well.HTTPClient{
@@ -48,6 +50,7 @@ query rebootSearch($having: MachineParams = null,
 	searchMachines(having: $having, notHaving: $notHaving) {
 		spec {
 			serial
+			ipv4
 			bmc {
 				ipv4
 			}
@@ -56,15 +59,27 @@ query rebootSearch($having: MachineParams = null,
 }
 `
 
+// ckeCluster is part of cke.Cluster in github.com/cybozu-go/cke
+type ckeCluster struct {
+	Nodes []*ckeNode `yaml:"nodes"`
+}
+
+// ckeNode is part of cke.Node in github.com/cybozu-go/cke
+type ckeNode struct {
+	Address string `yaml:"address"`
+}
+
 var rebootWorkerCmd = &cobra.Command{
 	Use:   "reboot-worker",
-	Short: "Reboot all worker nodes.",
-	Long:  `Reboot all worker nodes for their updates.`,
+	Short: "reboot all worker nodes",
+	Long: `Reboot all worker nodes for their updates.
+
+This uses CKE's function of graceful reboot for the nodes used by CKE.
+As for the other nodes, this reboots them immediately.`,
 
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		graphQLEndpoint := neco.SabakanLocalEndpoint + "/graphql"
-		fmt.Println("WARNING: this command reboots all servers other than boot servers and will cause a system down.")
+		fmt.Println("WARNING: this command reboots all servers other than boot servers and may cause system instability.")
 		ans, err := askYorN("Continue?")
 		if err != nil {
 			log.ErrorExit(err)
@@ -80,25 +95,84 @@ var rebootWorkerCmd = &cobra.Command{
 		if !ans {
 			return
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		machines, err := doQuery(ctx, graphQLEndpoint, graphQLQuery, httpClient)
+
+		err = rebootMain()
 		if err != nil {
 			log.ErrorExit(err)
 		}
-		driverVersion := getDriver()
-		for _, m := range machines {
-			addr := m.Spec.BMC.IPv4
-			if addr == "" {
-				log.ErrorExit(errors.New(m.Spec.Serial + "'s BMC IPAddress not found"))
-			}
-			err := ipmiPower(context.Background(), "restart", driverVersion, addr)
-			if err != nil {
-				log.ErrorExit(err)
-			}
-		}
-		return
 	},
+}
+
+func rebootMain() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	graphQLEndpoint := neco.SabakanLocalEndpoint + "/graphql"
+	machines, err := doQuery(ctx, graphQLEndpoint, graphQLQuery, httpClient)
+	if err != nil {
+		return err
+	}
+
+	comm := exec.Command(neco.CKECLIBin, "cluster", "get")
+	comm.Stderr = os.Stderr
+	output, err := comm.Output()
+	if err != nil {
+		return err
+	}
+	cluster := new(ckeCluster)
+	err = yaml.Unmarshal(output, cluster)
+	if err != nil {
+		return err
+	}
+
+	for _, node := range cluster.Nodes {
+		log.Info("adding node to CKE reboot queue", map[string]interface{}{
+			"node": node.Address,
+		})
+		comm := exec.Command(neco.CKECLIBin, "reboot-queue", "add", "-")
+		comm.Stdin = bytes.NewBufferString(node.Address)
+		comm.Stdout = os.Stdout
+		comm.Stderr = os.Stderr
+		err := comm.Run()
+		if err != nil {
+			return err
+		}
+	}
+
+	ckeNodeAddrs := make(map[string]bool, len(cluster.Nodes))
+	for _, node := range cluster.Nodes {
+		ckeNodeAddrs[node.Address] = true
+	}
+	driverVersion := getDriver()
+	for _, m := range machines {
+		if len(m.Spec.IPv4) == 0 {
+			log.Warn("IP addresses not found; skipping", map[string]interface{}{
+				"serial": m.Spec.Serial,
+			})
+			continue
+		}
+		if ckeNodeAddrs[m.Spec.IPv4[0]] {
+			continue
+		}
+		addr := m.Spec.BMC.IPv4
+		if addr == "" {
+			log.Warn("BMC IP address not found; skipping", map[string]interface{}{
+				"serial": m.Spec.Serial,
+				"node":   m.Spec.IPv4[0],
+			})
+			continue
+		}
+		log.Info("rebooting node via IPMI", map[string]interface{}{
+			"serial": m.Spec.Serial,
+			"node":   m.Spec.IPv4[0],
+			"bmc":    m.Spec.BMC.IPv4,
+		})
+		err := ipmiPower(context.Background(), "restart", driverVersion, addr)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func askYorN(query string) (bool, error) {
