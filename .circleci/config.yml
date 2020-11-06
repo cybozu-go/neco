@@ -169,11 +169,13 @@ jobs:
           command: ./bin/run-dctest-suite.sh functions
           no_output_timeout: 20m
       - run:
-          name: Set the instance lifetime
+          name: Set the instance lifetime and the state label
           command: |
             . ./bin/env
             $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
               --metadata shutdown-at=$(date -Iseconds -d+30minutes)
+            $GCLOUD compute instances add-labels ${INSTANCE_NAME} --zone ${ZONE} \
+              --labels state=failed
           when: on_fail
       - notify-slack-to-extend
       - run:
