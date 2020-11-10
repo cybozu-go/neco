@@ -23,6 +23,7 @@ KUSTOMIZE_DLDIR := $(DOWNLOADDIR)/kustomize-v$(KUSTOMIZE_VERSION)
 KUSTOMIZE_DOWNLOAD := $(KUSTOMIZE_DLDIR)/downloaded
 TELEPORT_DLDIR := $(DOWNLOADDIR)/teleport-v$(TELEPORT_VERSION)
 TELEPORT_DOWNLOAD := $(TELEPORT_DLDIR)/downloaded
+TELEPORT_SRCDIR := $$GOPATH/src/github.com/gravitational/teleport
 
 all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
 
@@ -150,23 +151,29 @@ kustomize: $(KUSTOMIZE_DOWNLOAD)
 
 $(TELEPORT_DOWNLOAD):
 	mkdir -p $(TELEPORT_DLDIR)
-	$(WGET) -O $(TELEPORT_DLDIR)/teleport.tar.gz https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz
-	$(WGET) -O $(TELEPORT_DLDIR)/teleport.zip    https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip
+	$(WGET) -O $(TELEPORT_DLDIR)/teleport-src.tar.gz https://github.com/gravitational/teleport/archive/v$(TELEPORT_VERSION).tar.gz
 	$(WGET) -O $(TELEPORT_DLDIR)/LICENSE   https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
 	$(WGET) -O $(TELEPORT_DLDIR)/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
 	touch $@
 
-teleport: $(TELEPORT_DOWNLOAD)
+build-teleport: $(TELEPORT_DOWNLOAD)
+	mkdir -p $(TELEPORT_SRCDIR)
+	tar xzf $(TELEPORT_DLDIR)/teleport-src.tar.gz -C $(TELEPORT_SRCDIR) --strip 1
+	GO111MODULE=off make -C $(TELEPORT_SRCDIR) build/tsh OS=windows
+	cp $(TELEPORT_SRCDIR)/build/tsh $(TELEPORT_DLDIR)/tsh.exe
+	GO111MODULE=off make -C $(TELEPORT_SRCDIR) build/tsh OS=linux
+	cp $(TELEPORT_SRCDIR)/build/tsh $(TELEPORT_DLDIR)/tsh
+
+teleport: build-teleport
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
-	tar xzf $(TELEPORT_DLDIR)/teleport.tar.gz -C $(BINDIR) --strip 1 $@/tsh
+	cp $(TELEPORT_DLDIR)/tsh $(BINDIR)
 	cp $(TELEPORT_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(TELEPORT_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	unzip -o $(TELEPORT_DLDIR)/teleport.zip teleport/tsh.exe -d $(WINDOWS_BINDIR)
-	unzip -o $(TELEPORT_DLDIR)/teleport.zip teleport/README.md -d $(WINDOWS_DOCDIR)
+	cp $(TELEPORT_DLDIR)/tsh.exe $(WINDOWS_BINDIR)/$@
 	cp $(TELEPORT_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(TELEPORT_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
 clean:
 	rm -rf $(BUILDDIR) $(WORKDIR) $(DOWNLOADDIR)
 
-.PHONY:	all clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
+.PHONY:	all clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize build-teleport teleport
