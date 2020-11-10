@@ -6,8 +6,14 @@ TAG_NAME=$2
 DATACENTER=$3
 MENU=$4
 
+# Set state label to old instances
+CANCELED_LIST=$($GCLOUD compute instances list --project neco-test --filter="labels.${LABEL_REPO} AND labels.${LABEL_REF} AND labels.${LABEL_JOB}" --format "value(name)")
+for CANCELED in ${CANCELED_LIST}; do
+  $GCLOUD compute instances add-labels ${CANCELED} --zone=${ZONE} --labels=state=canceled
+done
+
 # Create GCE instance
-$GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE} --quiet || true
+$GCLOUD compute instances delete ${INSTANCE_NAME} --zone=${ZONE} --quiet || true
 $GCLOUD compute instances create ${INSTANCE_NAME} \
   --zone ${ZONE} \
   --machine-type ${MACHINE_TYPE} \
@@ -17,7 +23,8 @@ $GCLOUD compute instances create ${INSTANCE_NAME} \
   --local-ssd interface=nvme \
   --local-ssd interface=nvme \
   --local-ssd interface=nvme \
-  --local-ssd interface=nvme
+  --local-ssd interface=nvme \
+  --labels=${LABEL_REPO},${LABEL_REF},${LABEL_JOB}
 
 # Run data center test
 for i in $(seq 300); do
