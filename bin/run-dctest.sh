@@ -6,6 +6,17 @@ TAG_NAME=$2
 DATACENTER=$3
 MENU=$4
 
+# Convert git refs to the acceptable label value.
+# - The value consists of lowercase letters, numeric characters, underscores, and dashes.
+# - The value is shorter than 64 characters.
+GIT_REFNAME=${CIRCLE_BRANCH}${CIRCLE_TAG}
+REF_VALUE=$(echo ${GIT_REFNAME,,} | sed -e "s/[^-a-zA-Z0-9]\+/_/g" | cut -c-63)
+
+# GCE instance labels
+LABEL_REPO=repo=${CIRCLE_PROJECT_REPONAME}
+LABEL_JOB=job=${CIRCLE_JOB}
+LABEL_REF=ref=${REF_VALUE}
+
 # Set state label to old instances
 CANCELED_LIST=$($GCLOUD compute instances list --project neco-test --filter="labels.${LABEL_REPO} AND labels.${LABEL_REF} AND labels.${LABEL_JOB}" --format "value(name)")
 for CANCELED in ${CANCELED_LIST}; do
