@@ -16,7 +16,7 @@ CI flow
 
 ### After `master` merge
 
-1. Run `generate-artifacts` to retrieve latest version of components, then generate `artifacts_release.go`.
+1. Run [generate-artifacts][] to retrieve latest version of components, then generate `artifacts_release.go`.
 2. Check out `master` branch then merge changes into `release` branch.
 3. Run [dctest][] but fewer test cases from regular dctest.
 4. If dctest is passed, [cybozu-neco][] pushes changes to `release` branch to remote branch in [github.com/cybozu-go/neco](https://github.com/cybozu-go/neco).
@@ -71,5 +71,6 @@ Glossary
 
     A bot GitHub Account for handling CI jobs using GitHub.
 
+[generate-artifacts]: ./generate-artifacts.md
 [dctest]: ../dctest/
 [cybozu-neco]: https://github.com/cybozu-neco
