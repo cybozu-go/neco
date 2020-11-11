@@ -25,4 +25,6 @@ var _ = BeforeSuite(func() {
 
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
-var _ = Describe("Test Neco bootstrap", dctest.BootstrapSuite)
+var _ = Describe("Test Neco bootstrap", func() {
+	dctest.BootstrapSuite()
+})
