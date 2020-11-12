@@ -1,11 +1,21 @@
 package dctest
 
 import (
+	"fmt"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 )
 
 // BootstrapSuite is a test suite that tests initial setup of Neco
 var BootstrapSuite = func() {
+	BeforeEach(func() {
+		fmt.Printf("START: %s\n", time.Now().Format(time.RFC3339))
+	})
+	AfterEach(func() {
+		fmt.Printf("END: %s\n", time.Now().Format(time.RFC3339))
+	})
+
 	Context("setup", TestSetup)
 	Context("initialize", TestInit)
 	Context("sabakan", TestSabakan)
@@ -34,6 +44,13 @@ var BootstrapSuite = func() {
 
 // FunctionsSuite is a test suite that tests a full set of functions of Neco in a single version
 var FunctionsSuite = func() {
+	BeforeEach(func() {
+		fmt.Printf("START: %s\n", time.Now().Format(time.RFC3339))
+	})
+	AfterEach(func() {
+		fmt.Printf("END: %s\n", time.Now().Format(time.RFC3339))
+	})
+
 	Context("join/remove", TestJoinRemove)
 	Context("reboot-all-boot-servers", TestRebootAllBootServers)
 	Context("reboot-all-nodes", TestRebootAllNodes)
@@ -41,6 +58,13 @@ var FunctionsSuite = func() {
 
 // UpgradeSuite is a test suite that tests upgrading process works correctry
 var UpgradeSuite = func() {
+	BeforeEach(func() {
+		fmt.Printf("START: %s\n", time.Now().Format(time.RFC3339))
+	})
+	AfterEach(func() {
+		fmt.Printf("END: %s\n", time.Now().Format(time.RFC3339))
+	})
+
 	Context("sabakan-state-setter", func() {
 		TestSabakanStateSetter()
 	})
