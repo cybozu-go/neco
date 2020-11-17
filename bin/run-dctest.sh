@@ -20,7 +20,7 @@ LABEL_REF=ref=${REF_VALUE}
 # Set state label to old instances
 CANCELED_LIST=$($GCLOUD compute instances list --project neco-test --filter="labels.${LABEL_REPO} AND labels.${LABEL_REF} AND labels.${LABEL_JOB}" --format "value(name)")
 for CANCELED in ${CANCELED_LIST}; do
-  $GCLOUD compute instances add-labels ${CANCELED} --zone=${ZONE} --labels=state=canceled
+  $GCLOUD compute instances add-labels ${CANCELED} --zone=${ZONE} --labels=state=canceled || true
 done
 
 # Create GCE instance
