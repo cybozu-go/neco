@@ -7,10 +7,6 @@
       "socket": "/run/coild.sock"
     },
     {
-      "type": "tuning",
-      "mtu": 1400
-    },
-    {
       "type": "portmap",
       "capabilities": {
         "portMappings": true

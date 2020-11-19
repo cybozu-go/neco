@@ -4651,10 +4651,6 @@ data:
           "socket": "/run/coild.sock"
         },
         {
-          "type": "tuning",
-          "mtu": 1400
-        },
-        {
           "type": "portmap",
           "capabilities": {
             "portMappings": true
@@ -4666,7 +4662,7 @@ kind: ConfigMap
 metadata:
   labels:
     app.kubernetes.io/name: coil
-  name: coil-config-22b825t954
+  name: coil-config-85b6k6c66t
   namespace: kube-system
 ---
 apiVersion: v1
@@ -4739,7 +4735,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        image: ghcr.io/cybozu-go/coil:2.0.2
+        image: ghcr.io/cybozu-go/coil:2.0.3
         livenessProbe:
           httpGet:
             host: localhost
@@ -4817,7 +4813,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: ghcr.io/cybozu-go/coil:2.0.2
+        image: ghcr.io/cybozu-go/coil:2.0.3
         livenessProbe:
           httpGet:
             host: localhost
@@ -4859,8 +4855,8 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: cni_netconf
-              name: coil-config-22b825t954
-        image: ghcr.io/cybozu-go/coil:2.0.2
+              name: coil-config-85b6k6c66t
+        image: ghcr.io/cybozu-go/coil:2.0.3
         name: coil-installer
         securityContext:
           privileged: true
