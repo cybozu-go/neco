@@ -17,6 +17,11 @@ for i in $(seq 20); do
     sleep 5
 done
 
+MTU=1500
+if systemd-detect-virt -q; then
+    MTU=1460
+fi
+
 cat >/etc/systemd/network/01-eth0.network <<EOF
 [Match]
 Name=eth0 eno1
@@ -28,6 +33,9 @@ EmitLLDP=nearest-bridge
 [Address]
 Address={{ index .Spec.IPv4 1 }}/{{ (index .Info.Network.IPv4 1).MaskBits }}
 Scope=link
+
+[Link]
+MTUBytes=${MTU}
 EOF
 
 cat >/etc/systemd/network/01-eth1.network <<EOF
@@ -41,6 +49,9 @@ EmitLLDP=nearest-bridge
 [Address]
 Address={{ index .Spec.IPv4 2 }}/{{ (index .Info.Network.IPv4 2).MaskBits }}
 Scope=link
+
+[Link]
+MTUBytes=${MTU}
 EOF
 
 cat >/etc/systemd/network/10-node0.netdev <<EOF
