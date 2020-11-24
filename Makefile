@@ -108,7 +108,8 @@ $(OP_DEB): setup-files-for-deb
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(OPWORKDIR) $(DEST)
 
 $(OP_ZIP): setup-tools
-	cd $(WINDOWS_ZIPDIR) && zip -r $(abspath .)/$@ *
+	mkdir -p $(OPWORKWINDIR)
+	cd $(OPWORKWINDIR) && zip -r $(abspath .)/$@ *
 
 gcp-deb: setup-files-for-deb
 	cp dctest/passwd.yml $(SHAREDIR)/ignitions/common/passwd.yml
@@ -127,6 +128,6 @@ setup:
 
 clean:
 	$(MAKE) -f Makefile.tools clean
-	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OP_DEB) $(OP_ZIP)
+	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OPWORKWINDIR) $(OP_DEB) $(OP_ZIP)
 
 .PHONY:	all start-etcd stop-etcd test mod deb setup-tools setup-files-for-deb gcp-deb git-neco setup clean tools

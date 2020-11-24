@@ -23,11 +23,12 @@ BINDIR := $(WORKDIR)/usr/bin
 SBINDIR := $(WORKDIR)/usr/sbin
 LIBEXECDIR := $(WORKDIR)/usr/libexec/neco
 SHAREDIR := $(WORKDIR)/usr/share/neco
-WINDOWS_ZIPDIR := $(WORKDIR)/windows
-WINDOWS_BINDIR := $(WORKDIR)/windows/bin
-WINDOWS_DOCDIR := $(WORKDIR)/windows/doc
 
 OPWORKDIR := $(CURDIR)/op-work
 OPCONTROL := $(OPWORKDIR)/DEBIAN/control
 OPBINDIR := $(OPWORKDIR)/usr/bin
 OPDOCDIR := $(OPWORKDIR)/usr/share/doc
+
+OPWORKWINDIR := $(CURDIR)/op-work-win
+WINDOWS_BINDIR := $(OPWORKWINDIR)/bin
+WINDOWS_DOCDIR := $(OPWORKWINDIR)/doc
