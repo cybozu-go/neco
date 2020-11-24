@@ -66,7 +66,9 @@ func TestInitData() {
 		stdout, stderr, err = execAt(bootServers[0], "neco", "cke", "weight", "get", "ss")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		Expect(string(bytes.TrimSpace(stdout))).To(Equal(strconv.Itoa(ssweight)))
-		execSafeAt(bootServers[0], "sudo", "sed", "-i", "'s/#GCPONLY //g'", "/usr/share/neco/cke-template.yml")
+		for _, bootServer := range allBootServers {
+			execSafeAt(bootServer, "sudo", "sed", "-i", "'s/#GCPONLY //g'", "/usr/share/neco/cke-template.yml")
+		}
 		execSafeAt(bootServers[0], "neco", "cke", "update")
 		stdout, stderr, err = execAt(bootServers[0], "ckecli", "sabakan", "get-template")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
