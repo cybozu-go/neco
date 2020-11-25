@@ -1,0 +1,18 @@
+[Unit]
+Description=Run CKE
+Wants=network-online.target etcd-container.service vault.service
+After=network-online.target etcd-container.service vault.service
+ConditionPathExists=/etc/cke/config.yml
+ConditionPathExists=/etc/cke/etcd.crt
+ConditionPathExists=/etc/cke/etcd.key
+StartLimitIntervalSec=600s
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+RestartSec=30s
+ExecStart=/usr/sbin/cke --config=/etc/cke/config.yml
+
+[Install]
+WantedBy=multi-user.target
