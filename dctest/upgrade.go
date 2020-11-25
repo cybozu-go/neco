@@ -265,6 +265,8 @@ func TestUpgrade() {
 
 			Eventually(func() error {
 				switch img.Name {
+				case "cke":
+					// CKE is not running as a container
 				case "coil":
 					if err := checkVersionInDaemonSet("kube-system", "coild", newImage); err != nil {
 						return err
