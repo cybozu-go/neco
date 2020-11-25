@@ -153,8 +153,8 @@ $ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios-256k.bin
 $ sudo install -m 0644 -b bios.bin bios-256k.bin /usr/share/seabios/
 $ wget https://github.com/rkt/rkt/releases/download/v1.30.0/rkt_1.30.0-1_amd64.deb
 $ sudo dpkg -i rkt_1.30.0-1_amd64.deb
-$ wget https://github.com/cybozu-go/placemat/releases/download/v1.5.0/placemat_1.5.0_amd64.deb
-$ sudo dpkg -i placemat_1.5.0_amd64.deb
+$ wget https://github.com/cybozu-go/placemat/releases/download/v1.5.3/placemat_1.5.3_amd64.deb
+$ sudo dpkg -i placemat_1.5.3_amd64.deb
 $ git clone https://github.com/cybozu-go/neco
 $ cd neco/dctest
 $ make setup

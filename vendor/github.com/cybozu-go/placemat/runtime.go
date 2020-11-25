@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -14,6 +15,13 @@ import (
 var vhostNetSupported bool
 
 func init() {
+	err := exec.Command("modprobe", "vhost-net").Run()
+	if err != nil {
+		log.Error("failed to modprobe vhost-net", map[string]interface{}{
+			"error": err,
+		})
+	}
+
 	f, err := os.Open("/proc/modules")
 	if err != nil {
 		log.Error("failed to open /proc/modules", map[string]interface{}{
