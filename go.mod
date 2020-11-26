@@ -2,6 +2,7 @@ module github.com/cybozu-go/neco
 
 require (
 	github.com/14rcole/gopopulate v0.0.0-20180821133914-b175b219e774 // indirect
+	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Microsoft/go-winio v0.0.0-20180501170546-ab35fc04b636 // indirect
 	github.com/Microsoft/hcsshim v0.0.0-20180606212836-eca7177590cd // indirect
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
@@ -11,30 +12,37 @@ require (
 	github.com/coreos/etcd v3.3.19+incompatible
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/coreos/ignition v0.32.0 // indirect
-	github.com/cybozu-go/cke v1.17.6
 	github.com/cybozu-go/etcdutil v1.3.4
 	github.com/cybozu-go/log v1.6.0
 	github.com/cybozu-go/netutil v1.2.0
 	github.com/cybozu-go/placemat v1.5.3
 	github.com/cybozu-go/sabakan/v2 v2.4.8
 	github.com/cybozu-go/well v1.10.0
+	github.com/docker/distribution v2.7.1+incompatible // indirect
+	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0 // indirect
 	github.com/docker/docker-credential-helpers v0.6.0 // indirect
+	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
+	github.com/docker/go-units v0.3.3 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
 	github.com/golang/protobuf v1.4.1 // indirect
 	github.com/google/go-cmp v0.4.0
 	github.com/google/go-github/v18 v18.2.0
 	github.com/gorilla/mux v1.7.3 // indirect
+	github.com/grpc-ecosystem/go-grpc-middleware v1.0.1-0.20190118093823-f849b5445de4 // indirect
+	github.com/grpc-ecosystem/grpc-gateway v1.9.5 // indirect
 	github.com/hashicorp/go-msgpack v0.5.4 // indirect
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/serf v0.8.3
 	github.com/hashicorp/vault/api v1.0.5-0.20200117231345-460d63e36490
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
+	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
+	github.com/mattn/go-runewidth v0.0.2 // indirect
 	github.com/mattn/go-shellwords v1.0.3 // indirect
 	github.com/miekg/dns v1.1.8 // indirect
 	github.com/mistifyio/go-zfs v0.0.0-20161103015429-c0224de804d4 // indirect
@@ -44,6 +52,8 @@ require (
 	github.com/mtrmac/gpgme v0.0.0-20170102180018-b2432428689c // indirect
 	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.0
+	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
+	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/opencontainers/runc v0.0.0-20170216015123-6b1d0e76f239 // indirect
 	github.com/opencontainers/selinux v0.0.0-20181018180444-077c8b6d1c18 // indirect
 	github.com/ostreedev/ostree-go v0.0.0-20170616214430-aeb02c6b6aa2 // indirect
@@ -81,10 +91,13 @@ require (
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	golang.org/x/tools v0.0.0-20200513201620-d5fe73897c97 // indirect
 	google.golang.org/grpc v1.26.0 // indirect
+	gopkg.in/cheggaaa/pb.v1 v1.0.25 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
+	gotest.tools v2.2.0+incompatible // indirect
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
 	k8s.io/api v0.17.6
 	k8s.io/apimachinery v0.17.6
+	k8s.io/client-go v0.17.6 // indirect
 	sigs.k8s.io/yaml v1.2.0
 )
 
