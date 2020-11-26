@@ -5,6 +5,24 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.5.3] - 2020-09-29
+
+### Fixed
+
+- Activate vhost-net. (#119)
+
+## [1.5.2] - 2020-09-29
+
+### Fixed
+
+- Randomize MAC address for KVM NICs (#117)
+
+## [1.5.1] - 2020-07-21
+
+### Fixed
+
+- Fix aio parameter for node volume devices when cache is specified (#115)
+
 ## [1.5.0] - 2020-07-20
 
 ### Added
@@ -113,7 +131,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Many things.  See git log.
 
-[Unreleased]: https://github.com/cybozu-go/placemat/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/cybozu-go/placemat/compare/v1.5.3...HEAD
+[1.5.3]: https://github.com/cybozu-go/placemat/compare/v1.5.2...v1.5.3
+[1.5.2]: https://github.com/cybozu-go/placemat/compare/v1.5.1...v1.5.2
+[1.5.1]: https://github.com/cybozu-go/placemat/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/cybozu-go/placemat/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/cybozu-go/placemat/compare/v1.3.9...v1.4.0
 [1.3.9]: https://github.com/cybozu-go/placemat/compare/v1.3.8...v1.3.9
