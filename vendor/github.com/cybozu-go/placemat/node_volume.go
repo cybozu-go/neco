@@ -46,6 +46,13 @@ const (
 	nodeVolumeFormatRaw   = "raw"
 )
 
+func selectAIOforCache(cache string) string {
+	if cache == nodeVolumeCacheNone {
+		return "native"
+	}
+	return "threads"
+}
+
 type baseVolume struct {
 	name  string
 	cache string
@@ -62,7 +69,7 @@ func volumePath(dataDir, name string) string {
 func (v baseVolume) qemuArgs(p string) []string {
 	return []string{
 		"-drive",
-		fmt.Sprintf("if=virtio,cache=%s,aio=native,file=%s", v.cache, p),
+		fmt.Sprintf("if=virtio,cache=%s,aio=%s,file=%s", v.cache, selectAIOforCache(v.cache), p),
 	}
 }
 
@@ -250,7 +257,7 @@ func (v *rawVolume) Create(ctx context.Context, dataDir string) ([]string, error
 func (v *rawVolume) qemuArgs(p string) []string {
 	return []string{
 		"-drive",
-		fmt.Sprintf("if=virtio,cache=%s,aio=native,format=%s,file=%s", v.cache, v.format, p),
+		fmt.Sprintf("if=virtio,cache=%s,aio=%s,format=%s,file=%s", v.cache, selectAIOforCache(v.cache), v.format, p),
 	}
 }
 
@@ -311,7 +318,7 @@ func (v *lvVolume) Create(ctx context.Context, dataDir string) ([]string, error)
 func (v *lvVolume) qemuArgs(p string) []string {
 	return []string{
 		"-drive",
-		fmt.Sprintf("if=virtio,cache=%s,aio=native,format=raw,file=%s", v.cache, p),
+		fmt.Sprintf("if=virtio,cache=%s,aio=%s,format=raw,file=%s", v.cache, selectAIOforCache(v.cache), p),
 	}
 }
 

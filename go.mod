@@ -15,7 +15,7 @@ require (
 	github.com/cybozu-go/etcdutil v1.3.4
 	github.com/cybozu-go/log v1.6.0
 	github.com/cybozu-go/netutil v1.2.0
-	github.com/cybozu-go/placemat v1.5.0
+	github.com/cybozu-go/placemat v1.5.3
 	github.com/cybozu-go/sabakan/v2 v2.4.8
 	github.com/cybozu-go/well v1.10.0
 	github.com/docker/docker-credential-helpers v0.6.0 // indirect

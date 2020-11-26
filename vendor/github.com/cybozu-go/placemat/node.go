@@ -2,6 +2,7 @@ package placemat
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/sha1"
 	"errors"
 	"fmt"
@@ -267,7 +268,7 @@ func (n *Node) Start(ctx context.Context, r *Runtime, nodeCh chan<- bmcInfo) (*N
 		devParams := []string{
 			"virtio-net-pci",
 			fmt.Sprintf("netdev=%s", br.Name),
-			fmt.Sprintf("mac=%s", generateMACForKVM(n.Name)),
+			fmt.Sprintf("mac=%s", generateMACForKVM()),
 		}
 		if n.UEFI {
 			// disable iPXE boot
@@ -380,10 +381,14 @@ func (n *Node) Start(ctx context.Context, r *Runtime, nodeCh chan<- bmcInfo) (*N
 	return vm, err
 }
 
-func generateMACForKVM(name string) string {
+func generateMACForKVM() string {
 	vendorPrefix := "52:54:00" // QEMU's vendor prefix
-	bytes := sha1.Sum([]byte(name))
-	return fmt.Sprintf("%s:%02x:%02x:%02x", vendorPrefix, bytes[0], bytes[1], bytes[2])
+	buf := make([]byte, 3)
+	_, err := rand.Read(buf)
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%s:%02x:%02x:%02x", vendorPrefix, buf[0], buf[1], buf[2])
 }
 
 func createNVRAM(ctx context.Context, p string) error {
