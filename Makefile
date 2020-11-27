@@ -29,7 +29,8 @@ OP_ZIP = neco-operation-cli-windows_$(VERSION)_amd64.zip
 DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/ingress-watcher
-OPDEB_BINNAMES = argocd kubectl kustomize stern teleport
+OPDEB_BINNAMES = argocd kubectl kustomize stern tsh
+OPDEB_DOCNAMES = argocd kubectl kustomize stern teleport
 
 all:
 	@echo "Specify one of these targets:"
@@ -102,8 +103,10 @@ $(OP_DEB): setup-files-for-deb
 	mkdir -p $(OPBINDIR) $(OPDOCDIR) $(OPWORKDIR)/DEBIAN
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/; /Package: neco/s/$$/-operation-cli-linux/; s/Continuous delivery tool/Operation tools/' debian/DEBIAN/control > $(OPCONTROL)
 	for BINNAME in $(OPDEB_BINNAMES); do \
-		cp $(BINDIR)/$$BINNAME $(OPBINDIR) ; \
-		cp -r $(DOCDIR)/$$BINNAME $(OPDOCDIR) ; \
+		cp $(BINDIR)/$$BINNAME $(OPBINDIR) || exit 1 ; \
+	done
+	for DOCNAME in $(OPDEB_DOCNAMES); do \
+		cp -r $(DOCDIR)/$$DOCNAME $(OPDOCDIR) || exit 1 ; \
 	done
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(OPWORKDIR) $(DEST)
 
