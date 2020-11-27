@@ -14,6 +14,11 @@ listener "tcp" {
   }
 }
 
+telemetry {
+  prometheus_retention_time = "5m"
+  disable_hostname = true
+}
+
 api_addr = "{{ .APIAddr }}"
 cluster_addr = "{{ .ClusterAddr }}"
 
