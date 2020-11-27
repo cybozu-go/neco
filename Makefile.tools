@@ -159,9 +159,9 @@ $(TELEPORT_DOWNLOAD):
 build-teleport: $(TELEPORT_DOWNLOAD)
 	mkdir -p $(TELEPORT_SRCDIR)
 	tar xzf $(TELEPORT_DLDIR)/teleport-src.tar.gz -C $(TELEPORT_SRCDIR) --strip 1
-	GO111MODULE=off make -C $(TELEPORT_SRCDIR) build/tsh OS=windows
+	make -C $(TELEPORT_SRCDIR) build/tsh OS=windows
 	cp $(TELEPORT_SRCDIR)/build/tsh $(TELEPORT_DLDIR)/tsh.exe
-	GO111MODULE=off make -C $(TELEPORT_SRCDIR) build/tsh OS=linux
+	make -C $(TELEPORT_SRCDIR) build/tsh OS=linux
 	cp $(TELEPORT_SRCDIR)/build/tsh $(TELEPORT_DLDIR)/tsh
 
 teleport: build-teleport
