@@ -3,7 +3,6 @@ package cke
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -46,17 +45,6 @@ func TestGenerateConf(t *testing.T) {
 func TestGenerateCKETemplate(t *testing.T) {
 	t.Parallel()
 
-	f, err := ioutil.TempFile("", "test-generate-cke-template")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close()
-	_, err = f.WriteString("test\n")
-	if err != nil {
-		t.Fatal(err)
-	}
-	neco.ClusterFile = f.Name()
-
 	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	st := storage.NewStorage(etcd)
@@ -97,11 +85,11 @@ nodes:
     cke.cybozu.com/role: ss
     cke.cybozu.com/weight: "10"`
 	var expected map[string]interface{}
-	err = yaml.Unmarshal([]byte(expectedTemplate), &expected)
+	err := yaml.Unmarshal([]byte(expectedTemplate), &expected)
 	if err != nil {
 		t.Fatal(err)
 	}
-	out, err := GenerateCKETemplate(ctx, st, []byte(ckeTemplate))
+	out, err := GenerateCKETemplate(ctx, st, "test", []byte(ckeTemplate))
 	if err != nil {
 		t.Error(err)
 	}
@@ -120,7 +108,7 @@ nodes:
 	if err != nil {
 		t.Error(err)
 	}
-	out, err = GenerateCKETemplate(ctx, st, []byte(ckeTemplate))
+	out, err = GenerateCKETemplate(ctx, st, "test", []byte(ckeTemplate))
 	if err != nil {
 		t.Error(err)
 	}
@@ -161,7 +149,7 @@ nodes:
 	if err != nil {
 		t.Error(err)
 	}
-	out, err = GenerateCKETemplate(ctx, st, []byte(ckeTemplate))
+	out, err = GenerateCKETemplate(ctx, st, "test", []byte(ckeTemplate))
 	if err != nil {
 		t.Error(err)
 	}
@@ -218,11 +206,84 @@ nodes:
 	if err != nil {
 		t.Error(err)
 	}
-	out, err = GenerateCKETemplate(ctx, st, []byte(ckeTemplate))
+	out, err = GenerateCKETemplate(ctx, st, "test", []byte(ckeTemplate))
 	if err != nil {
 		t.Error(err)
 	}
 	actual = nil
+	err = yaml.Unmarshal(out, &actual)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(expected, actual) {
+		t.Error("unexpected file content:", cmp.Diff(expected, actual))
+	}
+}
+
+func TestGenerateCKETemplateReboot(t *testing.T) {
+	t.Parallel()
+
+	etcd := test.NewEtcdClient(t)
+	defer etcd.Close()
+	st := storage.NewStorage(etcd)
+	ctx := context.Background()
+
+	ckeTemplate := `name: test
+nodes:
+- user: cybozu
+  control_plane: true
+  labels:
+    cke.cybozu.com/role: "cs"
+reboot:
+  command: ["test"]
+`
+	expectedTemplate := `name: test
+nodes:
+- user: cybozu
+  control_plane: true
+  labels:
+    cke.cybozu.com/role: "cs"
+reboot:
+  command: ["test"]
+`
+	var expected map[string]interface{}
+	err := yaml.Unmarshal([]byte(expectedTemplate), &expected)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out, err := GenerateCKETemplate(ctx, st, "test", []byte(ckeTemplate))
+	if err != nil {
+		t.Error(err)
+	}
+	var actual map[string]interface{}
+	err = yaml.Unmarshal(out, &actual)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(expected, actual) {
+		t.Error("unexpected file content:", cmp.Diff(expected, actual))
+	}
+
+	expectedTemplate = `name: stage0
+nodes:
+- user: cybozu
+  control_plane: true
+  labels:
+    cke.cybozu.com/role: "cs"
+reboot:
+  command: ["test"]
+  protected_namespaces:
+    matchLabels:
+      team: neco
+`
+	err = yaml.Unmarshal([]byte(expectedTemplate), &expected)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out, err = GenerateCKETemplate(ctx, st, "stage0", []byte(ckeTemplate))
+	if err != nil {
+		t.Error(err)
+	}
 	err = yaml.Unmarshal(out, &actual)
 	if err != nil {
 		t.Fatal(err)
