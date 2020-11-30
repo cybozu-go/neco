@@ -10,6 +10,9 @@ STERN_VERSION = 1.13.0
 # https://github.com/cybozu/neco-containers/blob/master/argocd/Dockerfile#L27
 KUSTOMIZE_VERSION = 3.7.0
 TELEPORT_VERSION = 5.0.0
+# workaround: tsh requires go 1.15 so download it and use it only for building tsh
+# please remove this workaround when neco uses go 1.15
+TELEPORT_GO_VERSION = 1.15.5
 
 SUDO = sudo
 
