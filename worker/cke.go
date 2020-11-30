@@ -21,30 +21,12 @@ func (o *operator) StopCKE(ctx context.Context, req *neco.UpdateRequest) error {
 }
 
 func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error {
-	need, err := o.needContainerImageUpdate(ctx, "cke")
-	if err != nil {
-		return err
-	}
-	if need {
-		err = cke.InstallToolsCKE(ctx)
-		if err != nil {
-			return err
-		}
-		err = cke.InstallBashCompletion(ctx)
-		if err != nil {
-			return err
-		}
-		err = o.storage.RecordContainerTag(ctx, o.mylrn, "cke")
-		if err != nil {
-			return err
-		}
-	}
-	_, err = o.replaceCKEFiles(ctx, req.Servers)
+	_, err := o.replaceCKEFiles(ctx, req.Servers)
 	if err != nil {
 		return err
 	}
 
-	err = neco.StartService(ctx, neco.CKEService)
+	err = neco.RestartService(ctx, neco.CKEService)
 	if err != nil {
 		return err
 	}
@@ -63,26 +45,11 @@ func (o *operator) replaceCKEFiles(ctx context.Context, lrns []int) (bool, error
 	if err != nil {
 		return false, err
 	}
-	r1, err := replaceFile(neco.CKEConfFile, buf.Bytes(), 0644)
+	r, err := replaceFile(neco.CKEConfFile, buf.Bytes(), 0644)
 	if err != nil {
 		return false, err
 	}
-
-	buf.Reset()
-	err = cke.GenerateService(buf)
-	if err != nil {
-		return false, err
-	}
-	err = os.MkdirAll(filepath.Dir(neco.ServiceFile("cke")), 0755)
-	if err != nil {
-		return false, err
-	}
-	r2, err := replaceFile(neco.ServiceFile(neco.CKEService), buf.Bytes(), 0644)
-	if err != nil {
-		return false, err
-	}
-
-	return r1 || r2, nil
+	return r, nil
 }
 
 func (o *operator) UpdateCKEContents(ctx context.Context, req *neco.UpdateRequest) error {

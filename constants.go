@@ -169,13 +169,12 @@ var (
 
 	SystemdResolvedConfFile = filepath.Join(SystemdResolvedConfDir, "neco.conf")
 
-	CKECertFile              = filepath.Join(CKEDir, "etcd.crt")
-	CKEKeyFile               = filepath.Join(CKEDir, "etcd.key")
-	CKEConfFile              = filepath.Join(CKEDir, "config.yml")
-	CKECLIBin                = "/usr/local/bin/ckecli"
-	CKECLIBashCompletionFile = filepath.Join(BashCompletionDir, "ckecli")
-	CKETemplateFile          = filepath.Join(NecoDataDir, "cke-template.yml")
-	CKEUserResourceFiles     = []string{
+	CKECertFile          = filepath.Join(CKEDir, "etcd.crt")
+	CKEKeyFile           = filepath.Join(CKEDir, "etcd.key")
+	CKEConfFile          = filepath.Join(CKEDir, "config.yml")
+	CKECLIBin            = "/usr/bin/ckecli"
+	CKETemplateFile      = filepath.Join(NecoDataDir, "cke-template.yml")
+	CKEUserResourceFiles = []string{
 		filepath.Join(NecoDataDir, "namespaces.yml"),
 		filepath.Join(NecoDataDir, "pod-security-policy.yml"),
 		filepath.Join(NecoDataDir, "coil.yaml"),

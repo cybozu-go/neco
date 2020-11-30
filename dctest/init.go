@@ -158,7 +158,6 @@ func TestInit() {
 			execSafeAt(host, "test", "-f", neco.CKEConfFile)
 			execSafeAt(host, "test", "-f", neco.CKEKeyFile)
 			execSafeAt(host, "test", "-f", neco.CKECertFile)
-			execSafeAt(host, "test", "-f", neco.CKECLIBashCompletionFile)
 
 			execSafeAt(host, "systemctl", "-q", "is-active", "cke.service")
 		}

@@ -7,12 +7,13 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/cybozu-go/cke"
-	"github.com/cybozu-go/cke/sabakan"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 )
+
+const ckeLabelWeight = "cke.cybozu.com/weight"
 
 // TestInitData executes "neco init-data"
 func TestInitData() {
@@ -72,15 +73,28 @@ func TestInitData() {
 		execSafeAt(bootServers[0], "neco", "cke", "update")
 		stdout, stderr, err = execAt(bootServers[0], "ckecli", "sabakan", "get-template")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		ckeTemplate := cke.NewCluster()
-		err = yaml.Unmarshal(stdout, ckeTemplate)
+
+		var ckeTemplate map[string]interface{}
+		err = yaml.Unmarshal(stdout, &ckeTemplate)
 		Expect(err).NotTo(HaveOccurred())
-		weight, err := strconv.ParseFloat(ckeTemplate.Nodes[1].Labels[sabakan.CKELabelWeight], 64)
+		nodes, found, err := unstructured.NestedSlice(ckeTemplate, "nodes")
+		Expect(found).To(BeTrue())
+		Expect(err).NotTo(HaveOccurred())
+
+		labels, found, err := unstructured.NestedStringMap(nodes[1].(map[string]interface{}), "labels")
+		Expect(found).To(BeTrue())
+		Expect(err).NotTo(HaveOccurred())
+		weight, err := strconv.ParseFloat(labels[ckeLabelWeight], 64)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(weight).To(BeNumerically("==", csweight))
-		weight, err = strconv.ParseFloat(ckeTemplate.Nodes[2].Labels[sabakan.CKELabelWeight], 64)
+
+		labels, found, err = unstructured.NestedStringMap(nodes[2].(map[string]interface{}), "labels")
+		Expect(found).To(BeTrue())
+		Expect(err).NotTo(HaveOccurred())
+		weight, err = strconv.ParseFloat(labels[ckeLabelWeight], 64)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(weight).To(BeNumerically("==", ssweight))
+
 		execSafeAt(bootServers[0], "neco", "init-data")
 	})
 }

@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cybozu-go/cke"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/neco/storage/test"
@@ -58,63 +57,6 @@ func TestGenerateCKETemplate(t *testing.T) {
 	}
 	neco.ClusterFile = f.Name()
 
-	defaultTemplate := `
-taint_control_plane: false
-service_subnet: ""
-pod_subnet: ""
-dns_service: ""
-etcd_backup:
-  enabled: false
-  pvc_name: ""
-  schedule: ""
-  rotate: 14
-options:
-  etcd:
-    extra_args: []
-    extra_binds: []
-    extra_env: {}
-    volume_name: etcd-cke
-  rivers:
-    extra_args: []
-    extra_binds: []
-    extra_env: {}
-  etcd-rivers:
-    extra_args: []
-    extra_binds: []
-    extra_env: {}
-  kube-api:
-    extra_args: []
-    extra_binds: []
-    extra_env: {}
-    audit_log_enabled: false
-    audit_log_policy: ""
-  kube-controller-manager:
-    extra_args: []
-    extra_binds: []
-    extra_env: {}
-  kube-scheduler:
-    extra_args: []
-    extra_binds: []
-    extra_env: {}
-  kube-proxy:
-    extra_args: []
-    extra_binds: []
-    extra_env: {}
-  kubelet:
-    extra_args: []
-    extra_binds: []
-    extra_env: {}
-    container_runtime: ""
-    container_runtime_endpoint: ""
-    container_log_max_size: ""
-    container_log_max_files: 0
-    domain: cluster.local
-    allow_swap: false
-    cni_conf_file:
-      name: ""
-      content: ""
-`
-
 	etcd := test.NewEtcdClient(t)
 	defer etcd.Close()
 	st := storage.NewStorage(etcd)
@@ -140,28 +82,22 @@ nodes:
 `
 	expectedTemplate := `name: test
 nodes:
-- address: ""
-  hostname: ""
-  user: cybozu
+- user: cybozu
   control_plane: true
   labels:
     cke.cybozu.com/role: cs
-- address: ""
-  hostname: ""
-  user: cybozu
+- user: cybozu
   control_plane: false
   labels:
     cke.cybozu.com/role: cs
     cke.cybozu.com/weight: "18"
-- address: ""
-  hostname: ""
-  user: cybozu
+- user: cybozu
   control_plane: false
   labels:
     cke.cybozu.com/role: ss
-    cke.cybozu.com/weight: "10"` + defaultTemplate
-	expected := cke.NewCluster()
-	err = yaml.Unmarshal([]byte(expectedTemplate), expected)
+    cke.cybozu.com/weight: "10"`
+	var expected map[string]interface{}
+	err = yaml.Unmarshal([]byte(expectedTemplate), &expected)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -169,8 +105,8 @@ nodes:
 	if err != nil {
 		t.Error(err)
 	}
-	actual := cke.NewCluster()
-	err = yaml.Unmarshal(out, actual)
+	var actual map[string]interface{}
+	err = yaml.Unmarshal(out, &actual)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,8 +124,8 @@ nodes:
 	if err != nil {
 		t.Error(err)
 	}
-	actual = cke.NewCluster()
-	err = yaml.Unmarshal(out, actual)
+	actual = nil
+	err = yaml.Unmarshal(out, &actual)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -199,28 +135,22 @@ nodes:
 
 	expectedTemplate = `name: test
 nodes:
-- address: ""
-  hostname: ""
-  user: cybozu
+- user: cybozu
   control_plane: true
   labels:
     cke.cybozu.com/role: cs
-- address: ""
-  hostname: ""
-  user: cybozu
+- user: cybozu
   control_plane: false
   labels:
     cke.cybozu.com/role: cs
     cke.cybozu.com/weight: "10.000000"
-- address: ""
-  hostname: ""
-  user: cybozu
+- user: cybozu
   control_plane: false
   labels:
     cke.cybozu.com/role: ss
-    cke.cybozu.com/weight: "20.000000"` + defaultTemplate
-	expected = cke.NewCluster()
-	err = yaml.Unmarshal([]byte(expectedTemplate), expected)
+    cke.cybozu.com/weight: "20.000000"`
+	expected = nil
+	err = yaml.Unmarshal([]byte(expectedTemplate), &expected)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -235,8 +165,8 @@ nodes:
 	if err != nil {
 		t.Error(err)
 	}
-	actual = cke.NewCluster()
-	err = yaml.Unmarshal(out, actual)
+	actual = nil
+	err = yaml.Unmarshal(out, &actual)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -262,28 +192,22 @@ nodes:
 `
 	expectedTemplate = `name: test
 nodes:
-- address: ""
-  hostname: ""
-  user: cybozu
+- user: cybozu
   control_plane: true
   labels:
     cke.cybozu.com/role: cs
-- address: ""
-  hostname: ""
-  user: cybozu
+- user: cybozu
   control_plane: false
   labels:
     cke.cybozu.com/role: cs
     cke.cybozu.com/weight: "33.333333"
-- address: ""
-  hostname: ""
-  user: cybozu
+- user: cybozu
   control_plane: false
   labels:
     cke.cybozu.com/role: ss
-    cke.cybozu.com/weight: "11.111111"` + defaultTemplate
-	expected = cke.NewCluster()
-	err = yaml.Unmarshal([]byte(expectedTemplate), expected)
+    cke.cybozu.com/weight: "11.111111"`
+	expected = nil
+	err = yaml.Unmarshal([]byte(expectedTemplate), &expected)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -298,8 +222,8 @@ nodes:
 	if err != nil {
 		t.Error(err)
 	}
-	actual = cke.NewCluster()
-	err = yaml.Unmarshal(out, actual)
+	actual = nil
+	err = yaml.Unmarshal(out, &actual)
 	if err != nil {
 		t.Fatal(err)
 	}
