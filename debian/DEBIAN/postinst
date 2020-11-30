@@ -1,9 +1,15 @@
 #!/bin/sh -e
 
-SERVICES="node-exporter neco-updater neco-worker sabakan-state-setter ingress-watcher"
+SERVICES="node-exporter neco-updater neco-worker sabakan-state-setter ingress-watcher cke"
 TIMERS="rkt-gc kill-old-login-sessions backup-cke-etcd"
 
 configure() {
+    # to upgrade from container version of CKE
+    if [ -f /etc/systemd/system/cke.service ]; then
+        systemctl stop cke.service
+        rm /etc/systemd/system/cke.service
+    fi
+
     systemctl daemon-reload
     for t in $TIMERS; do
         systemctl enable ${t}.timer
@@ -16,6 +22,7 @@ configure() {
     done
 
     /usr/bin/neco completion > /etc/bash_completion.d/neco
+    /usr/bin/ckecli completion > /etc/bash_completion.d/ckecli
     /usr/bin/kubectl completion bash > /etc/bash_completion.d/kubectl
     /usr/bin/stern --completion bash > /etc/bash_completion.d/stern
     /usr/bin/argocd completion bash > /etc/bash_completion.d/argocd
