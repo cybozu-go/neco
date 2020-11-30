@@ -11,7 +11,27 @@ deb http://asia-northeast2.gce.clouds.archive.ubuntu.com/ubuntu/ bionic-updates 
 deb http://asia-northeast2.gce.clouds.archive.ubuntu.com/ubuntu/ bionic-security main restricted universe multiverse
 EOF
 
-env http_proxy=$http_proxy apt-get update -o Acquire::Retries=5
+n=0
+set +e
+while true; do
+    if [ $n -ge 5 ]; then
+        exit 1
+    fi
+    echo "try apt-get (retry count=$n)"
+    output=`env http_proxy=$http_proxy apt-get update`
+    echo $output
+    echo $output | grep Err
+    has_err=$?
+    echo $output | grep Fail
+    has_fail=$?
+    if [ $has_err -ne 0 ] && [ $has_fail -ne 0 ]; then
+        break
+    fi
+    n=`expr $n + 1`
+    sleep 5
+done
+set -e
+
 env http_proxy=$http_proxy apt-get install -o Acquire::Retries=5 -y --no-install-recommends jq ca-certificates freeipmi-tools
 apt-get -y purge --auto-remove apport unattended-upgrades software-properties-common python3-software-properties
 apt-get clean
