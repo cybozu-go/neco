@@ -6,9 +6,17 @@ var confTmpl = template.Must(template.New("vault.hcl").
 	Parse(`# vault configuration file
 
 listener "tcp" {
-    address = "0.0.0.0:8200"
-    tls_cert_file = "{{ .ServerCertFile }}"
-    tls_key_file = "{{ .ServerKeyFile }}"
+  address = "0.0.0.0:8200"
+  tls_cert_file = "{{ .ServerCertFile }}"
+  tls_key_file = "{{ .ServerKeyFile }}"
+  telemetry {
+    unauthenticated_metrics_access = true
+  }
+}
+
+telemetry {
+  prometheus_retention_time = "5m"
+  disable_hostname = true
 }
 
 api_addr = "{{ .APIAddr }}"
