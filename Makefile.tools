@@ -23,7 +23,7 @@ KUSTOMIZE_DLDIR := $(DOWNLOADDIR)/kustomize-v$(KUSTOMIZE_VERSION)
 KUSTOMIZE_DOWNLOAD := $(KUSTOMIZE_DLDIR)/downloaded
 TELEPORT_DLDIR := $(DOWNLOADDIR)/teleport-v$(TELEPORT_VERSION)
 TELEPORT_DOWNLOAD := $(TELEPORT_DLDIR)/downloaded
-TELEPORT_SRCDIR := $$GOPATH/src/github.com/gravitational/teleport
+TELEPORT_SRCDIR := src/github.com/gravitational/teleport
 
 all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
 
@@ -157,12 +157,15 @@ $(TELEPORT_DOWNLOAD):
 	touch $@
 
 build-teleport: $(TELEPORT_DOWNLOAD)
-	mkdir -p $(TELEPORT_SRCDIR)
-	tar xzf $(TELEPORT_DLDIR)/teleport-src.tar.gz -C $(TELEPORT_SRCDIR) --strip 1
-	GO111MODULE=off make -C $(TELEPORT_SRCDIR) build/tsh OS=windows
-	cp $(TELEPORT_SRCDIR)/build/tsh $(TELEPORT_DLDIR)/tsh.exe
-	GO111MODULE=off make -C $(TELEPORT_SRCDIR) build/tsh OS=linux
-	cp $(TELEPORT_SRCDIR)/build/tsh $(TELEPORT_DLDIR)/tsh
+	# workaround: tsh requires go 1.15 so download it and use it only for building tsh
+	# please remove this workaround when neco uses go 1.15
+	curl -fsL https://dl.google.com/go/go$(TELEPORT_GO_VERSION).linux-amd64.tar.gz | tar xzf - -C $(TELEPORT_DLDIR)
+	mkdir -p $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR)
+	GOPATH=$(TELEPORT_DLDIR)/home tar xzf $(TELEPORT_DLDIR)/teleport-src.tar.gz -C $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR) --strip 1
+	PATH=$(TELEPORT_DLDIR)/go/bin:${PATH} GOROOT=$(TELEPORT_DLDIR)/go GOPATH=$(TELEPORT_DLDIR)/home make -C $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR) build/tsh OS=windows
+	cp $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR)/build/tsh $(TELEPORT_DLDIR)/tsh.exe
+	PATH=$(TELEPORT_DLDIR)/go/bin:${PATH} GOROOT=$(TELEPORT_DLDIR)/go GOPATH=$(TELEPORT_DLDIR)/home make -C $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR) build/tsh OS=linux
+	cp $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR)/build/tsh $(TELEPORT_DLDIR)/tsh
 
 teleport: build-teleport
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
