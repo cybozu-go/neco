@@ -1,5 +1,5 @@
 # tool versions used for both local bin and deb/zip packages
-CONTAINERD_VERSION = 1.4.1
+CONTAINERD_VERSION = 1.4.3
 NODE_EXPORTER_VERSION = 1.0.1
 CRITOOLS_VERSION = 1.18.0
 ARGOCD_VERSION = 1.7.7
