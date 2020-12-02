@@ -88,7 +88,10 @@ var pushCmd = &cobra.Command{
 			tick := time.NewTicker(pushConfig.PushInterval)
 			defer tick.Stop()
 
-			pusher := push.New(pushConfig.PushAddr, "ingress-watcher").Grouping("instance", pushConfig.Instance).Gatherer(registry)
+			pusher := push.New(pushConfig.PushAddr, "ingress-watcher").
+				Client(&http.Client{Timeout: pushConfig.PushInterval}).
+				Grouping("instance", pushConfig.Instance).
+				Gatherer(registry)
 			for {
 				select {
 				case <-ctx.Done():
