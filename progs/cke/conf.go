@@ -37,20 +37,26 @@ func GenerateConf(w io.Writer, lrns []int) error {
 }
 
 // GenerateCKETemplate generates cke-template.yml using role and weights.
-func GenerateCKETemplate(ctx context.Context, st storage.Storage, ckeTemplate []byte) ([]byte, error) {
+func GenerateCKETemplate(ctx context.Context, st storage.Storage, name string, ckeTemplate []byte) ([]byte, error) {
 	var tmpl map[string]interface{}
 	err := yaml.Unmarshal(ckeTemplate, &tmpl)
 	if err != nil {
 		return nil, err
 	}
 
-	name, err := neco.MyCluster()
-	if err != nil {
-		return nil, err
-	}
 	err = unstructured.SetNestedField(tmpl, name, "name")
 	if err != nil {
 		return nil, err
+	}
+
+	if name == "stage0" {
+		if r, ok := tmpl["reboot"].(map[string]interface{}); ok {
+			r["protected_namespaces"] = map[string]interface{}{
+				"matchLabels": map[string]interface{}{
+					"team": "neco",
+				},
+			}
+		}
 	}
 
 	weights, err := st.GetCKEWeight(ctx)

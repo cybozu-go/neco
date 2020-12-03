@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
@@ -262,5 +263,35 @@ func TestRebootAllNodes() {
 
 		By("deleting " + testPod)
 		execSafeAt(bootServers[0], "kubectl", "delete", "pod", testPod)
+	})
+}
+
+// TestRebootGracefully tests graceful reboot of workers
+func TestRebootGracefully() {
+	It("can reboot all workers gracefully", func() {
+		workersBefore, err := getSerfWorkerMembers()
+		Expect(err).NotTo(HaveOccurred())
+
+		execSafeAt(bootServers[0], "sh", "-c", "yes | neco reboot-worker")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(bootServers[0], "ckecli", "rq", "list")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			if string(stdout) != "null\n" {
+				return fmt.Errorf("reboot-queue is not processed")
+			}
+			return nil
+		}, 30*time.Minute).Should(Succeed())
+
+		workersAfter, err := getSerfWorkerMembers()
+		Expect(err).NotTo(HaveOccurred())
+		for _, before := range workersBefore.Members {
+			for _, after := range workersAfter.Members {
+				if before.Name == after.Name {
+					Expect(after.Tags["uptime"]).NotTo(Equal(before.Tags["uptime"]))
+				}
+			}
+		}
 	})
 }

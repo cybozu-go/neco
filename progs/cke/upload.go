@@ -64,12 +64,17 @@ func GetCKEImages() ([]neco.ContainerImage, error) {
 
 // SetCKETemplate set cke template with overriding weights
 func SetCKETemplate(ctx context.Context, st storage.Storage) error {
+	cluster, err := neco.MyCluster()
+	if err != nil {
+		return err
+	}
+
 	ckeTemplate, err := ioutil.ReadFile(neco.CKETemplateFile)
 	if err != nil {
 		return err
 	}
 
-	newCkeTemplate, err := GenerateCKETemplate(ctx, st, ckeTemplate)
+	newCkeTemplate, err := GenerateCKETemplate(ctx, st, cluster, ckeTemplate)
 	if err != nil {
 		return err
 	}
