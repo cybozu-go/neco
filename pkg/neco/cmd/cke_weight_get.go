@@ -31,7 +31,7 @@ var ckeWeightGetCmd = &cobra.Command{
 
 			val, ok := data[args[0]]
 			if !ok {
-				return fmt.Errorf("No such weight found for role %s", args[0])
+				return fmt.Errorf("no such weight found for role %s", args[0])
 			}
 
 			fmt.Println(val)
