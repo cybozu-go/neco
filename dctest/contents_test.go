@@ -15,8 +15,8 @@ import (
 
 const ckeLabelWeight = "cke.cybozu.com/weight"
 
-// TestInitData executes "neco init-data"
-func TestInitData() {
+// testInitData executes "neco init-data"
+func testInitData() {
 	It("should initialize data for sabakan and CKE", func() {
 		data, err := ioutil.ReadFile("../secrets")
 		switch {

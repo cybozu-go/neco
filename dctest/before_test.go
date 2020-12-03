@@ -2,6 +2,7 @@ package dctest
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -16,8 +17,8 @@ import (
 
 const numActiveBootServers = 3
 
-// RunBeforeSuite is for Ginkgo BeforeSuite.
-func RunBeforeSuite() {
+// runBeforeSuite is for Ginkgo BeforeSuite.
+func runBeforeSuite() {
 	fmt.Println("Preparing...")
 
 	SetDefaultEventuallyPollingInterval(time.Second)
@@ -60,8 +61,8 @@ func RunBeforeSuite() {
 	log.DefaultLogger().SetOutput(GinkgoWriter)
 }
 
-// RunBeforeSuiteInstall is for Ginkgo BeforeSuite, especially in bootstrap/functions test suites.
-func RunBeforeSuiteInstall() {
+// runBeforeSuiteInstall is for Ginkgo BeforeSuite, especially in bootstrap/functions test suites.
+func runBeforeSuiteInstall() {
 	// waiting for auto-config
 	fmt.Println("waiting for auto-config has completed")
 	Eventually(func() error {
@@ -93,7 +94,7 @@ func RunBeforeSuiteInstall() {
 	defer f.Close()
 	remoteFilename := filepath.Join("/tmp", filepath.Base(debFile))
 	for _, host := range allBootServers {
-		_, err := f.Seek(0, os.SEEK_SET)
+		_, err := f.Seek(0, io.SeekStart)
 		Expect(err).NotTo(HaveOccurred())
 		_, _, err = execAtWithStream(host, f, "dd", "of="+remoteFilename)
 		Expect(err).NotTo(HaveOccurred())
@@ -104,15 +105,15 @@ func RunBeforeSuiteInstall() {
 	fmt.Println("Begin tests...")
 }
 
-// RunBeforeSuiteCopy is for Ginkgo BeforeSuite, especially in upgrade test suite.
-func RunBeforeSuiteCopy() {
+// runBeforeSuiteCopy is for Ginkgo BeforeSuite, especially in upgrade test suite.
+func runBeforeSuiteCopy() {
 	fmt.Println("distributing new neco package")
 	f, err := os.Open(debFile)
 	Expect(err).NotTo(HaveOccurred())
 	defer f.Close()
 	remoteFilename := filepath.Join("/tmp", filepath.Base(debFile))
 	for _, host := range allBootServers {
-		_, err := f.Seek(0, os.SEEK_SET)
+		_, err := f.Seek(0, io.SeekStart)
 		Expect(err).NotTo(HaveOccurred())
 		_, _, err = execAtWithStream(host, f, "dd", "of="+remoteFilename)
 		Expect(err).NotTo(HaveOccurred())

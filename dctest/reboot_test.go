@@ -33,8 +33,8 @@ func fetchClusterNodes() (map[string]bool, error) {
 	return m, nil
 }
 
-// TestRebootAllBootServers tests all boot servers are normal after reboot
-func TestRebootAllBootServers() {
+// testRebootAllBootServers tests all boot servers are normal after reboot
+func testRebootAllBootServers() {
 	It("runs systemd service on all boot servers after reboot", func() {
 		By("rebooting all boot servers")
 		for _, host := range bootServers {
@@ -60,8 +60,8 @@ func TestRebootAllBootServers() {
 	})
 }
 
-// TestRebootAllNodes tests all nodes stop scenario
-func TestRebootAllNodes() {
+// testRebootAllNodes tests all nodes stop scenario
+func testRebootAllNodes() {
 	It("can access a pod from another pod running on different node", func() {
 		execSafeAt(bootServers[0], "kubectl", "run", "nginx-reboot-test", "--image=quay.io/cybozu/testhttpd:0")
 		execSafeAt(bootServers[0], "kubectl", "run", "debug-reboot-test", "--image=quay.io/cybozu/ubuntu-debug:18.04", "pause")
@@ -266,8 +266,8 @@ func TestRebootAllNodes() {
 	})
 }
 
-// TestRebootGracefully tests graceful reboot of workers
-func TestRebootGracefully() {
+// testRebootGracefully tests graceful reboot of workers
+func testRebootGracefully() {
 	It("can reboot all workers gracefully", func() {
 		workersBefore, err := getSerfWorkerMembers()
 		Expect(err).NotTo(HaveOccurred())

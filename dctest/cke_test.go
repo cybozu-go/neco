@@ -30,8 +30,8 @@ type serfMemberContainer struct {
 	Members []serfMember `json:"members"`
 }
 
-// TestCKESetup tests CKE setup
-func TestCKESetup() {
+// testCKESetup tests CKE setup
+func testCKESetup() {
 	It("should generates cluster.yml automatically", func() {
 		By("setting configurations")
 		execSafeAt(bootServers[0], "ckecli", "constraints", "set", "control-plane-count", "3")
@@ -49,8 +49,8 @@ func TestCKESetup() {
 	})
 }
 
-// TestCKE tests CKE
-func TestCKE() {
+// testCKE tests CKE
+func testCKE() {
 	It("all systemd units are active", func() {
 		By("getting machines list")
 		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
