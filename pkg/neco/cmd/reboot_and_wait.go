@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"time"
@@ -39,7 +40,29 @@ var rebootAndWaitCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		return rebootAndWaitMain(args[0])
+		target := args[0]
+		if target == "-" {
+			data, err := ioutil.ReadAll(os.Stdin)
+			if err != nil {
+				log.Error("failed to read node object", map[string]interface{}{
+					log.FnError: err,
+				})
+				return err
+			}
+			var node struct {
+				Address string `json:"address"`
+			}
+			err = json.Unmarshal(data, &node)
+			if err != nil {
+				log.Error("invalid node object", map[string]interface{}{
+					"stdin":     string(data),
+					log.FnError: err,
+				})
+				return err
+			}
+			target = node.Address
+		}
+		return rebootAndWaitMain(target)
 	},
 }
 

@@ -56,6 +56,18 @@ var FunctionsSuite = func() {
 	Context("reboot-all-nodes", TestRebootAllNodes)
 }
 
+// RebootWorkerSuite is a test suite that tests neco reboot-worker command
+var RebootWorkerSuite = func() {
+	BeforeEach(func() {
+		fmt.Printf("START: %s\n", time.Now().Format(time.RFC3339))
+	})
+	AfterEach(func() {
+		fmt.Printf("END: %s\n", time.Now().Format(time.RFC3339))
+	})
+
+	Context("reboot-gracefully", TestRebootGracefully)
+}
+
 // UpgradeSuite is a test suite that tests upgrading process works correctry
 var UpgradeSuite = func() {
 	BeforeEach(func() {
