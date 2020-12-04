@@ -11,8 +11,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// TestInit test initialization steps
-func TestInit() {
+// testInit test initialization steps
+func testInit() {
 	It("should create a Vault admin user", func() {
 		// wait for vault leader election
 		time.Sleep(10 * time.Second)

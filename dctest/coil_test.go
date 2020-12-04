@@ -12,8 +12,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// TestCoilSetup tests Coil setup
-func TestCoilSetup() {
+// testCoilSetup tests Coil setup
+func testCoilSetup() {
 	It("should be deployed successfully", func() {
 		By("waiting for coild DaemonSet and coil-controller Deployment")
 		checkCoilNodeDaemonSet()
@@ -56,8 +56,8 @@ func TestCoilSetup() {
 	})
 }
 
-// TestCoil tests Coil
-func TestCoil() {
+// testCoil tests Coil
+func testCoil() {
 	It("should be available", func() {
 		By("checking coild DaemonSet and coil-controller Deployment")
 		checkCoilNodeDaemonSet()

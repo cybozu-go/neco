@@ -21,8 +21,8 @@ func parentDev(str string) string {
 	return tmp[1]
 }
 
-// TestIgnitions tests for ignitions functions.
-func TestIgnitions() {
+// testIgnitions tests for ignitions functions.
+func testIgnitions() {
 	targetSymlinks := []struct {
 		symlink string
 		diskDev string

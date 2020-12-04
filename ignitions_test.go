@@ -105,12 +105,6 @@ func testIgnitionTemplates(path string) error {
 			return err
 		}
 
-		var systemdInYAML []string
-		for _, s := range t.Systemd {
-			realPath := filepath.Join(systemdDir, s.Name)
-			systemdInYAML = append(systemdInYAML, realPath)
-		}
-
 		var filelistInDir []string
 		err = filepath.Walk(systemdDir, func(path string, info os.FileInfo, err error) error {
 			if err != nil {

@@ -4,12 +4,7 @@
 OUTPUT = ./output
 PLACEMAT = /usr/bin/placemat
 GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo --failFast -v
-SUITE = ./bootstrap
-ifeq ($(findstring /,$(SUITE)),)
-  SUITE_PACKAGE = ./$(SUITE)
-else
-  SUITE_PACKAGE = $(SUITE)
-endif
+SUITE = bootstrap
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
 ifeq ($(MENU_ARG),)
@@ -20,7 +15,7 @@ endif
 MACHINES_FILE ?= $(abspath $(OUTPUT)/machines.yml)
 ADDRESS_POOLS_FILE = $(abspath ./address_pools.yaml)
 
-export PLACEMAT GINKGO SUITE_PACKAGE MACHINES_FILE ADDRESS_POOLS_FILE
+export PLACEMAT GINKGO SUITE MACHINES_FILE ADDRESS_POOLS_FILE
 
 CUSTOM_UBUNTU = cybozu-ubuntu-18.04-server-cloudimg-amd64.img
 CUSTOM_UBUNTU_API_URL = https://api.github.com/repos/cybozu/neco-ubuntu/releases/latest
@@ -38,7 +33,7 @@ BMC_USER = $(SABAKAN_DIR)/bmc-user.json
 DEBVER = 9999.99.99
 GENERATED_DEB = $(abspath $(OUTPUT)/neco_$(DEBVER)_amd64.deb)
 DOWNLOADED_DEB = $(abspath $(OUTPUT)/neco_release_amd64.deb)
-ifneq ($(notdir $(SUITE_PACKAGE)),bootstrap)
+ifneq ($(SUITE),bootstrap)
   DEB = $(GENERATED_DEB)
 else ifdef DATACENTER
   DEB = $(DOWNLOADED_DEB)

@@ -6,6 +6,4 @@ import "errors"
 var (
 	ErrNoReleases = errors.New("no neco packages are released")
 	ErrNoMembers  = errors.New("no boot servers are joined")
-
-	errStopped = errors.New("update was stopped")
 )

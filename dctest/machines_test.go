@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// TestMachines tests machine control functions.
-func TestMachines() {
+// testMachines tests machine control functions.
+func testMachines() {
 	It("should put BMC/IPMI settings", func() {
 		execSafeAt(bootServers[0], "neco", "bmc", "config", "set", "bmc-user", "/mnt/bmc-user.json")
 		execSafeAt(bootServers[0], "neco", "bmc", "config", "set", "ipmi-user", "cybozu")

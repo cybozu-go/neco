@@ -74,7 +74,7 @@ func NextAction(ss *storage.Snapshot, timeout time.Duration) (Action, error) {
 	}
 
 	if !neco.UpdateCompleted(ss.Request.Version, ss.Request.Servers, ss.Statuses) {
-		if time.Now().Sub(ss.Request.StartedAt) > timeout {
+		if time.Since(ss.Request.StartedAt) > timeout {
 			return ActionStop, nil
 		}
 		return ActionWaitWorkers, nil

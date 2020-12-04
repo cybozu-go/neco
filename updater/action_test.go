@@ -1,21 +1,12 @@
 package updater
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 )
-
-type testPackageManager struct {
-	version string
-}
-
-func (m testPackageManager) GetVersion(ctx context.Context, name string) (string, error) {
-	return m.version, nil
-}
 
 func TestNextAction(t *testing.T) {
 	timeout := time.Hour

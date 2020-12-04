@@ -9,14 +9,6 @@ import (
 	"github.com/prometheus/prom2json"
 )
 
-func toPtrString(s string) *string {
-	return &s
-}
-
-func toPtrMetricType(i dto.MetricType) *dto.MetricType {
-	return &i
-}
-
 func TestReadAndSetMetrics(t *testing.T) {
 	testCases := []struct {
 		input  string

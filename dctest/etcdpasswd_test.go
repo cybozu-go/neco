@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// TestEtcdpasswd tests etcdpasswd operation
-func TestEtcdpasswd() {
+// testEtcdpasswd tests etcdpasswd operation
+func testEtcdpasswd() {
 	It("should be possible to add user", func() {
 		By("initialize etcdpasswd")
 		user := "bob"

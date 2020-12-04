@@ -54,8 +54,8 @@ type rktManifest struct {
 	} `json:"apps"`
 }
 
-// TestUpgrade test neco debian package upgrade scenario
-func TestUpgrade() {
+// testUpgrade test neco debian package upgrade scenario
+func testUpgrade() {
 	// It's only necessary for an upgrade from "without label version" to "with label version."
 	// This process makes no effects even if after upgrading to "with label version."
 	// However, we should delete after upgrading.

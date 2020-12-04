@@ -198,20 +198,6 @@ func uploadAssets(ctx context.Context, c *sabac.Client, auth *DockerAuth) error 
 	return nil
 }
 
-func uploadSystemImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Client) error {
-	name := neco.ACIAssetName(img)
-	need, err := needAssetUpload(ctx, name, c)
-	if err != nil {
-		return err
-	}
-	if !need {
-		return nil
-	}
-
-	_, err = assetsUploadWithRetry(ctx, c, name, neco.SystemImagePath(img), nil)
-	return err
-}
-
 // UploadImageAssets upload docker container image as sabakan assets.
 func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Client, auth *DockerAuth) error {
 	name := neco.ImageAssetName(img)
