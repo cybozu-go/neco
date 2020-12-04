@@ -228,19 +228,6 @@ func checkSystemdServicesOnBoot() {
 	}).Should(Succeed())
 }
 
-func getSerfMembers() (*serfMemberContainer, error) {
-	stdout, stderr, err := execAt(bootServers[0], "serf", "members", "-format", "json")
-	if err != nil {
-		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
-	}
-	var result serfMemberContainer
-	err = json.Unmarshal(stdout, &result)
-	if err != nil {
-		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
-	}
-	return &result, nil
-}
-
 func getSerfBootMembers() (*serfMemberContainer, error) {
 	stdout, stderr, err := execAt(bootServers[0], "serf", "members", "-format", "json", "-tag", "boot-server=true")
 	if err != nil {

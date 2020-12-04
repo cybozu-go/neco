@@ -4,12 +4,6 @@ SERVICES="node-exporter neco-updater neco-worker sabakan-state-setter ingress-wa
 TIMERS="rkt-gc kill-old-login-sessions backup-cke-etcd"
 
 configure() {
-    # to upgrade from container version of CKE
-    if [ -f /etc/systemd/system/cke.service ]; then
-        systemctl stop cke.service
-        rm /etc/systemd/system/cke.service
-    fi
-
     systemctl daemon-reload
     for t in $TIMERS; do
         systemctl enable ${t}.timer

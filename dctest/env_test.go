@@ -12,6 +12,7 @@ var (
 	bobPrivateKey    = os.Getenv("BOB_PRIVKEY")
 	machinesFile     = os.Getenv("MACHINES_FILE")
 	addressPoolsFile = os.Getenv("ADDRESS_POOLS_FILE")
+	testSuite        = os.Getenv("SUITE")
 )
 
 var (

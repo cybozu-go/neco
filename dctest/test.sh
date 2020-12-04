@@ -22,4 +22,4 @@ while true; do
     sleep 1
 done
 
-sudo -E nsenter -t $(pmctl pod show operation | jq .pid) -n sh -c "export PATH=$PATH; $GINKGO -focus=\"${TARGET}\" -tags=\"${TAGS}\" $SUITE_PACKAGE"
+sudo -E nsenter -t $(pmctl pod show operation | jq .pid) -n env PATH=$PATH SUITE=$SUITE $GINKGO -focus="${TARGET}" -tags="${TAGS}" .

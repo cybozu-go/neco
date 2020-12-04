@@ -327,9 +327,7 @@ func setCore(ta *TemplateArgs, menu *Menu) {
 	ta.Core.InternetAddress = addToIPNet(menu.Network.Internet, offsetInternetCore)
 	ta.Core.ExternalAddress = addToIPNet(menu.Network.CoreExternal, offsetExternalCore)
 	ta.Core.ProxyAddress = menu.Network.Proxy
-	for _, address := range menu.Network.NTP {
-		ta.Core.NTPAddresses = append(ta.Core.NTPAddresses, address)
-	}
+	ta.Core.NTPAddresses = append(ta.Core.NTPAddresses, menu.Network.NTP...)
 }
 
 func constructToRAddresses(rack *Rack, rackIdx int, menu *Menu, bases [][]net.IP) {

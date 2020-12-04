@@ -10,8 +10,8 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 )
 
-// TestUnbound test installed unbound
-func TestUnbound() {
+// testUnbound test installed unbound
+func testUnbound() {
 	It("should be available", func() {
 		By("checking unbound Deployment")
 		Eventually(func() error {

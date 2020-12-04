@@ -15,8 +15,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// TestJoinRemove test boot server join/remove scenario
-func TestJoinRemove() {
+// testJoinRemove test boot server join/remove scenario
+func testJoinRemove() {
 	It("copies root CA certificate from existing server", func() {
 		stdout, _, err := execAt(bootServers[0], "cat", neco.ServerCAFile)
 		Expect(err).ShouldNot(HaveOccurred())

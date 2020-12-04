@@ -11,8 +11,8 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 )
 
-// TestSquid test installed squid
-func TestSquid() {
+// testSquid test installed squid
+func testSquid() {
 	It("should be available", func() {
 		By("checking squid Deployment")
 		Eventually(func() error {

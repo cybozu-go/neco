@@ -10,8 +10,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// TestSabakanStateSetter tests the behavior of sabakan-state-setter in bootstrapping
-func TestSabakanStateSetter() {
+// testSabakanStateSetter tests the behavior of sabakan-state-setter in bootstrapping
+func testSabakanStateSetter() {
 	It("should wait for all nodes to join serf", func() {
 		By("getting machines list")
 		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
