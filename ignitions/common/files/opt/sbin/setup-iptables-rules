@@ -1,9 +1,5 @@
 #!/bin/sh -e
 
-# Improve DNS implementation.
-iptables -t raw -A PREROUTING -p udp -m udp -s 10.0.0.0/8 --dport 53 -j NOTRACK
-iptables -t raw -A OUTPUT     -p udp -m udp -s 10.0.0.0/8 --sport 53 -j NOTRACK
-
 {{ if ne (Metadata "external_ip_address_block") "" }}
 # Restrict access from the outside if the external IP address block has been specified.
 iptables -t filter -N PROTECT_GLOBAL
