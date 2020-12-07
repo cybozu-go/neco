@@ -28,7 +28,7 @@ const (
 	imageOS = "coreos"
 )
 
-const retryCount = 5
+const retryCount = 10
 
 // UploadContents upload contents to sabakan
 func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth *DockerAuth, st storage.Storage) error {
