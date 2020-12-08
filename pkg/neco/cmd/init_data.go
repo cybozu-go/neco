@@ -28,7 +28,7 @@ func initData(ctx context.Context, st storage.Storage) error {
 	}
 	localClient := ext.LocalHTTPClient()
 
-	// NOTE: hack for github.com/containers/image to set HTTP proxy
+	// NOTE: hack for github.com/containers/image/v5 to set HTTP proxy
 	proxy, err := st.GetProxyConfig(ctx)
 	if err != nil && err != storage.ErrNotFound {
 		return err

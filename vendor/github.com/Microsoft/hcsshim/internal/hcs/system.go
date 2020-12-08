@@ -1,35 +1,56 @@
 package hcs
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
+	"strings"
 	"sync"
 	"syscall"
-	"time"
 
-	"github.com/Microsoft/hcsshim/internal/interop"
+	"github.com/Microsoft/hcsshim/internal/cow"
+	"github.com/Microsoft/hcsshim/internal/log"
+	"github.com/Microsoft/hcsshim/internal/oc"
 	"github.com/Microsoft/hcsshim/internal/schema1"
-	"github.com/sirupsen/logrus"
-)
-
-var (
-	defaultTimeout = time.Minute * 4
+	hcsschema "github.com/Microsoft/hcsshim/internal/schema2"
+	"github.com/Microsoft/hcsshim/internal/timeout"
+	"github.com/Microsoft/hcsshim/internal/vmcompute"
+	"go.opencensus.io/trace"
 )
 
 type System struct {
 	handleLock     sync.RWMutex
-	handle         hcsSystem
+	handle         vmcompute.HcsSystem
 	id             string
 	callbackNumber uintptr
+
+	closedWaitOnce sync.Once
+	waitBlock      chan struct{}
+	waitError      error
+	exitError      error
+
+	os, typ string
+}
+
+func newSystem(id string) *System {
+	return &System{
+		id:        id,
+		waitBlock: make(chan struct{}),
+	}
 }
 
 // CreateComputeSystem creates a new compute system with the given configuration but does not start it.
-func CreateComputeSystem(id string, hcsDocumentInterface interface{}) (*System, error) {
-	operation := "CreateComputeSystem"
-	title := "hcsshim::" + operation
+func CreateComputeSystem(ctx context.Context, id string, hcsDocumentInterface interface{}) (_ *System, err error) {
+	operation := "hcsshim::CreateComputeSystem"
 
-	computeSystem := &System{
-		id: id,
-	}
+	// hcsCreateComputeSystemContext is an async operation. Start the outer span
+	// here to measure the full create time.
+	ctx, span := trace.StartSpan(ctx, operation)
+	defer span.End()
+	defer func() { oc.SetSpanStatus(span, err) }()
+	span.AddAttributes(trace.StringAttribute("cid", id))
+
+	computeSystem := newSystem(id)
 
 	hcsDocumentB, err := json.Marshal(hcsDocumentInterface)
 	if err != nil {
@@ -37,122 +58,145 @@ func CreateComputeSystem(id string, hcsDocumentInterface interface{}) (*System, 
 	}
 
 	hcsDocument := string(hcsDocumentB)
-	logrus.Debugf(title+" ID=%s config=%s", id, hcsDocument)
 
 	var (
-		resultp  *uint16
-		identity syscall.Handle
+		identity    syscall.Handle
+		resultJSON  string
+		createError error
 	)
-	createError := hcsCreateComputeSystem(id, hcsDocument, identity, &computeSystem.handle, &resultp)
-
+	computeSystem.handle, resultJSON, createError = vmcompute.HcsCreateComputeSystem(ctx, id, hcsDocument, identity)
 	if createError == nil || IsPending(createError) {
-		if err := computeSystem.registerCallback(); err != nil {
+		defer func() {
+			if err != nil {
+				computeSystem.Close()
+			}
+		}()
+		if err = computeSystem.registerCallback(ctx); err != nil {
 			// Terminate the compute system if it still exists. We're okay to
 			// ignore a failure here.
-			computeSystem.Terminate()
+			computeSystem.Terminate(ctx)
 			return nil, makeSystemError(computeSystem, operation, "", err, nil)
 		}
 	}
 
-	events, err := processAsyncHcsResult(createError, resultp, computeSystem.callbackNumber, hcsNotificationSystemCreateCompleted, &defaultTimeout)
+	events, err := processAsyncHcsResult(ctx, createError, resultJSON, computeSystem.callbackNumber, hcsNotificationSystemCreateCompleted, &timeout.SystemCreate)
 	if err != nil {
 		if err == ErrTimeout {
 			// Terminate the compute system if it still exists. We're okay to
 			// ignore a failure here.
-			computeSystem.Terminate()
+			computeSystem.Terminate(ctx)
 		}
 		return nil, makeSystemError(computeSystem, operation, hcsDocument, err, events)
 	}
-
-	logrus.Debugf(title+" succeeded id=%s handle=%d", id, computeSystem.handle)
+	go computeSystem.waitBackground()
+	if err = computeSystem.getCachedProperties(ctx); err != nil {
+		return nil, err
+	}
 	return computeSystem, nil
 }
 
 // OpenComputeSystem opens an existing compute system by ID.
-func OpenComputeSystem(id string) (*System, error) {
-	operation := "OpenComputeSystem"
-	title := "hcsshim::" + operation
-	logrus.Debugf(title+" ID=%s", id)
+func OpenComputeSystem(ctx context.Context, id string) (*System, error) {
+	operation := "hcsshim::OpenComputeSystem"
 
-	computeSystem := &System{
-		id: id,
-	}
-
-	var (
-		handle  hcsSystem
-		resultp *uint16
-	)
-	err := hcsOpenComputeSystem(id, &handle, &resultp)
-	events := processHcsResult(resultp)
+	computeSystem := newSystem(id)
+	handle, resultJSON, err := vmcompute.HcsOpenComputeSystem(ctx, id)
+	events := processHcsResult(ctx, resultJSON)
 	if err != nil {
 		return nil, makeSystemError(computeSystem, operation, "", err, events)
 	}
-
 	computeSystem.handle = handle
-
-	if err := computeSystem.registerCallback(); err != nil {
+	defer func() {
+		if err != nil {
+			computeSystem.Close()
+		}
+	}()
+	if err = computeSystem.registerCallback(ctx); err != nil {
 		return nil, makeSystemError(computeSystem, operation, "", err, nil)
 	}
-
-	logrus.Debugf(title+" succeeded id=%s handle=%d", id, handle)
+	go computeSystem.waitBackground()
+	if err = computeSystem.getCachedProperties(ctx); err != nil {
+		return nil, err
+	}
 	return computeSystem, nil
 }
 
+func (computeSystem *System) getCachedProperties(ctx context.Context) error {
+	props, err := computeSystem.Properties(ctx)
+	if err != nil {
+		return err
+	}
+	computeSystem.typ = strings.ToLower(props.SystemType)
+	computeSystem.os = strings.ToLower(props.RuntimeOSType)
+	if computeSystem.os == "" && computeSystem.typ == "container" {
+		// Pre-RS5 HCS did not return the OS, but it only supported containers
+		// that ran Windows.
+		computeSystem.os = "windows"
+	}
+	return nil
+}
+
+// OS returns the operating system of the compute system, "linux" or "windows".
+func (computeSystem *System) OS() string {
+	return computeSystem.os
+}
+
+// IsOCI returns whether processes in the compute system should be created via
+// OCI.
+func (computeSystem *System) IsOCI() bool {
+	return computeSystem.os == "linux" && computeSystem.typ == "container"
+}
+
 // GetComputeSystems gets a list of the compute systems on the system that match the query
-func GetComputeSystems(q schema1.ComputeSystemQuery) ([]schema1.ContainerProperties, error) {
-	operation := "GetComputeSystems"
-	title := "hcsshim::" + operation
+func GetComputeSystems(ctx context.Context, q schema1.ComputeSystemQuery) ([]schema1.ContainerProperties, error) {
+	operation := "hcsshim::GetComputeSystems"
 
 	queryb, err := json.Marshal(q)
 	if err != nil {
 		return nil, err
 	}
 
-	query := string(queryb)
-	logrus.Debugf(title+" query=%s", query)
-
-	var (
-		resultp         *uint16
-		computeSystemsp *uint16
-	)
-	err = hcsEnumerateComputeSystems(query, &computeSystemsp, &resultp)
-	events := processHcsResult(resultp)
+	computeSystemsJSON, resultJSON, err := vmcompute.HcsEnumerateComputeSystems(ctx, string(queryb))
+	events := processHcsResult(ctx, resultJSON)
 	if err != nil {
 		return nil, &HcsError{Op: operation, Err: err, Events: events}
 	}
 
-	if computeSystemsp == nil {
+	if computeSystemsJSON == "" {
 		return nil, ErrUnexpectedValue
 	}
-	computeSystemsRaw := interop.ConvertAndFreeCoTaskMemBytes(computeSystemsp)
 	computeSystems := []schema1.ContainerProperties{}
-	if err := json.Unmarshal(computeSystemsRaw, &computeSystems); err != nil {
+	if err = json.Unmarshal([]byte(computeSystemsJSON), &computeSystems); err != nil {
 		return nil, err
 	}
 
-	logrus.Debugf(title + " succeeded")
 	return computeSystems, nil
 }
 
 // Start synchronously starts the computeSystem.
-func (computeSystem *System) Start() error {
+func (computeSystem *System) Start(ctx context.Context) (err error) {
+	operation := "hcsshim::System::Start"
+
+	// hcsStartComputeSystemContext is an async operation. Start the outer span
+	// here to measure the full start time.
+	ctx, span := trace.StartSpan(ctx, operation)
+	defer span.End()
+	defer func() { oc.SetSpanStatus(span, err) }()
+	span.AddAttributes(trace.StringAttribute("cid", computeSystem.id))
+
 	computeSystem.handleLock.RLock()
 	defer computeSystem.handleLock.RUnlock()
-	title := "hcsshim::ComputeSystem::Start ID=" + computeSystem.ID()
-	logrus.Debugf(title)
 
 	if computeSystem.handle == 0 {
-		return makeSystemError(computeSystem, "Start", "", ErrAlreadyClosed, nil)
+		return makeSystemError(computeSystem, operation, "", ErrAlreadyClosed, nil)
 	}
 
-	var resultp *uint16
-	err := hcsStartComputeSystem(computeSystem.handle, "", &resultp)
-	events, err := processAsyncHcsResult(err, resultp, computeSystem.callbackNumber, hcsNotificationSystemStartCompleted, &defaultTimeout)
+	resultJSON, err := vmcompute.HcsStartComputeSystem(ctx, computeSystem.handle, "")
+	events, err := processAsyncHcsResult(ctx, err, resultJSON, computeSystem.callbackNumber, hcsNotificationSystemStartCompleted, &timeout.SystemStart)
 	if err != nil {
-		return makeSystemError(computeSystem, "Start", "", err, events)
+		return makeSystemError(computeSystem, operation, "", err, events)
 	}
 
-	logrus.Debugf(title + " succeeded")
 	return nil
 }
 
@@ -161,294 +205,357 @@ func (computeSystem *System) ID() string {
 	return computeSystem.id
 }
 
-// Shutdown requests a compute system shutdown, if IsPending() on the error returned is true,
-// it may not actually be shut down until Wait() succeeds.
-func (computeSystem *System) Shutdown() error {
+// Shutdown requests a compute system shutdown.
+func (computeSystem *System) Shutdown(ctx context.Context) error {
 	computeSystem.handleLock.RLock()
 	defer computeSystem.handleLock.RUnlock()
-	title := "hcsshim::ComputeSystem::Shutdown"
-	logrus.Debugf(title)
+
+	operation := "hcsshim::System::Shutdown"
+
 	if computeSystem.handle == 0 {
-		return makeSystemError(computeSystem, "Shutdown", "", ErrAlreadyClosed, nil)
+		return nil
 	}
 
-	var resultp *uint16
-	err := hcsShutdownComputeSystem(computeSystem.handle, "", &resultp)
-	events := processHcsResult(resultp)
-	if err != nil {
-		return makeSystemError(computeSystem, "Shutdown", "", err, events)
+	resultJSON, err := vmcompute.HcsShutdownComputeSystem(ctx, computeSystem.handle, "")
+	events := processHcsResult(ctx, resultJSON)
+	switch err {
+	case nil, ErrVmcomputeAlreadyStopped, ErrComputeSystemDoesNotExist, ErrVmcomputeOperationPending:
+	default:
+		return makeSystemError(computeSystem, operation, "", err, events)
 	}
-
-	logrus.Debugf(title + " succeeded")
 	return nil
 }
 
-// Terminate requests a compute system terminate, if IsPending() on the error returned is true,
-// it may not actually be shut down until Wait() succeeds.
-func (computeSystem *System) Terminate() error {
+// Terminate requests a compute system terminate.
+func (computeSystem *System) Terminate(ctx context.Context) error {
 	computeSystem.handleLock.RLock()
 	defer computeSystem.handleLock.RUnlock()
-	title := "hcsshim::ComputeSystem::Terminate ID=" + computeSystem.ID()
-	logrus.Debugf(title)
+
+	operation := "hcsshim::System::Terminate"
 
 	if computeSystem.handle == 0 {
-		return makeSystemError(computeSystem, "Terminate", "", ErrAlreadyClosed, nil)
+		return nil
 	}
 
-	var resultp *uint16
-	err := hcsTerminateComputeSystem(computeSystem.handle, "", &resultp)
-	events := processHcsResult(resultp)
-	if err != nil {
-		return makeSystemError(computeSystem, "Terminate", "", err, events)
+	resultJSON, err := vmcompute.HcsTerminateComputeSystem(ctx, computeSystem.handle, "")
+	events := processHcsResult(ctx, resultJSON)
+	switch err {
+	case nil, ErrVmcomputeAlreadyStopped, ErrComputeSystemDoesNotExist, ErrVmcomputeOperationPending:
+	default:
+		return makeSystemError(computeSystem, operation, "", err, events)
 	}
-
-	logrus.Debugf(title + " succeeded")
 	return nil
 }
 
-// Wait synchronously waits for the compute system to shutdown or terminate.
+// waitBackground waits for the compute system exit notification. Once received
+// sets `computeSystem.waitError` (if any) and unblocks all `Wait` calls.
+//
+// This MUST be called exactly once per `computeSystem.handle` but `Wait` is
+// safe to call multiple times.
+func (computeSystem *System) waitBackground() {
+	operation := "hcsshim::System::waitBackground"
+	ctx, span := trace.StartSpan(context.Background(), operation)
+	defer span.End()
+	span.AddAttributes(trace.StringAttribute("cid", computeSystem.id))
+
+	err := waitForNotification(ctx, computeSystem.callbackNumber, hcsNotificationSystemExited, nil)
+	switch err {
+	case nil:
+		log.G(ctx).Debug("system exited")
+	case ErrVmcomputeUnexpectedExit:
+		log.G(ctx).Debug("unexpected system exit")
+		computeSystem.exitError = makeSystemError(computeSystem, operation, "", err, nil)
+		err = nil
+	default:
+		err = makeSystemError(computeSystem, operation, "", err, nil)
+	}
+	computeSystem.closedWaitOnce.Do(func() {
+		computeSystem.waitError = err
+		close(computeSystem.waitBlock)
+	})
+	oc.SetSpanStatus(span, err)
+}
+
+// Wait synchronously waits for the compute system to shutdown or terminate. If
+// the compute system has already exited returns the previous error (if any).
 func (computeSystem *System) Wait() error {
-	title := "hcsshim::ComputeSystem::Wait ID=" + computeSystem.ID()
-	logrus.Debugf(title)
-
-	err := waitForNotification(computeSystem.callbackNumber, hcsNotificationSystemExited, nil)
-	if err != nil {
-		return makeSystemError(computeSystem, "Wait", "", err, nil)
-	}
-
-	logrus.Debugf(title + " succeeded")
-	return nil
+	<-computeSystem.waitBlock
+	return computeSystem.waitError
 }
 
-// WaitTimeout synchronously waits for the compute system to terminate or the duration to elapse.
-// If the timeout expires, IsTimeout(err) == true
-func (computeSystem *System) WaitTimeout(timeout time.Duration) error {
-	title := "hcsshim::ComputeSystem::WaitTimeout ID=" + computeSystem.ID()
-	logrus.Debugf(title)
-
-	err := waitForNotification(computeSystem.callbackNumber, hcsNotificationSystemExited, &timeout)
-	if err != nil {
-		return makeSystemError(computeSystem, "WaitTimeout", "", err, nil)
+// ExitError returns an error describing the reason the compute system terminated.
+func (computeSystem *System) ExitError() error {
+	select {
+	case <-computeSystem.waitBlock:
+		if computeSystem.waitError != nil {
+			return computeSystem.waitError
+		}
+		return computeSystem.exitError
+	default:
+		return errors.New("container not exited")
 	}
-
-	logrus.Debugf(title + " succeeded")
-	return nil
 }
 
-func (computeSystem *System) Properties(types ...schema1.PropertyType) (*schema1.ContainerProperties, error) {
+// Properties returns the requested container properties targeting a V1 schema container.
+func (computeSystem *System) Properties(ctx context.Context, types ...schema1.PropertyType) (*schema1.ContainerProperties, error) {
 	computeSystem.handleLock.RLock()
 	defer computeSystem.handleLock.RUnlock()
 
-	queryj, err := json.Marshal(schema1.PropertyQuery{types})
+	operation := "hcsshim::System::Properties"
+
+	queryBytes, err := json.Marshal(schema1.PropertyQuery{PropertyTypes: types})
 	if err != nil {
-		return nil, makeSystemError(computeSystem, "Properties", "", err, nil)
+		return nil, makeSystemError(computeSystem, operation, "", err, nil)
 	}
 
-	var resultp, propertiesp *uint16
-	err = hcsGetComputeSystemProperties(computeSystem.handle, string(queryj), &propertiesp, &resultp)
-	events := processHcsResult(resultp)
+	propertiesJSON, resultJSON, err := vmcompute.HcsGetComputeSystemProperties(ctx, computeSystem.handle, string(queryBytes))
+	events := processHcsResult(ctx, resultJSON)
 	if err != nil {
-		return nil, makeSystemError(computeSystem, "Properties", "", err, events)
+		return nil, makeSystemError(computeSystem, operation, "", err, events)
 	}
 
-	if propertiesp == nil {
+	if propertiesJSON == "" {
 		return nil, ErrUnexpectedValue
 	}
-	propertiesRaw := interop.ConvertAndFreeCoTaskMemBytes(propertiesp)
 	properties := &schema1.ContainerProperties{}
-	if err := json.Unmarshal(propertiesRaw, properties); err != nil {
-		return nil, makeSystemError(computeSystem, "Properties", "", err, nil)
+	if err := json.Unmarshal([]byte(propertiesJSON), properties); err != nil {
+		return nil, makeSystemError(computeSystem, operation, "", err, nil)
 	}
+
+	return properties, nil
+}
+
+// PropertiesV2 returns the requested container properties targeting a V2 schema container.
+func (computeSystem *System) PropertiesV2(ctx context.Context, types ...hcsschema.PropertyType) (*hcsschema.Properties, error) {
+	computeSystem.handleLock.RLock()
+	defer computeSystem.handleLock.RUnlock()
+
+	operation := "hcsshim::System::PropertiesV2"
+
+	queryBytes, err := json.Marshal(hcsschema.PropertyQuery{PropertyTypes: types})
+	if err != nil {
+		return nil, makeSystemError(computeSystem, operation, "", err, nil)
+	}
+
+	propertiesJSON, resultJSON, err := vmcompute.HcsGetComputeSystemProperties(ctx, computeSystem.handle, string(queryBytes))
+	events := processHcsResult(ctx, resultJSON)
+	if err != nil {
+		return nil, makeSystemError(computeSystem, operation, "", err, events)
+	}
+
+	if propertiesJSON == "" {
+		return nil, ErrUnexpectedValue
+	}
+	properties := &hcsschema.Properties{}
+	if err := json.Unmarshal([]byte(propertiesJSON), properties); err != nil {
+		return nil, makeSystemError(computeSystem, operation, "", err, nil)
+	}
+
 	return properties, nil
 }
 
 // Pause pauses the execution of the computeSystem. This feature is not enabled in TP5.
-func (computeSystem *System) Pause() error {
+func (computeSystem *System) Pause(ctx context.Context) (err error) {
+	operation := "hcsshim::System::Pause"
+
+	// hcsPauseComputeSystemContext is an async peration. Start the outer span
+	// here to measure the full pause time.
+	ctx, span := trace.StartSpan(ctx, operation)
+	defer span.End()
+	defer func() { oc.SetSpanStatus(span, err) }()
+	span.AddAttributes(trace.StringAttribute("cid", computeSystem.id))
+
 	computeSystem.handleLock.RLock()
 	defer computeSystem.handleLock.RUnlock()
-	title := "hcsshim::ComputeSystem::Pause ID=" + computeSystem.ID()
-	logrus.Debugf(title)
 
 	if computeSystem.handle == 0 {
-		return makeSystemError(computeSystem, "Pause", "", ErrAlreadyClosed, nil)
+		return makeSystemError(computeSystem, operation, "", ErrAlreadyClosed, nil)
 	}
 
-	var resultp *uint16
-	err := hcsPauseComputeSystem(computeSystem.handle, "", &resultp)
-	events, err := processAsyncHcsResult(err, resultp, computeSystem.callbackNumber, hcsNotificationSystemPauseCompleted, &defaultTimeout)
+	resultJSON, err := vmcompute.HcsPauseComputeSystem(ctx, computeSystem.handle, "")
+	events, err := processAsyncHcsResult(ctx, err, resultJSON, computeSystem.callbackNumber, hcsNotificationSystemPauseCompleted, &timeout.SystemPause)
 	if err != nil {
-		return makeSystemError(computeSystem, "Pause", "", err, events)
+		return makeSystemError(computeSystem, operation, "", err, events)
 	}
 
-	logrus.Debugf(title + " succeeded")
 	return nil
 }
 
 // Resume resumes the execution of the computeSystem. This feature is not enabled in TP5.
-func (computeSystem *System) Resume() error {
+func (computeSystem *System) Resume(ctx context.Context) (err error) {
+	operation := "hcsshim::System::Resume"
+
+	// hcsResumeComputeSystemContext is an async operation. Start the outer span
+	// here to measure the full restore time.
+	ctx, span := trace.StartSpan(ctx, operation)
+	defer span.End()
+	defer func() { oc.SetSpanStatus(span, err) }()
+	span.AddAttributes(trace.StringAttribute("cid", computeSystem.id))
+
 	computeSystem.handleLock.RLock()
 	defer computeSystem.handleLock.RUnlock()
-	title := "hcsshim::ComputeSystem::Resume ID=" + computeSystem.ID()
-	logrus.Debugf(title)
 
 	if computeSystem.handle == 0 {
-		return makeSystemError(computeSystem, "Resume", "", ErrAlreadyClosed, nil)
+		return makeSystemError(computeSystem, operation, "", ErrAlreadyClosed, nil)
 	}
 
-	var resultp *uint16
-	err := hcsResumeComputeSystem(computeSystem.handle, "", &resultp)
-	events, err := processAsyncHcsResult(err, resultp, computeSystem.callbackNumber, hcsNotificationSystemResumeCompleted, &defaultTimeout)
+	resultJSON, err := vmcompute.HcsResumeComputeSystem(ctx, computeSystem.handle, "")
+	events, err := processAsyncHcsResult(ctx, err, resultJSON, computeSystem.callbackNumber, hcsNotificationSystemResumeCompleted, &timeout.SystemResume)
 	if err != nil {
-		return makeSystemError(computeSystem, "Resume", "", err, events)
+		return makeSystemError(computeSystem, operation, "", err, events)
 	}
 
-	logrus.Debugf(title + " succeeded")
 	return nil
 }
 
-// CreateProcess launches a new process within the computeSystem.
-func (computeSystem *System) CreateProcess(c interface{}) (*Process, error) {
+func (computeSystem *System) createProcess(ctx context.Context, operation string, c interface{}) (*Process, *vmcompute.HcsProcessInformation, error) {
 	computeSystem.handleLock.RLock()
 	defer computeSystem.handleLock.RUnlock()
-	title := "hcsshim::ComputeSystem::CreateProcess ID=" + computeSystem.ID()
-	var (
-		processInfo   hcsProcessInformation
-		processHandle hcsProcess
-		resultp       *uint16
-	)
 
 	if computeSystem.handle == 0 {
-		return nil, makeSystemError(computeSystem, "CreateProcess", "", ErrAlreadyClosed, nil)
+		return nil, nil, makeSystemError(computeSystem, operation, "", ErrAlreadyClosed, nil)
 	}
 
 	configurationb, err := json.Marshal(c)
 	if err != nil {
-		return nil, makeSystemError(computeSystem, "CreateProcess", "", err, nil)
+		return nil, nil, makeSystemError(computeSystem, operation, "", err, nil)
 	}
 
 	configuration := string(configurationb)
-	logrus.Debugf(title+" config=%s", configuration)
-
-	err = hcsCreateProcess(computeSystem.handle, configuration, &processInfo, &processHandle, &resultp)
-	events := processHcsResult(resultp)
+	processInfo, processHandle, resultJSON, err := vmcompute.HcsCreateProcess(ctx, computeSystem.handle, configuration)
+	events := processHcsResult(ctx, resultJSON)
 	if err != nil {
-		return nil, makeSystemError(computeSystem, "CreateProcess", configuration, err, events)
+		return nil, nil, makeSystemError(computeSystem, operation, configuration, err, events)
 	}
 
-	process := &Process{
-		handle:    processHandle,
-		processID: int(processInfo.ProcessId),
-		system:    computeSystem,
-		cachedPipes: &cachedPipes{
-			stdIn:  processInfo.StdInput,
-			stdOut: processInfo.StdOutput,
-			stdErr: processInfo.StdError,
-		},
-	}
+	log.G(ctx).WithField("pid", processInfo.ProcessId).Debug("created process pid")
+	return newProcess(processHandle, int(processInfo.ProcessId), computeSystem), &processInfo, nil
+}
 
-	if err := process.registerCallback(); err != nil {
-		return nil, makeSystemError(computeSystem, "CreateProcess", "", err, nil)
+// CreateProcess launches a new process within the computeSystem.
+func (computeSystem *System) CreateProcess(ctx context.Context, c interface{}) (cow.Process, error) {
+	operation := "hcsshim::System::CreateProcess"
+	process, processInfo, err := computeSystem.createProcess(ctx, operation, c)
+	if err != nil {
+		return nil, err
 	}
+	defer func() {
+		if err != nil {
+			process.Close()
+		}
+	}()
 
-	logrus.Debugf(title+" succeeded processid=%d", process.processID)
+	pipes, err := makeOpenFiles([]syscall.Handle{processInfo.StdInput, processInfo.StdOutput, processInfo.StdError})
+	if err != nil {
+		return nil, makeSystemError(computeSystem, operation, "", err, nil)
+	}
+	process.stdin = pipes[0]
+	process.stdout = pipes[1]
+	process.stderr = pipes[2]
+	process.hasCachedStdio = true
+
+	if err = process.registerCallback(ctx); err != nil {
+		return nil, makeSystemError(computeSystem, operation, "", err, nil)
+	}
+	go process.waitBackground()
+
 	return process, nil
 }
 
 // OpenProcess gets an interface to an existing process within the computeSystem.
-func (computeSystem *System) OpenProcess(pid int) (*Process, error) {
+func (computeSystem *System) OpenProcess(ctx context.Context, pid int) (*Process, error) {
 	computeSystem.handleLock.RLock()
 	defer computeSystem.handleLock.RUnlock()
-	title := "hcsshim::ComputeSystem::OpenProcess ID=" + computeSystem.ID()
-	logrus.Debugf(title+" processid=%d", pid)
-	var (
-		processHandle hcsProcess
-		resultp       *uint16
-	)
+
+	operation := "hcsshim::System::OpenProcess"
 
 	if computeSystem.handle == 0 {
-		return nil, makeSystemError(computeSystem, "OpenProcess", "", ErrAlreadyClosed, nil)
+		return nil, makeSystemError(computeSystem, operation, "", ErrAlreadyClosed, nil)
 	}
 
-	err := hcsOpenProcess(computeSystem.handle, uint32(pid), &processHandle, &resultp)
-	events := processHcsResult(resultp)
+	processHandle, resultJSON, err := vmcompute.HcsOpenProcess(ctx, computeSystem.handle, uint32(pid))
+	events := processHcsResult(ctx, resultJSON)
 	if err != nil {
-		return nil, makeSystemError(computeSystem, "OpenProcess", "", err, events)
+		return nil, makeSystemError(computeSystem, operation, "", err, events)
 	}
 
-	process := &Process{
-		handle:    processHandle,
-		processID: pid,
-		system:    computeSystem,
+	process := newProcess(processHandle, pid, computeSystem)
+	if err = process.registerCallback(ctx); err != nil {
+		return nil, makeSystemError(computeSystem, operation, "", err, nil)
 	}
+	go process.waitBackground()
 
-	if err := process.registerCallback(); err != nil {
-		return nil, makeSystemError(computeSystem, "OpenProcess", "", err, nil)
-	}
-
-	logrus.Debugf(title+" succeeded processid=%s", process.processID)
 	return process, nil
 }
 
 // Close cleans up any state associated with the compute system but does not terminate or wait for it.
-func (computeSystem *System) Close() error {
+func (computeSystem *System) Close() (err error) {
+	operation := "hcsshim::System::Close"
+	ctx, span := trace.StartSpan(context.Background(), operation)
+	defer span.End()
+	defer func() { oc.SetSpanStatus(span, err) }()
+	span.AddAttributes(trace.StringAttribute("cid", computeSystem.id))
+
 	computeSystem.handleLock.Lock()
 	defer computeSystem.handleLock.Unlock()
-	title := "hcsshim::ComputeSystem::Close ID=" + computeSystem.ID()
-	logrus.Debugf(title)
 
 	// Don't double free this
 	if computeSystem.handle == 0 {
 		return nil
 	}
 
-	if err := computeSystem.unregisterCallback(); err != nil {
-		return makeSystemError(computeSystem, "Close", "", err, nil)
+	if err = computeSystem.unregisterCallback(ctx); err != nil {
+		return makeSystemError(computeSystem, operation, "", err, nil)
 	}
 
-	if err := hcsCloseComputeSystem(computeSystem.handle); err != nil {
-		return makeSystemError(computeSystem, "Close", "", err, nil)
+	err = vmcompute.HcsCloseComputeSystem(ctx, computeSystem.handle)
+	if err != nil {
+		return makeSystemError(computeSystem, operation, "", err, nil)
 	}
 
 	computeSystem.handle = 0
+	computeSystem.closedWaitOnce.Do(func() {
+		computeSystem.waitError = ErrAlreadyClosed
+		close(computeSystem.waitBlock)
+	})
 
-	logrus.Debugf(title + " succeeded")
 	return nil
 }
 
-func (computeSystem *System) registerCallback() error {
-	context := &notifcationWatcherContext{
-		channels: newChannels(),
+func (computeSystem *System) registerCallback(ctx context.Context) error {
+	callbackContext := &notifcationWatcherContext{
+		channels: newSystemChannels(),
+		systemID: computeSystem.id,
 	}
 
 	callbackMapLock.Lock()
 	callbackNumber := nextCallback
 	nextCallback++
-	callbackMap[callbackNumber] = context
+	callbackMap[callbackNumber] = callbackContext
 	callbackMapLock.Unlock()
 
-	var callbackHandle hcsCallback
-	err := hcsRegisterComputeSystemCallback(computeSystem.handle, notificationWatcherCallback, callbackNumber, &callbackHandle)
+	callbackHandle, err := vmcompute.HcsRegisterComputeSystemCallback(ctx, computeSystem.handle, notificationWatcherCallback, callbackNumber)
 	if err != nil {
 		return err
 	}
-	context.handle = callbackHandle
+	callbackContext.handle = callbackHandle
 	computeSystem.callbackNumber = callbackNumber
 
 	return nil
 }
 
-func (computeSystem *System) unregisterCallback() error {
+func (computeSystem *System) unregisterCallback(ctx context.Context) error {
 	callbackNumber := computeSystem.callbackNumber
 
 	callbackMapLock.RLock()
-	context := callbackMap[callbackNumber]
+	callbackContext := callbackMap[callbackNumber]
 	callbackMapLock.RUnlock()
 
-	if context == nil {
+	if callbackContext == nil {
 		return nil
 	}
 
-	handle := context.handle
+	handle := callbackContext.handle
 
 	if handle == 0 {
 		return nil
@@ -456,15 +563,15 @@ func (computeSystem *System) unregisterCallback() error {
 
 	// hcsUnregisterComputeSystemCallback has its own syncronization
 	// to wait for all callbacks to complete. We must NOT hold the callbackMapLock.
-	err := hcsUnregisterComputeSystemCallback(handle)
+	err := vmcompute.HcsUnregisterComputeSystemCallback(ctx, handle)
 	if err != nil {
 		return err
 	}
 
-	closeChannels(context.channels)
+	closeChannels(callbackContext.channels)
 
 	callbackMapLock.Lock()
-	callbackMap[callbackNumber] = nil
+	delete(callbackMap, callbackNumber)
 	callbackMapLock.Unlock()
 
 	handle = 0
@@ -472,30 +579,28 @@ func (computeSystem *System) unregisterCallback() error {
 	return nil
 }
 
-// Modifies the System by sending a request to HCS
-func (computeSystem *System) Modify(config interface{}) error {
+// Modify the System by sending a request to HCS
+func (computeSystem *System) Modify(ctx context.Context, config interface{}) error {
 	computeSystem.handleLock.RLock()
 	defer computeSystem.handleLock.RUnlock()
-	title := "hcsshim::Modify ID=" + computeSystem.id
+
+	operation := "hcsshim::System::Modify"
 
 	if computeSystem.handle == 0 {
-		return makeSystemError(computeSystem, "Modify", "", ErrAlreadyClosed, nil)
+		return makeSystemError(computeSystem, operation, "", ErrAlreadyClosed, nil)
 	}
 
-	requestJSON, err := json.Marshal(config)
+	requestBytes, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}
 
-	requestString := string(requestJSON)
-	logrus.Debugf(title + " " + requestString)
-
-	var resultp *uint16
-	err = hcsModifyComputeSystem(computeSystem.handle, requestString, &resultp)
-	events := processHcsResult(resultp)
+	requestJSON := string(requestBytes)
+	resultJSON, err := vmcompute.HcsModifyComputeSystem(ctx, computeSystem.handle, requestJSON)
+	events := processHcsResult(ctx, resultJSON)
 	if err != nil {
-		return makeSystemError(computeSystem, "Modify", requestString, err, events)
+		return makeSystemError(computeSystem, operation, requestJSON, err, events)
 	}
-	logrus.Debugf(title + " succeeded ")
+
 	return nil
 }
