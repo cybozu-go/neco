@@ -36,7 +36,7 @@ func main() {
 	}
 
 	well.Go(func(ctx context.Context) error {
-		// NOTE: hack for github.com/containers/image to set HTTP proxy
+		// NOTE: hack for github.com/containers/image/v5 to set HTTP proxy
 		st := storage.NewStorage(ec)
 		proxy, err := st.GetProxyConfig(ctx)
 		if err != nil && err != storage.ErrNotFound {
