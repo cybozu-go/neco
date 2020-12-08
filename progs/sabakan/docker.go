@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/containers/image/copy"
-	"github.com/containers/image/docker/reference"
-	"github.com/containers/image/signature"
-	"github.com/containers/image/transports/alltransports"
-	"github.com/containers/image/types"
+	"github.com/containers/image/v5/copy"
+	"github.com/containers/image/v5/docker/reference"
+	"github.com/containers/image/v5/signature"
+	"github.com/containers/image/v5/transports/alltransports"
+	"github.com/containers/image/v5/types"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 )

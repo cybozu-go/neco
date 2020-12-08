@@ -12,7 +12,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/containers/image/docker"
+	"github.com/containers/image/v5/docker"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/hashicorp/go-version"

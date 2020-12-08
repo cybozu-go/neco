@@ -1,3 +1,5 @@
+// +build linux,cgo
+
 package devmapper
 
 import (
@@ -21,12 +23,13 @@ type directLVMConfig struct {
 	ThinpMetaPercent    uint64
 	AutoExtendPercent   uint64
 	AutoExtendThreshold uint64
+	MetaDataSize        string
 }
 
 var (
 	errThinpPercentMissing = errors.New("must set both `dm.thinp_percent` and `dm.thinp_metapercent` if either is specified")
 	errThinpPercentTooBig  = errors.New("combined `dm.thinp_percent` and `dm.thinp_metapercent` must not be greater than 100")
-	errMissingSetupDevice  = errors.New("must provide device path in `dm.setup_device` in order to configure direct-lvm")
+	errMissingSetupDevice  = errors.New("must provide device path in `dm.directlvm_device` in order to configure direct-lvm")
 )
 
 func validateLVMConfig(cfg directLVMConfig) error {
@@ -119,10 +122,21 @@ func checkDevHasFS(dev string) error {
 }
 
 func verifyBlockDevice(dev string, force bool) error {
-	if err := checkDevAvailable(dev); err != nil {
-		return err
+	absPath, err := filepath.Abs(dev)
+	if err != nil {
+		return errors.Errorf("unable to get absolute path for %s: %s", dev, err)
 	}
-	if err := checkDevInVG(dev); err != nil {
+	realPath, err := filepath.EvalSymlinks(absPath)
+	if err != nil {
+		return errors.Errorf("failed to canonicalise path for %s: %s", dev, err)
+	}
+	if err := checkDevAvailable(absPath); err != nil {
+		logrus.Infof("block device '%s' not available, checking '%s'", absPath, realPath)
+		if err := checkDevAvailable(realPath); err != nil {
+			return errors.Errorf("neither '%s' nor '%s' are in the output of lvmdiskscan, can't use device.", absPath, realPath)
+		}
+	}
+	if err := checkDevInVG(realPath); err != nil {
 		return err
 	}
 
@@ -130,7 +144,7 @@ func verifyBlockDevice(dev string, force bool) error {
 		return nil
 	}
 
-	if err := checkDevHasFS(dev); err != nil {
+	if err := checkDevHasFS(realPath); err != nil {
 		return err
 	}
 	return nil
@@ -196,8 +210,11 @@ func setupDirectLVM(cfg directLVMConfig) error {
 	if cfg.ThinpMetaPercent == 0 {
 		cfg.ThinpMetaPercent = 1
 	}
+	if cfg.MetaDataSize == "" {
+		cfg.MetaDataSize = "128k"
+	}
 
-	out, err := exec.Command("pvcreate", "-f", cfg.Device).CombinedOutput()
+	out, err := exec.Command("pvcreate", "--metadatasize", cfg.MetaDataSize, "-f", cfg.Device).CombinedOutput()
 	if err != nil {
 		return errors.Wrap(err, string(out))
 	}
