@@ -2,7 +2,7 @@
 
 VG=vg1
 LVLIST="k8s-containerd docker kubelet rkt"
-CONTAINERD_SIZE=10g
+CONTAINERD_SIZE=20g
 DOCKER_SIZE=10g
 KUBELET_SIZE=10g
 RKT_SIZE=10g
