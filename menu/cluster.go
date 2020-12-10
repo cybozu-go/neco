@@ -259,7 +259,7 @@ func emptyNode(rackName, rackShortName, nodeName, serial string, disks int, reso
 	for i := 0; i < disks; i++ {
 		volumes[i].Kind = "raw"
 		volumes[i].Name = fmt.Sprintf("data%d", i+1)
-		volumes[i].Size = "30G"
+		volumes[i].Size = "50G"
 		volumes[i].Cache = "writeback"
 	}
 
