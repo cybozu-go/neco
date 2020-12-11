@@ -15,7 +15,7 @@ GOTAGS = $(TAGS) containers_image_openpgp containers_image_ostree_stub
 export GOFLAGS
 
 ### for debian package
-PACKAGES = fakeroot pkg-config libdevmapper-dev libostree-dev libgpgme-dev libgpgme11 unzip zip wget
+PACKAGES = fakeroot pkg-config libdevmapper-dev libostree-dev libgpgme-dev libgpgme11 libpam0g-dev unzip zip wget
 ifeq (20.04, $(word 1, $(sort 20.04 $(LSB_DISTRIB_RELEASE)))) # is Ubuntu 20.04 or later?
     PACKAGES += btrfs-progs libbtrfs-dev
 else

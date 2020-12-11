@@ -28,7 +28,6 @@ var imageRepos = []string{
 	"quay.io/cybozu/vault",
 	"ghcr.io/cybozu-go/coil",
 	"quay.io/cybozu/squid",
-	"quay.io/cybozu/teleport",
 }
 
 func imageName(repoURL string) string {
