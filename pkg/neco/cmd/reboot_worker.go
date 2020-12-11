@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -66,7 +67,8 @@ type ckeCluster struct {
 
 // ckeNode is part of cke.Node in github.com/cybozu-go/cke
 type ckeNode struct {
-	Address string `yaml:"address"`
+	Address string            `yaml:"address"`
+	Labels  map[string]string `yaml:"labels"`
 }
 
 var rebootWorkerCmd = &cobra.Command{
@@ -124,12 +126,35 @@ func rebootMain() error {
 		return err
 	}
 
+	var ss, nonss []string
 	for _, node := range cluster.Nodes {
+		if node.Labels["cke.cybozu.com/role"] == "ss" {
+			ss = append(ss, node.Address)
+			continue
+		}
+
+		nonss = append(nonss, node.Address)
+	}
+
+	for {
+		addresses := make([]string, 0, 2)
+		if len(ss) > 0 {
+			addresses = append(addresses, ss[0])
+			ss = ss[1:]
+		}
+		if len(nonss) > 0 {
+			addresses = append(addresses, nonss[0])
+			nonss = nonss[1:]
+		}
+		if len(addresses) == 0 {
+			break
+		}
+
 		log.Info("adding node to CKE reboot queue", map[string]interface{}{
-			"node": node.Address,
+			"nodes": addresses,
 		})
 		comm := exec.Command(neco.CKECLIBin, "reboot-queue", "add", "-")
-		comm.Stdin = bytes.NewBufferString(node.Address)
+		comm.Stdin = strings.NewReader(strings.Join(addresses, "\n"))
 		comm.Stdout = os.Stdout
 		comm.Stderr = os.Stderr
 		err := comm.Run()
