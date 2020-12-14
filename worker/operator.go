@@ -93,7 +93,7 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 }
 
 func (o *operator) FinalStep() int {
-	return 20
+	return 19
 }
 
 func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step int) error {
@@ -116,28 +116,26 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 8:
 		return o.UpdateEtcdpasswd(ctx, req)
 	case 9:
-		return o.UpdateTeleport(ctx, req)
-	case 10:
 		return o.UpdateSabakan(ctx, req)
-	case 11:
+	case 10:
 		return o.UpdateSabakanStateSetter(ctx, req)
-	case 12:
+	case 11:
 		return o.StopCKE(ctx, req)
-	case 13:
+	case 12:
 		return o.UpdateCKE(ctx, req)
-	case 14:
+	case 13:
 		return o.UpdateCKEContents(ctx, req)
-	case 15:
+	case 14:
 		return o.UpdateSabakanContents(ctx, req)
-	case 16:
+	case 15:
 		return o.UpdateDHCPJSON(ctx, req)
-	case 17:
+	case 16:
 		return o.UpdateCKETemplate(ctx, req)
-	case 18:
+	case 17:
 		return o.UpdateUserResources(ctx, req)
-	case 19:
+	case 18:
 		return o.UpdateIngressWatcher(ctx, req)
-	case 20:
+	case 19:
 		// THIS MUST BE THE FINAL STEP!!!!!
 		// to synchronize before restarting etcd.
 		return nil

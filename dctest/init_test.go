@@ -68,11 +68,7 @@ func testInit() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 			}
-			execSafeAt(host, "test", "-f", neco.TeleportConfFileBase)
 			execSafeAt(host, "test", "-f", neco.TeleportTokenFile)
-			execSafeAt(host, "test", "-f", "/usr/local/bin/teleport")
-
-			execSafeAt(host, "systemctl", "--no-pager", "cat", neco.TeleportService)
 		}
 	})
 
