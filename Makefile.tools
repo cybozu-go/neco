@@ -22,9 +22,8 @@ STERN_DOWNLOAD := $(STERN_DLDIR)/downloaded
 KUSTOMIZE_DLDIR := $(DOWNLOADDIR)/kustomize-v$(KUSTOMIZE_VERSION)
 KUSTOMIZE_DOWNLOAD := $(KUSTOMIZE_DLDIR)/downloaded
 TELEPORT_DLDIR := $(DOWNLOADDIR)/teleport-v$(TELEPORT_VERSION)
-TELEPORT_DOWNLOAD := $(TELEPORT_DLDIR)/downloaded
-TELEPORT_SRCDIR := src/github.com/gravitational/teleport
 
+.PHONY: all
 all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
 
 $(NODE_EXPORTER_DOWNLOAD):
@@ -32,6 +31,7 @@ $(NODE_EXPORTER_DOWNLOAD):
 	$(WGET) -O $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v$(NODE_EXPORTER_VERSION)/node_exporter-$(NODE_EXPORTER_VERSION).linux-amd64.tar.gz
 	touch $@
 
+.PHONY: node_exporter
 node_exporter: $(NODE_EXPORTER_DOWNLOAD)
 	rm -f $(LIBEXECDIR)/node_exporter
 	rm -rf $(BUILDDIR)/node_exporter
@@ -50,6 +50,7 @@ $(CONTAINERD_DOWNLOAD):
 	$(WGET) -O $(CONTAINERD_DLDIR)/README.md https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/README.md
 	touch $@
 
+.PHONY: containerd
 containerd: $(CONTAINERD_DOWNLOAD)
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
 	tar xzf $(CONTAINERD_DLDIR)/containerd.tar.gz --strip-components=1 -C $(LIBEXECDIR) bin/containerd bin/containerd-shim bin/containerd-shim-runc-v1 bin/containerd-shim-runc-v2 bin/ctr
@@ -64,6 +65,7 @@ $(CRICTL_DOWNLOAD):
 	$(WGET) -O $(CRICTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/README.md
 	touch $@
 
+.PHONY: crictl
 crictl: $(CRICTL_DOWNLOAD)
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
 	tar zxf $(CRICTL_DLDIR)/crictl.tar.gz --no-same-owner -C $(LIBEXECDIR)
@@ -78,6 +80,7 @@ $(ARGOCD_DOWNLOAD):
 	$(WGET) -O $(ARGOCD_DLDIR)/README.md https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/README.md
 	touch $@
 
+.PHONY: argocd
 argocd: $(ARGOCD_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
 	cp $(ARGOCD_DLDIR)/argocd $(BINDIR)/argocd
@@ -96,6 +99,7 @@ $(KUBECTL_DOWNLOAD):
 	$(WGET) -O $(KUBECTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
 	touch $@
 
+.PHONY: kubectl
 kubectl: $(KUBECTL_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
 	cp $(KUBECTL_DLDIR)/kubectl $(BINDIR)/kubectl
@@ -113,6 +117,7 @@ $(LVMD_DOWNLOAD):
 	$(WGET) -O $(LVMD_DLDIR)/README.md https://raw.githubusercontent.com/topolvm/topolvm/v$(TOPOLVM_VERSION)/README.md
 	touch $@
 
+.PHONY: lvmd
 lvmd: $(LVMD_DOWNLOAD)
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
 	tar xzf $(LVMD_DLDIR)/lvmd.tar.gz -C $(LIBEXECDIR)
@@ -126,6 +131,7 @@ $(STERN_DOWNLOAD):
 	$(WGET) -O $(STERN_DLDIR)/README.md https://raw.githubusercontent.com/stern/stern/v$(STERN_VERSION)/README.md
 	touch $@
 
+.PHONY: stern
 stern: $(STERN_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
 	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_linux_amd64/stern $(BINDIR)/stern
@@ -143,40 +149,40 @@ $(KUSTOMIZE_DOWNLOAD):
 	$(WGET) -O $(KUSTOMIZE_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
 	touch $@
 
+.PHONY: kustomize
 kustomize: $(KUSTOMIZE_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
 	tar xzf $(KUSTOMIZE_DLDIR)/kustomize.tar.gz -C $(BINDIR)
 	cp $(KUSTOMIZE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
-$(TELEPORT_DOWNLOAD):
-	mkdir -p $(TELEPORT_DLDIR)
-	$(WGET) -O $(TELEPORT_DLDIR)/teleport-src.tar.gz https://github.com/gravitational/teleport/archive/v$(TELEPORT_VERSION).tar.gz
-	$(WGET) -O $(TELEPORT_DLDIR)/LICENSE   https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
-	$(WGET) -O $(TELEPORT_DLDIR)/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
-	touch $@
-
-build-teleport: $(TELEPORT_DOWNLOAD)
+.PHONY: build-teleport
+build-teleport:
+	rm -rf $(TELEPORT_DLDIR)
+	mkdir -p $(TELEPORT_DLDIR)/out
 	# workaround: tsh requires go 1.15 so download it and use it only for building tsh
 	# please remove this workaround when neco uses go 1.15
 	curl -fsL https://dl.google.com/go/go$(TELEPORT_GO_VERSION).linux-amd64.tar.gz | tar xzf - -C $(TELEPORT_DLDIR)
-	mkdir -p $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR)
-	GOPATH=$(TELEPORT_DLDIR)/home tar xzf $(TELEPORT_DLDIR)/teleport-src.tar.gz -C $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR) --strip 1
-	PATH=$(TELEPORT_DLDIR)/go/bin:${PATH} GOROOT=$(TELEPORT_DLDIR)/go GOPATH=$(TELEPORT_DLDIR)/home make -C $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR) build/tsh OS=windows
-	cp $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR)/build/tsh $(TELEPORT_DLDIR)/tsh.exe
-	PATH=$(TELEPORT_DLDIR)/go/bin:${PATH} GOROOT=$(TELEPORT_DLDIR)/go GOPATH=$(TELEPORT_DLDIR)/home make -C $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR) build/tsh OS=linux
-	cp $(TELEPORT_DLDIR)/home/$(TELEPORT_SRCDIR)/build/tsh $(TELEPORT_DLDIR)/tsh
+	cd $(TELEPORT_DLDIR); git clone --depth 1 --branch v$(TELEPORT_VERSION) https://github.com/gravitational/teleport
+	PATH=$(TELEPORT_DLDIR)/go/bin:${PATH} GOROOT=$(TELEPORT_DLDIR)/go make -C $(TELEPORT_DLDIR)/teleport build/tsh OS=windows
+	cp $(TELEPORT_DLDIR)/teleport/build/tsh $(TELEPORT_DLDIR)/out/tsh.exe
+	PATH=$(TELEPORT_DLDIR)/go/bin:${PATH} GOROOT=$(TELEPORT_DLDIR)/go make -C $(TELEPORT_DLDIR)/teleport full OS=linux
+	cp $(TELEPORT_DLDIR)/teleport/build/tctl $(TELEPORT_DLDIR)/out/tctl
+	cp $(TELEPORT_DLDIR)/teleport/build/teleport $(TELEPORT_DLDIR)/out/teleport
+	cp $(TELEPORT_DLDIR)/teleport/build/tsh $(TELEPORT_DLDIR)/out/tsh
 
+.PHONY: teleport
 teleport: build-teleport
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
-	cp $(TELEPORT_DLDIR)/tsh $(BINDIR)
-	cp $(TELEPORT_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(TELEPORT_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(TELEPORT_DLDIR)/tsh.exe $(WINDOWS_BINDIR)/$@
-	cp $(TELEPORT_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(TELEPORT_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	mkdir -p $(BINDIR) $(SBINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
+	cp $(TELEPORT_DLDIR)/out/tctl $(BINDIR)
+	cp $(TELEPORT_DLDIR)/out/teleport $(SBINDIR)
+	cp $(TELEPORT_DLDIR)/out/tsh $(BINDIR)
+	cp $(TELEPORT_DLDIR)/teleport/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(TELEPORT_DLDIR)/teleport/README.md $(DOCDIR)/$@/README.md
+	cp $(TELEPORT_DLDIR)/out/tsh.exe $(WINDOWS_BINDIR)/$@
+	cp $(TELEPORT_DLDIR)/teleport/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(TELEPORT_DLDIR)/teleport/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
+.PHONY: clean
 clean:
 	rm -rf $(BUILDDIR) $(WORKDIR) $(DOWNLOADDIR)
-
-.PHONY:	all clean node_exporter containerd crictl argocd kubectl lvmd stern kustomize build-teleport teleport

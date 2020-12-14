@@ -1,9 +1,16 @@
 #!/bin/sh -e
 
-SERVICES="node-exporter neco-updater neco-worker sabakan-state-setter ingress-watcher cke"
+SERVICES="node-exporter neco-updater neco-worker sabakan-state-setter ingress-watcher cke teleport-node"
 TIMERS="rkt-gc kill-old-login-sessions backup-cke-etcd"
 
 configure() {
+    # temporary code for transition
+    if [ -f /etc/systemd/teleport-node.service ]; then
+        systemctl stop teleport-node.service
+        rm /etc/systemd/teleport-node.service
+        rm -f /usr/local/bin/tctl /usr/local/bin/tsh /usr/local/bin/teleport /usr/local/bin/ckecli
+    fi
+
     systemctl daemon-reload
     for t in $TIMERS; do
         systemctl enable ${t}.timer
@@ -15,6 +22,7 @@ configure() {
         systemctl start ${s}.service
     done
 
+    mkdir -p /etc/teleport
     /usr/bin/neco completion > /etc/bash_completion.d/neco
     /usr/bin/ckecli completion > /etc/bash_completion.d/ckecli
     /usr/bin/kubectl completion bash > /etc/bash_completion.d/kubectl
