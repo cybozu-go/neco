@@ -70,7 +70,8 @@ func (w *Watcher) Run(ctx context.Context) error {
 						metrics.HTTPGetFailTotal.WithLabelValues(t).Inc()
 					} else {
 						log.Info("GET succeeded.", map[string]interface{}{
-							"url": t,
+							"url":  t,
+							"code": res.StatusCode,
 						})
 						metrics.HTTPGetSuccessfulTotal.WithLabelValues(strconv.Itoa(res.StatusCode), t).Inc()
 						res.Body.Close()
