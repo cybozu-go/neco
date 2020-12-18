@@ -49,5 +49,5 @@ spec:
 kind: Node
 type: ss
 spec:
-  cpu: 2
+  cpu: 3
   memory: 10G
