@@ -13,6 +13,8 @@ var (
 
 // IP4ToInt returns uint32 value for an IPv4 address.
 // If ip is not an IPv4 address, this returns 0.
+//
+// Deprecated: use IPAdd and IPDiff.
 func IP4ToInt(ip net.IP) uint32 {
 	ip = ip.To4()
 	if ip == nil {
@@ -22,6 +24,8 @@ func IP4ToInt(ip net.IP) uint32 {
 }
 
 // IntToIP4 does the reverse of IP4ToInt.
+//
+// Deprecated: use IPAdd and IPDiff.
 func IntToIP4(n uint32) net.IP {
 	ip := make([]byte, 4)
 	binary.BigEndian.PutUint32(ip, n)
@@ -35,6 +39,8 @@ func IntToIP4(n uint32) net.IP {
 // The returned function will finally generate nil to tell the end.
 //
 // The network must be an IPv4 network.
+//
+// Deprecated: this cannot be used for IPv6 networks.
 func HostsFunc(n *net.IPNet) (func() net.IP, error) {
 	if n.IP.To4() == nil {
 		return nil, ErrIPv6

@@ -5,6 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2020-12-15
+
+### Added
+- Add `IPAdd` and `IPDiff` for IPv4/v6 address calculations
+- Add `EqualIP` matcher for Ginkgo tests
+
+### Deprecated
+- `IP4ToInt` and `IntToIP4`: use `IPAdd` and `IPDiff` instead.
+
 ## [1.2.0] - 2018-09-14
 ### Added
 - Opt in to [Go modules](https://github.com/golang/go/wiki/Modules).
@@ -18,7 +27,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - `IsNetworkUnreachable`, `IsConnectionRefused`, `IsNoRouteToHost` functions to identify network errors.
 
-[Unreleased]: https://github.com/cybozu-go/log/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/cybozu-go/log/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/cybozu-go/log/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/cybozu-go/log/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/cybozu-go/log/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/cybozu-go/log/compare/v1.0.0...v1.0.1
