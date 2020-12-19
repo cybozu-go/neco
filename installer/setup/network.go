@@ -11,6 +11,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/netutil"
 	"github.com/vishvananda/netlink"
 )
@@ -133,8 +134,7 @@ RETRY:
 }
 
 func nodeAddresses(lrn int) (node0, node1, node2, bastion net.IP) {
-	base := net.ParseIP("10.69.0.0")
-	node0 = netutil.IPAdd(base, int64(192*lrn+3))
+	node0 = neco.BootNode0IP(lrn)
 	node1 = netutil.IPAdd(node0, 64)
 	node2 = netutil.IPAdd(node0, 128)
 
