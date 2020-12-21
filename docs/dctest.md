@@ -126,7 +126,8 @@ Specify `TAGS=release` in the release branch to use `artifacts_release.go`.
 
 ### `MENU_ARG`
 
-Virtual data center is configured by the specified `MENU_ARG` file.
+You can configure the virtual data center constructed by `placemat` via `MENU_ARG` file.
+Read a `placemat-menu` [document](./placemat-menu.md) for more detail.
 If you change the parameter from previously used one, you should run `make clean` to apply the configuration properly.
 
 `make placemat` accepts this variable.
