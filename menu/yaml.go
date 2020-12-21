@@ -9,6 +9,8 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/cybozu-go/netutil"
 	"github.com/cybozu-go/placemat"
@@ -119,11 +121,19 @@ func unmarshalNetwork(dir string, data []byte) (*NetworkMenu, error) {
 	if err != nil {
 		return nil, err
 	}
-	nodeOffset := uint32(0)
+	var nodeOffset int64
 	if len(ic.NodeIPv4Offset) > 0 {
-		nodeOffset = netutil.IP4ToInt(net.ParseIP(ic.NodeIPv4Offset))
+		bl := strings.Split(ic.NodeIPv4Offset, ".")
+		for _, b := range bl {
+			nodeOffset <<= 8
+			n, err := strconv.ParseInt(b, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("invalid node-ipv4-offset: %s", ic.NodeIPv4Offset)
+			}
+			nodeOffset += n
+		}
 	}
-	network.NodeBase = netutil.IntToIP4(netutil.IP4ToInt(nodePool) + nodeOffset)
+	network.NodeBase = netutil.IPAdd(nodePool, nodeOffset)
 	network.NodeRangeSize = int(ic.NodeRangeSize)
 	network.NodeRangeMask = int(ic.NodeRangeMask)
 	_, network.BMC, err = parseNetworkCIDR(ic.BMCIPv4Pool)

@@ -1,0 +1,33 @@
+#cloud-config
+autoinstall:
+  version: 1
+  interactive-sections:
+  - storage
+  network:
+    version: 2
+  apt:
+    geoip: false
+    preserve_sources_list: false
+    primary:
+    - arches: [amd64, i386]
+      uri: http://archive.ubuntu.com/ubuntu
+    - arches: [default]
+      uri: http://ports.ubuntu.com/ubuntu-ports
+  identity:
+    hostname: boot
+    # password = cybozu
+    password: $6$fI1bqJZkdmPaZhE$dY0p04o0j6Dw8fAB7uKAoe4qGADoUreGxwr8rgBAA4f0/Ah./cicdaphe7mtuA7mWWfSRUIGFvTOQ3yuavtEl0
+    realname: cybozu
+    username: cybozu
+  ssh:
+    allow-pw: true
+    authorized-keys: []
+    install-server: true
+  late-commands:
+  - "cp -a /cdrom/extras /target/"
+  - "chmod a+x /target/extras/setup"
+  - "curtin in-target --target=/target -- systemctl disable systemd-resolved.service > /var/log/installer/late-commands.log 2>&1"
+  - "rm -f /target/etc/resolv.conf"
+  - "curtin in-target --target=/target -- dpkg -r --force-depends systemd-timesyncd >> /var/log/installer/late-commands.log 2>&1"
+  - "curtin in-target --target=/target -- sh -c 'dpkg -i /extras/*.deb' >> /var/log/installer/late-commands.log 2>&1"
+  - "true   Done.  You can reboot now."

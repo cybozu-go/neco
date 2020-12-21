@@ -221,12 +221,11 @@ func ToTemplateArgs(menu *Menu) (*TemplateArgs, error) {
 	numRack := len(menu.Inventory.Rack)
 
 	spineToRackBases := make([][]net.IP, menu.Inventory.Spine)
-	spineTorInt := netutil.IP4ToInt(menu.Network.SpineTor)
 	for spineIdx := 0; spineIdx < menu.Inventory.Spine; spineIdx++ {
 		spineToRackBases[spineIdx] = make([]net.IP, numRack)
 		for rackIdx := range menu.Inventory.Rack {
-			offset := uint32((spineIdx*numRack + rackIdx) * torPerRack * 2)
-			spineToRackBases[spineIdx][rackIdx] = netutil.IntToIP4(spineTorInt + offset)
+			offset := int64((spineIdx*numRack + rackIdx) * torPerRack * 2)
+			spineToRackBases[spineIdx][rackIdx] = netutil.IPAdd(menu.Network.SpineTor, offset)
 		}
 	}
 
@@ -347,22 +346,15 @@ func constructToRAddresses(rack *Rack, rackIdx int, menu *Menu, bases [][]net.IP
 }
 
 func addToIPNet(netAddr *net.IPNet, offset int) *net.IPNet {
-	ipInt := netutil.IP4ToInt(netAddr.IP) + uint32(offset)
-	ip4 := netutil.IntToIP4(ipInt)
-	mask := netAddr.Mask
-	return &net.IPNet{IP: ip4, Mask: mask}
+	return &net.IPNet{IP: netutil.IPAdd(netAddr.IP, int64(offset)), Mask: netAddr.Mask}
 }
 
 func addToIP(netIP net.IP, offset int, prefixSize int) *net.IPNet {
-	ipInt := netutil.IP4ToInt(netIP) + uint32(offset)
-	ip4 := netutil.IntToIP4(ipInt)
 	mask := net.CIDRMask(prefixSize, 32)
-	return &net.IPNet{IP: ip4, Mask: mask}
+	return &net.IPNet{IP: netutil.IPAdd(netIP, int64(offset)), Mask: mask}
 }
 
 func makeNodeNetwork(base net.IP, rangeSize, prefixSize int, nodeIdx int) *net.IPNet {
-	offset := 1 << uint(rangeSize) * nodeIdx
-	ipInt := netutil.IP4ToInt(base) + uint32(offset)
-	ip4 := netutil.IntToIP4(ipInt)
-	return &net.IPNet{IP: ip4, Mask: net.CIDRMask(prefixSize, 32)}
+	offset := 1 << rangeSize * nodeIdx
+	return &net.IPNet{IP: netutil.IPAdd(base, int64(offset)), Mask: net.CIDRMask(prefixSize, 32)}
 }

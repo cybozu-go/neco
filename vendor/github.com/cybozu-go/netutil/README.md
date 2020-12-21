@@ -1,6 +1,6 @@
 [![GitHub release](https://img.shields.io/github/release/cybozu-go/netutil.svg?maxAge=60)][releases]
-[![GoDoc](https://godoc.org/github.com/cybozu-go/netutil?status.svg)][godoc]
-[![CircleCI](https://circleci.com/gh/cybozu-go/netutil.svg?style=svg)](https://circleci.com/gh/cybozu-go/netutil)
+![CI](https://github.com/cybozu-go/netutil/workflows/CI/badge.svg)
+[![Go Reference](https://pkg.go.dev/badge/cybozu-go/netutil.svg)](https://pkg.go.dev/cybozu-go/netutil)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cybozu-go/netutil)](https://goreportcard.com/report/github.com/cybozu-go/netutil)
 
 Add-ons for networking
@@ -11,7 +11,7 @@ This package overrides a package of the same name.
 Features
 --------
 
-* Functions for IPv4 address space.
+* Functions for IPv4/v6 address calculations.
 * Functions to identify network errors.
 * Functions for TLS constants.
 * Utilities for TCP keep-alive.
@@ -21,7 +21,7 @@ Features
 Usage
 -----
 
-Read [the documentation][godoc].
+Read [the documentation](https://pkg.go.dev/cybozu-go/netutil).
 
 License
 -------
@@ -29,4 +29,3 @@ License
 [MIT](https://opensource.org/licenses/MIT)
 
 [releases]: https://github.com/cybozu-go/netutil/releases
-[godoc]: https://godoc.org/github.com/cybozu-go/netutil

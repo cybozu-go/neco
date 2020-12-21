@@ -127,8 +127,9 @@ const (
 
 // File locations
 var (
-	rackFile    = filepath.Join(NecoDir, "rack")
-	ClusterFile = filepath.Join(NecoDir, "cluster")
+	RackFile        = filepath.Join(NecoDir, "rack")
+	ClusterFile     = filepath.Join(NecoDir, "cluster")
+	SabakanIPAMFile = filepath.Join(NecoDir, "sabakan_ipam.json")
 
 	ServerCAFile   = "/usr/local/share/ca-certificates/neco.crt"
 	ServerCertFile = filepath.Join(NecoDir, "server.crt")
