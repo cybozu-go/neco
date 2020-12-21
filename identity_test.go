@@ -22,7 +22,7 @@ func testMyLRN(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rackFile = f.Name()
+	RackFile = f.Name()
 
 	lrn, err := MyLRN()
 	if err != nil {

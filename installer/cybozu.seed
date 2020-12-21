@@ -1,0 +1,11 @@
+#cloud-config
+hostname: boot
+users:
+  - name: cybozu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    primary-group: cybozu
+    groups: sudo, adm
+    lock_passwd: false
+    # below passwd is hashed string of "cybozu"
+    passwd: $6$rounds=4096$m3AVOWeB$EPystoHozf.eJNCm4tWyRHpJzgTDymYuGOONWxRN8uk4amLvxwB4Pc7.tEkZdeXewoVEBEX5ujUon9wSpEf1N.
+    shell: /bin/bash

@@ -8,7 +8,7 @@ import (
 
 // MyLRN returns logical rack number of own node
 func MyLRN() (int, error) {
-	data, err := ioutil.ReadFile(rackFile)
+	data, err := ioutil.ReadFile(RackFile)
 	if err != nil {
 		return 0, err
 	}
