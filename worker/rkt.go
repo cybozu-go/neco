@@ -16,7 +16,7 @@ func (o *operator) FetchImages(ctx context.Context, req *neco.UpdateRequest) err
 	envvars := neco.HTTPProxyEnv(p)
 
 	env := well.NewEnvironment(ctx)
-	for _, img := range neco.RktImages {
+	for _, img := range neco.BootImages {
 		img := img
 		env.Go(func(ctx context.Context) error {
 			fullname, err := neco.ContainerFullName(img)

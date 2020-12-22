@@ -89,13 +89,13 @@ func (c SlackClient) PostWebHook(payload Payload) error {
 	return err
 }
 
-// NotifyInfo notifies to slack that update was started.
+// NotifyInfo sends a notification about the beginning of the update process
 func (c SlackClient) NotifyInfo(req neco.UpdateRequest, message string) error {
 	att := Attachment{
 		Color:      ColorInfo,
 		AuthorName: "Boot server updater",
-		Title:      "Update was started",
-		Text:       "Updating process was started on boot servers.",
+		Title:      "Update begins",
+		Text:       "neco-worker has started the updating process.",
 		Fields: []AttachmentField{
 			{Title: "Cluster", Value: c.Cluster, Short: true},
 			{Title: "Version", Value: req.Version, Short: true},
@@ -108,13 +108,13 @@ func (c SlackClient) NotifyInfo(req neco.UpdateRequest, message string) error {
 	return c.PostWebHook(payload)
 }
 
-// NotifySucceeded notifies to slack that update was successful.
+// NotifySucceeded sends a successful notification about the update process
 func (c SlackClient) NotifySucceeded(req neco.UpdateRequest) error {
 	att := Attachment{
 		Color:      ColorGood,
 		AuthorName: "Boot server updater",
 		Title:      "Update completed successfully",
-		Text:       "Updating on boot servers are completed successfully :tada: :tada: :tada:",
+		Text:       "boot servers were updated successfully :tada: :tada: :tada:",
 		Fields: []AttachmentField{
 			{Title: "Cluster", Value: c.Cluster, Short: true},
 			{Title: "Version", Value: req.Version, Short: true},
@@ -126,13 +126,13 @@ func (c SlackClient) NotifySucceeded(req neco.UpdateRequest) error {
 	return c.PostWebHook(payload)
 }
 
-// NotifyFailure notifies to slack that update was failure.
+// NotifyFailure sends a failure notification about the update process
 func (c SlackClient) NotifyFailure(req neco.UpdateRequest, message string) error {
 	att := Attachment{
 		Color:      ColorDanger,
 		AuthorName: "Boot server updater",
-		Title:      "Failed to update boot servers",
-		Text:       "Failed to update boot servers due to some error :crying_cat_face:.  Please fix it manually.",
+		Title:      "Update failed",
+		Text:       "there were some errors :crying_cat_face:.  Please fix it manually.",
 		Fields: []AttachmentField{
 			{Title: "Cluster", Value: c.Cluster, Short: true},
 			{Title: "Version", Value: req.Version, Short: true},

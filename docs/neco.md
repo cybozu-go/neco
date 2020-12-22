@@ -8,6 +8,32 @@ Features include:
 * Edit etcd database to configure `neco-updater` and `neco-worker`.
 * Initialize application data before installation.
 
+- [Synopsis](#synopsis)
+  - [Configure `neco-worker` and `neco-updater`](#configure-neco-worker-and-neco-updater)
+  - [Boot server setup](#boot-server-setup)
+  - [For worker nodes](#for-worker-nodes)
+  - [Vault related functions](#vault-related-functions)
+  - [BMC management functions](#bmc-management-functions)
+  - [CKE related functions](#cke-related-functions)
+  - [Miscellaneous](#miscellaneous)
+- [Configurations](#configurations)
+  - [`env`](#env)
+  - [`slack`](#slack)
+  - [`proxy`](#proxy)
+  - [`dns`](#dns)
+  - [`quay-username`](#quay-username)
+  - [`quay-password`](#quay-password)
+  - [`check-update-interval`](#check-update-interval)
+  - [`worker-timeout`](#worker-timeout)
+  - [`github-token`](#github-token)
+  - [`node-proxy`](#node-proxy)
+  - [`external-ip-address-block`](#external-ip-address-block)
+- [Use case](#use-case)
+  - [Setup three boot servers as initial cluster](#setup-three-boot-servers-as-initial-cluster)
+  - [Add a new boot server](#add-a-new-boot-server)
+  - [Setup a new program](#setup-a-new-program)
+  - [Remove a dead boot server](#remove-a-dead-boot-server)
+
 Synopsis
 --------
 
