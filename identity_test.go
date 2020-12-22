@@ -60,7 +60,18 @@ func testMyCluster(t *testing.T) {
 	}
 }
 
+func testOSCodename(t *testing.T) {
+	t.Parallel()
+
+	codename, err := OSCodename()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("os codename:", codename)
+}
+
 func TestIdentity(t *testing.T) {
 	t.Run("MyLRN", testMyLRN)
 	t.Run("MyCluster", testMyCluster)
+	t.Run("OSCodename", testOSCodename)
 }
