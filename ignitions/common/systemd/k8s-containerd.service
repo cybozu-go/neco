@@ -19,6 +19,7 @@ Environment="HTTPS_PROXY=http://{{ index .Spec.IPv4 0 }}:30128"
 Environment="HTTP_PROXY={{ Metadata "proxy_url" }}"
 Environment="HTTPS_PROXY={{ Metadata "proxy_url" }}"
 {{ end }}
+Environment="NO_PROXY=*.registry.{{ if eq (or .Spec.Labels.datacenter "dc1") "dc1" }}gcp0.dev-ne.co{{ else }}{{ .Spec.Labels.datacenter }}.cyozu-ne.co{{ end }}"
 
 # (lack of) limits from the upstream docker service unit
 LimitNOFILE=1048576
