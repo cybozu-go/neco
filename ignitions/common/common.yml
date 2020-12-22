@@ -11,7 +11,7 @@ files:
   - /etc/neco/bmc-address.json
   - /etc/neco/rack
   - /etc/neco/version
-  - /etc/sysctl.d/60-cybozu.conf
+  - /etc/sysctl.d/70-cybozu.conf
   - /etc/systemd/resolved.conf
   - /etc/systemd/system.conf.d/50-cybozu.conf
   - /etc/systemd/system/rngd.service.d/non_vm.conf
