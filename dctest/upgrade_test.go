@@ -440,7 +440,12 @@ func checkVersionByRkt(host, image string) error {
 		return fmt.Errorf("host: %s, stderr: %s, err: %v", host, stderr, err)
 	}
 
-	var pods []neco.RktPod
+	type rktPod struct {
+		Name     string   `json:"name"`
+		State    string   `json:"state"`
+		AppNames []string `json:"app_names"`
+	}
+	var pods []rktPod
 	err = json.Unmarshal(stdout, &pods)
 	if err != nil {
 		return err

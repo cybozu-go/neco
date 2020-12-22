@@ -32,12 +32,6 @@ func init() {
 	}
 }
 
-// RktImage represents rkt image information
-type RktImage struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
 // ContainerFullName returns full container's name for the name
 func ContainerFullName(name string) (string, error) {
 	img, err := CurrentArtifacts.FindContainerImage(name)
@@ -54,7 +48,13 @@ func FetchContainer(ctx context.Context, fullname string, env []string) error {
 	if err != nil {
 		return err
 	}
-	var list []RktImage
+
+	type rktImage struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}
+
+	var list []rktImage
 	err = json.Unmarshal(data, &list)
 	if err != nil {
 		return err
@@ -105,14 +105,6 @@ type Bind struct {
 	ReadOnly bool
 }
 
-// Args returns command-line arguments for rkt.
-func (b Bind) Args() []string {
-	return []string{
-		fmt.Sprintf("--volume=%s,kind=host,source=%s,readOnly=%v", b.Name, b.Source, b.ReadOnly),
-		fmt.Sprintf("--mount=volume=%s,target=%s", b.Name, b.Dest),
-	}
-}
-
 // RunContainer runs container in front.
 func RunContainer(ctx context.Context, name string, binds []Bind, args []string) error {
 	img, err := CurrentArtifacts.FindContainerImage(name)
@@ -122,20 +114,16 @@ func RunContainer(ctx context.Context, name string, binds []Bind, args []string)
 
 	rktArgs := []string{"run", "--pull-policy=never"}
 	for _, b := range binds {
-		rktArgs = append(rktArgs, b.Args()...)
+		rktArgs = append(rktArgs,
+			fmt.Sprintf("--volume=%s,kind=host,source=%s,readOnly=%v", b.Name, b.Source, b.ReadOnly),
+			fmt.Sprintf("--mount=volume=%s,target=%s", b.Name, b.Dest),
+		)
 	}
 	rktArgs = append(rktArgs, img.FullName(hasRktAuthFile))
 	rktArgs = append(rktArgs, args...)
 
 	cmd := well.CommandContext(ctx, "rkt", rktArgs...)
 	return cmd.Run()
-}
-
-// RktPod represents rkt pod information
-type RktPod struct {
-	Name     string   `json:"name"`
-	State    string   `json:"state"`
-	AppNames []string `json:"app_names"`
 }
 
 // EnterContainerAppCommand returns well.LogCmd to enter the named app.
@@ -157,7 +145,13 @@ func getRunningPodByApp(ctx context.Context, app string) (string, error) {
 		return "", err
 	}
 
-	var pods []RktPod
+	type rktPod struct {
+		Name     string   `json:"name"`
+		State    string   `json:"state"`
+		AppNames []string `json:"app_names"`
+	}
+
+	var pods []rktPod
 	err = json.Unmarshal(data, &pods)
 	if err != nil {
 		return "", err

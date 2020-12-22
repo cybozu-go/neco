@@ -7,8 +7,8 @@ const systemdDir = "/etc/systemd/system"
 // SabakanImages is the list of container image names to be uploaded to sabakan.
 var SabakanImages = []string{"setup-hw", "serf", "coil", "squid"}
 
-// RktImages is the list of container image names to be run as rkt containers.
-var RktImages = []string{"cke", "etcd", "setup-hw", "sabakan", "serf", "vault"}
+// BootImages is the list of container image names to be run on boot servers.
+var BootImages = []string{"etcd", "setup-hw", "sabakan", "serf", "vault"}
 
 // Neco params
 const (
