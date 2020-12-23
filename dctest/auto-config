@@ -16,4 +16,6 @@ env http_proxy=$http_proxy apt-get install -o Acquire::Retries=5 -y --no-install
 apt-get -y purge --auto-remove apport unattended-upgrades software-properties-common python3-software-properties
 apt-get clean
 
+adduser cybozu rkt
+
 touch /tmp/auto-config-done
