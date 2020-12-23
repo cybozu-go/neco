@@ -154,3 +154,13 @@ func (s Storage) PutExternalIPAddressBlock(ctx context.Context, ipBlock string) 
 func (s Storage) GetExternalIPAddressBlock(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyExternalIPAddressBlock)
 }
+
+// PutRegistryConfig stores registry config to storage.
+func (s Storage) PutRegistryConfig(ctx context.Context, name, url string) error {
+	return s.put(ctx, KeyRegistryPrefix+name, url)
+}
+
+// ListRegistryConfig lists registry configs from storage.
+func (s Storage) ListRegistryConfig(ctx context.Context) (map[string]string, error) {
+	return s.list(ctx, KeyRegistryPrefix)
+}

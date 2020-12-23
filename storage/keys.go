@@ -33,6 +33,7 @@ const (
 	KeyGitHubToken            = "config/github-token"
 	KeyNodeProxy              = "config/node-proxy"
 	KeyExternalIPAddressBlock = "config/external-ip-address-block"
+	KeyRegistryPrefix         = "config/registry/"
 	KeyVaultUnsealKey         = "vault-unseal-key"
 	KeyVaultRootToken         = "vault-root-token"
 	KeyFinishPrefix           = "finish/"

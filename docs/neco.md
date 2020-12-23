@@ -39,7 +39,7 @@ Synopsis
 
 ### Configure `neco-worker` and `neco-updater`
 
-* `neco config set KEY VALUE`
+* `neco config set KEY [VALUE ...]`
 
     Change the setting for `KEY` to `VALUE`.
     Key and values are described in [another section](#config).
@@ -294,6 +294,11 @@ This value is used as metadata in the ignition template.
 ### `external-ip-address-block`
 
 Specify an IP address block assigned to Nodes by a LoadBalancer controller.
+This value is used as metadata in the ignition template.
+
+### `registry`
+
+Specify registry name and mirror server URL for containerd. (e.g. `neco config set registry quay http://10.72.32.200:5000`)
 This value is used as metadata in the ignition template.
 
 Use case

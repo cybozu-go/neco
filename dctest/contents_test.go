@@ -38,6 +38,11 @@ func testInitData() {
 		By("setting external IP address block")
 		execSafeAt(bootServers[0], "neco", "config", "set", "external-ip-address-block", externalIPBlock)
 
+		By("setting registry mirror servers URL")
+		execSafeAt(bootServers[0], "neco", "config", "set", "registry", "quay", "http://10.72.47.1:5000")
+		execSafeAt(bootServers[0], "neco", "config", "set", "registry", "ghcr", "http://10.72.47.2:5000")
+		execSafeAt(bootServers[0], "neco", "config", "set", "registry", "elastic", "http://10.72.47.3:5000")
+
 		By("initialize data for sabakan and CKE")
 		cs, err := getMachinesSpecifiedRole("cs")
 		Expect(err).NotTo(HaveOccurred())

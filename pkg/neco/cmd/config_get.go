@@ -28,7 +28,8 @@ Possible keys are:
     worker-timeout            - Timeout value to wait for workers.
     github-token              - GitHub personal access token for checking GitHub release.
     node-proxy                - HTTP proxy server URL to access Internet for worker nodes.
-    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.`,
+    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.
+	registry                  - Registry mirror server URL for containerd.`,
 
 	Args: cobra.ExactArgs(1),
 	ValidArgs: []string{
@@ -42,6 +43,7 @@ Possible keys are:
 		"github-token",
 		"node-proxy",
 		"external-ip-address-block",
+		"registry",
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
@@ -113,6 +115,14 @@ Possible keys are:
 					return err
 				}
 				fmt.Println(ipBlock)
+			case "registry":
+				registries, err := st.ListRegistryConfig(ctx)
+				if err != nil {
+					return err
+				}
+				for k, v := range registries {
+					fmt.Printf("%s: %s\n", k, v)
+				}
 			default:
 				return errors.New("unknown key: " + key)
 			}

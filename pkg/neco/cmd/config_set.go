@@ -18,7 +18,7 @@ import (
 
 // configSetCmd implements "neco config set"
 var configSetCmd = &cobra.Command{
-	Use:   "set KEY [VALUE]",
+	Use:   "set KEY [VALUE ...]",
 	Short: "store a configuration value to etcd",
 	Long: `Store a configuration value to etcd.
 
@@ -33,13 +33,18 @@ Possible keys are:
     worker-timeout            - Timeout value to wait for workers.
     github-token              - GitHub personal access token for checking GitHub release.
     node-proxy                - HTTP proxy server URL to access Internet for worker nodes.
-    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.`,
+    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.
+    registry                  - Registry mirror server URL for containerd.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return fmt.Errorf("accepts %d arg(s), received %d", 1, len(args))
 		}
 		switch args[0] {
+		case "registry":
+			if len(args) != 3 {
+				return fmt.Errorf("accepts %d arg(s), received %d", 3, len(args))
+			}
 		case "env", "slack", "proxy", "check-update-interval", "worker-timeout", "node-proxy", "external-ip-address-block":
 			if len(args) != 2 {
 				return fmt.Errorf("accepts %d arg(s), received %d", 2, len(args))
@@ -63,6 +68,7 @@ Possible keys are:
 		"github-token",
 		"node-proxy",
 		"external-ip-address-block",
+		"registry",
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
@@ -72,6 +78,7 @@ Possible keys are:
 		defer etcd.Close()
 		st := storage.NewStorage(etcd)
 		key := args[0]
+		var name string
 		var value string
 		well.Go(func(ctx context.Context) error {
 			switch key {
@@ -154,6 +161,17 @@ Possible keys are:
 					return errors.New("not IPv4 addr: " + value)
 				}
 				return st.PutExternalIPAddressBlock(ctx, block.String())
+			case "registry":
+				name = args[1]
+				value = args[2]
+				u, err := url.Parse(value)
+				if err != nil {
+					return err
+				}
+				if !u.IsAbs() {
+					return errors.New("invalid URL")
+				}
+				return st.PutRegistryConfig(ctx, name, value)
 			}
 			return errors.New("unknown key: " + key)
 		})

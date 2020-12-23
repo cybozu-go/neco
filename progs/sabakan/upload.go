@@ -310,6 +310,11 @@ func uploadIgnitions(ctx context.Context, c *sabac.Client, id string, st storage
 		return err
 	}
 
+	registries, err := st.ListRegistryConfig(ctx)
+	for k, v := range registries {
+		metadata[k+"_registry_url"] = v
+	}
+
 	ipBlock, err := st.GetExternalIPAddressBlock(ctx)
 	switch err {
 	case storage.ErrNotFound:
