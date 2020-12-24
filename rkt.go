@@ -168,18 +168,6 @@ func (rt rktRuntime) IsRunning(img ContainerImage) (bool, error) {
 	return false, fmt.Errorf("app %s is not found in rkt manifest: %s", img.Name, string(data))
 }
 
-// EnterContainerAppCommand returns well.LogCmd to enter the named app.
-func EnterContainerAppCommand(ctx context.Context, app string, args []string) (*well.LogCmd, error) {
-	uuid, err := getRunningPodByApp(app)
-	if err != nil {
-		return nil, err
-	}
-
-	rktArgs := []string{"enter", "--app", app, uuid}
-	rktArgs = append(rktArgs, args...)
-	return well.CommandContext(ctx, "rkt", rktArgs...), nil
-}
-
 func getRunningPodByApp(app string) (string, error) {
 	cmd := exec.Command("rkt", "list", "--format=json")
 	data, err := cmd.Output()
