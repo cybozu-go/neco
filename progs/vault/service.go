@@ -7,8 +7,8 @@ import (
 )
 
 // GenerateService generate systemd service unit contents.
-func GenerateService(w io.Writer) error {
-	fullname, err := neco.ContainerFullName("vault")
+func GenerateService(w io.Writer, rt neco.ContainerRuntime) error {
+	img, err := neco.CurrentArtifacts.FindContainerImage("vault")
 	if err != nil {
 		return err
 	}
@@ -20,7 +20,7 @@ func GenerateService(w io.Writer) error {
 		ConfFile string
 		NecoBin  string
 	}{
-		Image:    fullname,
+		Image:    rt.ImageFullName(img),
 		UID:      neco.VaultUID,
 		GID:      neco.VaultGID,
 		ConfFile: neco.VaultConfFile,

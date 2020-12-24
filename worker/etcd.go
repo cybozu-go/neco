@@ -163,7 +163,7 @@ func (o *operator) addEtcdMember(ctx context.Context) error {
 		return err
 	}
 
-	ec, err := etcd.Setup(ctx, func(w io.Writer) error {
+	ec, err := etcd.Setup(ctx, o.containerRuntime, func(w io.Writer) error {
 		return etcd.GenerateConfForAdd(w, o.mylrn, resp.Members)
 	})
 	if err != nil {
@@ -194,7 +194,7 @@ func waitEtcdSync(ctx context.Context, ec *clientv3.Client, rev int64) error {
 
 func (o *operator) replaceEtcdFiles(ctx context.Context, lrns []int) (bool, error) {
 	buf := new(bytes.Buffer)
-	err := etcd.GenerateService(buf)
+	err := etcd.GenerateService(buf, o.containerRuntime)
 	if err != nil {
 		return false, err
 	}

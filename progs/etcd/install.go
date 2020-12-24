@@ -105,7 +105,7 @@ func tryWait(ctx context.Context) (*clientv3.Client, error) {
 
 // Setup installs and starts etcd.
 // It returns etcd client connected to etcd server running on localhost.
-func Setup(ctx context.Context, generator func(io.Writer) error) (*clientv3.Client, error) {
+func Setup(ctx context.Context, rt neco.ContainerRuntime, generator func(io.Writer) error) (*clientv3.Client, error) {
 	f, err := os.OpenFile(neco.EtcdConfFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func Setup(ctx context.Context, generator func(io.Writer) error) (*clientv3.Clie
 	}
 	defer g.Close()
 
-	err = GenerateService(g)
+	err = GenerateService(g, rt)
 	if err != nil {
 		return nil, err
 	}

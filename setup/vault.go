@@ -269,7 +269,7 @@ func prepareCA(ctx context.Context, isLeader bool, mylrn int, lrns []int) ([]*ap
 	return pems, nil
 }
 
-func setupVault(ctx context.Context, mylrn int, lrns []int) error {
+func setupVault(ctx context.Context, rt neco.ContainerRuntime, mylrn int, lrns []int) error {
 	f, err := os.OpenFile(neco.VaultConfFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -291,7 +291,7 @@ func setupVault(ctx context.Context, mylrn int, lrns []int) error {
 	}
 	defer g.Close()
 
-	err = vault.GenerateService(g)
+	err = vault.GenerateService(g, rt)
 	if err != nil {
 		return err
 	}

@@ -79,7 +79,7 @@ func (o *operator) UpdateSerf(ctx context.Context, req *neco.UpdateRequest) erro
 
 func (o *operator) replaceSerfFiles(ctx context.Context, lrns []int) (bool, error) {
 	buf := new(bytes.Buffer)
-	err := serf.GenerateService(buf)
+	err := serf.GenerateService(buf, o.containerRuntime)
 	if err != nil {
 		return false, err
 	}

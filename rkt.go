@@ -181,15 +181,6 @@ func init() {
 	}
 }
 
-// ContainerFullName returns full container's name for the name
-func ContainerFullName(name string) (string, error) {
-	img, err := CurrentArtifacts.FindContainerImage(name)
-	if err != nil {
-		return "", err
-	}
-	return img.FullName(hasRktAuthFile), nil
-}
-
 // FetchContainer fetches a container image
 func FetchContainer(ctx context.Context, fullname string, env []string) error {
 	cmd := well.CommandContext(ctx, "rkt", "image", "list", "--format=json")

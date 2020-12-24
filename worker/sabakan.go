@@ -171,7 +171,7 @@ func (o *operator) replaceSabakanFiles(ctx context.Context, mylrn int, lrns []in
 	}
 
 	buf.Reset()
-	err = sabakan.GenerateService(buf)
+	err = sabakan.GenerateService(buf, o.containerRuntime)
 	if err != nil {
 		return false, err
 	}

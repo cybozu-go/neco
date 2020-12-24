@@ -7,8 +7,8 @@ import (
 )
 
 // GenerateService generates systemd service unit contents.
-func GenerateService(w io.Writer) error {
-	fullname, err := neco.ContainerFullName("setup-hw")
+func GenerateService(w io.Writer, rt neco.ContainerRuntime) error {
+	img, err := neco.CurrentArtifacts.FindContainerImage("setup-hw")
 	if err != nil {
 		return err
 	}
@@ -16,6 +16,6 @@ func GenerateService(w io.Writer) error {
 	return serviceTmpl.Execute(w, struct {
 		Image string
 	}{
-		Image: fullname,
+		Image: rt.ImageFullName(img),
 	})
 }

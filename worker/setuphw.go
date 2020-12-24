@@ -42,7 +42,7 @@ func (o *operator) UpdateSetupHW(ctx context.Context, req *neco.UpdateRequest) e
 func (o *operator) replaceSetupHWFiles(ctx context.Context) (bool, error) {
 	buf := new(bytes.Buffer)
 
-	err := setuphw.GenerateService(buf)
+	err := setuphw.GenerateService(buf, o.containerRuntime)
 	if err != nil {
 		return false, err
 	}
