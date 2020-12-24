@@ -187,7 +187,7 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["sh", "-c", "sleep 5"]
+                command: ["sleep", "5"]
           volumeMounts:
             - name: config-volume
               mountPath: /etc/unbound
