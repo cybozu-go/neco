@@ -34,7 +34,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
 	if err := rt.Pull(ctx, etcdImage); err != nil {
 		return err
 	}
-	err = etcd.InstallTools(ctx)
+	err = etcd.InstallTools(ctx, rt)
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
 	if err := rt.Pull(ctx, vaultImage); err != nil {
 		return err
 	}
-	err = vault.InstallTools(ctx)
+	err = vault.InstallTools(ctx, rt)
 	if err != nil {
 		return err
 	}

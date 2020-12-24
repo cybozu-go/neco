@@ -20,7 +20,7 @@ func (o *operator) UpdateVault(ctx context.Context, req *neco.UpdateRequest) err
 		return err
 	}
 	if need {
-		err = vault.InstallTools(ctx)
+		err = vault.InstallTools(ctx, o.containerRuntime)
 		if err != nil {
 			return err
 		}

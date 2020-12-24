@@ -23,7 +23,7 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 		return err
 	}
 	if need {
-		err = sabakan.InstallTools(ctx)
+		err = sabakan.InstallTools(ctx, o.containerRuntime)
 		if err != nil {
 			return err
 		}

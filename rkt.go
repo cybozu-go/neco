@@ -102,7 +102,7 @@ func (rt rktRuntime) Run(ctx context.Context, img ContainerImage, binds []Bind, 
 			fmt.Sprintf("--mount=volume=%s,target=%s", b.Name, b.Dest),
 		)
 	}
-	rktArgs = append(rktArgs, img.FullName(hasRktAuthFile))
+	rktArgs = append(rktArgs, img.FullName(rt.hasAuthFile))
 	rktArgs = append(rktArgs, args...)
 
 	cmd := well.CommandContext(ctx, "rkt", rktArgs...)
@@ -166,96 +166,6 @@ func (rt rktRuntime) IsRunning(img ContainerImage) (bool, error) {
 	}
 
 	return false, fmt.Errorf("app %s is not found in rkt manifest: %s", img.Name, string(data))
-}
-
-var hasRktAuthFile bool
-
-func init() {
-	_, err := os.Stat(rktAuthFile)
-	switch {
-	case err == nil:
-		hasRktAuthFile = true
-	case os.IsNotExist(err):
-	default:
-		panic(err)
-	}
-}
-
-// FetchContainer fetches a container image
-func FetchContainer(ctx context.Context, fullname string, env []string) error {
-	cmd := well.CommandContext(ctx, "rkt", "image", "list", "--format=json")
-	data, err := cmd.Output()
-	if err != nil {
-		return err
-	}
-
-	type rktImage struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
-	}
-
-	var list []rktImage
-	err = json.Unmarshal(data, &list)
-	if err != nil {
-		return err
-	}
-	for _, i := range list {
-		if i.Name == fullname {
-			return nil
-		}
-	}
-
-	err = RetryWithSleep(ctx, retryCount, time.Second,
-		func(ctx context.Context) error {
-			cmd := exec.CommandContext(ctx, "rkt", "--insecure-options=image", "fetch", "--full", "docker://"+fullname)
-			cmd.Env = env
-			return cmd.Run()
-		},
-		func(err error) {
-			log.Warn("rkt: failed to fetch a container image", map[string]interface{}{
-				log.FnError: err,
-				"image":     fullname,
-			})
-		},
-	)
-	if err == nil {
-		log.Info("rkt: fetched a container image", map[string]interface{}{
-			"image": fullname,
-		})
-	}
-	return err
-}
-
-// HTTPProxyEnv returns os.Environ() with http_proxy/https_proxy if proxy is not empty
-func HTTPProxyEnv(proxy string) []string {
-	osenv := os.Environ()
-	env := make([]string, len(osenv))
-	copy(env, osenv)
-	if proxy != "" {
-		env = append(env, "https_proxy="+proxy, "http_proxy="+proxy)
-	}
-	return env
-}
-
-// RunContainer runs container in front.
-func RunContainer(ctx context.Context, name string, binds []Bind, args []string) error {
-	img, err := CurrentArtifacts.FindContainerImage(name)
-	if err != nil {
-		return err
-	}
-
-	rktArgs := []string{"run", "--pull-policy=never"}
-	for _, b := range binds {
-		rktArgs = append(rktArgs,
-			fmt.Sprintf("--volume=%s,kind=host,source=%s,readOnly=%v", b.Name, b.Source, b.ReadOnly),
-			fmt.Sprintf("--mount=volume=%s,target=%s", b.Name, b.Dest),
-		)
-	}
-	rktArgs = append(rktArgs, img.FullName(hasRktAuthFile))
-	rktArgs = append(rktArgs, args...)
-
-	cmd := well.CommandContext(ctx, "rkt", rktArgs...)
-	return cmd.Run()
 }
 
 // EnterContainerAppCommand returns well.LogCmd to enter the named app.

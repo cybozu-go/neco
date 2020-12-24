@@ -31,7 +31,7 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		return err
 	}
 	if need {
-		err = etcd.InstallTools(ctx)
+		err = etcd.InstallTools(ctx, o.containerRuntime)
 		if err != nil {
 			return err
 		}
