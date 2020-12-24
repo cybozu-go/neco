@@ -3961,7 +3961,7 @@ spec:
     ranges:
     - max: 65535
       min: 1
-    rule: MustRunAs
+    rule: MayRunAs
   hostIPC: false
   hostNetwork: true
   hostPID: false
