@@ -251,6 +251,8 @@ func testUpgrade() {
 
 			Eventually(func() error {
 				switch img.Name {
+				case "bird", "chrony":
+					// these are not managed by neco-worker
 				case "cke":
 					// CKE is not running as a container
 				case "coil":
