@@ -16,33 +16,40 @@ import (
 const (
 	retryCount = 3
 
-	dockerAuthFile = "/etc/rkt/auth.d/docker.json"
+	rktAuthFile = "/etc/rkt/auth.d/docker.json"
 )
 
-var hasRktAuthFile bool
+type rktRuntime struct {
+	hasAuthFile bool
+	env         []string
+}
 
-func init() {
-	_, err := os.Stat(dockerAuthFile)
+func newRktRuntime(proxy string) (ContainerRuntime, error) {
+	rt := rktRuntime{}
+	if proxy != "" {
+		osenv := os.Environ()
+		env := make([]string, 0, len(osenv)+2)
+		env = append(env, osenv...)
+		env = append(env, "https_proxy="+proxy, "http_proxy="+proxy)
+		rt.env = env
+	}
+
+	_, err := os.Stat(rktAuthFile)
 	switch {
 	case err == nil:
-		hasRktAuthFile = true
+		rt.hasAuthFile = true
 	case os.IsNotExist(err):
 	default:
-		panic(err)
+		return nil, fmt.Errorf("failed to check %s: %w", rktAuthFile, err)
 	}
+	return rt, nil
 }
 
-// ContainerFullName returns full container's name for the name
-func ContainerFullName(name string) (string, error) {
-	img, err := CurrentArtifacts.FindContainerImage(name)
-	if err != nil {
-		return "", err
-	}
-	return img.FullName(hasRktAuthFile), nil
+func (rt rktRuntime) ImageFullName(img ContainerImage) string {
+	return img.FullName(rt.hasAuthFile)
 }
 
-// FetchContainer fetches a container image
-func FetchContainer(ctx context.Context, fullname string, env []string) error {
+func (rt rktRuntime) Pull(ctx context.Context, img ContainerImage) error {
 	cmd := well.CommandContext(ctx, "rkt", "image", "list", "--format=json")
 	data, err := cmd.Output()
 	if err != nil {
@@ -59,6 +66,7 @@ func FetchContainer(ctx context.Context, fullname string, env []string) error {
 	if err != nil {
 		return err
 	}
+	fullname := rt.ImageFullName(img)
 	for _, i := range list {
 		if i.Name == fullname {
 			return nil
@@ -68,7 +76,7 @@ func FetchContainer(ctx context.Context, fullname string, env []string) error {
 	err = RetryWithSleep(ctx, retryCount, time.Second,
 		func(ctx context.Context) error {
 			cmd := exec.CommandContext(ctx, "rkt", "--insecure-options=image", "fetch", "--full", "docker://"+fullname)
-			cmd.Env = env
+			cmd.Env = rt.env
 			return cmd.Run()
 		},
 		func(err error) {
@@ -86,32 +94,7 @@ func FetchContainer(ctx context.Context, fullname string, env []string) error {
 	return err
 }
 
-// HTTPProxyEnv returns os.Environ() with http_proxy/https_proxy if proxy is not empty
-func HTTPProxyEnv(proxy string) []string {
-	osenv := os.Environ()
-	env := make([]string, len(osenv))
-	copy(env, osenv)
-	if proxy != "" {
-		env = append(env, "https_proxy="+proxy, "http_proxy="+proxy)
-	}
-	return env
-}
-
-// Bind represents a host bind mount rule.
-type Bind struct {
-	Name     string
-	Source   string
-	Dest     string
-	ReadOnly bool
-}
-
-// RunContainer runs container in front.
-func RunContainer(ctx context.Context, name string, binds []Bind, args []string) error {
-	img, err := CurrentArtifacts.FindContainerImage(name)
-	if err != nil {
-		return err
-	}
-
+func (rt rktRuntime) Run(ctx context.Context, img ContainerImage, binds []Bind, args []string) error {
 	rktArgs := []string{"run", "--pull-policy=never"}
 	for _, b := range binds {
 		rktArgs = append(rktArgs,
@@ -119,30 +102,77 @@ func RunContainer(ctx context.Context, name string, binds []Bind, args []string)
 			fmt.Sprintf("--mount=volume=%s,target=%s", b.Name, b.Dest),
 		)
 	}
-	rktArgs = append(rktArgs, img.FullName(hasRktAuthFile))
+	rktArgs = append(rktArgs, img.FullName(rt.hasAuthFile))
 	rktArgs = append(rktArgs, args...)
 
 	cmd := well.CommandContext(ctx, "rkt", rktArgs...)
 	return cmd.Run()
 }
 
-// EnterContainerAppCommand returns well.LogCmd to enter the named app.
-func EnterContainerAppCommand(ctx context.Context, app string, args []string) (*well.LogCmd, error) {
-	uuid, err := getRunningPodByApp(ctx, app)
+func (rt rktRuntime) Exec(ctx context.Context, name string, stdio bool, command []string) error {
+	uuid, err := getRunningPodByApp(name)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	rktArgs := []string{"enter", "--app", app, uuid}
-	rktArgs = append(rktArgs, args...)
-	return well.CommandContext(ctx, "rkt", rktArgs...), nil
+	rktArgs := []string{"enter", "--app", name, uuid}
+	rktArgs = append(rktArgs, command...)
+	cmd := well.CommandContext(ctx, "rkt", rktArgs...)
+	if stdio {
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
+	return cmd.Run()
 }
 
-func getRunningPodByApp(ctx context.Context, app string) (string, error) {
-	cmd := well.CommandContext(ctx, "rkt", "list", "--format=json")
+func (rt rktRuntime) IsRunning(img ContainerImage) (bool, error) {
+	uuid, err := getRunningPodByApp(img.Name)
+	if err != nil {
+		return false, err
+	}
+	data, err := exec.Command("rkt", "cat-manifest", uuid).Output()
+	if err != nil {
+		return false, fmt.Errorf("failed to run rkt cat-manifest %s: %w", uuid, err)
+	}
+
+	manifest := &struct {
+		Apps []struct {
+			Name  string `json:"name"`
+			Image struct {
+				Name   string `json:"name"`
+				Labels []struct {
+					Name  string `json:"name"`
+					Value string `json:"value"`
+				} `json:"labels"`
+			} `json:"image"`
+		} `json:"apps"`
+	}{}
+	if err := json.Unmarshal(data, manifest); err != nil {
+		return false, fmt.Errorf("failed to parse rkt cat-manifest output: %s: %v", string(data), err)
+	}
+
+	fullName := rt.ImageFullName(img)
+	for _, app := range manifest.Apps {
+		if app.Name != img.Name {
+			continue
+		}
+		for _, label := range app.Image.Labels {
+			if label.Name != "version" {
+				continue
+			}
+			return fmt.Sprintf("%s:%s", app.Image.Name, label.Value) == fullName, nil
+		}
+	}
+
+	return false, fmt.Errorf("app %s is not found in rkt manifest: %s", img.Name, string(data))
+}
+
+func getRunningPodByApp(app string) (string, error) {
+	cmd := exec.Command("rkt", "list", "--format=json")
 	data, err := cmd.Output()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("rkt list failed: %w", err)
 	}
 
 	type rktPod struct {
@@ -159,7 +189,7 @@ func getRunningPodByApp(ctx context.Context, app string) (string, error) {
 
 	// for unknown reason, "rkt list" sometimes returns "null"
 	if len(pods) == 0 {
-		return "", errors.New("failed to get pod list")
+		return "", errors.New("failed to get rkt pod list")
 	}
 
 	for _, pod := range pods {
@@ -172,5 +202,5 @@ func getRunningPodByApp(ctx context.Context, app string) (string, error) {
 			}
 		}
 	}
-	return "", errors.New("failed to find specified app")
+	return "", errors.New("failed to find specified rkt app: " + app)
 }

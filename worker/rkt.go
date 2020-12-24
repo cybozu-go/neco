@@ -13,17 +13,19 @@ func (o *operator) FetchImages(ctx context.Context, req *neco.UpdateRequest) err
 	if err != nil && err != storage.ErrNotFound {
 		return err
 	}
-	envvars := neco.HTTPProxyEnv(p)
+	rt, err := neco.GetContainerRuntime(p)
+	if err != nil {
+		return err
+	}
 
 	env := well.NewEnvironment(ctx)
-	for _, img := range neco.BootImages {
-		img := img
+	for _, name := range neco.BootImages {
+		img, err := neco.CurrentArtifacts.FindContainerImage(name)
+		if err != nil {
+			return err
+		}
 		env.Go(func(ctx context.Context) error {
-			fullname, err := neco.ContainerFullName(img)
-			if err != nil {
-				return err
-			}
-			return neco.FetchContainer(ctx, fullname, envvars)
+			return rt.Pull(ctx, img)
 		})
 	}
 	env.Stop()

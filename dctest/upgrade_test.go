@@ -40,20 +40,6 @@ type dockerInspect struct {
 	} `json:"Config"`
 }
 
-// rktManifest is part of rkt cat-manifest JSON
-type rktManifest struct {
-	Apps []struct {
-		Name  string `json:"name"`
-		Image struct {
-			Name   string `json:"name"`
-			Labels []struct {
-				Name  string `json:"name"`
-				Value string `json:"value"`
-			} `json:"labels"`
-		} `json:"image"`
-	} `json:"apps"`
-}
-
 // testUpgrade test neco debian package upgrade scenario
 func testUpgrade() {
 	// It's only necessary for an upgrade from "without label version" to "with label version."
@@ -274,15 +260,9 @@ func testUpgrade() {
 					return checkVersionInDeployment("kube-system", "coil-controller", newImage)
 				case "squid":
 					return checkVersionInDeployment("internet-egress", "squid", newImage)
-				case "teleport":
-					for _, h := range bootServers {
-						if err := checkVersionOfTeleport(h, newImage); err != nil {
-							return err
-						}
-					}
 				default:
 					for _, h := range bootServers {
-						if err := checkVersionByRkt(h, newImage); err != nil {
+						if _, _, err := execAt(h, "neco", "is-running", img.Name); err != nil {
 							return err
 						}
 					}
@@ -407,98 +387,6 @@ func checkVersionByDocker(address, name, image string) error {
 		}
 	}
 	return nil
-}
-
-func checkVersionOfTeleport(host, image string) error {
-	// this returns a string like "Teleport v4.0.2 git:v4.0.2-0-gb7e0e872 go1.12.5"
-	stdout, stderr, err := execAt(host, "teleport", "version")
-	if err != nil {
-		return fmt.Errorf("host: %s, stderr: %s, err: %v", host, stderr, err)
-	}
-
-	var version, s1, s2 string
-	n, err := fmt.Sscanf(string(stdout), "Teleport v%s %s %s", &version, &s1, &s2)
-	if err != nil || n != 3 {
-		return fmt.Errorf("unexpected version format: %s", stdout)
-	}
-
-	expected := strings.Split(image, ":")[1]
-	if !strings.HasPrefix(expected, version+".") {
-		return fmt.Errorf("unexpected version: %s", version)
-	}
-
-	return nil
-}
-
-func checkVersionByRkt(host, image string) error {
-	fullName := strings.Split(image, ":")[0]
-	shortName := strings.TrimPrefix(fullName, "quay.io/cybozu/")
-	version := strings.Split(image, ":")[1]
-
-	stdout, stderr, err := execAt(host, "sudo", "rkt", "list", "--format", "json")
-	if err != nil {
-		return fmt.Errorf("host: %s, stderr: %s, err: %v", host, stderr, err)
-	}
-
-	type rktPod struct {
-		Name     string   `json:"name"`
-		State    string   `json:"state"`
-		AppNames []string `json:"app_names"`
-	}
-	var pods []rktPod
-	err = json.Unmarshal(stdout, &pods)
-	if err != nil {
-		return err
-	}
-
-	if len(pods) == 0 {
-		return fmt.Errorf("failed to get pod list at %s", host)
-	}
-
-	for _, pod := range pods {
-		if pod.State != "running" {
-			continue
-		}
-
-		var uuid string
-		for _, appName := range pod.AppNames {
-			if appName == shortName {
-				uuid = pod.Name
-			}
-		}
-
-		if len(uuid) == 0 {
-			continue
-		}
-
-		stdout, stderr, err := execAt(host, "sudo", "rkt", "cat-manifest", uuid)
-		if err != nil {
-			return fmt.Errorf("host: %s, stderr: %s, err: %v", host, stderr, err)
-		}
-
-		var manifest rktManifest
-		err = json.Unmarshal(stdout, &manifest)
-		if err != nil {
-			return err
-		}
-
-		found := false
-		for _, app := range manifest.Apps {
-			if app.Image.Name == fullName {
-				for _, label := range app.Image.Labels {
-					if label.Name == "version" && label.Value == version {
-						found = true
-					}
-				}
-			}
-		}
-
-		if found {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("desired image %s is not running at %s", image, host)
 }
 
 func checkVersionInDaemonSet(namespace, dsName, image string) error {

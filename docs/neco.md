@@ -118,6 +118,11 @@ Synopsis
 
     Removes the current update status from etcd to resolve the update failure.
 
+* `neco is-running IMAGE`
+
+    Check if the given `IMAGE` is running as a container on the boot server.
+    If it is running, this exits with status 0.  Otherwise, with status 1.
+
 ### For worker nodes
 
 * `neco ssh generate [--dump]`
