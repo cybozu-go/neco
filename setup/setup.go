@@ -22,28 +22,31 @@ const (
 
 // Setup installs and configures etcd and vault cluster.
 func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
-	fullname, err := neco.ContainerFullName("etcd")
-	if err != nil {
-		return err
-	}
-	err = neco.FetchContainer(ctx, fullname, neco.HTTPProxyEnv(proxy))
-	if err != nil {
-		return err
-	}
-	err = etcd.InstallTools(ctx)
+	rt, err := neco.GetContainerRuntime(proxy)
 	if err != nil {
 		return err
 	}
 
-	fullname, err = neco.ContainerFullName("vault")
+	etcdImage, err := neco.CurrentArtifacts.FindContainerImage("etcd")
 	if err != nil {
 		return err
 	}
-	err = neco.FetchContainer(ctx, fullname, neco.HTTPProxyEnv(proxy))
+	if err := rt.Pull(ctx, etcdImage); err != nil {
+		return err
+	}
+	err = etcd.InstallTools(ctx, rt)
 	if err != nil {
 		return err
 	}
-	err = vault.InstallTools(ctx)
+
+	vaultImage, err := neco.CurrentArtifacts.FindContainerImage("vault")
+	if err != nil {
+		return err
+	}
+	if err := rt.Pull(ctx, vaultImage); err != nil {
+		return err
+	}
+	err = vault.InstallTools(ctx, rt)
 	if err != nil {
 		return err
 	}
@@ -62,7 +65,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
 		return err
 	}
 
-	ec, err := etcd.Setup(ctx, func(w io.Writer) error {
+	ec, err := etcd.Setup(ctx, rt, func(w io.Writer) error {
 		return etcd.GenerateConf(w, mylrn, lrns)
 	})
 	if err != nil {
@@ -73,7 +76,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
 	var vc *api.Client
 
 	if isLeader {
-		err = setupVault(ctx, mylrn, lrns)
+		err = setupVault(ctx, rt, mylrn, lrns)
 		if err != nil {
 			return err
 		}
@@ -86,7 +89,7 @@ func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
 		if err != nil {
 			return err
 		}
-		err = setupVault(ctx, mylrn, lrns)
+		err = setupVault(ctx, rt, mylrn, lrns)
 		if err != nil {
 			return err
 		}

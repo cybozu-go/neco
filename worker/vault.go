@@ -20,7 +20,7 @@ func (o *operator) UpdateVault(ctx context.Context, req *neco.UpdateRequest) err
 		return err
 	}
 	if need {
-		err = vault.InstallTools(ctx)
+		err = vault.InstallTools(ctx, o.containerRuntime)
 		if err != nil {
 			return err
 		}
@@ -53,7 +53,7 @@ func (o *operator) UpdateVault(ctx context.Context, req *neco.UpdateRequest) err
 
 func (o *operator) replaceVaultFiles(ctx context.Context, lrns []int) (bool, error) {
 	buf := new(bytes.Buffer)
-	err := vault.GenerateService(buf)
+	err := vault.GenerateService(buf, o.containerRuntime)
 	if err != nil {
 		return false, err
 	}

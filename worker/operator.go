@@ -38,12 +38,13 @@ type Operator interface {
 }
 
 type operator struct {
-	mylrn       int
-	ec          *clientv3.Client
-	storage     storage.Storage
-	ghClient    *http.Client
-	proxyClient *http.Client
-	localClient *http.Client
+	mylrn            int
+	ec               *clientv3.Client
+	storage          storage.Storage
+	ghClient         *http.Client
+	proxyClient      *http.Client
+	localClient      *http.Client
+	containerRuntime neco.ContainerRuntime
 
 	etcdRestart bool
 }
@@ -60,14 +61,23 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 	if err != nil {
 		return nil, err
 	}
+	proxy, err := st.GetProxyConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rt, err := neco.GetContainerRuntime(proxy)
+	if err != nil {
+		return nil, err
+	}
 
 	return &operator{
-		mylrn:       mylrn,
-		ec:          ec,
-		storage:     st,
-		ghClient:    ghClient,
-		proxyClient: proxyClient,
-		localClient: localClient,
+		mylrn:            mylrn,
+		ec:               ec,
+		storage:          st,
+		ghClient:         ghClient,
+		proxyClient:      proxyClient,
+		localClient:      localClient,
+		containerRuntime: rt,
 	}, nil
 }
 

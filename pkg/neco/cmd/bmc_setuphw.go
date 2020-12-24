@@ -81,13 +81,18 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
+	proxy, err := st.GetProxyConfig(ctx)
+	if err != nil {
+		return err
+	}
+	rt, err := neco.GetContainerRuntime(proxy)
+	if err != nil {
+		return err
+	}
+
 	err = neco.RetryWithSleep(ctx, 240, time.Second,
 		func(ctx context.Context) error {
-			c, err := neco.EnterContainerAppCommand(ctx, "setup-hw", []string{"echo", "hello"})
-			if err != nil {
-				return err
-			}
-			return c.Run()
+			return rt.Exec(ctx, "setup-hw", false, []string{"echo", "hello"})
 		},
 		func(err error) {
 			//	set no logger because EnterContainerAppCommand logs own errors implicitly
@@ -97,15 +102,7 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
-	c, err := neco.EnterContainerAppCommand(ctx, "setup-hw", []string{"setup-hw"})
-	if err != nil {
-		return err
-	}
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-
-	err = c.Run()
+	err = rt.Exec(ctx, "setup-hw", true, []string{"setup-hw"})
 	if err == nil {
 		return nil
 	}
