@@ -20,14 +20,16 @@ import (
 )
 
 var imageRepos = []string{
+	"ghcr.io/cybozu-go/coil",
+	"quay.io/cybozu/bird",
+	"quay.io/cybozu/chrony",
 	"quay.io/cybozu/cke",
 	"quay.io/cybozu/etcd",
-	"quay.io/cybozu/setup-hw",
 	"quay.io/cybozu/sabakan",
 	"quay.io/cybozu/serf",
-	"quay.io/cybozu/vault",
-	"ghcr.io/cybozu-go/coil",
+	"quay.io/cybozu/setup-hw",
 	"quay.io/cybozu/squid",
+	"quay.io/cybozu/vault",
 }
 
 func imageName(repoURL string) string {

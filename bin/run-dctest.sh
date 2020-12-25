@@ -72,7 +72,6 @@ tar xzf /home/cybozu/neco.tgz
 
 # Prepare files
 cp \${NECO_DIR}/github-token \${NECO_DIR}/dctest/
-cp \${NECO_DIR}/secrets \${NECO_DIR}/dctest/
 cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img \${NECO_DIR}/dctest/
 
 # Check out released sources which are used in the specified datacenter
@@ -84,7 +83,6 @@ if [ -n "${DATACENTER}" ]; then
 
   # Prepare files
   cp \${NECO_DIR}/github-token \${TEMP_DIR}/dctest/
-  cp \${NECO_DIR}/secrets \${TEMP_DIR}/dctest/
   cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img \${TEMP_DIR}/dctest/
 fi
 
