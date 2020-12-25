@@ -132,12 +132,6 @@ If you change the parameter from previously used one, you should run `make clean
 
 `make placemat` accepts this variable.
 
-### `secrets` file
-
-`neco init-data` supports uploading private container images where are in quay.io.
-dctest runs `neco config set quay-username` and `neco config set quay-password` automatically when `secrets` file exists.
-To upload private container images for sabakan, put quay.io password in `dctest/secrets`.
-
 ### `github-token` file
 
 `neco-updater` watches GitHub release without authentication by default. `neco-worker` also watches it to download debian packages.

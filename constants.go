@@ -5,7 +5,7 @@ import "path/filepath"
 const systemdDir = "/etc/systemd/system"
 
 // SabakanImages is the list of container image names to be uploaded to sabakan.
-var SabakanImages = []string{"setup-hw", "serf", "coil", "squid"}
+var SabakanImages = []string{"bird", "chrony", "coil", "serf", "setup-hw", "squid"}
 
 // BootImages is the list of container image names to be run on boot servers.
 var BootImages = []string{"etcd", "setup-hw", "sabakan", "serf", "vault"}

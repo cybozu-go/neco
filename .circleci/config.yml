@@ -17,11 +17,6 @@ commands:
             echo $GCLOUD_SERVICE_ACCOUNT > account.json
             gcloud auth activate-service-account --key-file=account.json
       - run:
-          name: Store secrets
-          command: |
-            if [ -f .skip ]; then exit 0; fi
-            echo "$QUAY_PASSWORD" > secrets
-      - run:
           name: Store github-token
           command: |
             if [ -f .skip ]; then exit 0; fi

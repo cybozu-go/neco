@@ -30,6 +30,10 @@ const (
 
 const retryCount = 40
 
+func imageAssetName(img neco.ContainerImage) string {
+	return fmt.Sprintf("cybozu-%s-%s.img", img.Name, img.Tag)
+}
+
 // UploadContents upload contents to sabakan
 func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth *DockerAuth, st storage.Storage) error {
 	client, err := sabac.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
@@ -155,15 +159,7 @@ func uploadOSImages(ctx context.Context, c *sabac.Client, p *http.Client) error 
 
 // uploadAssets uploads assets
 func uploadAssets(ctx context.Context, c *sabac.Client, auth *DockerAuth) error {
-	// Upload bird and chrony with ubuntu-debug
-	for _, img := range neco.SystemContainers {
-		err := UploadImageAssets(ctx, img, c, auth)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Upload other images
+	// Upload docker container images
 	env := well.NewEnvironment(ctx)
 	for _, name := range neco.SabakanImages {
 		img, err := neco.CurrentArtifacts.FindContainerImage(name)
@@ -200,7 +196,7 @@ func uploadAssets(ctx context.Context, c *sabac.Client, auth *DockerAuth) error 
 
 // UploadImageAssets upload docker container image as sabakan assets.
 func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Client, auth *DockerAuth) error {
-	name := neco.ImageAssetName(img)
+	name := imageAssetName(img)
 	need, err := needAssetUpload(ctx, name, c)
 	if err != nil {
 		return err
@@ -268,25 +264,22 @@ func uploadIgnitions(ctx context.Context, c *sabac.Client, id string, st storage
 		return err
 	}
 
-	_, err = st.GetQuayPassword(ctx)
-	if err != nil && err != storage.ErrNotFound {
+	bootProxy, err := st.GetProxyConfig(ctx)
+	if err != nil {
 		return err
 	}
-	hasSecret := err == nil
+	rt, err := neco.GetContainerRuntime(bootProxy)
+	if err != nil {
+		return err
+	}
 
 	metadata := make(map[string]interface{})
 	for _, img := range neco.CurrentArtifacts.Images {
-		metadata[img.Name+".img"] = neco.ImageAssetName(img)
-		metadata[img.Name+".aci"] = neco.ACIAssetName(img)
-		metadata[img.Name+".ref"] = img.FullName(hasSecret)
-	}
-	for _, img := range neco.SystemContainers {
-		metadata[img.Name+".img"] = neco.ImageAssetName(img)
-		metadata[img.Name+".aci"] = neco.ACIAssetName(img)
-		metadata[img.Name+".ref"] = img.FullName(hasSecret)
+		metadata[img.Name+".img"] = imageAssetName(img)
+		metadata[img.Name+".ref"] = rt.ImageFullName(img)
 	}
 
-	err = setCKEMetadata(metadata)
+	err = setCKEMetadata(metadata, rt)
 	if err != nil {
 		return err
 	}
@@ -409,7 +402,7 @@ func downloadFile(ctx context.Context, p *http.Client, url string, w io.Writer) 
 	return io.Copy(w, resp.Body)
 }
 
-func setCKEMetadata(metadata map[string]interface{}) error {
+func setCKEMetadata(metadata map[string]interface{}, rt neco.ContainerRuntime) error {
 	output, err := exec.Command(neco.CKECLIBin, "images").Output()
 	if err != nil {
 		return err
@@ -421,8 +414,8 @@ func setCKEMetadata(metadata map[string]interface{}) error {
 		if err != nil {
 			return err
 		}
-		metadata["cke:"+img.Name+".img"] = neco.ImageAssetName(img)
-		metadata["cke:"+img.Name+".ref"] = img.FullName(false)
+		metadata["cke:"+img.Name+".img"] = imageAssetName(img)
+		metadata["cke:"+img.Name+".ref"] = rt.ImageFullName(img)
 	}
 	return sc.Err()
 }
