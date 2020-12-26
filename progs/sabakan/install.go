@@ -16,7 +16,7 @@ func InstallTools(ctx context.Context, rt neco.ContainerRuntime) error {
 	}
 	return rt.Run(ctx, img,
 		[]neco.Bind{{Name: "host-usr-local-bin", Source: "/usr/local/bin", Dest: "/host/usr/local/bin"}},
-		[]string{"--user=0", "--group=0", "--exec=/usr/local/sabakan/install-tools"})
+		[]string{"/usr/local/sabakan/install-tools"})
 }
 
 // InstallBashCompletion installs bash completion for sabactl
