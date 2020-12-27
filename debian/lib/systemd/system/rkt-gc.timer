@@ -1,5 +1,6 @@
 [Unit]
 Description=run rkt gc periodically
+ConditionPathExists=/usr/bin/rkt
 
 [Timer]
 OnCalendar=daily

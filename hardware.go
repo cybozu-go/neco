@@ -28,7 +28,7 @@ func DetectHardware() (HardwareType, error) {
 	case "qemu", "kvm", "zvm", "vmware", "microsoft", "oracle", "xen", "bochs", "uml", "parallels", "bhyve":
 		// VM
 		return HWTypeVM, nil
-	case "openvz", "lxc", "lxc-libvirt", "systemd-nspawn", "docker", "rkt":
+	case "openvz", "lxc", "lxc-libvirt", "systemd-nspawn", "docker":
 		// Container
 		return HWTypeContainer, nil
 	case "none":
