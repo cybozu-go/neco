@@ -3,7 +3,13 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -36,15 +42,21 @@ func main() {
 	}
 
 	well.Go(func(ctx context.Context) error {
-		// NOTE: hack for github.com/containers/image/v5 to set HTTP proxy
 		st := storage.NewStorage(ec)
 		proxy, err := st.GetProxyConfig(ctx)
 		if err != nil && err != storage.ErrNotFound {
 			return err
 		}
-		if len(proxy) != 0 {
-			os.Setenv("http_proxy", proxy)
-			os.Setenv("https_proxy", proxy)
+		if err := configureSystemProxy(ctx, proxy); err != nil {
+			return err
+		}
+
+		dns, err := st.GetDNSConfig(ctx)
+		if err != nil && err != storage.ErrNotFound {
+			return err
+		}
+		if err := configureSystemDNS(ctx, dns); err != nil {
+			return err
 		}
 
 		op, err := worker.NewOperator(ctx, ec, mylrn)
@@ -60,4 +72,84 @@ func main() {
 	if err != nil && !well.IsSignaled(err) {
 		log.ErrorExit(err)
 	}
+}
+
+func configureSystemProxy(ctx context.Context, proxy string) error {
+	if proxy == "" {
+		return nil
+	}
+
+	// NOTE: github.com/containers/image/v5 needs these environment variables
+	os.Setenv("http_proxy", proxy)
+	os.Setenv("https_proxy", proxy)
+
+	if hasDocker, _ := neco.IsActiveService(ctx, "docker"); !hasDocker {
+		// bionic (Ubuntu 18.04) boot servers don't run Docker
+		return nil
+	}
+
+	out, err := exec.Command("docker", "info", "-f", "{{.HTTPProxy}}").Output()
+	if err != nil {
+		return fmt.Errorf("failed to invoke docker info: %w", err)
+	}
+	if strings.TrimSpace(string(out)) == proxy {
+		return nil
+	}
+
+	dir := "/etc/systemd/system/docker.service.d"
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(filepath.Join(dir, "override.conf"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to create override conf for docker: %w", err)
+	}
+	defer f.Close()
+
+	contents := fmt.Sprintf(`[Service]
+Environment="HTTP_PROXY=%s"
+Environment="HTTPS_PROXY=%s"
+`, proxy, proxy)
+
+	if _, err := io.WriteString(f, contents); err != nil {
+		return err
+	}
+	if err := f.Sync(); err != nil {
+		return err
+	}
+
+	return neco.RestartService(ctx, "docker")
+}
+
+func configureSystemDNS(ctx context.Context, dns string) error {
+	if dns == "" {
+		return nil
+	}
+
+	if hasResolved, _ := neco.IsActiveService(ctx, "systemd-resolved"); hasResolved {
+		// bionic (Ubuntu 18.04) boot servers are running systemd-resolved
+		dir := "/etc/systemd/resolved.conf.d"
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+
+		conf := fmt.Sprintf(`[Resolve]
+DNS=%s
+`, dns)
+		if err := ioutil.WriteFile(filepath.Join(dir, "neco.conf"), []byte(conf), 0644); err != nil {
+			return fmt.Errorf("failed to write resolved.conf file: %w", err)
+		}
+		return neco.RestartService(ctx, "systemd-resolved")
+	}
+
+	resolvconf := "/etc/resolv.conf"
+	if err := ioutil.WriteFile(resolvconf+".tmp", []byte(fmt.Sprintf("nameserver %s\n", dns)), 0644); err != nil {
+		return fmt.Errorf("failed to create /etc/resolv.conf.tmp: %w", err)
+	}
+
+	if err := os.Rename(resolvconf+".tmp", resolvconf); err != nil {
+		return fmt.Errorf("failed to replace /etc/resolv.conf: %w", err)
+	}
+	return exec.Command("sync").Run()
 }
