@@ -1,0 +1,10 @@
+[Unit]
+Description=prune docker images and containers
+After=docker.service
+Wants=docker.service
+ConditionPathExists=/usr/bin/docker
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker container prune -f --filter "until=72h"
+ExecStart=/usr/bin/docker image prune -a -f --filter "until=72h"
