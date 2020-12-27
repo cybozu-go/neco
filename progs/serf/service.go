@@ -13,11 +13,21 @@ func GenerateService(w io.Writer, rt neco.ContainerRuntime) error {
 		return err
 	}
 
-	return serviceTmpl.Execute(w, struct {
+	codename, err := neco.OSCodename()
+	if err != nil {
+		return err
+	}
+
+	tmplArgs := struct {
 		Image    string
 		ConfFile string
 	}{
 		Image:    rt.ImageFullName(img),
 		ConfFile: neco.SerfConfFile,
-	})
+	}
+
+	if codename == "bionic" {
+		return serviceTmplRkt.Execute(w, tmplArgs)
+	}
+	return serviceTmpl.Execute(w, tmplArgs)
 }

@@ -24,6 +24,33 @@ type serfConfig struct {
 
 var serviceTmpl = template.Must(template.New("serf.service").
 	Parse(`[Unit]
+Description=Serf container
+Wants=docker.service time-sync.target
+After=docker.service time-sync.target
+ConditionPathExists={{ .ConfFile }}
+StartLimitIntervalSec=600s
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10s
+StartLimitInterval=10m
+ExecStartPre=-/usr/bin/docker kill serf
+ExecStartPre=-/usr/bin/docker rm serf
+ExecStart=/usr/bin/docker run --name=serf --rm \
+  --network=host --uts=host \
+  --log-driver=journald \
+  --pull=never \
+  --read-only \
+  --volume=/etc/serf:/etc/serf:ro \
+  {{ .Image }} agent -config-file {{ .ConfFile }}
+
+[Install]
+WantedBy=multi-user.target
+`))
+
+var serviceTmplRkt = template.Must(template.New("serf.service").
+	Parse(`[Unit]
 Description=Serf container on rkt
 Wants=time-sync.target
 After=time-sync.target
