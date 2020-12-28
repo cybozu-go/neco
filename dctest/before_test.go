@@ -75,6 +75,11 @@ func runBeforeSuiteInstall() {
 		return nil
 	}).Should(Succeed())
 
+	for _, host := range allBootServers {
+		// on VMs, netplan.io should be purged after cloud-init completed
+		execSafeAt(host, "sudo", "apt-get", "purge", "-y", "--autoremove", "netplan.io")
+	}
+
 	By("checking services on the boot servers are running")
 	checkSystemdServicesOnBoot()
 
