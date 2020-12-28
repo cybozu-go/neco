@@ -35,7 +35,7 @@ kind: Node
 type: boot
 spec:
   cpu: 8
-  memory: 2G
+  memory: 4G
   image: custom-ubuntu-image
   cloud-init-template: boot-seed.yml.template
 ---
