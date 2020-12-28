@@ -13,7 +13,12 @@ func GenerateService(w io.Writer, rt neco.ContainerRuntime) error {
 		return err
 	}
 
-	return serviceTmpl.Execute(w, struct {
+	codename, err := neco.OSCodename()
+	if err != nil {
+		return err
+	}
+
+	tmplArgs := struct {
 		Image    string
 		UID      int
 		GID      int
@@ -23,5 +28,10 @@ func GenerateService(w io.Writer, rt neco.ContainerRuntime) error {
 		UID:      neco.EtcdUID,
 		GID:      neco.EtcdGID,
 		ConfFile: neco.EtcdConfFile,
-	})
+	}
+
+	if codename == "bionic" {
+		return serviceTmplRkt.Execute(w, tmplArgs)
+	}
+	return serviceTmpl.Execute(w, tmplArgs)
 }

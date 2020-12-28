@@ -1,18 +1,15 @@
 package worker
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
-	"github.com/cybozu-go/neco/progs/systemdresolved"
 	"github.com/cybozu-go/neco/storage"
 )
 
@@ -32,9 +29,6 @@ type Operator interface {
 
 	// RestartEtcd restarts etcd in case it is necessary.
 	RestartEtcd(index int, req *neco.UpdateRequest) error
-
-	// ReplaceSystemdResolvedFiles restarts systemd-resolved for ingress-watcher
-	ReplaceSystemdResolvedFiles(ctx context.Context) error
 }
 
 type operator struct {
@@ -180,39 +174,5 @@ func (o *operator) StartServices(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = o.restoreService(ctx, neco.VaultService)
-	if err != nil {
-		return err
-	}
-
-	return neco.RestartService(ctx, neco.SystemdResolvedService)
-}
-
-func (o *operator) ReplaceSystemdResolvedFiles(ctx context.Context) error {
-	dnsAddress, err := o.storage.GetDNSConfig(ctx)
-	if err == storage.ErrNotFound {
-		log.Info("systemd-resolved: dns config not found", nil)
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-
-	err = os.MkdirAll(filepath.Dir(neco.SystemdResolvedConfFile), 0755)
-	if err != nil {
-		return err
-	}
-
-	buf := new(bytes.Buffer)
-	err = systemdresolved.GenerateConfBase(buf, dnsAddress)
-	if err != nil {
-		return err
-	}
-
-	_, err = replaceFile(neco.SystemdResolvedConfFile, buf.Bytes(), 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return o.restoreService(ctx, neco.VaultService)
 }

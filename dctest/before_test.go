@@ -75,13 +75,9 @@ func runBeforeSuiteInstall() {
 		return nil
 	}).Should(Succeed())
 
-	By("restarting chrony-wait.service on the boot servers")
-	// cloud-init reaches time-sync.target before starting chrony-wait.service
-	// Hence, restart chrony-wait.service to faster bootstrap
-	// Actually, chrony-wait.service should be started after boot and is tested by TestRebootAllBootServers
 	for _, host := range allBootServers {
-		execSafeAt(host, "sudo", "systemctl", "restart", "chrony-wait.service")
-		execSafeAt(host, "sudo", "systemctl", "reset-failed")
+		// on VMs, netplan.io should be purged after cloud-init completed
+		execSafeAt(host, "sudo", "apt-get", "purge", "-y", "--autoremove", "netplan.io")
 	}
 
 	By("checking services on the boot servers are running")

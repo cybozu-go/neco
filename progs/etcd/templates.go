@@ -66,6 +66,37 @@ auto-compaction-retention: "24"
 
 var serviceTmpl = template.Must(template.New("etcd-container.service").
 	Parse(`[Unit]
+Description=Etcd container
+Wants=network-online.target docker.service etcd-backup.timer
+After=network-online.target docker.service
+StartLimitIntervalSec=600s
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=3s
+OOMScoreAdjust=-1000
+ExecStartPre=-/usr/bin/docker kill etcd
+ExecStartPre=-/usr/bin/docker rm etcd
+ExecStart=/usr/bin/docker run --name=etcd --rm \
+  --network=host --uts=host \
+  --log-driver=journald \
+  --pull=never \
+  --oom-kill-disable=true \
+  --user={{ .UID }}:{{ .GID }} \
+  --read-only \
+  --volume=/etc/neco:/etc/neco:ro \
+  --volume=/etc/ssl/certs:/etc/ssl/certs:ro \
+  --volume=/etc/etcd:/etc/etcd:ro \
+  --volume=/var/lib/etcd-container:/var/lib/etcd \
+  {{ .Image }} --config-file={{ .ConfFile }}
+
+[Install]
+WantedBy=multi-user.target
+`))
+
+var serviceTmplRkt = template.Must(template.New("etcd-container.service").
+	Parse(`[Unit]
 Description=Etcd container on rkt
 Wants=network-online.target
 After=network-online.target

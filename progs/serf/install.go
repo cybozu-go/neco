@@ -14,5 +14,5 @@ func InstallTools(ctx context.Context, rt neco.ContainerRuntime) error {
 	}
 	return rt.Run(ctx, img,
 		[]neco.Bind{{Name: "host", Source: "/usr/local/bin", Dest: "/host/usr/local/bin"}},
-		[]string{"--user=0", "--group=0", "--exec=/usr/local/serf/install-tools"})
+		[]string{"/usr/local/serf/install-tools"})
 }

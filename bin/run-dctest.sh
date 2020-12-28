@@ -72,7 +72,8 @@ tar xzf /home/cybozu/neco.tgz
 
 # Prepare files
 cp \${NECO_DIR}/github-token \${NECO_DIR}/dctest/
-cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img \${NECO_DIR}/dctest/
+mkdir -p \${NECO_DIR}/installer/build
+cp /assets/ubuntu-20.04-server-cloudimg-amd64.img \${NECO_DIR}/installer/build
 
 # Check out released sources which are used in the specified datacenter
 if [ -n "${DATACENTER}" ]; then
@@ -83,10 +84,12 @@ if [ -n "${DATACENTER}" ]; then
 
   # Prepare files
   cp \${NECO_DIR}/github-token \${TEMP_DIR}/dctest/
-  cp /assets/cybozu-ubuntu-18.04-server-cloudimg-amd64.img \${TEMP_DIR}/dctest/
+  mkdir -p \${NECO_DIR}/installer/build
+  cp /assets/ubuntu-20.04-server-cloudimg-amd64.img \${NECO_DIR}/installer/build
 fi
 
 # Run dctest
+make -C installer setup
 cd dctest
 make setup
 make placemat TAGS=${TAG_NAME} MENU_ARG=${MENU}

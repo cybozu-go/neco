@@ -108,7 +108,7 @@ $(ORIGINAL_CLOUD_PATH):
 
 $(CUSTOM_CLOUD_PATH): $(ORIGINAL_CLOUD_PATH) $(DEBS) cluster.json
 	cp $< $@
-	qemu-img resize $@ 10G
+	qemu-img resize $@ 30G
 	GOBIN=$(abspath build) go install ./setup
 	sudo ./customize-cloud-image $@ $(DEBS) build/setup cluster.json
 

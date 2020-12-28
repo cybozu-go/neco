@@ -1,6 +1,7 @@
 [Unit]
 Description=ckecli etcd local-backup
 After=cke.service
+ConditionPathExists=/etc/cke/etcd.crt
 
 [Service]
 Type=oneshot
