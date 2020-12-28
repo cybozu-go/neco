@@ -13,11 +13,7 @@ import (
 	"github.com/cybozu-go/well"
 )
 
-const (
-	retryCount = 3
-
-	rktAuthFile = "/etc/rkt/auth.d/docker.json"
-)
+const rktAuthFile = "/etc/rkt/auth.d/docker.json"
 
 type rktRuntime struct {
 	hasAuthFile bool
@@ -73,7 +69,7 @@ func (rt rktRuntime) Pull(ctx context.Context, img ContainerImage) error {
 		}
 	}
 
-	err = RetryWithSleep(ctx, retryCount, time.Second,
+	err = RetryWithSleep(ctx, 3, time.Second,
 		func(ctx context.Context) error {
 			cmd := exec.CommandContext(ctx, "rkt", "--insecure-options=image", "fetch", "--full", "docker://"+fullname)
 			cmd.Env = rt.env
@@ -103,7 +99,11 @@ func (rt rktRuntime) Run(ctx context.Context, img ContainerImage, binds []Bind, 
 		)
 	}
 	rktArgs = append(rktArgs, img.FullName(rt.hasAuthFile))
-	rktArgs = append(rktArgs, args...)
+	rktArgs = append(rktArgs, "--user=0", "--group=0", "--exec="+args[0])
+	if len(args) > 1 {
+		rktArgs = append(rktArgs, "--")
+		rktArgs = append(rktArgs, args[1:]...)
+	}
 
 	cmd := well.CommandContext(ctx, "rkt", rktArgs...)
 	return cmd.Run()

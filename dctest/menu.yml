@@ -29,13 +29,13 @@ spec:
 ---
 kind: Image
 name: custom-ubuntu-image
-file: cybozu-ubuntu-18.04-server-cloudimg-amd64.img
+file: cybozu-ubuntu-20.04-server-cloudimg-amd64.img
 ---
 kind: Node
 type: boot
 spec:
   cpu: 8
-  memory: 2G
+  memory: 4G
   image: custom-ubuntu-image
   cloud-init-template: boot-seed.yml.template
 ---

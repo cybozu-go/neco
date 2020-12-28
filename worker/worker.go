@@ -59,13 +59,7 @@ func NewWorker(ec *clientv3.Client, op Operator, version string, mylrn int) *Wor
 // 5. Wait for the new request.    If there is a new one, neco-worker updates
 //    the package and exits to be restarted by systemd.
 func (w *Worker) Run(ctx context.Context) error {
-	err := w.operator.ReplaceSystemdResolvedFiles(ctx)
-	if err != nil {
-		return err
-	}
-
-	err = w.operator.StartServices(ctx)
-	if err != nil {
+	if err := w.operator.StartServices(ctx); err != nil {
 		return err
 	}
 

@@ -2,6 +2,7 @@
 Description=rkt gc
 After=network-online.target
 Wants=network-online.target
+ConditionPathExists=/usr/bin/rkt
 
 [Service]
 Type=oneshot

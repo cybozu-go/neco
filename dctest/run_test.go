@@ -211,9 +211,7 @@ func checkSystemdServicesOnBoot() {
 	services := []string{
 		"bird.service",
 		"systemd-networkd.service",
-		"chronyd.service",
-		// chrony-wait.service can be started after reboot
-		"chrony-wait.service",
+		"chrony.service",
 	}
 	Eventually(func() error {
 		for _, host := range bootServers {

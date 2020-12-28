@@ -1,0 +1,10 @@
+[Unit]
+Description=run docker prune periodically
+ConditionPathExists=/usr/bin/docker
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -11,7 +11,7 @@ var (
 		"apport",
 		"apport-symptoms",
 		"nano",
-		"netplan.io",
+		//"netplan.io",
 		"popularity-contest",
 		"unattended-upgrades",
 		"update-manager-core",
@@ -26,6 +26,14 @@ var (
 func purgePackages() error {
 	fmt.Fprintln(os.Stderr, "Purging packages...")
 	args := append([]string{"purge", "-y", "--autoremove"}, purgeList...)
+
+	// cloud-init depends on netplan.io, so it can be purged
+	// only from non-virtual machines.
+	err := exec.Command("systemd-detect-virt", "-v", "-q").Run()
+	if err != nil {
+		args = append(args, "netplan.io")
+	}
+
 	return runCmd("apt-get", args...)
 }
 

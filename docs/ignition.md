@@ -52,11 +52,10 @@ There are clear and strong reasons why the process is ordered this way.
     from other servers.  Each server has a single global scope IP address and
     announces it using BGP.
 
-    However, this final configuration cannot be made because speaking BGP
-    requires BIRD that runs as a [rkt][] container that requires persistent
-    encrypted volume that requires communication with the sabakan server from
-    which the machine is booted and may exist in another network to download
-    `sabakan-cryptsetup` utility.
+    However, this final configuration cannot be configured easily within
+    ignition because speaking BGP requires BIRD and it needs to be run as a
+    container.  To run a container, the image for the container must be
+    pulled first which requires some basic networking.
 
 * What are requirements for DHCP configured network?
 
@@ -111,7 +110,6 @@ There are clear and strong reasons why the process is ordered this way.
     - `/var/lib/k8s-containerd`
     - `/var/lib/docker`
     - `/var/lib/kubelet`
-    - `/var/lib/rkt`
 
 ### Reconfigure network with BIRD
 
@@ -129,7 +127,7 @@ There are clear and strong reasons why the process is ordered this way.
 
 * How BIRD is run?
 
-    BIRD is run as a rkt container.
+    BIRD is run as a container.
 
 ### Run `chronyd` to synchronize time
 
@@ -222,5 +220,4 @@ Container Linux will periodically update serf tags as follows:
 | `systemd-units-failed` | Failed unit names.                        |
 | `version`              | Version of `neco` that boot this machine. |
 
-[rkt]: https://github.com/rkt/rkt/
 [BOSS]: https://www.dell.com/support/article/us/en/04/sln310144/boss-s1-card
