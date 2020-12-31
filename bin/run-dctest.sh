@@ -89,7 +89,6 @@ if [ -n "${DATACENTER}" ]; then
 fi
 
 # Run dctest
-make -C installer setup
 cd dctest
 make setup
 make placemat TAGS=${TAG_NAME} MENU_ARG=${MENU}
