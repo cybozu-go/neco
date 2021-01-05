@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -83,11 +84,6 @@ func configureSystemProxy(ctx context.Context, proxy string) error {
 	os.Setenv("http_proxy", proxy)
 	os.Setenv("https_proxy", proxy)
 
-	if hasDocker, _ := neco.IsActiveService(ctx, "docker"); !hasDocker {
-		// bionic (Ubuntu 18.04) boot servers don't run Docker
-		return nil
-	}
-
 	out, err := exec.Command("docker", "info", "-f", "{{.HTTPProxy}}").Output()
 	if err != nil {
 		return fmt.Errorf("failed to invoke docker info: %w", err)
@@ -128,19 +124,7 @@ func configureSystemDNS(ctx context.Context, dns string) error {
 	}
 
 	if hasResolved, _ := neco.IsActiveService(ctx, "systemd-resolved"); hasResolved {
-		// bionic (Ubuntu 18.04) boot servers are running systemd-resolved
-		dir := "/etc/systemd/resolved.conf.d"
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return err
-		}
-
-		conf := fmt.Sprintf(`[Resolve]
-DNS=%s
-`, dns)
-		if err := ioutil.WriteFile(filepath.Join(dir, "neco.conf"), []byte(conf), 0644); err != nil {
-			return fmt.Errorf("failed to write resolved.conf file: %w", err)
-		}
-		return neco.RestartService(ctx, "systemd-resolved")
+		return errors.New("systemd-resolved.service is running")
 	}
 
 	resolvconf := "/etc/resolv.conf"

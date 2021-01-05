@@ -380,7 +380,7 @@ apps:
     volume: run
   name: bird
   readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:18.04
+- image: docker://quay.io/cybozu/ubuntu-debug:20.04
   name: debug
   readonly-rootfs: true
 - image: docker://quay.io/cybozu/squid:3.5
@@ -476,7 +476,7 @@ apps:
     volume: run
   name: bird
   readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:18.04
+- image: docker://quay.io/cybozu/ubuntu-debug:20.04
   name: debug
   readonly-rootfs: true
 interfaces:
@@ -519,7 +519,7 @@ apps:
     volume: run
   name: bird
   readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:18.04
+- image: docker://quay.io/cybozu/ubuntu-debug:20.04
   name: debug
   readonly-rootfs: true
 interfaces:
@@ -562,7 +562,7 @@ apps:
     volume: run
   name: bird
   readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:18.04
+- image: docker://quay.io/cybozu/ubuntu-debug:20.04
   name: debug
   readonly-rootfs: true
 - args:
@@ -612,7 +612,7 @@ apps:
     volume: run
   name: bird
   readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:18.04
+- image: docker://quay.io/cybozu/ubuntu-debug:20.04
   name: debug
   readonly-rootfs: true
 - args:
@@ -662,7 +662,7 @@ apps:
     volume: run
   name: bird
   readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:18.04
+- image: docker://quay.io/cybozu/ubuntu-debug:20.04
   name: debug
   readonly-rootfs: true
 - args:
@@ -712,7 +712,7 @@ apps:
     volume: run
   name: bird
   readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:18.04
+- image: docker://quay.io/cybozu/ubuntu-debug:20.04
   name: debug
   readonly-rootfs: true
 - args:
@@ -753,7 +753,7 @@ apps:
 - args:
   - infinity
   exec: /bin/sleep
-  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  image: docker://quay.io/cybozu/ubuntu-debug:20.04
   name: ubuntu
   readonly-rootfs: false
 init-scripts:
@@ -769,7 +769,7 @@ apps:
 - args:
   - infinity
   exec: /bin/sleep
-  image: docker://quay.io/cybozu/ubuntu-debug:18.04
+  image: docker://quay.io/cybozu/ubuntu-debug:20.04
   name: ubuntu
   readonly-rootfs: false
 init-scripts:

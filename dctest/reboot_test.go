@@ -64,7 +64,7 @@ func testRebootAllBootServers() {
 func testRebootAllNodes() {
 	It("can access a pod from another pod running on different node", func() {
 		execSafeAt(bootServers[0], "kubectl", "run", "nginx-reboot-test", "--image=quay.io/cybozu/testhttpd:0")
-		execSafeAt(bootServers[0], "kubectl", "run", "debug-reboot-test", "--image=quay.io/cybozu/ubuntu-debug:18.04", "pause")
+		execSafeAt(bootServers[0], "kubectl", "run", "debug-reboot-test", "--image=quay.io/cybozu/ubuntu-debug:20.04", "pause")
 		execSafeAt(bootServers[0], "kubectl", "expose", "pod", "nginx-reboot-test", "--port=80", "--target-port=8000", "--name=nginx-reboot-test")
 		Eventually(func() error {
 			_, _, err := execAt(bootServers[0], "kubectl", "exec", "debug-reboot-test", "curl", "http://nginx-reboot-test")

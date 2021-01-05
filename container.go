@@ -2,7 +2,6 @@ package neco
 
 import (
 	"context"
-	"os/exec"
 )
 
 // Bind represents a host bind mount rule.
@@ -39,9 +38,5 @@ type ContainerRuntime interface {
 // GetContainerRuntime() returns the container runtime for the running server.
 // proxy may be used for some container runtimes.
 func GetContainerRuntime(proxy string) (ContainerRuntime, error) {
-	rtFunc := newRktRuntime
-	if _, err := exec.LookPath("docker"); err == nil {
-		rtFunc = newDockerRuntime
-	}
-	return rtFunc(proxy)
+	return newDockerRuntime(proxy)
 }
