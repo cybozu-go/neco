@@ -3,13 +3,10 @@ package cmd
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/sabakan"
-	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
 	"github.com/hashicorp/vault/api"
 	"github.com/spf13/cobra"
@@ -56,8 +53,6 @@ new a application NAME.`,
 			switch initLocalParams.name {
 			case "etcdpasswd":
 				err = issueCerts(ctx, vc, "etcdpasswd", neco.EtcdpasswdCertFile, neco.EtcdpasswdKeyFile)
-			case "teleport":
-				err = getToken(ctx, ce, neco.TeleportTokenFile)
 			case "sabakan":
 				err = issueCerts(ctx, vc, "sabakan", neco.SabakanCertFile, neco.SabakanKeyFile)
 				if err != nil {
@@ -76,8 +71,6 @@ new a application NAME.`,
 			switch initLocalParams.name {
 			case "etcdpasswd":
 				err = neco.StartService(ctx, neco.EtcdpasswdService)
-			case "teleport":
-				err = neco.StartService(ctx, neco.TeleportService)
 			case "sabakan":
 				err = neco.StartService(ctx, neco.SabakanService)
 			case "cke":
@@ -112,18 +105,4 @@ func issueCerts(ctx context.Context, vc *api.Client, commonName, cert, key strin
 	}
 	return neco.WriteFile(key, secret.Data["private_key"].(string))
 
-}
-
-func getToken(ctx context.Context, ce *clientv3.Client, filename string) error {
-	st := storage.NewStorage(ce)
-	token, err := st.GetTeleportAuthToken(ctx)
-	if err != nil {
-		return err
-	}
-	if len(token) == 0 {
-		return errors.New("teleport/auth-token is empty")
-	}
-
-	err = ioutil.WriteFile(filename, []byte(token), 0600)
-	return err
 }

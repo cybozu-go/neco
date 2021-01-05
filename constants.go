@@ -148,8 +148,7 @@ var (
 	EtcdpasswdConfFile = filepath.Join(EtcdpasswdDir, "config.yml")
 	EtcdpasswdDropIn   = "/etc/systemd/system/ep-agent.service.d/10-check-certificate.conf"
 
-	TeleportTokenFile = filepath.Join(TeleportDir, "token")
-	TeleportConfFile  = filepath.Join(TeleportDir, "teleport.yaml")
+	TeleportConfFile = filepath.Join(TeleportDir, "teleport.yaml")
 
 	SabakanCertFile           = filepath.Join(SabakanDir, "etcd.crt")
 	SabakanKeyFile            = filepath.Join(SabakanDir, "etcd.key")

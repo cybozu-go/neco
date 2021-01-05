@@ -94,7 +94,7 @@ func testSetup() {
 
 		By("Installing sshd_config and sudoers")
 		for _, h := range bootServers {
-			execSafeAt(h, "grep", "-q", "'^PasswordAuthentication.no$'", "/etc/ssh/sshd_config")
+			execSafeAt(h, "test", "-f", "/etc/ssh/sshd_config.d/neco.conf")
 			execSafeAt(h, "sudo", "test", "-f", "/etc/sudoers.d/cybozu")
 		}
 	})

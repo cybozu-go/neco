@@ -1,7 +1,24 @@
 package etcdpasswd
 
-// SshdConf is the contents for "/etc/ssh/sshd_config" file.
-const SshdConf = `#	$OpenBSD: sshd_config,v 1.101 2017/03/14 07:19:07 djm Exp $
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+
+	"github.com/cybozu-go/neco"
+)
+
+const (
+	sshdConfFile = "/etc/ssh/sshd_config.d/neco.conf"
+	sshdConf     = `# SSHD configurations for Neco
+
+AuthorizedKeysFile	.ssh/authorized_keys
+PasswordAuthentication no
+`
+)
+
+// TODO: remove this when Ubuntu 18.04 support is dropped.
+const sshdConfBionic = `#	$OpenBSD: sshd_config,v 1.101 2017/03/14 07:19:07 djm Exp $
 
 # This is the sshd server system-wide configuration file.  See
 # sshd_config(5) for more information.
@@ -127,3 +144,37 @@ Subsystem	sftp	/usr/lib/openssh/sftp-server
 #	PermitTTY no
 #	ForceCommand cvs server
 `
+
+// InstallSshdConf installs sshd_config file for Neco
+func InstallSshdConf() error {
+	codename, err := neco.OSCodename()
+	if err != nil {
+		return err
+	}
+
+	if codename == "bionic" {
+		err := ioutil.WriteFile("/etc/ssh/sshd_config", []byte(sshdConfBionic), 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write to /etc/ssh/sshd_config: %w", err)
+		}
+		return nil
+	}
+
+	tmpFile := sshdConfFile + ".tmp"
+	f, err := os.Create(tmpFile)
+	if err != nil {
+		return fmt.Errorf("failed to create %s: %w", tmpFile, err)
+	}
+	defer f.Close()
+
+	if _, err := f.Write([]byte(sshdConf)); err != nil {
+		return fmt.Errorf("failed to write to %s: %w", tmpFile, err)
+	}
+	if err := f.Sync(); err != nil {
+		return fmt.Errorf("failed to fsync %s: %w", tmpFile, err)
+	}
+	if err := os.Rename(tmpFile, sshdConfFile); err != nil {
+		return fmt.Errorf("failed to rename %s: %w", tmpFile, err)
+	}
+	return nil
+}
