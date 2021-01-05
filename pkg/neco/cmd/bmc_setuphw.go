@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -44,21 +44,29 @@ func getMyMachine(ctx context.Context) (*sabakan.Machine, error) {
 	return machines[0], nil
 }
 
-func setupHW(ctx context.Context, st storage.Storage) error {
-	my, err := getMyMachine(ctx)
-	if err != nil {
-		return err
-	}
-
+func writeBMCAddress(info interface{}) error {
 	bmcAddr, err := os.OpenFile("/etc/neco/bmc-address.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}
 	defer bmcAddr.Close()
 
-	err = json.NewEncoder(bmcAddr).Encode(my.Info.BMC)
+	err = json.NewEncoder(bmcAddr).Encode(info)
 	if err != nil {
 		return err
+	}
+
+	return bmcAddr.Sync()
+}
+
+func setupHW(ctx context.Context, st storage.Storage) error {
+	my, err := getMyMachine(ctx)
+	if err != nil {
+		return err
+	}
+
+	if err := writeBMCAddress(my.Info.BMC); err != nil {
+		return fmt.Errorf("failed to write bmc-address.json: %w", err)
 	}
 
 	bmcUser, err := st.GetBMCBMCUser(ctx)
@@ -71,6 +79,7 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
+	// this will soft-reset iDRAC
 	err = neco.RestartService(ctx, "setup-hw")
 	if err != nil {
 		return err
@@ -95,12 +104,17 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 			return rt.Exec(ctx, "setup-hw", false, []string{"echo", "hello"})
 		},
 		func(err error) {
-			//	set no logger because EnterContainerAppCommand logs own errors implicitly
+			//	set no logger rt.Exec logs own errors implicitly
 		},
 	)
 	if err != nil {
 		return err
 	}
+
+	// setup-hw container resets iDRAC at startup.
+	// Wait here to avoid the reset from occurring while the tool is running.
+	log.Info("waiting for iDRAC reset...", nil)
+	time.Sleep(1 * time.Minute)
 
 	err = rt.Exec(ctx, "setup-hw", true, []string{"setup-hw"})
 	if err == nil {
@@ -110,10 +124,10 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 	if !ok {
 		log.ErrorExit(err)
 	}
-	status := exitErr.Sys().(syscall.WaitStatus)
+
 	// If status code is 10, the server need to be rebooted.
 	// https://github.com/cybozu-go/setup-hw/blob/master/README.md#how-to-run-setup-hw
-	if status.ExitStatus() == 10 {
+	if exitErr.ExitCode() == 10 {
 		exec.Command("reboot").Run()
 		return nil
 	}
