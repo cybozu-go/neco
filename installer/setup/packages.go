@@ -10,6 +10,7 @@ var (
 	purgeList = []string{
 		"apport",
 		"apport-symptoms",
+		"fwupd",
 		"nano",
 		//"netplan.io",
 		"popularity-contest",
