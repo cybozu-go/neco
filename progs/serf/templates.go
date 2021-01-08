@@ -48,33 +48,3 @@ ExecStart=/usr/bin/docker run --name=serf --rm \
 [Install]
 WantedBy=multi-user.target
 `))
-
-var serviceTmplRkt = template.Must(template.New("serf.service").
-	Parse(`[Unit]
-Description=Serf container on rkt
-Wants=time-sync.target
-After=time-sync.target
-ConditionPathExists=/etc/serf/serf.json
-StartLimitIntervalSec=600s
-
-[Service]
-Slice=machine.slice
-Type=simple
-KillMode=mixed
-Restart=on-failure
-RestartSec=10s
-StartLimitInterval=10m
-ExecStart=/usr/bin/rkt run \
-  --pull-policy never --net=host \
-  --volume conf,kind=host,source=/etc/serf \
-  --mount volume=conf,target=/etc/serf \
-  --hostname %H \
-  {{ .Image }} \
-    --name serf \
-    --readonly-rootfs=true \
-  -- \
-    agent -config-file {{ .ConfFile }}
-
-[Install]
-WantedBy=multi-user.target
-`))
