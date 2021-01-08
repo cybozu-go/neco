@@ -6,8 +6,8 @@ import (
 
 var devCmd = &cobra.Command{
 	Use:   "dev BRANCH_NAME",
-	Short: "create a feature branch from the latest origin/master",
-	Long:  `Create a feature branch from the latest origin/master.`,
+	Short: "create a feature branch from the latest default branch",
+	Long:  `Create a feature branch from the latest default branch.`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := sanityCheck(); err != nil {
@@ -18,7 +18,11 @@ var devCmd = &cobra.Command{
 			return err
 		}
 
-		return git("checkout", "--no-track", "-b", args[0], "origin/master")
+		defBranch, err := defaultBranch()
+		if err != nil {
+			return err
+		}
+		return git("checkout", "--no-track", "-b", args[0], "origin/"+defBranch)
 	},
 }
 

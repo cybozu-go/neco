@@ -6,10 +6,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func gcFilterBranch(branches []string) (ret []string) {
+func gcFilterBranch(defBranch string, branches []string) (ret []string) {
 	for _, b := range branches {
 		switch b {
-		case "master", "HEAD", "release":
+		case defBranch, "HEAD", "release":
 			continue
 		}
 		if strings.HasPrefix(b, "release-") {
@@ -32,11 +32,15 @@ var gcCmd = &cobra.Command{
 		if err := git("fetch", "origin", "--prune"); err != nil {
 			return err
 		}
-		data, err := gitOutput("branch", "--format=%(refname:lstrip=3)", "-r", "--merged", "origin/master")
+		defBranch, err := defaultBranch()
 		if err != nil {
 			return err
 		}
-		for _, b := range gcFilterBranch(strings.Fields(string(data))) {
+		data, err := gitOutput("branch", "--format=%(refname:lstrip=3)", "-r", "--merged", "origin/"+defBranch)
+		if err != nil {
+			return err
+		}
+		for _, b := range gcFilterBranch(defBranch, strings.Fields(string(data))) {
 			if err := git("push", "origin", ":"+b); err != nil {
 				return err
 			}

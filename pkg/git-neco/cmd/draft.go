@@ -80,11 +80,15 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 	if err != nil {
 		return err
 	}
-	if branch == "master" {
-		return errors.New("direct push to master is prohibited")
+	defBranch, err := defaultBranch()
+	if err != nil {
+		return err
+	}
+	if branch == defBranch {
+		return fmt.Errorf("direct push to %s is prohibited", defBranch)
 	}
 
-	_, firstSummary, firstBody, err := firstUnmerged()
+	_, firstSummary, firstBody, err := firstUnmerged(defBranch)
 	if err != nil {
 		return err
 	}
@@ -131,7 +135,7 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 	if title == "" {
 		title = firstSummary
 	}
-	pr, err := createPR(ctx, gc, curRepo, branch, title, firstBody, draft)
+	pr, err := createPR(ctx, gc, curRepo, defBranch, branch, title, firstBody, draft)
 	if err != nil {
 		return err
 	}
@@ -206,8 +210,8 @@ func getCurrentRepo(ctx context.Context, gc GitHubClient) (*GitHubRepository, er
 }
 
 // Create a new pull request and add assignee to the pull request.
-func createPR(ctx context.Context, gc GitHubClient, repo *GitHubRepository, branch, title, body string, draft bool) (*PullRequest, error) {
-	pr, err := gc.CreatePullRequest(ctx, repo.ID, "master", branch, title, body, draft)
+func createPR(ctx context.Context, gc GitHubClient, repo *GitHubRepository, defBranch, branch, title, body string, draft bool) (*PullRequest, error) {
+	pr, err := gc.CreatePullRequest(ctx, repo.ID, defBranch, branch, title, body, draft)
 	if err != nil {
 		return nil, err
 	}
