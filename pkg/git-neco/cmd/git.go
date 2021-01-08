@@ -36,6 +36,18 @@ func currentBranch() (string, error) {
 	return br, nil
 }
 
+func defaultBranch() (string, error) {
+	data, err := gitOutput("symbolic-ref", "--short", "refs/remotes/origin/HEAD")
+	if err != nil {
+		return "", err
+	}
+	items := strings.Split(strings.TrimSpace(string(data)), "/")
+	if len(items) < 1 {
+		return "", errors.New("HEAD is empty")
+	}
+	return items[len(items)-1], nil
+}
+
 func checkUncommittedFiles() (bool, error) {
 	data, err := gitOutput("status", "-s")
 	if err != nil {
@@ -44,9 +56,9 @@ func checkUncommittedFiles() (bool, error) {
 	return strings.TrimSpace(string(data)) == "", nil
 }
 
-func firstUnmerged() (hash string, summary string, body string, err error) {
+func firstUnmerged(defBranch string) (hash string, summary string, body string, err error) {
 	var data []byte
-	data, err = gitOutput("log", "HEAD", "--not", "origin/master", "--format=%H", "--reverse")
+	data, err = gitOutput("log", "HEAD", "--not", "origin/"+defBranch, "--format=%H", "--reverse")
 	if err != nil {
 		return
 	}
