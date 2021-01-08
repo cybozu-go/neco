@@ -63,39 +63,3 @@ ExecStartPost={{ .NecoBin }} vault unseal
 [Install]
 WantedBy=multi-user.target
 `))
-
-var serviceTmplRkt = template.Must(template.New("vault.service").
-	Parse(`[Unit]
-Description=Vault container
-Wants=network-online.target etcd-container.service
-After=network-online.target etcd-container.service
-StartLimitIntervalSec=600s
-
-[Service]
-Slice=machine.slice
-Type=simple
-KillMode=mixed
-Restart=on-failure
-RestartSec=10s
-OOMScoreAdjust=-1000
-LimitCORE=0
-LimitMEMLOCK=infinity
-ExecStart=/usr/bin/rkt run \
-  --pull-policy never --net=host \
-  --volume neco,kind=host,source=/etc/neco,readOnly=true \
-  --mount volume=neco,target=/etc/neco \
-  --volume certs,kind=host,source=/etc/ssl/certs,readOnly=true \
-  --mount volume=certs,target=/etc/ssl/certs \
-  --volume conf,kind=host,source=/etc/vault,readOnly=true \
-  --mount volume=conf,target=/etc/vault \
-  {{ .Image }} \
-    --user {{ .UID }} --group {{ .GID }} \
-    --name vault \
-    --readonly-rootfs=true \
-  -- \
-    server -config={{ .ConfFile }}
-ExecStartPost={{ .NecoBin }} vault unseal
-
-[Install]
-WantedBy=multi-user.target
-`))

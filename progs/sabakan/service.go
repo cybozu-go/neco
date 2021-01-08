@@ -13,11 +13,6 @@ func GenerateService(w io.Writer, rt neco.ContainerRuntime) error {
 		return err
 	}
 
-	codename, err := neco.OSCodename()
-	if err != nil {
-		return err
-	}
-
 	tmplArgs := struct {
 		Image    string
 		ConfFile string
@@ -30,8 +25,5 @@ func GenerateService(w io.Writer, rt neco.ContainerRuntime) error {
 		KeyFile:  neco.SabakanKeyFile,
 	}
 
-	if codename == "bionic" {
-		return serviceTmplRkt.Execute(w, tmplArgs)
-	}
 	return serviceTmpl.Execute(w, tmplArgs)
 }
