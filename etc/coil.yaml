@@ -3961,7 +3961,7 @@ spec:
     ranges:
     - max: 65535
       min: 1
-    rule: MayRunAs
+    rule: MustRunAs
   hostIPC: false
   hostNetwork: true
   hostPID: false
@@ -4735,7 +4735,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        image: ghcr.io/cybozu-go/coil:2.0.3
+        image: ghcr.io/cybozu-go/coil:2.0.4
         livenessProbe:
           httpGet:
             host: localhost
@@ -4805,7 +4805,6 @@ spec:
       containers:
       - args:
         - --compat-calico
-        - --register-from-main
         command:
         - coild
         env:
@@ -4813,7 +4812,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: ghcr.io/cybozu-go/coil:2.0.3
+        image: ghcr.io/cybozu-go/coil:2.0.4
         livenessProbe:
           httpGet:
             host: localhost
@@ -4856,7 +4855,7 @@ spec:
             configMapKeyRef:
               key: cni_netconf
               name: coil-config-85b6k6c66t
-        image: ghcr.io/cybozu-go/coil:2.0.3
+        image: ghcr.io/cybozu-go/coil:2.0.4
         name: coil-installer
         securityContext:
           privileged: true
