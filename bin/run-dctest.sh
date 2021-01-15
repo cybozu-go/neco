@@ -70,6 +70,9 @@ TEMP_DIR=/tmp/release
 mkdir -p \${NECO_DIR}
 cd \${NECO_DIR}
 tar xzf /home/cybozu/neco.tgz
+if [ -f download.tgz ]; then
+  tar xzf download.tgz
+fi
 
 # Prepare files
 cp \${NECO_DIR}/github-token \${NECO_DIR}/dctest/
