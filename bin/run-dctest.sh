@@ -37,7 +37,7 @@ $GCLOUD compute instances create ${INSTANCE_NAME} \
   --local-ssd interface=nvme \
   --labels=${LABEL_REPO},${LABEL_REF},${LABEL_JOB}
 
-# Run data center test
+# Wait for boot of GCE instance
 for i in $(seq 300); do
   if $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command=date 2>/dev/null; then
     break
@@ -45,6 +45,7 @@ for i in $(seq 300); do
   sleep 1
 done
 
+# Prepare script for running data center test
 cat >run.sh <<EOF
 #!/bin/sh -ex
 
@@ -97,9 +98,12 @@ exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME} DATACENTER=${DATACENTER}
 EOF
 chmod +x run.sh
 
+# Send files to GCE instance
 tar czf /tmp/neco.tgz .
 $GCLOUD compute scp --zone=${ZONE} /tmp/neco.tgz cybozu@${INSTANCE_NAME}:
 $GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
+
+# Run data center test on GCE instance
 set +e
 $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command='sudo -H /home/cybozu/run.sh'
 exit $?

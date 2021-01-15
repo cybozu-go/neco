@@ -22,9 +22,12 @@ STERN_DOWNLOAD := $(STERN_DLDIR)/downloaded
 KUSTOMIZE_DLDIR := $(DOWNLOADDIR)/kustomize-v$(KUSTOMIZE_VERSION)
 KUSTOMIZE_DOWNLOAD := $(KUSTOMIZE_DLDIR)/downloaded
 TELEPORT_DLDIR := $(DOWNLOADDIR)/teleport-v$(TELEPORT_VERSION)
+TELEPORT_DOWNLOAD := $(TELEPORT_DLDIR)/downloaded
 
 .PHONY: all
 all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport
+	mkdir -p $(DOWNLOADDIR)
+	touch $(DOWNLOADDIR)/.downloaded
 
 $(NODE_EXPORTER_DOWNLOAD):
 	mkdir -p $(NODE_EXPORTER_DLDIR)
@@ -156,9 +159,7 @@ kustomize: $(KUSTOMIZE_DOWNLOAD)
 	cp $(KUSTOMIZE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
-.PHONY: build-teleport
-build-teleport:
-	rm -rf $(TELEPORT_DLDIR)
+$(TELEPORT_DOWNLOAD):
 	mkdir -p $(TELEPORT_DLDIR)/out
 	# workaround: tsh requires go 1.15 so download it and use it only for building tsh
 	# please remove this workaround when neco uses go 1.15
@@ -170,9 +171,10 @@ build-teleport:
 	cp $(TELEPORT_DLDIR)/teleport/build/tctl $(TELEPORT_DLDIR)/out/tctl
 	cp $(TELEPORT_DLDIR)/teleport/build/teleport $(TELEPORT_DLDIR)/out/teleport
 	cp $(TELEPORT_DLDIR)/teleport/build/tsh $(TELEPORT_DLDIR)/out/tsh
+	touch $@
 
 .PHONY: teleport
-teleport: build-teleport
+teleport: $(TELEPORT_DOWNLOAD)
 	mkdir -p $(BINDIR) $(SBINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
 	cp $(TELEPORT_DLDIR)/out/tctl $(BINDIR)
 	cp $(TELEPORT_DLDIR)/out/teleport $(SBINDIR)
