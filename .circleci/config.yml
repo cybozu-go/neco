@@ -52,32 +52,6 @@ commands:
             ./bin/run-dctest.sh bootstrap "<<parameters.tag>>" "<<parameters.datacenter>>"
           no_output_timeout: 20m
 
-  restore-tools-for-gcp:
-    description: "restore tools for gcp"
-    steps:
-      - run: if [ -f .skip ]; then circleci-agent step halt; fi
-      - run: echo $CACHE_VERSION > CACHE_VERSION
-      - restore_cache:
-          key: setup-tools-for-gcp-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}
-
-  save-tools-for-gcp:
-    description: "save tools for gcp"
-    steps:
-      - run: if [ -f .skip ]; then circleci-agent step halt; fi
-      - run: echo $CACHE_VERSION > CACHE_VERSION
-      - run:
-          name: Copy tools from GCP instance
-          command: |
-            . ./bin/env
-            if [ -f download/.downloaded ]; then exit 0; fi
-            echo copy tools
-            rm -rf download
-            $GCLOUD compute ssh --zone ${ZONE} cybozu@${INSTANCE_NAME} -- -T sudo tar -c -f - -C /root/go/src/github.com/cybozu-go/neco download | tar -x -f -
-      - save_cache:
-          key: setup-tools-for-gcp-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}
-          paths:
-            - download
-
   setup-tools:
     description: "setup tools"
     steps:
@@ -85,14 +59,30 @@ commands:
       # https://support.circleci.com/hc/en-us/articles/115015426888-Clear-project-dependency-cache
       - run: echo $CACHE_VERSION > CACHE_VERSION
       - restore_cache:
-          key: setup-tools-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}
+          key: setup-tools-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}-{{ checksum "Makefile.common" }}
       - run:
           name: setup tools
-          command: time make setup-tools
+          command: |
+            if [ -f download.tgz ]; then tar -x -f download.tgz -z; fi
+            time make setup-tools
+      - run:
+          name: make archive if needed
+          command: |
+            if [ -f download.tgz ]; then exit 0; fi
+            tar -c -f download.tgz -z download
       - save_cache:
-          key: setup-tools-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}
+          key: setup-tools-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}-{{ checksum "Makefile.common" }}
           paths:
-            - download
+            - download.tgz
+
+  restore-tools:
+    description: "only restore tools"
+    steps:
+      - run: if [ -f .skip ]; then circleci-agent step halt; fi
+      - run: echo $CACHE_VERSION > CACHE_VERSION
+      - restore_cache:
+          key: setup-tools-{{ checksum "CACHE_VERSION" }}-{{ checksum "Makefile" }}-{{ checksum "Makefile.tools" }}-{{ checksum "Makefile.common" }}
+
   notify-slack-to-extend:
     description: "notify slack to extend the lifetime of the GCP instance"
     steps:
@@ -182,16 +172,16 @@ jobs:
   dctest-functions:
     docker:
       - image: google/cloud-sdk
+    working_directory: /work
     resource_class: xlarge
     steps:
       - checkout
-      - restore-tools-for-gcp
+      - restore-tools
       - run-dctest-bootstrap
       - run:
           name: Run dctest functions
           command: ./bin/run-dctest-suite.sh functions
           no_output_timeout: 20m
-      - save-tools-for-gcp
       - run:
           name: Set the instance lifetime and the state label
           command: |
@@ -215,16 +205,16 @@ jobs:
   dctest-reboot-worker:
     docker:
       - image: google/cloud-sdk
+    working_directory: /work
     resource_class: xlarge
     steps:
       - checkout
-      - restore-tools-for-gcp
+      - restore-tools
       - run-dctest-bootstrap
       - run:
           name: Run dctest reboot-worker
           command: ./bin/run-dctest-suite.sh reboot-worker
           no_output_timeout: 31m
-      - save-tools-for-gcp
       - run:
           name: Set the instance lifetime and the state label
           command: |
@@ -248,9 +238,10 @@ jobs:
   dctest-upgrade:
     docker:
       - image: google/cloud-sdk
+    working_directory: /work
     steps:
       - checkout
-      - restore-tools-for-gcp
+      - restore-tools
       - run-dctest-bootstrap:
           tag: release
           datacenter: staging
@@ -258,7 +249,6 @@ jobs:
           name: Run dctest upgrade
           command: ./bin/run-dctest-suite.sh upgrade
           no_output_timeout: 20m
-      - save-tools-for-gcp
       - run:
           name: Set the instance lifetime
           command: |
@@ -288,6 +278,7 @@ jobs:
   dctest-functions-release:
     docker:
       - image: google/cloud-sdk
+    working_directory: /work
     steps:
       - checkout
       - attach_workspace:
@@ -308,7 +299,7 @@ jobs:
             if [ "$diffs" = "" ]; then touch .skip; exit 0; fi
             printf "%s\n" "$diffs"
       # Skip the following steps if there is no difference.
-      - restore-tools-for-gcp
+      - restore-tools
       - run-dctest-bootstrap:
           tag: release
       - run:
@@ -317,7 +308,6 @@ jobs:
             if [ -f .skip ]; then exit 0; fi
             ./bin/run-dctest-suite.sh functions release
           no_output_timeout: 20m
-      - save-tools-for-gcp
       - run:
           name: Set the instance lifetime
           command: |
@@ -336,6 +326,7 @@ jobs:
   dctest-upgrade-release:
     docker:
       - image: google/cloud-sdk
+    working_directory: /work
     steps:
       - checkout
       - attach_workspace:
@@ -349,7 +340,7 @@ jobs:
       - run: git checkout release
       - run: git merge --no-commit origin/master
       - run: cp /tmp/workspace/artifacts_release.go .
-      - restore-tools-for-gcp
+      - restore-tools
       - run-dctest-bootstrap:
           tag: release
           datacenter: staging
@@ -357,7 +348,6 @@ jobs:
           name: Run dctest upgrade release
           command: ./bin/run-dctest-suite.sh upgrade release
           no_output_timeout: 20m
-      - save-tools-for-gcp
       - run:
           name: Set the instance lifetime
           command: |
