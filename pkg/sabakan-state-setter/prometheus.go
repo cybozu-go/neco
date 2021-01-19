@@ -22,7 +22,7 @@ func newPromClient() PrometheusClient {
 // ConnectMetricsServer returns metrics from give exporter address
 func (p *promClient) ConnectMetricsServer(ctx context.Context, addr string) (chan *dto.MetricFamily, error) {
 	mfChan := make(chan *dto.MetricFamily, 1024)
-	err := prom2json.FetchMetricFamilies(addr, mfChan, "", "", true)
+	err := prom2json.FetchMetricFamilies(addr, mfChan, nil)
 	if err != nil {
 		return nil, err
 	}

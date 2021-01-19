@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	sabakan "github.com/cybozu-go/sabakan/v2/client"
-	"github.com/kylelemons/godebug/pretty"
+	"github.com/google/go-cmp/cmp"
 	"sigs.k8s.io/yaml"
 )
 
@@ -90,7 +90,7 @@ func testIgnitionTemplates(path string) error {
 		sort.Strings(filelistInDir)
 
 		if !reflect.DeepEqual(filelistInYAML, filelistInDir) {
-			return fmt.Errorf("files in %s and file tree %s differ\n%v", path, filesDir, pretty.Compare(filelistInYAML, filelistInDir))
+			return fmt.Errorf("files in %s and file tree %s differ\n%v", path, filesDir, cmp.Diff(filelistInYAML, filelistInDir))
 		}
 	}
 
@@ -162,7 +162,7 @@ func testIgnitionTemplates(path string) error {
 		sort.Strings(filelistInDir)
 
 		if !reflect.DeepEqual(filelistInYAML, filelistInDir) {
-			return fmt.Errorf("files in %s and file tree %s differ\n%v", path, networkdDir, pretty.Compare(filelistInYAML, filelistInDir))
+			return fmt.Errorf("files in %s and file tree %s differ\n%v", path, networkdDir, cmp.Diff(filelistInYAML, filelistInDir))
 		}
 	}
 
