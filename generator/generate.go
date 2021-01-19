@@ -23,7 +23,6 @@ var imageRepos = []string{
 	"ghcr.io/cybozu-go/coil",
 	"quay.io/cybozu/bird",
 	"quay.io/cybozu/chrony",
-	"quay.io/cybozu/cke",
 	"quay.io/cybozu/etcd",
 	"quay.io/cybozu/sabakan",
 	"quay.io/cybozu/serf",

@@ -99,31 +99,8 @@ func testUpgrade() {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
+			execSafeAt(h, "systemctl", "-q", "is-active", "cke.service")
 		}
-
-		By("Checking obsoleted files or services are deleted")
-		for _, h := range bootServers {
-			_, _, err := execAt(h, "systemctl", "-q", "is-active", "sabakan-state-setter.timer")
-			Expect(err).To(HaveOccurred())
-			execSafeAt(h, "test", "!", "-f", neco.TimerFile("sabakan-state-setter"))
-		}
-
-		By("Checking version of CKE")
-		Eventually(func() error {
-			ckeVersion, _, err := execAt(bootServers[0], "ckecli", "--version")
-			if err != nil {
-				return err
-			}
-			for _, img := range neco.CurrentArtifacts.Images {
-				if img.Name == "cke" {
-					if !bytes.Contains(ckeVersion, []byte(img.Tag)) {
-						return errors.New("cke is not updated: " + string(ckeVersion))
-					}
-					return nil
-				}
-			}
-			panic("cke image not found")
-		}).Should(Succeed())
 
 		By("Checking version of etcd cluster")
 		Eventually(func() error {

@@ -90,10 +90,6 @@ setup-files-for-deb: setup-tools
 	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
 	go build -o $(BINDIR)/sabakan-state-setter -tags='$(GOTAGS)' ./pkg/sabakan-state-setter/cmd
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
-	curl -sLf -o $(SBINDIR)/cke https://github.com/cybozu-go/cke/releases/download/v$$($(BINDIR)/neco image cke | cut -d: -f 2)/cke
-	chmod a+x $(SBINDIR)/cke
-	curl -sLf -o $(BINDIR)/ckecli https://github.com/cybozu-go/cke/releases/download/v$$($(BINDIR)/neco image cke | cut -d: -f 2)/ckecli
-	chmod a+x $(BINDIR)/ckecli
 	cp etc/* $(SHAREDIR)
 	cp -a ignitions $(SHAREDIR)
 	cp README.md LICENSE $(DOCDIR)/neco
