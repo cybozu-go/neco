@@ -129,7 +129,7 @@ jobs:
       - run:
           command: |
             if [ "${CIRCLE_BRANCH}" != "master" ]; then
-              go install -mod=vendor ./pkg/generate-artifacts/
+              go install ./pkg/generate-artifacts/
               generate-artifacts > /tmp/artifacts.go
               diff -u artifacts.go /tmp/artifacts.go
             fi
@@ -268,7 +268,7 @@ jobs:
       - image: quay.io/cybozu/golang:1.13-bionic
     steps:
       - checkout
-      - run: go install -mod=vendor ./pkg/generate-artifacts/
+      - run: go install ./pkg/generate-artifacts/
       - run: generate-artifacts --release > artifacts_release.go
       - persist_to_workspace:
           root: .

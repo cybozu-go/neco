@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -xe
 
 TARGET="$1"
 TAGS="$2"
@@ -22,4 +22,5 @@ while true; do
     sleep 1
 done
 
+go mod download
 sudo -E nsenter -t $(pmctl pod show operation | jq .pid) -n env PATH=$PATH SUITE=$SUITE $GINKGO -focus="${TARGET}" -tags="${TAGS}" .

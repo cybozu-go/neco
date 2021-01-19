@@ -81,7 +81,7 @@ cp /assets/ubuntu-20.04-server-cloudimg-amd64.img \${NECO_DIR}/installer/build
 
 # Check out released sources which are used in the specified datacenter
 if [ -n "${DATACENTER}" ]; then
-  go install -mod=vendor ./pkg/find-installed-release
+  go install ./pkg/find-installed-release
   RELEASE=\$(find-installed-release ${DATACENTER})
   git worktree add \${TEMP_DIR} release-\$RELEASE
   cd \${TEMP_DIR}

@@ -3,7 +3,7 @@
 # configuration variables
 OUTPUT = ./output
 PLACEMAT = /usr/bin/placemat
-GINKGO = env GO111MODULE=on GOFLAGS=-mod=vendor $(GOPATH)/bin/ginkgo --failFast -v
+GINKGO = env GO111MODULE=on $(GOPATH)/bin/ginkgo --failFast -v
 SUITE = bootstrap
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
@@ -18,10 +18,6 @@ ADDRESS_POOLS_FILE = $(abspath ./address_pools.yaml)
 export PLACEMAT GINKGO SUITE MACHINES_FILE ADDRESS_POOLS_FILE
 
 CUSTOM_UBUNTU = cybozu-ubuntu-20.04-server-cloudimg-amd64.img
-
-### for Go
-GOFLAGS = -mod=vendor
-export GOFLAGS
 
 # non-configuration variables
 SABAKAN_DIR = $(OUTPUT)/sabakan
