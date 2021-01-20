@@ -104,13 +104,15 @@ func testControllerRun(t *testing.T) {
 	gql = newMockGQLClient("qemu")
 	serf, _ = newMockSerfClient()
 	metricsInput = `
-	hw_processor_status_health{processor="CPU.Socket.1"} 0
-	hw_processor_status_health{processor="CPU.Socket.2"} 0
-	hw_storage_controller_status_health{controller="PCIeSSD.Slot.2-C", system="System.Embedded.1"} 0
-	hw_storage_controller_status_health{controller="PCIeSSD.Slot.3-C", system="System.Embedded.1"} 0
-	hw_storage_controller_status_health{controller="SATAHDD.Slot.1", system="System.Embedded.1"} 0
-	hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.Embedded.1"} 1
-	`
+# TYPE hw_processor_status_health gauge
+hw_processor_status_health{processor="CPU.Socket.1"} 0
+hw_processor_status_health{processor="CPU.Socket.2"} 0
+# TYPE hw_storage_controller_status_health gauge
+hw_storage_controller_status_health{controller="PCIeSSD.Slot.2-C", system="System.Embedded.1"} 0
+hw_storage_controller_status_health{controller="PCIeSSD.Slot.3-C", system="System.Embedded.1"} 0
+hw_storage_controller_status_health{controller="SATAHDD.Slot.1", system="System.Embedded.1"} 0
+hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.Embedded.1"} 1
+`
 	ctr = newMockController(gql, metricsInput, serf, machineTypeQEMU)
 	for i := 0; i < 2; i++ {
 		err := ctr.run(context.Background())

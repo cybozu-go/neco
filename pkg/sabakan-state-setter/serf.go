@@ -11,7 +11,6 @@ type SerfClient interface {
 	GetSerfMembers() ([]serf.Member, error)
 }
 
-// newPromClient returns PrometheusClient
 func newSerfClient(address string) (SerfClient, error) {
 	c, err := serf.NewRPCClient(address)
 	if err != nil {

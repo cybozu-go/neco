@@ -146,11 +146,12 @@ func (c *Controller) run(ctx context.Context) error {
 			<-sem
 			defer func() { sem <- struct{}{} }()
 			addr := "http://" + source.ipv4 + ":9105/metrics"
-			ch, err := c.promClient.ConnectMetricsServer(ctx, addr)
+			mfs, err := c.promClient.ConnectMetricsServer(ctx, addr)
 			if err != nil {
 				return err
 			}
-			return source.readAndSetMetrics(ch)
+			source.metrics = mfs
+			return nil
 		})
 	}
 	env.Stop()
