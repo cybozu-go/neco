@@ -1,18 +1,15 @@
 package sss
 
 import (
-	"strings"
-
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/sabakan/v2"
-	"github.com/prometheus/prom2json"
 )
 
 const (
-	monitorHWStatusHealth   = "0"
-	monitorHWStatusWarning  = "1"
-	monitorHWStatusCritical = "2"
-	monitorHWStatusNull     = "-1"
+	monitorHWStatusOK       = 0
+	monitorHWStatusWarning  = 1
+	monitorHWStatusCritical = 2
+	monitorHWStatusNull     = -1
 	systemdUnitsFailedTag   = "systemd-units-failed"
 )
 
@@ -98,63 +95,66 @@ func (mss *machineStateSource) decideByMonitorHW() sabakan.MachineState {
 }
 
 func (mss *machineStateSource) checkTarget(target targetMetric) sabakan.MachineState {
-	var exists bool
-	metrics := mss.metrics[target.Name]
-
-	var healthyCount, minCount int
-
-	slctr := target.Selector
-	for _, m := range metrics {
-		var matched bool
-		switch {
-		case slctr == nil:
-			matched = true
-		case slctr.Labels != nil && slctr.LabelPrefix != nil:
-			matched = slctr.isMetricMatchedLabels(m) && slctr.isMetricHasPrefix(m)
-		case slctr.Labels != nil:
-			matched = slctr.isMetricMatchedLabels(m)
-		case slctr.LabelPrefix != nil:
-			matched = slctr.isMetricHasPrefix(m)
-		}
-
-		if matched {
-			minCount++
-			if m.Value != monitorHWStatusHealth {
-				log.Info("unhealthy; metric is not healthy", map[string]interface{}{
-					"serial": mss.serial,
-					"ipv4":   mss.ipv4,
-					"name":   target.Name,
-					"labels": m.Labels,
-					"value":  m.Value,
-				})
-			} else {
-				healthyCount++
-			}
-		}
-		exists = exists || matched
-	}
-
-	if target.MinimumHealthyCount != nil {
-		minCount = *target.MinimumHealthyCount
-	}
-
-	if !exists {
+	mf := mss.metrics[target.Name]
+	matched := target.Selector.Match(mf)
+	if len(matched) == 0 {
 		log.Info("unhealthy; metric with specified labels does not exist", map[string]interface{}{
-			"serial":                mss.serial,
-			"ipv4":                  mss.ipv4,
-			"name":                  target.Name,
-			"selector":              slctr,
-			"minimum_healthy_count": minCount,
+			"serial":   mss.serial,
+			"ipv4":     mss.ipv4,
+			"name":     target.Name,
+			"selector": target.Selector,
 		})
 		return sabakan.StateUnhealthy
 	}
 
+	var healthyCount int
+	for _, m := range matched {
+		gauge := m.GetGauge()
+		if gauge == nil {
+			continue
+		}
+		if gauge.GetValue() == monitorHWStatusOK {
+			healthyCount++
+			continue
+		}
+		log.Info("unhealthy; metric is not healthy", map[string]interface{}{
+			"serial": mss.serial,
+			"ipv4":   mss.ipv4,
+			"name":   target.Name,
+			"labels": m.Label,
+			"value":  gauge.GetValue(),
+		})
+	}
+
+	if target.MinimumHealthyCount == nil {
+		if healthyCount != len(matched) {
+			log.Info("unhealthy; one or more metric is not healthy", map[string]interface{}{
+				"serial":        mss.serial,
+				"ipv4":          mss.ipv4,
+				"name":          target.Name,
+				"selector":      target.Selector,
+				"num_metrics":   len(matched),
+				"healthy_count": healthyCount,
+			})
+			return sabakan.StateUnhealthy
+		}
+
+		log.Info("healthy;", map[string]interface{}{
+			"serial":   mss.serial,
+			"ipv4":     mss.ipv4,
+			"name":     target.Name,
+			"selector": target.Selector,
+		})
+		return sabakan.StateHealthy
+	}
+
+	minCount := *target.MinimumHealthyCount
 	if healthyCount < minCount {
 		log.Info("unhealthy; minimum healthy count is not satisfied", map[string]interface{}{
 			"serial":                mss.serial,
 			"ipv4":                  mss.ipv4,
 			"name":                  target.Name,
-			"selector":              slctr,
+			"selector":              target.Selector,
 			"minimum_healthy_count": minCount,
 			"healthy_count":         healthyCount,
 		})
@@ -162,32 +162,10 @@ func (mss *machineStateSource) checkTarget(target targetMetric) sabakan.MachineS
 	}
 
 	log.Info("healthy;", map[string]interface{}{
-		"serial":                mss.serial,
-		"ipv4":                  mss.ipv4,
-		"name":                  target.Name,
-		"selector":              slctr,
-		"minimum_healthy_count": minCount,
-		"healthy_count":         healthyCount,
+		"serial":   mss.serial,
+		"ipv4":     mss.ipv4,
+		"name":     target.Name,
+		"selector": target.Selector,
 	})
 	return sabakan.StateHealthy
-}
-
-func (s *selector) isMetricMatchedLabels(metric prom2json.Metric) bool {
-	for k, v := range s.Labels {
-		labelVal, ok := metric.Labels[k]
-		if !ok || v != labelVal {
-			return false
-		}
-	}
-	return true
-}
-
-func (s *selector) isMetricHasPrefix(metric prom2json.Metric) bool {
-	for k, prefix := range s.LabelPrefix {
-		labelVal, ok := metric.Labels[k]
-		if !ok || !strings.HasPrefix(labelVal, prefix) {
-			return false
-		}
-	}
-	return true
 }

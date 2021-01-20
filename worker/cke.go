@@ -26,6 +26,10 @@ func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error
 		return err
 	}
 
+	if err := o.UpdateCKETemplate(ctx, req); err != nil {
+		return err
+	}
+
 	err = neco.RestartService(ctx, neco.CKEService)
 	if err != nil {
 		return err
@@ -124,14 +128,17 @@ func (o *operator) UpdateCKEContents(ctx context.Context, req *neco.UpdateReques
 }
 
 func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateRequest) error {
-	// Check if CKE is alive
-	isActive, err := neco.IsActiveService(ctx, neco.CKEService)
-	if err != nil {
-		return err
-	}
-	if !isActive {
-		log.Info("cke: skipped uploading cke-template.yml because CKE is inactive", nil)
+	// Check if CKE is initialized
+	_, err := os.Stat(neco.CKECertFile)
+	switch {
+	case err == nil:
+		// initialized
+	case os.IsNotExist(err):
+		// not initialized
+		log.Info("cke: skip uploading cke-template.yml because CKE is not initialized", nil)
 		return nil
+	default:
+		return err
 	}
 
 	// Leader election

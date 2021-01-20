@@ -9,7 +9,6 @@ import (
 type serfMockClient struct {
 }
 
-// newPromClient returns PrometheusClient
 func newMockSerfClient() (*serfMockClient, error) {
 	return &serfMockClient{}, nil
 }
