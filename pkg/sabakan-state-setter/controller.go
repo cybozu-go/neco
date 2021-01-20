@@ -3,12 +3,12 @@ package sss
 import (
 	"context"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/sabakan/v2"
 	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
-	"github.com/cybozu-go/well"
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
@@ -136,32 +136,32 @@ func (c *Controller) run(ctx context.Context) error {
 	for i := 0; i < c.parallelSize; i++ {
 		sem <- struct{}{}
 	}
-	env := well.NewEnvironment(ctx)
+	var wg sync.WaitGroup
 	for _, m := range machineStateSources {
 		if m.machineType == nil || len(m.machineType.MetricsCheckList) == 0 {
 			continue
 		}
-		source := m
-		env.Go(func(ctx context.Context) error {
+		wg.Add(1)
+		go func(source *machineStateSource) {
 			<-sem
-			defer func() { sem <- struct{}{} }()
+			defer func() {
+				sem <- struct{}{}
+				wg.Done()
+			}()
+
 			addr := "http://" + source.ipv4 + ":9105/metrics"
 			mfs, err := c.promClient.ConnectMetricsServer(ctx, addr)
 			if err != nil {
-				return err
+				log.Warn("failed to get metrics", map[string]interface{}{
+					"addr":      addr,
+					log.FnError: err,
+				})
+				return
 			}
 			source.metrics = mfs
-			return nil
-		})
+		}(m)
 	}
-	env.Stop()
-	err = env.Wait()
-	if err != nil {
-		// do not exit
-		log.Warn("error occurred when get metrics", map[string]interface{}{
-			log.FnError: err.Error(),
-		})
-	}
+	wg.Wait()
 
 	now := time.Now()
 

@@ -2,7 +2,6 @@ package sss
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -33,12 +32,12 @@ func (p *promClient) ConnectMetricsServer(ctx context.Context, addr string) (map
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call NewRequestWithContext: %w", err)
+		return nil, err
 	}
 
 	resp, err := p.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get %s: %w", addr, err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
