@@ -113,9 +113,10 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 
 	// setup-hw container resets iDRAC at startup.
 	// Wait here to avoid the reset from occurring while the tool is running.
-	log.Info("waiting for iDRAC reset...", nil)
-	time.Sleep(1 * time.Minute)
-
+	if err := exec.Command("systemd-detect-virt", "-q", "--vm").Run(); err != nil {
+		log.Info("waiting for iDRAC reset...", nil)
+		time.Sleep(1 * time.Minute)
+	}
 	err = rt.Exec(ctx, "setup-hw", true, []string{"setup-hw"})
 	if err == nil {
 		return nil
