@@ -14,7 +14,7 @@ $ git pull
 Build `generate-artifacs` and update `artifacts.go`.
 
 ```
-$ go install -mod=vendor ./pkg/generate-artifacts/
+$ go install ./pkg/generate-artifacts/
 $ generate-artifacts > artifacts.go
 ```
 

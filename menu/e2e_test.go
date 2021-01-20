@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/andreyvit/diff"
+	"github.com/google/go-cmp/cmp"
 )
 
 func testE2E(t *testing.T) {
@@ -38,7 +38,7 @@ func assertFileEqual(t *testing.T, f1, f2 string) {
 		t.Fatal(err)
 	}
 	if string(content1) != string(content2) {
-		t.Errorf("unexpected file content: %s\n%v", f1, diff.LineDiff(string(content1), string(content2)))
+		t.Errorf("unexpected file content: %s\n%v", f1, cmp.Diff(string(content1), string(content2)))
 	}
 }
 

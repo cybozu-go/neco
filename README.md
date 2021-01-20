@@ -185,7 +185,7 @@ Other than large tests, this repository contains smaller tests that can be run a
 
 1. Setup the environment by `make setup`.  This is a one shot job.
 2. Run etcd by `make start-etcd`
-3. Run tests by `go test -v -count 1 -race -mod=vendor ./...`
+3. Run tests by `go test -v -count 1 -race ./...`
 4. Stop etcd by `make stop-etcd`
 
 Directories

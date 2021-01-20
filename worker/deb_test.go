@@ -4,12 +4,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/go-github/v18/github"
+	"github.com/google/go-github/v33/github"
 )
 
 func TestFindDebAsset(t *testing.T) {
 	type args struct {
-		assets []github.ReleaseAsset
+		assets []*github.ReleaseAsset
 		name   string
 	}
 	tests := []struct {
@@ -20,7 +20,7 @@ func TestFindDebAsset(t *testing.T) {
 		{
 			"valid",
 			args{
-				assets: []github.ReleaseAsset{{Name: strToPointer("etcdpasswd_aaa.deb")}},
+				assets: []*github.ReleaseAsset{{Name: strToPointer("etcdpasswd_aaa.deb")}},
 				name:   "etcdpasswd",
 			},
 			&github.ReleaseAsset{Name: strToPointer("etcdpasswd_aaa.deb")},
@@ -28,7 +28,7 @@ func TestFindDebAsset(t *testing.T) {
 		{
 			"invalid ext",
 			args{
-				assets: []github.ReleaseAsset{{Name: strToPointer("etcdpasswd_aaa.zip")}},
+				assets: []*github.ReleaseAsset{{Name: strToPointer("etcdpasswd_aaa.zip")}},
 				name:   "etcdpasswd",
 			},
 			nil,
@@ -36,7 +36,7 @@ func TestFindDebAsset(t *testing.T) {
 		{
 			"name not matched",
 			args{
-				assets: []github.ReleaseAsset{{Name: strToPointer("etcdpasswd_aaa.deb")}},
+				assets: []*github.ReleaseAsset{{Name: strToPointer("etcdpasswd_aaa.deb")}},
 				name:   "neco",
 			},
 			nil,

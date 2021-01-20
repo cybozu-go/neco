@@ -10,7 +10,7 @@ import (
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
-	"github.com/google/go-github/v18/github"
+	"github.com/google/go-github/v33/github"
 )
 
 // InstallDebianPackage installs a debian package
@@ -85,7 +85,7 @@ func GetGitHubDownloadURL(ctx context.Context, gh *github.Client, pkg *neco.Debi
 	return *asset.BrowserDownloadURL, nil
 }
 
-func findDebAsset(assets []github.ReleaseAsset, name string) *github.ReleaseAsset {
+func findDebAsset(assets []*github.ReleaseAsset, name string) *github.ReleaseAsset {
 	filePattern := regexp.MustCompile(fmt.Sprintf(`^%s_.*\.deb$`, name))
 	for _, a := range assets {
 		name := a.Name
@@ -93,7 +93,7 @@ func findDebAsset(assets []github.ReleaseAsset, name string) *github.ReleaseAsse
 			continue
 		}
 		if filePattern.MatchString(*name) {
-			return &a
+			return a
 		}
 	}
 	return nil
