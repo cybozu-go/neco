@@ -6,19 +6,49 @@ import (
 
 	"github.com/cybozu-go/sabakan/v2"
 	serf "github.com/hashicorp/serf/client"
-	"github.com/prometheus/prom2json"
+	dto "github.com/prometheus/client_model/go"
 )
 
-func TestCheckSpecifyTarget(t *testing.T) {
-	metrics := machineMetrics{{
-		Labels: map[string]string{"k1": "v1", "k2": "v2"},
-		Value:  monitorHWStatusHealth,
-	}}
-	ms := machineStateSource{
-		serial: "1234",
-		metrics: map[string]machineMetrics{
-			"m1": metrics,
+type machineMetrics struct {
+	Labels map[string]string
+	Value  float64
+}
+
+func (m machineMetrics) toMetric() *dto.Metric {
+	var labels []*dto.LabelPair
+	for k, v := range m.Labels {
+		k := k
+		v := v
+		labels = append(labels, &dto.LabelPair{
+			Name:  &k,
+			Value: &v,
+		})
+	}
+	return &dto.Metric{
+		Label: labels,
+		Gauge: &dto.Gauge{
+			Value: &m.Value,
 		},
+	}
+}
+
+func (m machineMetrics) toMetrics(name string) map[string]*dto.MetricFamily {
+	return map[string]*dto.MetricFamily{
+		name: {
+			Name:   &name,
+			Metric: []*dto.Metric{m.toMetric()},
+		},
+	}
+}
+
+func TestCheckSpecifyTarget(t *testing.T) {
+	metrics := machineMetrics{
+		Labels: map[string]string{"k1": "v1", "k2": "v2"},
+		Value:  monitorHWStatusOK,
+	}
+	ms := machineStateSource{
+		serial:  "1234",
+		metrics: metrics.toMetrics("m1"),
 	}
 	checkTarget := targetMetric{
 		Name: "m1",
@@ -81,14 +111,10 @@ func TestDecideSabakanState(t *testing.T) {
 				serfStatus: &serf.Member{
 					Status: "alive",
 				},
-				metrics: map[string]machineMetrics{
-					"parts1": {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusHealth,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"aaa": "bbb"},
+					Value:  monitorHWStatusOK,
+				}.toMetrics("parts1"),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
@@ -108,14 +134,10 @@ func TestDecideSabakanState(t *testing.T) {
 				serfStatus: &serf.Member{
 					Status: "alive",
 				},
-				metrics: map[string]machineMetrics{
-					"parts1": {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusNull,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"aaa": "bbb"},
+					Value:  monitorHWStatusNull,
+				}.toMetrics("parts1"),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
@@ -138,14 +160,10 @@ func TestDecideSabakanState(t *testing.T) {
 						"systemd-units-failed": "",
 					},
 				},
-				metrics: map[string]machineMetrics{
-					"parts1": {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusWarning,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"aaa": "bbb"},
+					Value:  monitorHWStatusWarning,
+				}.toMetrics("parts1"),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
@@ -215,14 +233,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateHealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
-					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusHealth,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"aaa": "bbb"},
+					Value:  monitorHWStatusOK,
+				}.toMetrics(parts1),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
@@ -239,14 +253,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
-					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusWarning,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"aaa": "bbb"},
+					Value:  monitorHWStatusWarning,
+				}.toMetrics(parts1),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{{
@@ -263,23 +273,32 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateHealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
+				metrics: map[string]*dto.MetricFamily{
 					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusHealth,
+						Name: &parts1,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"aaa": "bbb"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
 						},
 					},
 					parts2: {
-						prom2json.Metric{
-							Labels: map[string]string{"ccc": "ddd"},
-							Value:  monitorHWStatusHealth,
+						Name: &parts2,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"ccc": "ddd"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
 						},
 					},
 					parts3: {
-						prom2json.Metric{
-							Labels: map[string]string{"ccc": "ddd"},
-							Value:  monitorHWStatusWarning,
+						Name: &parts3,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"ccc": "ddd"},
+								Value:  monitorHWStatusWarning,
+							}.toMetric(),
 						},
 					},
 				},
@@ -307,27 +326,36 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateHealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
+				metrics: map[string]*dto.MetricFamily{
 					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd", "eee": "fff"},
-							Value:  monitorHWStatusHealth,
-						},
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
-							Value:  monitorHWStatusHealth,
+						Name: &parts1,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"aaa": "bbb", "ccc": "ddd", "eee": "fff"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
+							machineMetrics{
+								Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
 						},
 					},
 					parts2: {
-						prom2json.Metric{
-							Labels: map[string]string{"ccc": "ddd"},
-							Value:  monitorHWStatusHealth,
+						Name: &parts2,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"ccc": "ddd"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
 						},
 					},
 					parts3: {
-						prom2json.Metric{
-							Labels: map[string]string{"ccc": "ddd"},
-							Value:  monitorHWStatusWarning,
+						Name: &parts3,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"ccc": "ddd"},
+								Value:  monitorHWStatusWarning,
+							}.toMetric(),
 						},
 					},
 				},
@@ -355,15 +383,18 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
+				metrics: map[string]*dto.MetricFamily{
 					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd", "eee": "fff"},
-							Value:  monitorHWStatusHealth,
-						},
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
-							Value:  monitorHWStatusWarning,
+						Name: &parts1,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"aaa": "bbb", "ccc": "ddd", "eee": "fff"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
+							machineMetrics{
+								Labels: map[string]string{"aaa": "bbb", "ccc": "ddd"},
+								Value:  monitorHWStatusWarning,
+							}.toMetric(),
 						},
 					},
 				},
@@ -385,14 +416,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
-					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusHealth,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"aaa": "bbb"},
+					Value:  monitorHWStatusOK,
+				}.toMetrics(parts1),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
@@ -411,15 +438,18 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateHealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
+				metrics: map[string]*dto.MetricFamily{
 					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusHealth,
-						},
-						prom2json.Metric{
-							Labels: map[string]string{"ccc": "ddd"},
-							Value:  monitorHWStatusHealth,
+						Name: &parts1,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"aaa": "bbb"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
+							machineMetrics{
+								Labels: map[string]string{"ccc": "ddd"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
 						},
 					},
 				},
@@ -434,15 +464,18 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
+				metrics: map[string]*dto.MetricFamily{
 					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusHealth,
-						},
-						prom2json.Metric{
-							Labels: map[string]string{"ccc": "ddd"},
-							Value:  monitorHWStatusWarning,
+						Name: &parts1,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"aaa": "bbb"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
+							machineMetrics{
+								Labels: map[string]string{"ccc": "ddd"},
+								Value:  monitorHWStatusWarning,
+							}.toMetric(),
 						},
 					},
 				},
@@ -457,14 +490,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
-					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusHealth,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"aaa": "bbb"},
+					Value:  monitorHWStatusOK,
+				}.toMetrics(parts1),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
@@ -489,14 +518,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateHealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
-					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"aaa": "bbb"},
-							Value:  monitorHWStatusHealth,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"aaa": "bbb"},
+					Value:  monitorHWStatusOK,
+				}.toMetrics(parts1),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
@@ -515,14 +540,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateHealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
-					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"key1": "val1", "key2": "val2"},
-							Value:  monitorHWStatusHealth,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"key1": "val1", "key2": "val2"},
+					Value:  monitorHWStatusOK,
+				}.toMetrics(parts1),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
@@ -544,14 +565,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
-					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"key1": "val1", "key2": "val2"},
-							Value:  monitorHWStatusHealth,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"key1": "val1", "key2": "val2"},
+					Value:  monitorHWStatusOK,
+				}.toMetrics(parts1),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
@@ -573,14 +590,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
-					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"key1": "val1", "key2": "val2"},
-							Value:  monitorHWStatusWarning,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"key1": "val1", "key2": "val2"},
+					Value:  monitorHWStatusWarning,
+				}.toMetrics(parts1),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
@@ -602,17 +615,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
-					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{
-								"key1": "val1",
-								"key2": "val2",
-							},
-							Value: monitorHWStatusHealth,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"key1": "val1", "key2": "val2"},
+					Value:  monitorHWStatusOK,
+				}.toMetrics(parts1),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
@@ -636,17 +642,10 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
-					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{
-								"key1": "val1",
-								"key2": "val2",
-							},
-							Value: monitorHWStatusHealth,
-						},
-					},
-				},
+				metrics: machineMetrics{
+					Labels: map[string]string{"key1": "val1", "key2": "val2"},
+					Value:  monitorHWStatusOK,
+				}.toMetrics(parts1),
 				machineType: &machineType{
 					Name: "boot",
 					MetricsCheckList: []targetMetric{
@@ -670,19 +669,22 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateHealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
+				metrics: map[string]*dto.MetricFamily{
 					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"device": "HDD.slot.1"},
-							Value:  monitorHWStatusHealth,
-						},
-						prom2json.Metric{
-							Labels: map[string]string{"device": "HDD.slot.2"},
-							Value:  monitorHWStatusHealth,
-						},
-						prom2json.Metric{
-							Labels: map[string]string{"device": "HDD.slot.3"},
-							Value:  monitorHWStatusWarning,
+						Name: &parts1,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"device": "HDD.slot.1"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
+							machineMetrics{
+								Labels: map[string]string{"device": "HDD.slot.2"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
+							machineMetrics{
+								Labels: map[string]string{"device": "HDD.slot.3"},
+								Value:  monitorHWStatusWarning,
+							}.toMetric(),
 						},
 					},
 				},
@@ -707,19 +709,22 @@ func TestDecideByMonitorHW(t *testing.T) {
 			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: base,
-				metrics: map[string]machineMetrics{
+				metrics: map[string]*dto.MetricFamily{
 					parts1: {
-						prom2json.Metric{
-							Labels: map[string]string{"device": "HDD.slot.1"},
-							Value:  monitorHWStatusHealth,
-						},
-						prom2json.Metric{
-							Labels: map[string]string{"device": "HDD.slot.2"},
-							Value:  monitorHWStatusWarning,
-						},
-						prom2json.Metric{
-							Labels: map[string]string{"device": "HDD.slot.3"},
-							Value:  monitorHWStatusWarning,
+						Name: &parts1,
+						Metric: []*dto.Metric{
+							machineMetrics{
+								Labels: map[string]string{"device": "HDD.slot.1"},
+								Value:  monitorHWStatusOK,
+							}.toMetric(),
+							machineMetrics{
+								Labels: map[string]string{"device": "HDD.slot.2"},
+								Value:  monitorHWStatusWarning,
+							}.toMetric(),
+							machineMetrics{
+								Labels: map[string]string{"device": "HDD.slot.3"},
+								Value:  monitorHWStatusWarning,
+							}.toMetric(),
 						},
 					},
 				},
