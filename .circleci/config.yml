@@ -128,7 +128,7 @@ jobs:
       - run: time make tools SUDO="" FAKEROOT=
       - run:
           command: |
-            if [ "${CIRCLE_BRANCH}" != "master" ]; then
+            if [ "${CIRCLE_BRANCH}" != "main" ]; then
               go install ./pkg/generate-artifacts/
               generate-artifacts > /tmp/artifacts.go
               diff -u artifacts.go /tmp/artifacts.go
@@ -288,9 +288,9 @@ jobs:
           command: |
             git config --global user.email "neco@cybozu.com"
             git config --global user.name "cybozu-neco"
-      # Check difference between [`release` branch] and [`master` branch + `artifacts_release.go`]
+      # Check difference between [`release` branch] and [`main` branch + `artifacts_release.go`]
       - run: git checkout release
-      - run: git merge --no-commit origin/master
+      - run: git merge --no-commit origin/main
       - run: cp /tmp/workspace/artifacts_release.go .
       - run:
           name: Check diff
@@ -338,7 +338,7 @@ jobs:
             git config --global user.name "cybozu-neco"
       # For testing on equal terms with "dctest-functions-release", check out in the same way as it.
       - run: git checkout release
-      - run: git merge --no-commit origin/master
+      - run: git merge --no-commit origin/main
       - run: cp /tmp/workspace/artifacts_release.go .
       - restore-tools
       - run-dctest-bootstrap:
@@ -377,9 +377,9 @@ jobs:
           command: |
             git config --global user.email "neco@cybozu.com"
             git config --global user.name "cybozu-neco"
-      # Check difference between [`release` branch] and [`master` branch + `artifacts_release.go`]
+      # Check difference between [`release` branch] and [`main` branch + `artifacts_release.go`]
       - run: git checkout release
-      - run: git merge --no-commit origin/master
+      - run: git merge --no-commit origin/main
       - run: cp /tmp/workspace/artifacts_release.go .
       - run:
           name: Check diff
@@ -410,19 +410,13 @@ workflows:
             branches:
               ignore:
                 - release
-                - master
-      - dctest-reboot-worker:
-          filters:
-            branches:
-              ignore:
-                - release
-                - master
+                - main
       - dctest-upgrade:
           filters:
             branches:
               ignore:
                 - release
-                - master
+                - main
 
   # Update github release page.
   release:
@@ -442,14 +436,14 @@ workflows:
             tags:
               only: /^release-.*/
 
-  # Testing `master` branch and update "release" branch.
-  master:
+  # Testing `main` branch and update "release" branch.
+  update-release:
     jobs:
       - generate-artifacts:
           filters:
             branches:
               only:
-                - master
+                - main
       - dctest-functions-release:
           requires:
             - generate-artifacts
@@ -461,7 +455,7 @@ workflows:
             - dctest-functions-release
             - dctest-upgrade-release
 
-  # For updating `artifact_release.go` regularly, run the same job as `master` workflow.
+  # For updating `artifact_release.go` regularly, run the same job as `main` workflow.
   daily:
     triggers:
       - schedule:
@@ -469,13 +463,16 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - generate-artifacts
       - dctest-functions-release:
           requires:
             - generate-artifacts
       - dctest-upgrade-release:
+          requires:
+            - generate-artifacts
+      - dctest-reboot-worker:
           requires:
             - generate-artifacts
       - update-release:

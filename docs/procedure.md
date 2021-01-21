@@ -7,7 +7,7 @@ Update repository to the latest state.
 
 ```console
 $ cd $GOPATH/src/github.com/cybozu-go/neco
-$ git checkout master
+$ git checkout main
 $ git pull
 ```
 

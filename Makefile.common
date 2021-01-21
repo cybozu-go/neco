@@ -8,7 +8,7 @@ K8S_VERSION = 1.19.7
 TOPOLVM_VERSION = 0.7.0
 STERN_VERSION = 1.13.1
 # Follow Argo CD installed kustomize version
-# https://github.com/cybozu/neco-containers/blob/master/argocd/Dockerfile#L27
+# https://github.com/cybozu/neco-containers/blob/main/argocd/Dockerfile#L27
 KUSTOMIZE_VERSION = 3.7.0
 TELEPORT_VERSION = 5.0.2
 

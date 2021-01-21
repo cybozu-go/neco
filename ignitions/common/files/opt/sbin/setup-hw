@@ -16,7 +16,9 @@ fi
 
 # setup-hw container resets iDRAC at startup.
 # Wait here to avoid the reset from occurring while the tool is running.
-sleep 60
+if ! systemd-detect-vert -q --vm; then
+    sleep 60
+fi
 
 docker exec setup-hw setup-hw
 RET=$?
