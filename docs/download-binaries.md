@@ -11,7 +11,7 @@ To solve this problem we decided to automate the process to upload the binaries 
 
 Download the binary from [the download page](https://gravitational.com/teleport/download/).
 
-The version to use is written on [artifacts.go](https://github.com/cybozu-go/neco/blob/master/artifacts.go).
+The version to use is written on [artifacts.go](https://github.com/cybozu-go/neco/blob/main/artifacts.go).
 
 #### `kubectl`
 

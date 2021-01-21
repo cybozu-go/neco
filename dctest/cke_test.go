@@ -122,7 +122,7 @@ func testCKE() {
 			}
 
 			// control-plane-count + minimum-workers = 5
-			// https://github.com/cybozu-go/cke/blob/master/docs/sabakan-integration.md#initialization
+			// https://github.com/cybozu-go/cke/blob/main/docs/sabakan-integration.md#initialization
 			if len(nl.Items) != 5 {
 				return fmt.Errorf("too few nodes: %d", len(nl.Items))
 			}
