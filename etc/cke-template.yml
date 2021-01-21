@@ -28,17 +28,14 @@ options:
   kube-api:
     extra_args:
       - "--enable-admission-plugins=PodSecurityPolicy"
-      - "--feature-gates=EphemeralContainers=true"
-      - "--feature-gates=GenericEphemeralVolume=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true"
   kube-controller-manager:
     extra_args:
-      - "--feature-gates=EphemeralContainers=true"
-      - "--feature-gates=GenericEphemeralVolume=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true"
   kube-proxy:
     extra_args:
       - "--ipvs-strict-arp=true"
-      - "--feature-gates=EphemeralContainers=true"
-      - "--feature-gates=GenericEphemeralVolume=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true"
   kube-scheduler:
     config:
       apiVersion: kubescheduler.config.k8s.io/v1beta1
@@ -71,8 +68,7 @@ options:
               topologyKey: topology.kubernetes.io/zone
               whenUnsatisfiable: ScheduleAnyway
     extra_args:
-      - "--feature-gates=EphemeralContainers=true"
-      - "--feature-gates=GenericEphemeralVolume=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true"
   kubelet:
     config:
       apiVersion: kubelet.config.k8s.io/v1beta1
@@ -82,8 +78,7 @@ options:
     cri_endpoint: unix:///var/run/k8s-containerd.sock
     extra_args:
       - "--containerd=/var/run/k8s-containerd.sock"
-      - "--feature-gates=EphemeralContainers=true"
-      - "--feature-gates=GenericEphemeralVolume=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true"
     extra_binds:
       - source: /var/lib/k8s-containerd
         destination: /var/lib/k8s-containerd
