@@ -19,7 +19,7 @@ ifeq (20.04, $(word 1, $(sort 20.04 $(LSB_DISTRIB_RELEASE)))) # is Ubuntu 20.04 
 else
     PACKAGES += btrfs-tools
 endif
-VERSION = 0.0.1-master
+VERSION = 0.0.1-main
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 OP_DEB = neco-operation-cli-linux_$(VERSION)_amd64.deb

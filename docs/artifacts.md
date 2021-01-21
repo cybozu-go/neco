@@ -31,7 +31,7 @@ A component with prerelease version information, i.e. x.y.z-\<prerelease\>,
 does not get included in artifacts files by `generate-artifacts`.
 So if you want to use such a component, include it manually.
 Though you can edit `artifacts.go` in this case, you must not merge it into
-the master branch anyway, because that component does not get included in
+the main branch anyway, because that component does not get included in
 `artifacts_release.go` and CI on `release` branch will fail.
 Instead, after you confirm that neco can accept a component of x.y.z-\<prerelease\>,
 release the component as x.y.z and include it in artifacts files by `generate-artifacts`.

@@ -186,7 +186,7 @@ Synopsis
 
     Reboot all worker nodes.
 
-    This uses CKE's function of [graceful reboot](https://github.com/cybozu-go/cke/blob/master/docs/reboot.md) for the nodes used by CKE.
+    This uses CKE's function of [graceful reboot](https://github.com/cybozu-go/cke/blob/main/docs/reboot.md) for the nodes used by CKE.
     As for the other nodes, this reboots them immediately.
 
 ### CKE related functions
@@ -200,7 +200,7 @@ When commands as follows run `ckecli sabakan set-template` internally, read etcd
 - `neco init-data`
 - `neco cke update`
 
-See details [Role and weights](https://github.com/cybozu-go/cke/blob/master/docs/sabakan-integration.md#roles-and-weights).
+See details [Role and weights](https://github.com/cybozu-go/cke/blob/main/docs/sabakan-integration.md#roles-and-weights).
 
 * `neco cke weight list`
 
