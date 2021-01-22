@@ -210,7 +210,7 @@ The available properties are as following:
 
 ### Image resource
 
-Image resource is the same as [Image resource of placemat](https://github.com/cybozu-go/placemat/blob/master/docs/resource.md#image-resource).
+Image resource is the same as [Image resource of placemat](https://github.com/cybozu-go/placemat/blob/main/docs/resource.md#image-resource).
 
 ### Node resource
 
@@ -240,7 +240,7 @@ The available properties are as following:
 - `memory`: The size of the memory.
 - `image`: The name of an image resource for boot (optional)
 - `data`: The name of image resources for additional data (optional)
-- `smbios`: The name of BIOS mode (optional. See [Node resource of placemat](https://github.com/cybozu-go/placemat/blob/master/docs/resource.md#node-resource))
+- `smbios`: The name of BIOS mode (optional. See [Node resource of placemat](https://github.com/cybozu-go/placemat/blob/main/docs/resource.md#node-resource))
 - `uefi`: Use UEFI boot.
 - `cloud-init-template`: The path of cloud-init template file.
 - `tpm`: Use virtual TPM.
