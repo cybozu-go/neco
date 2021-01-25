@@ -2,8 +2,9 @@
 Description=ckecli etcd local-backup
 After=cke.service
 ConditionPathExists=/etc/cke/etcd.crt
+ConditionVirtualization=false
 
 [Service]
 Type=oneshot
 ExecStartPre=/bin/mkdir -p /var/cke/etcd-backups
-ExecStart=/usr/local/bin/ckecli etcd local-backup
+ExecStart=/usr/bin/ckecli etcd local-backup
