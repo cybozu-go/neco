@@ -17,7 +17,7 @@ nodes:
   taints:
   - key: cke.cybozu.com/role
     value: storage
-    effect: NoExecute
+    effect: NoSchedule
 service_subnet: 10.68.0.0/16
 dns_service: internet-egress/unbound
 reboot:
