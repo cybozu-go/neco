@@ -44,17 +44,16 @@ data:
     http_access allow neco_network
     http_access deny all
     http_port 3128
-    access_log stdio:/var/log/squid/access.log
-    pid_filename "none"
-    cache_dir aufs /var/spool/squid 50000 16 256
-    coredump_dir /var/spool/squid
     cache_mem 6 GB
     maximum_object_size_in_memory 100 MB
-    maximum_object_size 100 MB
     detect_broken_pconn on
     forwarded_for delete
     httpd_suppress_version_string on
     shutdown_lifetime 10 seconds
+    pid_filename   none
+    logfile_rotate 0
+    access_log     stdio:/dev/stdout
+    cache_log      stdio:/dev/stderr
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -233,6 +232,7 @@ spec:
       containers:
         - name: squid
           image: {{ .squid }}
+          args: ["-f", "/etc/squid-conf/squid.conf"]
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
@@ -241,7 +241,7 @@ spec:
           volumeMounts:
             - mountPath: /var/spool/squid
               name: cache
-            - mountPath: /etc/squid
+            - mountPath: /etc/squid-conf
               name: config
           ports:
            - name: proxy
@@ -250,10 +250,6 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
-              add:
-                - CHOWN
-                - SETUID
-                - SETGID
               drop:
                 - all
             readOnlyRootFilesystem: true
@@ -320,9 +316,6 @@ spec:
         - name: config
           configMap:
             name: squid
-            items:
-              - key: squid.conf
-                path: squid.conf
         - name: config-volume
           configMap:
             name: local-unbound
