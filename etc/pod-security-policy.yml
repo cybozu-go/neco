@@ -86,6 +86,9 @@ spec:
   allowPrivilegeEscalation: false
   allowedCapabilities:
     - NET_BIND_SERVICE
+    - CHOWN
+    - SETUID
+    - SETGID
   volumes:
     - 'configMap'
     - 'emptyDir'
