@@ -396,7 +396,7 @@ apps:
 - args:
   - -f
   - /etc/chrony/chrony.conf
-  image: docker://quay.io/cybozu/chrony:3.5
+  image: docker://quay.io/cybozu/chrony:4.0
   mount:
   - target: /etc/chrony
     volume: config
@@ -575,7 +575,7 @@ apps:
   - CAP_NET_BIND_SERVICE
   - CAP_NET_RAW
   - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.79
+  image: docker://quay.io/cybozu/dnsmasq:2.84
   name: dhcp-relay
   readonly-rootfs: true
 interfaces:
@@ -625,7 +625,7 @@ apps:
   - CAP_NET_BIND_SERVICE
   - CAP_NET_RAW
   - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.79
+  image: docker://quay.io/cybozu/dnsmasq:2.84
   name: dhcp-relay
   readonly-rootfs: true
 interfaces:
@@ -675,7 +675,7 @@ apps:
   - CAP_NET_BIND_SERVICE
   - CAP_NET_RAW
   - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.79
+  image: docker://quay.io/cybozu/dnsmasq:2.84
   name: dhcp-relay
   readonly-rootfs: true
 interfaces:
@@ -725,7 +725,7 @@ apps:
   - CAP_NET_BIND_SERVICE
   - CAP_NET_RAW
   - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.79
+  image: docker://quay.io/cybozu/dnsmasq:2.84
   name: dhcp-relay
   readonly-rootfs: true
 interfaces:
