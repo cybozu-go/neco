@@ -11,9 +11,9 @@ import (
 const (
 	dockerImageBird    = "docker://quay.io/cybozu/bird:2.0"
 	dockerImageDebug   = "docker://quay.io/cybozu/ubuntu-debug:20.04"
-	dockerImageDnsmasq = "docker://quay.io/cybozu/dnsmasq:2.79"
+	dockerImageDnsmasq = "docker://quay.io/cybozu/dnsmasq:2.84"
 	dockerImageSquid   = "docker://quay.io/cybozu/squid:3.5"
-	dockerImageChrony  = "docker://quay.io/cybozu/chrony:3.5"
+	dockerImageChrony  = "docker://quay.io/cybozu/chrony:4.0"
 )
 
 var birdContainer = placemat.PodAppSpec{
