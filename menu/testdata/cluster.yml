@@ -116,8 +116,6 @@ name: docker-image
 files:
 - file: bird_core.conf
   name: bird.conf
-- file: squid.conf
-  name: squid.conf
 - file: chrony.conf
   name: chrony.conf
 kind: DataFolder
@@ -383,20 +381,13 @@ apps:
 - image: docker://quay.io/cybozu/ubuntu-debug:20.04
   name: debug
   readonly-rootfs: true
-- image: docker://quay.io/cybozu/squid:3.5
-  mount:
-  - target: /etc/squid
-    volume: config
-  - target: /var/log/squid
-    volume: squid-log
-  - target: /var/spool/squid
-    volume: squid-spool
+- image: docker://quay.io/cybozu/squid:4
   name: proxy
   readonly-rootfs: false
 - args:
   - -f
   - /etc/chrony/chrony.conf
-  image: docker://quay.io/cybozu/chrony:3.5
+  image: docker://quay.io/cybozu/chrony:4.0
   mount:
   - target: /etc/chrony
     volume: config
@@ -445,14 +436,6 @@ volumes:
   readonly: true
 - kind: empty
   name: run
-  readonly: false
-- kind: empty
-  mode: "0777"
-  name: squid-log
-  readonly: false
-- kind: empty
-  mode: "0777"
-  name: squid-spool
   readonly: false
 - kind: empty
   mode: "0777"
@@ -575,7 +558,7 @@ apps:
   - CAP_NET_BIND_SERVICE
   - CAP_NET_RAW
   - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.79
+  image: docker://quay.io/cybozu/dnsmasq:2.84
   name: dhcp-relay
   readonly-rootfs: true
 interfaces:
@@ -625,7 +608,7 @@ apps:
   - CAP_NET_BIND_SERVICE
   - CAP_NET_RAW
   - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.79
+  image: docker://quay.io/cybozu/dnsmasq:2.84
   name: dhcp-relay
   readonly-rootfs: true
 interfaces:
@@ -675,7 +658,7 @@ apps:
   - CAP_NET_BIND_SERVICE
   - CAP_NET_RAW
   - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.79
+  image: docker://quay.io/cybozu/dnsmasq:2.84
   name: dhcp-relay
   readonly-rootfs: true
 interfaces:
@@ -725,7 +708,7 @@ apps:
   - CAP_NET_BIND_SERVICE
   - CAP_NET_RAW
   - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.79
+  image: docker://quay.io/cybozu/dnsmasq:2.84
   name: dhcp-relay
   readonly-rootfs: true
 interfaces:

@@ -17,7 +17,6 @@ var Assets = map[string]string{
 	"machines.tpl": "racks:\n{{range $rack := .Racks -}}\n- name: {{$rack.Name}}\n  workers:\n    cs: {{len $rack.CSList }}\n    ss: {{len $rack.SSList }}\n  boot:\n    bastion: {{$rack.BootNode.BastionAddress}}\n{{end -}}\n",
 	"setup-default-gateway": "#!/bin/sh\n\nip route add default via {{.IP}}\n",
 	"setup-iptables": "#!/bin/sh\n\n# eth0 -> internet\n# eth1 -> BMC\niptables -t nat -A POSTROUTING -o eth0 -s {{.}} -j MASQUERADE\niptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE\n",
-	"squid.conf": "# Only allow cachemgr access from localhost\nhttp_access allow manager localhost\nhttp_access deny manager\nhttp_access allow all\nhttp_port 3128\naccess_log stdio:/var/log/squid/access.log\npid_filename \"none\"\ncache_dir aufs /var/spool/squid 50000 16 256\ncoredump_dir /var/spool/squid\ncache_mem 200 MB\nmaximum_object_size_in_memory 100 MB\nmaximum_object_size 100 MB\ndetect_broken_pconn on\nforwarded_for delete\nhttpd_suppress_version_string on\n",
 }
 
 func GetAssetTemplate(name string) (*template.Template, error) {

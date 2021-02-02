@@ -11,9 +11,9 @@ import (
 const (
 	dockerImageBird    = "docker://quay.io/cybozu/bird:2.0"
 	dockerImageDebug   = "docker://quay.io/cybozu/ubuntu-debug:20.04"
-	dockerImageDnsmasq = "docker://quay.io/cybozu/dnsmasq:2.79"
-	dockerImageSquid   = "docker://quay.io/cybozu/squid:3.5"
-	dockerImageChrony  = "docker://quay.io/cybozu/chrony:3.5"
+	dockerImageDnsmasq = "docker://quay.io/cybozu/dnsmasq:2.84"
+	dockerImageSquid   = "docker://quay.io/cybozu/squid:4"
+	dockerImageChrony  = "docker://quay.io/cybozu/chrony:4.0"
 )
 
 var birdContainer = placemat.PodAppSpec{
@@ -436,35 +436,9 @@ func (c *cluster) appendCorePod(ta *TemplateArgs) {
 		&debugContainer,
 	}
 	if ta.Core.ProxyAddress != nil {
-		coreVolumes = append(coreVolumes, []*placemat.PodVolumeSpec{
-			{
-				Name: "squid-log",
-				Kind: "empty",
-				Mode: "0777",
-			},
-			{
-				Name: "squid-spool",
-				Kind: "empty",
-				Mode: "0777",
-			},
-		}...)
 		coreApps = append(coreApps, &placemat.PodAppSpec{
 			Name:  "proxy",
 			Image: dockerImageSquid,
-			Mount: []placemat.PodAppMountSpec{
-				{
-					Volume: "config",
-					Target: "/etc/squid",
-				},
-				{
-					Volume: "squid-log",
-					Target: "/var/log/squid",
-				},
-				{
-					Volume: "squid-spool",
-					Target: "/var/spool/squid",
-				},
-			},
 		})
 	}
 	if ta.Core.NTPAddresses != nil {
@@ -600,12 +574,6 @@ func (c *cluster) appendCoreDataFolder(ta *TemplateArgs) {
 			Name: "bird.conf",
 			File: "bird_core.conf",
 		},
-	}
-	if ta.Core.ProxyAddress != nil {
-		files = append(files, placemat.DataFolderFileSpec{
-			Name: "squid.conf",
-			File: "squid.conf",
-		})
 	}
 	if ta.Core.NTPAddresses != nil {
 		files = append(files, placemat.DataFolderFileSpec{
