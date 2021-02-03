@@ -25,9 +25,11 @@ TELEPORT_DLDIR := $(DOWNLOADDIR)/teleport-v$(TELEPORT_VERSION)
 TELEPORT_DOWNLOAD := $(TELEPORT_DLDIR)/downloaded
 CKE_DLDIR := $(DOWNLOADDIR)/cke-v$(CKE_VERSION)
 CKE_DOWNLOAD := $(CKE_DLDIR)/downloaded
+MOCO_DLDIR := $(DOWNLOADDIR)/moco-v$(MOCO_VERSION)
+MOCO_DOWNLOAD := $(MOCO_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport cke
+all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport cke moco
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -196,6 +198,22 @@ cke: $(CKE_DOWNLOAD)
 	mkdir -p $(BINDIR) $(SBINDIR)
 	cp $(CKE_DLDIR)/source/cke $(SBINDIR)/cke
 	cp $(CKE_DLDIR)/source/ckecli $(BINDIR)/ckecli
+
+# TODO: download the kubectl-moco windows binary after MOCO v0.5.0 is released.
+$(MOCO_DOWNLOAD):
+	mkdir -p $(MOCO_DLDIR)
+	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco
+	$(WGET) -O $(MOCO_DLDIR)/LICENSE      https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/LICENSE
+	$(WGET) -O $(MOCO_DLDIR)/README.md    https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/README.md
+	touch $@
+
+.PHONY: moco
+moco: $(MOCO_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	cp $(MOCO_DLDIR)/kubectl-moco $(BINDIR)/kubectl-moco
+	chmod +x $(BINDIR)/kubectl-moco
+	cp $(MOCO_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(MOCO_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
 .PHONY: clean
 clean:
