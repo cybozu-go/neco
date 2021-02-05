@@ -14,6 +14,7 @@ require (
 	github.com/cybozu-go/sabakan/v2 v2.5.3
 	github.com/cybozu-go/well v1.10.0
 	github.com/google/go-cmp v0.5.4
+	github.com/google/go-containerregistry v0.4.0
 	github.com/google/go-github/v33 v33.0.0
 	github.com/hashicorp/go-msgpack v0.5.4 // indirect
 	github.com/hashicorp/go-version v1.2.1
