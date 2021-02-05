@@ -25,9 +25,11 @@ TELEPORT_DLDIR := $(DOWNLOADDIR)/teleport-v$(TELEPORT_VERSION)
 TELEPORT_DOWNLOAD := $(TELEPORT_DLDIR)/downloaded
 CKE_DLDIR := $(DOWNLOADDIR)/cke-v$(CKE_VERSION)
 CKE_DOWNLOAD := $(CKE_DLDIR)/downloaded
+MOCO_DLDIR := $(DOWNLOADDIR)/moco-v$(MOCO_VERSION)
+MOCO_DOWNLOAD := $(MOCO_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport cke
+all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport cke moco
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -87,12 +89,12 @@ $(ARGOCD_DOWNLOAD):
 
 .PHONY: argocd
 argocd: $(ARGOCD_DOWNLOAD)
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
 	cp $(ARGOCD_DLDIR)/argocd $(BINDIR)/argocd
 	chmod +x $(BINDIR)/argocd
 	cp $(ARGOCD_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(ARGOCD_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(ARGOCD_DLDIR)/argocd.exe $(WINDOWS_BINDIR)/$@/argocd.exe
+	cp $(ARGOCD_DLDIR)/argocd.exe $(WINDOWS_BINDIR)/argocd.exe
 	cp $(ARGOCD_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(ARGOCD_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
@@ -106,12 +108,12 @@ $(KUBECTL_DOWNLOAD):
 
 .PHONY: kubectl
 kubectl: $(KUBECTL_DOWNLOAD)
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
 	cp $(KUBECTL_DLDIR)/kubectl $(BINDIR)/kubectl
 	chmod +x $(BINDIR)/kubectl
 	cp $(KUBECTL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(KUBECTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(KUBECTL_DLDIR)/kubectl.exe $(WINDOWS_BINDIR)/$@/kubectl.exe
+	cp $(KUBECTL_DLDIR)/kubectl.exe $(WINDOWS_BINDIR)/kubectl.exe
 	cp $(KUBECTL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(KUBECTL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
@@ -138,12 +140,12 @@ $(STERN_DOWNLOAD):
 
 .PHONY: stern
 stern: $(STERN_DOWNLOAD)
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
 	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_linux_amd64/stern $(BINDIR)/stern
 	chmod +x $(BINDIR)/stern
 	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(STERN_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_windows_amd64/stern.exe $(WINDOWS_BINDIR)/$@/stern.exe
+	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_windows_amd64/stern.exe $(WINDOWS_BINDIR)/stern.exe
 	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(STERN_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
@@ -174,13 +176,13 @@ $(TELEPORT_DOWNLOAD):
 
 .PHONY: teleport
 teleport: $(TELEPORT_DOWNLOAD)
-	mkdir -p $(BINDIR) $(SBINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR)/$@/ $(WINDOWS_DOCDIR)/$@/
+	mkdir -p $(BINDIR) $(SBINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
 	cp $(TELEPORT_DLDIR)/out/tctl $(BINDIR)
 	cp $(TELEPORT_DLDIR)/out/teleport $(SBINDIR)
 	cp $(TELEPORT_DLDIR)/out/tsh $(BINDIR)
 	cp $(TELEPORT_DLDIR)/teleport/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(TELEPORT_DLDIR)/teleport/README.md $(DOCDIR)/$@/README.md
-	cp $(TELEPORT_DLDIR)/out/tsh.exe $(WINDOWS_BINDIR)/$@
+	cp $(TELEPORT_DLDIR)/out/tsh.exe $(WINDOWS_BINDIR)
 	cp $(TELEPORT_DLDIR)/teleport/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(TELEPORT_DLDIR)/teleport/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
@@ -196,6 +198,26 @@ cke: $(CKE_DOWNLOAD)
 	mkdir -p $(BINDIR) $(SBINDIR)
 	cp $(CKE_DLDIR)/source/cke $(SBINDIR)/cke
 	cp $(CKE_DLDIR)/source/ckecli $(BINDIR)/ckecli
+
+# TODO: download the kubectl-moco windows binary after MOCO v0.5.0 is released.
+$(MOCO_DOWNLOAD):
+	mkdir -p $(MOCO_DLDIR)
+	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco     https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-linux-amd64
+	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco.exe https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-windows-amd64
+	$(WGET) -O $(MOCO_DLDIR)/LICENSE          https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/LICENSE
+	$(WGET) -O $(MOCO_DLDIR)/README.md        https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/README.md
+	touch $@
+
+.PHONY: moco
+moco: $(MOCO_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
+	cp $(MOCO_DLDIR)/kubectl-moco $(BINDIR)/kubectl-moco
+	chmod +x $(BINDIR)/kubectl-moco
+	cp $(MOCO_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(MOCO_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(MOCO_DLDIR)/kubectl-moco.exe $(WINDOWS_BINDIR)
+	cp $(MOCO_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(MOCO_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
 .PHONY: clean
 clean:

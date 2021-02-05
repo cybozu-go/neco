@@ -14,6 +14,7 @@ ARGOCD_VERSION = 1.8.3
 # Follow Argo CD installed kustomize version
 # https://github.com/cybozu/neco-containers/blob/main/argocd/Dockerfile#L22
 KUSTOMIZE_VERSION = 3.7.0
+MOCO_VERSION = 0.5.1
 NODE_EXPORTER_VERSION = 1.0.1
 TELEPORT_VERSION = 5.1.2
 
