@@ -17,7 +17,7 @@ import (
 )
 
 // UploadContents uploads contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, fetcher neco.ImageFetcher) error {
 	client, err := sabakan.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 	for _, img := range images {
 		img := img
 		env.Go(func(ctx context.Context) error {
-			return saba.UploadImageAssets(ctx, img, client, nil)
+			return saba.UploadImageAssets(ctx, img, client, fetcher)
 		})
 	}
 	env.Stop()

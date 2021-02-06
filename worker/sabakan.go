@@ -90,11 +90,6 @@ func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRe
 		return nil
 	}
 
-	auth, err := o.getDockerAuth(ctx, o.storage)
-	if err != nil && err != storage.ErrNotFound {
-		return err
-	}
-
 	// Leader election
 	sess, err := concurrency.NewSession(o.ec, concurrency.WithTTL(600))
 	if err != nil {
@@ -135,7 +130,7 @@ func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRe
 		}
 	}
 
-	err = sabakan.UploadContents(ctx, o.localClient, o.proxyClient, req.Version, auth, o.storage)
+	err = sabakan.UploadContents(ctx, o.localClient, o.proxyClient, req.Version, o.fetcher, o.storage)
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,

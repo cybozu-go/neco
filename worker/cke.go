@@ -107,7 +107,7 @@ func (o *operator) UpdateCKEContents(ctx context.Context, req *neco.UpdateReques
 		}
 	}
 
-	err = cke.UploadContents(ctx, o.localClient, o.proxyClient, req.Version)
+	err = cke.UploadContents(ctx, o.localClient, o.proxyClient, req.Version, o.fetcher)
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,
