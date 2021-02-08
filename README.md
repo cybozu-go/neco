@@ -147,7 +147,7 @@ $ sudo add-apt-repository "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu
 $ wget -O - https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 $ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
 $ sudo apt update
-$ sudo apt install -y build-essential systemd-container lldpd qemu qemu-kvm socat picocom swtpm cloud-utils jq libgpgme11 freeipmi-tools unzip skopeo libdevmapper-dev libgpgme-dev libostree-dev fakeroot docker-ce docker-ce-cli containerd.io
+$ sudo apt install -y build-essential systemd-container lldpd qemu qemu-kvm socat picocom swtpm cloud-utils jq freeipmi-tools unzip skopeo fakeroot docker-ce docker-ce-cli containerd.io
 $ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios.bin
 $ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios-256k.bin
 $ sudo install -m 0644 -b bios.bin bios-256k.bin /usr/share/seabios/

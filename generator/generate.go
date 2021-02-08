@@ -12,9 +12,10 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/containers/image/v5/docker"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/hashicorp/go-version"
 	"golang.org/x/oauth2"
 )
@@ -31,8 +32,8 @@ var imageRepos = []string{
 	"quay.io/cybozu/vault",
 }
 
-func imageName(repoURL string) string {
-	t := strings.Split(repoURL, "/")
+func imageName(repo name.Repository) string {
+	t := strings.Split(repo.RepositoryStr(), "/")
 	return t[len(t)-1]
 }
 
@@ -84,8 +85,8 @@ type IgnoreConfig struct {
 }
 
 type ignoreImageConfig struct {
-	Name     string   `json:"name"`
-	Versions []string `json:"versions"`
+	Repository string   `json:"repository"`
+	Versions   []string `json:"versions"`
 }
 
 type ignoreDebConfig struct {
@@ -98,9 +99,9 @@ type ignoreCoreOSConfig struct {
 	Versions []string `json:"versions"`
 }
 
-func (c *IgnoreConfig) getImageVersions(name string) []string {
+func (c *IgnoreConfig) getImageVersions(repo string) []string {
 	for _, img := range c.Images {
-		if img.Name == name {
+		if img.Repository == repo {
 			return img.Versions
 		}
 	}
@@ -128,9 +129,13 @@ func (c *IgnoreConfig) getCoreOSVersions() []string {
 // Generate generates new artifacts.go contents and writes it to out.
 func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 	images := make([]*neco.ContainerImage, len(imageRepos))
-	for i, repoURL := range imageRepos {
-		name := imageName(repoURL)
-		img, err := getLatestImage(ctx, repoURL, cfg.Release, cfg.Ignored.getImageVersions(name))
+	for i, repoStr := range imageRepos {
+		repo, err := name.NewRepository(repoStr)
+		if err != nil {
+			return err
+		}
+
+		img, err := getLatestImage(ctx, repo, cfg.Release, cfg.Ignored.getImageVersions(repoStr))
 		if err != nil {
 			return err
 		}
@@ -157,20 +162,12 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 	return render(out, cfg.Release, images, debs, coreos)
 }
 
-func getLatestImage(ctx context.Context, repoURL string, release bool, ignoreVersions []string) (*neco.ContainerImage, error) {
-	ref, err := docker.ParseReference("//" + repoURL)
+func getLatestImage(ctx context.Context, repo name.Repository, release bool, ignoreVersions []string) (*neco.ContainerImage, error) {
+	tags, err := remote.List(repo)
 	if err != nil {
 		return nil, err
 	}
 
-	tags, err := docker.GetRepositoryTags(ctx, nil, ref)
-	if err != nil {
-		log.Error("failed to get the latest docker image tag", map[string]interface{}{
-			"repository": repoURL,
-			log.FnError:  err,
-		})
-		return nil, err
-	}
 	versions := make([]*version.Version, 0, len(tags))
 OUTER:
 	for _, tag := range tags {
@@ -193,7 +190,7 @@ OUTER:
 		versions = append(versions, v)
 	}
 
-	name := imageName(repoURL)
+	name := imageName(repo)
 	if release {
 		current, err := neco.CurrentArtifacts.FindContainerImage(name)
 		if err != nil {
@@ -212,9 +209,9 @@ OUTER:
 	sort.Sort(sort.Reverse(version.Collection(versions)))
 	return &neco.ContainerImage{
 		Name:       name,
-		Repository: repoURL,
+		Repository: repo.Name(),
 		Tag:        versions[0].Original(),
-		Private:    privateImages[repoURL],
+		Private:    privateImages[repo.Name()],
 	}, nil
 }
 

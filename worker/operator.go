@@ -11,6 +11,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
+	"github.com/google/go-containerregistry/pkg/authn"
 )
 
 // Operator installs or updates programs
@@ -38,6 +39,7 @@ type operator struct {
 	ghClient         *http.Client
 	proxyClient      *http.Client
 	localClient      *http.Client
+	fetcher          neco.ImageFetcher
 	containerRuntime neco.ContainerRuntime
 
 	etcdRestart bool
@@ -59,6 +61,25 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 	if err != nil {
 		return nil, err
 	}
+
+	username, err := st.GetQuayUsername(ctx)
+	if err != nil && err != storage.ErrNotFound {
+		return nil, err
+	}
+	password, err := st.GetQuayPassword(ctx)
+	if err != nil && err != storage.ErrNotFound {
+		return nil, err
+	}
+
+	var auth authn.Authenticator
+	if len(username) != 0 && len(password) != 0 {
+		auth = &authn.Basic{
+			Username: username,
+			Password: password,
+		}
+	}
+	fetcher := neco.NewImageFetcher(proxyClient.Transport, auth)
+
 	rt, err := neco.GetContainerRuntime(proxy)
 	if err != nil {
 		return nil, err
@@ -71,6 +92,7 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 		ghClient:         ghClient,
 		proxyClient:      proxyClient,
 		localClient:      localClient,
+		fetcher:          fetcher,
 		containerRuntime: rt,
 	}, nil
 }

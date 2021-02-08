@@ -35,7 +35,7 @@ func imageAssetName(img neco.ContainerImage) string {
 }
 
 // UploadContents upload contents to sabakan
-func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, auth *DockerAuth, st storage.Storage) error {
+func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *http.Client, version string, fetcher neco.ImageFetcher, st storage.Storage) error {
 	client, err := sabac.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 		return uploadOSImages(ctx, client, proxyHTTP)
 	})
 	env.Go(func(ctx context.Context) error {
-		return uploadAssets(ctx, client, auth)
+		return uploadAssets(ctx, client, fetcher)
 	})
 	env.Stop()
 	err = env.Wait()
@@ -158,7 +158,7 @@ func uploadOSImages(ctx context.Context, c *sabac.Client, p *http.Client) error 
 }
 
 // uploadAssets uploads assets
-func uploadAssets(ctx context.Context, c *sabac.Client, auth *DockerAuth) error {
+func uploadAssets(ctx context.Context, c *sabac.Client, fetcher neco.ImageFetcher) error {
 	// Upload docker container images
 	env := well.NewEnvironment(ctx)
 	for _, name := range neco.SabakanImages {
@@ -167,7 +167,7 @@ func uploadAssets(ctx context.Context, c *sabac.Client, auth *DockerAuth) error 
 			return err
 		}
 		env.Go(func(ctx context.Context) error {
-			return UploadImageAssets(ctx, img, c, auth)
+			return UploadImageAssets(ctx, img, c, fetcher)
 		})
 	}
 	env.Stop()
@@ -195,7 +195,7 @@ func uploadAssets(ctx context.Context, c *sabac.Client, auth *DockerAuth) error 
 }
 
 // UploadImageAssets upload docker container image as sabakan assets.
-func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Client, auth *DockerAuth) error {
+func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Client, fetcher neco.ImageFetcher) error {
 	name := imageAssetName(img)
 	need, err := needAssetUpload(ctx, name, c)
 	if err != nil {
@@ -205,19 +205,34 @@ func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Cl
 		return nil
 	}
 
-	d, err := ioutil.TempDir("", "")
+	f, err := ioutil.TempFile("", "neco-")
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(d)
+	defer func() {
+		f.Close()
+		os.Remove(f.Name())
+	}()
 
-	archive := filepath.Join(d, name)
-	err = fetchDockerImageAsArchive(ctx, img, archive, auth)
-	if err != nil {
+	err = neco.RetryWithSleep(ctx, retryCount, time.Second, func(ctx context.Context) error {
+		if err := f.Truncate(0); err != nil {
+			return err
+		}
+		if _, err := f.Seek(0, io.SeekStart); err != nil {
+			return err
+		}
+		return fetcher.GetTarball(ctx, img, f)
+	}, func(e error) {
+		log.Warn("docker: failed to copy a container image to an archive", map[string]interface{}{
+			log.FnError: err,
+			"image":     img.Name,
+		})
+	})
+	if err := fetcher.GetTarball(ctx, img, f); err != nil {
 		return err
 	}
 
-	_, err = assetsUploadWithRetry(ctx, c, name, archive, nil)
+	_, err = assetsUploadWithRetry(ctx, c, name, f.Name(), nil)
 	return err
 }
 

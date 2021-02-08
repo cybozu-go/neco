@@ -80,10 +80,6 @@ func configureSystemProxy(ctx context.Context, proxy string) error {
 		return nil
 	}
 
-	// NOTE: github.com/containers/image/v5 needs these environment variables
-	os.Setenv("http_proxy", proxy)
-	os.Setenv("https_proxy", proxy)
-
 	out, err := exec.Command("docker", "info", "-f", "{{.HTTPProxy}}").Output()
 	if err != nil {
 		return fmt.Errorf("failed to invoke docker info: %w", err)
