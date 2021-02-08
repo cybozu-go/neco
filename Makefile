@@ -40,11 +40,12 @@ all:
 .PHONY: update-coil
 update-coil:
 	rm -rf /tmp/work-coil
-	mkdir -p /tmp/work-coil
-	curl -sfL https://github.com/cybozu-go/coil/archive/v$(COIL_VERSION).tar.gz | tar -C /tmp/work-coil -xzf -
-	cd /tmp/work-coil/*/v2; sed -i -E 's,^(- config/default),#\1, ; s,^#(- config/cke),\1, ; s,^#(- config/default/pod_security_policy.yaml),\1, ; s,^#(- config/pod/compat_calico.yaml),\1,' kustomization.yaml
-	cp etc/netconf.json /tmp/work-coil/*/v2/netconf.json
-	bin/kustomize build /tmp/work-coil/*/v2 > etc/coil.yaml
+	mkdir -p /tmp/work-coil/cke-patch
+	curl -sfL https://github.com/cybozu-go/coil/archive/v$(COIL_VERSION).tar.gz | tar -C /tmp/work-coil -xzf - --strip-components=1
+	cd /tmp/work-coil/v2; sed -i -E 's,^(- config/default),#\1, ; s,^#(- config/cke),\1, ; s,^#(- config/default/pod_security_policy.yaml),\1, ; s,^#(- config/pod/compat_calico.yaml),\1,' kustomization.yaml
+	cp etc/netconf.json /tmp/work-coil/v2/netconf.json
+	cp coil/* /tmp/work-coil/cke-patch
+	bin/kustomize build /tmp/work-coil/cke-patch > etc/coil.yaml
 	rm -rf /tmp/work-coil
 
 .PHONY: start-etcd
