@@ -3,7 +3,6 @@ module github.com/cybozu-go/neco
 replace google.golang.org/grpc => google.golang.org/grpc v1.26.0
 
 require (
-	github.com/containers/image/v5 v5.9.0
 	github.com/coreos/etcd v3.3.25+incompatible
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/coreos/ignition v0.32.0 // indirect
@@ -13,8 +12,11 @@ require (
 	github.com/cybozu-go/placemat v1.5.3
 	github.com/cybozu-go/sabakan/v2 v2.5.3
 	github.com/cybozu-go/well v1.10.0
+	github.com/docker/docker v1.4.2-0.20191219165747-a9416c67da9f // indirect
 	github.com/google/go-cmp v0.5.4
+	github.com/google/go-containerregistry v0.4.0
 	github.com/google/go-github/v33 v33.0.0
+	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/hashicorp/go-msgpack v0.5.4 // indirect
 	github.com/hashicorp/go-version v1.2.1
 	github.com/hashicorp/serf v0.9.5
@@ -25,10 +27,12 @@ require (
 	github.com/mitchellh/mapstructure v1.3.2
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.4
+	github.com/opencontainers/image-spec v1.0.2-0.20190823105129-775207bd45b6 // indirect
 	github.com/pelletier/go-toml v1.3.0 // indirect
 	github.com/prometheus/client_golang v1.9.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.15.0
+	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -36,6 +40,7 @@ require (
 	github.com/tcnksm/go-input v0.0.0-20180404061846-548a7d7a8ee8
 	github.com/vektah/gqlparser v1.3.1
 	github.com/vishvananda/netlink v1.1.0
+	go.etcd.io/bbolt v1.3.5 // indirect
 	go.uber.org/multierr v1.5.0 // indirect
 	go4.org v0.0.0-20190313082347-94abd6928b1d // indirect
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad

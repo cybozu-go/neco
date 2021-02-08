@@ -10,15 +10,10 @@ ETCD_DIR = /tmp/neco-etcd
 TAGS =
 
 ### for Go
-GOTAGS = $(TAGS) containers_image_openpgp containers_image_ostree_stub
+GOTAGS = $(TAGS)
 
 ### for debian package
-PACKAGES = fakeroot pkg-config libdevmapper-dev libostree-dev libgpgme-dev libgpgme11 libpam0g-dev unzip zip wget
-ifeq (20.04, $(word 1, $(sort 20.04 $(LSB_DISTRIB_RELEASE)))) # is Ubuntu 20.04 or later?
-    PACKAGES += btrfs-progs libbtrfs-dev
-else
-    PACKAGES += btrfs-tools
-endif
+PACKAGES = fakeroot pkg-config libpam0g-dev unzip zip wget
 VERSION = 0.0.1-main
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb

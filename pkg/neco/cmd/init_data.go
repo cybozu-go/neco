@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"context"
-	"os"
+	"net/http"
+	"net/url"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -11,6 +12,7 @@ import (
 	"github.com/cybozu-go/neco/progs/sabakan"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/spf13/cobra"
 )
 
@@ -28,14 +30,21 @@ func initData(ctx context.Context, st storage.Storage) error {
 	}
 	localClient := ext.LocalHTTPClient()
 
-	// NOTE: hack for github.com/containers/image/v5 to set HTTP proxy
 	proxy, err := st.GetProxyConfig(ctx)
 	if err != nil && err != storage.ErrNotFound {
 		return err
 	}
+
+	transport := http.DefaultTransport
 	if len(proxy) != 0 {
-		os.Setenv("http_proxy", proxy)
-		os.Setenv("https_proxy", proxy)
+		proxyURL, err := url.Parse(proxy)
+		if err != nil {
+			return err
+		}
+
+		t := http.DefaultTransport.(*http.Transport).Clone()
+		t.Proxy = http.ProxyURL(proxyURL)
+		transport = t
 	}
 
 	username, err := st.GetQuayUsername(ctx)
@@ -47,13 +56,15 @@ func initData(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
-	var auth *sabakan.DockerAuth
+	var auth authn.Authenticator
 	if len(username) != 0 && len(password) != 0 {
-		auth = &sabakan.DockerAuth{
+		auth = &authn.Basic{
 			Username: username,
 			Password: password,
 		}
 	}
+
+	fetcher := neco.NewImageFetcher(transport, auth)
 
 	if ignitionsOnly {
 		return sabakan.UploadIgnitions(ctx, localClient, version, st)
@@ -61,10 +72,10 @@ func initData(ctx context.Context, st storage.Storage) error {
 
 	env := well.NewEnvironment(ctx)
 	env.Go(func(ctx context.Context) error {
-		return sabakan.UploadContents(ctx, localClient, proxyClient, version, auth, st)
+		return sabakan.UploadContents(ctx, localClient, proxyClient, version, fetcher, st)
 	})
 	env.Go(func(ctx context.Context) error {
-		return cke.UploadContents(ctx, localClient, proxyClient, version)
+		return cke.UploadContents(ctx, localClient, proxyClient, version, fetcher)
 	})
 	env.Go(func(ctx context.Context) error {
 		return sabakan.UploadDHCPJSON(ctx, localClient)
