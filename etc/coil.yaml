@@ -4885,6 +4885,10 @@ spec:
       - hostPath:
           path: /etc/cni/net.d
         name: cni-net-dir
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 35%
+    type: RollingUpdate
 ---
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: MutatingWebhookConfiguration
