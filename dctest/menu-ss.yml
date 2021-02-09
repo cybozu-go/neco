@@ -43,11 +43,11 @@ spec:
 kind: Node
 type: cs
 spec:
-  cpu: 8
+  cpu: 10
   memory: 20G
 ---
 kind: Node
 type: ss
 spec:
-  cpu: 3
+  cpu: 4
   memory: 10G
