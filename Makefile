@@ -1,3 +1,4 @@
+
 # Makefile for neco
 
 include Makefile.common
@@ -22,8 +23,8 @@ OP_ZIP = neco-operation-cli-windows_$(VERSION)_amd64.zip
 DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/ingress-watcher
-OPDEB_BINNAMES = argocd kubectl kustomize stern tsh kubectl-moco
-OPDEB_DOCNAMES = argocd kubectl kustomize stern teleport moco
+OPDEB_BINNAMES = argocd kubectl kubeseal kustomize stern tsh kubectl-moco
+OPDEB_DOCNAMES = argocd kubectl kubeseal kustomize stern teleport moco
 
 .PHONY: all
 all:
