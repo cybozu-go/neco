@@ -15,6 +15,8 @@ ARGOCD_DLDIR := $(DOWNLOADDIR)/argocd-v$(ARGOCD_VERSION)
 ARGOCD_DOWNLOAD := $(ARGOCD_DLDIR)/downloaded
 KUBECTL_DLDIR := $(DOWNLOADDIR)/kubectl-v$(K8S_VERSION)
 KUBECTL_DOWNLOAD := $(KUBECTL_DLDIR)/downloaded
+KUBESEAL_DLDIR := $(DOWNLOADDIR)/kubeseal-v$(KUBESEAL_VERSION)
+KUBESEAL_DOWNLOAD := $(KUBESEAL_DLDIR)/downloaded
 LVMD_DLDIR := $(DOWNLOADDIR)/lvmd-v$(TOPOLVM_VERSION)
 LVMD_DOWNLOAD := $(LVMD_DLDIR)/downloaded
 STERN_DLDIR := $(DOWNLOADDIR)/stern-v$(STERN_VERSION)
@@ -29,7 +31,7 @@ MOCO_DLDIR := $(DOWNLOADDIR)/moco-v$(MOCO_VERSION)
 MOCO_DOWNLOAD := $(MOCO_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl argocd kubectl lvmd stern kustomize teleport cke moco
+all: node_exporter containerd crictl argocd kubectl kubeseal lvmd stern kustomize teleport cke moco
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -116,6 +118,25 @@ kubectl: $(KUBECTL_DOWNLOAD)
 	cp $(KUBECTL_DLDIR)/kubectl.exe $(WINDOWS_BINDIR)/kubectl.exe
 	cp $(KUBECTL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(KUBECTL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+
+$(KUBESEAL_DOWNLOAD):
+	mkdir -p $(KUBESEAL_DLDIR)
+	$(WGET) -O $(KUBESEAL_DLDIR)/kubeseal     https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-linux-amd64
+	$(WGET) -O $(KUBESEAL_DLDIR)/kubeseal.exe https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal.exe
+	$(WGET) -O $(KUBESEAL_DLDIR)/LICENSE      https://github.com/bitnami-labs/sealed-secrets/blob/v$(KUBESEAL_VERSION)/LICENSE
+	$(WGET) -O $(KUBESEAL_DLDIR)/README.md    https://github.com/bitnami-labs/sealed-secrets/blob/v$(KUBESEAL_VERSION)/README.md
+	touch $@
+
+.PHONY: kubeseal
+kubeseal: $(KUBESEAL_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
+	cp $(KUBESEAL_DLDIR)/kubeseal $(BINDIR)/kubeseal
+	chmod +x $(BINDIR)/kubeseal
+	cp $(KUBESEAL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(KUBESEAL_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(KUBESEAL_DLDIR)/kubeseal.exe $(WINDOWS_BINDIR)/kubeseal.exe
+	cp $(KUBESEAL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(KUBESEAL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
 $(LVMD_DOWNLOAD):
 	mkdir -p $(LVMD_DLDIR)
