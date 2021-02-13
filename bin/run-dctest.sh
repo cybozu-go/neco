@@ -35,6 +35,10 @@ $GCLOUD compute instances create ${INSTANCE_NAME} \
   --local-ssd interface=nvme \
   --local-ssd interface=nvme \
   --local-ssd interface=nvme \
+  --local-ssd interface=nvme \
+  --local-ssd interface=nvme \
+  --local-ssd interface=nvme \
+  --local-ssd interface=nvme \
   --labels=${LABEL_REPO},${LABEL_REF},${LABEL_JOB}
 
 # Wait for boot of GCE instance
