@@ -224,7 +224,7 @@ cke: $(CKE_DOWNLOAD)
 $(MOCO_DOWNLOAD):
 	mkdir -p $(MOCO_DLDIR)
 	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco     https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-linux-amd64
-	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco.exe https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-windows-amd64
+	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco.exe https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-windows-amd64.exe
 	$(WGET) -O $(MOCO_DLDIR)/LICENSE          https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/LICENSE
 	$(WGET) -O $(MOCO_DLDIR)/README.md        https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/README.md
 	touch $@
