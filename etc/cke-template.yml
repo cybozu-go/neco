@@ -83,6 +83,9 @@ options:
       - source: /var/lib/k8s-containerd
         destination: /var/lib/k8s-containerd
         read_only: false
+      - source: /var/lib/rook
+        destination: /var/lib/rook
+        read_only: false
   etcd:
     extra_args:
       - "--listen-metrics-urls=http://0.0.0.0:2381"
