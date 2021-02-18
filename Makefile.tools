@@ -186,13 +186,16 @@ kustomize: $(KUSTOMIZE_DOWNLOAD)
 
 $(TELEPORT_DOWNLOAD):
 	mkdir -p $(TELEPORT_DLDIR)/out
-	cd $(TELEPORT_DLDIR); git clone --depth 1 --branch v$(TELEPORT_VERSION) https://github.com/gravitational/teleport
-	make -C $(TELEPORT_DLDIR)/teleport build/tsh OS=windows
-	cp $(TELEPORT_DLDIR)/teleport/build/tsh $(TELEPORT_DLDIR)/out/tsh.exe
-	make -C $(TELEPORT_DLDIR)/teleport full OS=linux
-	cp $(TELEPORT_DLDIR)/teleport/build/tctl $(TELEPORT_DLDIR)/out/tctl
-	cp $(TELEPORT_DLDIR)/teleport/build/teleport $(TELEPORT_DLDIR)/out/teleport
-	cp $(TELEPORT_DLDIR)/teleport/build/tsh $(TELEPORT_DLDIR)/out/tsh
+	for i in $$(seq 10); do \
+		if $(WGET) -O $(TELEPORT_DLDIR)/teleport.zip https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip; then break; fi; \
+	done
+	for i in $$(seq 10); do \
+		if $(WGET) -O $(TELEPORT_DLDIR)/teleport.tar.gz https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz; then break; fi; \
+	done
+	unzip -j $(TELEPORT_DLDIR)/teleport.zip teleport/tsh.exe -d $(TELEPORT_DLDIR)/out
+	tar -C $(TELEPORT_DLDIR)/out --strip-components=1 -xzf $(TELEPORT_DLDIR)/teleport.tar.gz teleport/tsh teleport/tctl teleport/teleport
+	$(WGET) -O $(TELEPORT_DLDIR)/out/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
+	$(WGET) -O $(TELEPORT_DLDIR)/out/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
 	touch $@
 
 .PHONY: teleport
@@ -201,11 +204,11 @@ teleport: $(TELEPORT_DOWNLOAD)
 	cp $(TELEPORT_DLDIR)/out/tctl $(BINDIR)
 	cp $(TELEPORT_DLDIR)/out/teleport $(SBINDIR)
 	cp $(TELEPORT_DLDIR)/out/tsh $(BINDIR)
-	cp $(TELEPORT_DLDIR)/teleport/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(TELEPORT_DLDIR)/teleport/README.md $(DOCDIR)/$@/README.md
+	cp $(TELEPORT_DLDIR)/out/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(TELEPORT_DLDIR)/out/README.md $(DOCDIR)/$@/README.md
 	cp $(TELEPORT_DLDIR)/out/tsh.exe $(WINDOWS_BINDIR)
-	cp $(TELEPORT_DLDIR)/teleport/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(TELEPORT_DLDIR)/teleport/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(TELEPORT_DLDIR)/out/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(TELEPORT_DLDIR)/out/README.md $(WINDOWS_DOCDIR)/$@/README.md
 
 $(CKE_DOWNLOAD):
 	mkdir -p $(CKE_DLDIR)
