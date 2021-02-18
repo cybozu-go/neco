@@ -13,7 +13,7 @@ users:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKfYVHbQBZ2K3DF39RO1J76mj2hFgHDW6gU7IcStxNVcfICK1Zq/VBpdX0YrjBSnjkmbHy2s3ci+NFTlhSoupcOGjpmmRONVGc1T1bh7vXlUqsoFwn/VWX7PHUaEptjid3L1HoLfItuBdn1oTi1q+udh2mBTtyvJGRd2Z0s59WPdWNigpIOaorqCkIc4ROWrjLW7w7ROA/A3Ax1SkoZrE4pEsDnrTBg0wCPXznugLq9FrzyFkBuwW2LnNPHNZJEoKKwyxp4scxTL4oaXSby4eUNtCcdC8jRemrSkhqowkaEcQ9XR6bCvCXkxMLWXG6SfFSJijDl5e9e12XZAjxQK8H
 
 mounts:
-  - [ /dev/vdc, /mnt, vfat, "ro" ]
+  - [ sabakan, /mnt, 9p, "trans=virtio" ]
 
 runcmd:
   - "env http_proxy=http://10.0.49.3:3128 /extras/setup {{.Rack.Index}}"

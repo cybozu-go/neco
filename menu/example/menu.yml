@@ -50,6 +50,7 @@ spec:
   data:
     - docker-image
   uefi: true
+  tpm: true
 ---
 kind: Node
 type: ss
@@ -58,3 +59,4 @@ spec:
   memory: 1G
   data:
     - docker-image
+  tpm: true
