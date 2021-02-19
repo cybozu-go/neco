@@ -2,7 +2,8 @@
 
 ## These should be updated when Kubernetes is updated
 CKE_VERSION = 1.19.3
-CONTAINERD_VERSION = 1.4.3
+CONTAINERD_REPO = cybozu-go/containerd
+CONTAINERD_VERSION = 1.4.3-neco20210219
 CRITOOLS_VERSION = 1.19.0
 K8S_VERSION = 1.19.7
 TOPOLVM_VERSION = 0.7.0
