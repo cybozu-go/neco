@@ -16,7 +16,7 @@ fi
 
 # setup-hw container resets iDRAC at startup.
 # Wait here to avoid the reset from occurring while the tool is running.
-if ! systemd-detect-vert -q --vm; then
+if ! systemd-detect-virt -q --vm; then
     sleep 60
 fi
 
