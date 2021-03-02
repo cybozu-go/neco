@@ -19,7 +19,8 @@ VERSION = 0.0.1-main
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 OP_DEB = neco-operation-cli-linux_$(VERSION)_amd64.deb
-OP_ZIP = neco-operation-cli-windows_$(VERSION)_amd64.zip
+OP_WIN_ZIP = neco-operation-cli-windows_$(VERSION)_amd64.zip
+OP_MAC_ZIP = neco-operation-cli-mac_$(VERSION)_amd64.zip
 DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/ingress-watcher
@@ -72,7 +73,7 @@ test:
 deb: $(DEB)
 
 .PHONY: tools
-tools: $(OP_DEB) $(OP_ZIP)
+tools: $(OP_DEB) $(OP_WINDOWS_ZIP) $(OP_MAC_ZIP)
 
 .PHONY: setup-tools
 setup-tools:
@@ -105,9 +106,13 @@ $(OP_DEB): setup-files-for-deb
 	done
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(OPWORKDIR) $(DEST)
 
-$(OP_ZIP): setup-tools
+$(OP_WINDOWS_ZIP): setup-tools
 	mkdir -p $(OPWORKWINDIR)
 	cd $(OPWORKWINDIR) && zip -r $(abspath .)/$@ *
+
+$(OP_MAC_ZIP): setup-tools
+	mkdir -p $(OPWORKMACDIR)
+	cd $(OPWORKMACDIR) && zip -r $(abspath .)/$@ *
 
 .PHONY: gcp-deb
 gcp-deb: setup-files-for-deb

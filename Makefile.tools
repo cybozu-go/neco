@@ -83,8 +83,9 @@ crictl: $(CRICTL_DOWNLOAD)
 
 $(ARGOCD_DOWNLOAD):
 	mkdir -p $(ARGOCD_DLDIR)
-	$(WGET) -O $(ARGOCD_DLDIR)/argocd     https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
+	$(WGET) -O $(ARGOCD_DLDIR)/argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
 	$(WGET) -O $(ARGOCD_DLDIR)/argocd.exe https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-windows-amd64.exe
+	$(WGET) -O $(ARGOCD_DLDIR)/argocd-darwin-amd64 https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-darwin-amd64
 	$(WGET) -O $(ARGOCD_DLDIR)/LICENSE   https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/LICENSE
 	$(WGET) -O $(ARGOCD_DLDIR)/README.md https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/README.md
 	touch $@
@@ -92,18 +93,23 @@ $(ARGOCD_DOWNLOAD):
 .PHONY: argocd
 argocd: $(ARGOCD_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
-	cp $(ARGOCD_DLDIR)/argocd $(BINDIR)/argocd
+	cp $(ARGOCD_DLDIR)/argocd-linux-amd64 $(BINDIR)/argocd
 	chmod +x $(BINDIR)/argocd
 	cp $(ARGOCD_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(ARGOCD_DLDIR)/README.md $(DOCDIR)/$@/README.md
 	cp $(ARGOCD_DLDIR)/argocd.exe $(WINDOWS_BINDIR)/argocd.exe
 	cp $(ARGOCD_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(ARGOCD_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(ARGOCD_DLDIR)/argocd-darwin-amd64 $(MAC_BINDIR)/argocd
+	chmod +x $(MAC_BINDIR)/argocd
+	cp $(ARGOCD_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(ARGOCD_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUBECTL_DOWNLOAD):
 	mkdir -p $(KUBECTL_DLDIR)
-	$(WGET) -O $(KUBECTL_DLDIR)/kubectl     https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
+	$(WGET) -O $(KUBECTL_DLDIR)/kubectl-linux-amd64 https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
 	$(WGET) -O $(KUBECTL_DLDIR)/kubectl.exe https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/windows/amd64/kubectl.exe
+	$(WGET) -O $(KUBECTL_DLDIR)/kubect-darwin-amd64 https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/darwin/amd64/kubectl
 	$(WGET) -O $(KUBECTL_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/LICENSE
 	$(WGET) -O $(KUBECTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
 	touch $@
@@ -111,18 +117,23 @@ $(KUBECTL_DOWNLOAD):
 .PHONY: kubectl
 kubectl: $(KUBECTL_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
-	cp $(KUBECTL_DLDIR)/kubectl $(BINDIR)/kubectl
+	cp $(KUBECTL_DLDIR)/kubectl-linux-amd64 $(BINDIR)/kubectl
 	chmod +x $(BINDIR)/kubectl
 	cp $(KUBECTL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(KUBECTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
 	cp $(KUBECTL_DLDIR)/kubectl.exe $(WINDOWS_BINDIR)/kubectl.exe
 	cp $(KUBECTL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(KUBECTL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(KUBECTL_DLDIR)/kubect-darwin-amd64 $(MAC_BINDIR)/kubectl
+	chmod +x $(MAC_BINDIR)/kubectl
+	cp $(KUBECTL_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(KUBECTL_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUBESEAL_DOWNLOAD):
 	mkdir -p $(KUBESEAL_DLDIR)
-	$(WGET) -O $(KUBESEAL_DLDIR)/kubeseal     https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-linux-amd64
+	$(WGET) -O $(KUBESEAL_DLDIR)/kubeseal-linux-amd64 https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-linux-amd64
 	$(WGET) -O $(KUBESEAL_DLDIR)/kubeseal.exe https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal.exe
+	$(WGET) -O $(KUBESEAL_DLDIR)/kubeseal-darwin-amd64 https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-darwin-amd64
 	$(WGET) -O $(KUBESEAL_DLDIR)/LICENSE      https://github.com/bitnami-labs/sealed-secrets/blob/v$(KUBESEAL_VERSION)/LICENSE
 	$(WGET) -O $(KUBESEAL_DLDIR)/README.md    https://github.com/bitnami-labs/sealed-secrets/blob/v$(KUBESEAL_VERSION)/README.md
 	touch $@
@@ -130,13 +141,17 @@ $(KUBESEAL_DOWNLOAD):
 .PHONY: kubeseal
 kubeseal: $(KUBESEAL_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
-	cp $(KUBESEAL_DLDIR)/kubeseal $(BINDIR)/kubeseal
+	cp $(KUBESEAL_DLDIR)/kubeseal-linux-amd64 $(BINDIR)/kubeseal
 	chmod +x $(BINDIR)/kubeseal
 	cp $(KUBESEAL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(KUBESEAL_DLDIR)/README.md $(DOCDIR)/$@/README.md
 	cp $(KUBESEAL_DLDIR)/kubeseal.exe $(WINDOWS_BINDIR)/kubeseal.exe
 	cp $(KUBESEAL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(KUBESEAL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(KUBESEAL_DLDIR)/kubeseal-darwin-amd64 $(MAC_BINDIR)/kubeseal
+	chmod +x $(MAC_BINDIR)/kubeseal
+	cp $(KUBESEAL_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(KUBESEAL_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(LVMD_DOWNLOAD):
 	mkdir -p $(LVMD_DLDIR)
@@ -156,12 +171,13 @@ $(STERN_DOWNLOAD):
 	mkdir -p $(STERN_DLDIR)
 	$(WGET) -O - https://github.com/stern/stern/releases/download/v$(STERN_VERSION)/stern_$(STERN_VERSION)_linux_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)
 	$(WGET) -O - https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_$(STERN_VERSION)_windows_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)
+	$(WGET) -O - https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_$(STERN_VERSION)_darwin_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)
 	$(WGET) -O $(STERN_DLDIR)/README.md https://raw.githubusercontent.com/stern/stern/v$(STERN_VERSION)/README.md
 	touch $@
 
 .PHONY: stern
 stern: $(STERN_DOWNLOAD)
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
 	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_linux_amd64/stern $(BINDIR)/stern
 	chmod +x $(BINDIR)/stern
 	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
@@ -169,6 +185,9 @@ stern: $(STERN_DOWNLOAD)
 	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_windows_amd64/stern.exe $(WINDOWS_BINDIR)/stern.exe
 	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(STERN_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_darwin_amd64/stern $(MAC_BINDIR)/stern
+	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(STERN_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUSTOMIZE_DOWNLOAD):
 	mkdir -p $(KUSTOMIZE_DLDIR)
@@ -185,30 +204,39 @@ kustomize: $(KUSTOMIZE_DOWNLOAD)
 	cp $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
 $(TELEPORT_DOWNLOAD):
-	mkdir -p $(TELEPORT_DLDIR)/out
+	mkdir -p $(TELEPORT_DLDIR)/common -p $(TELEPORT_DLDIR)/teleport-linux-amd64 -p $(TELEPORT_DLDIR)/teleport-darwin-amd64 -p $(TELEPORT_DLDIR)/teleport-windows-amd64
 	for i in $$(seq 10); do \
 		if $(WGET) -O $(TELEPORT_DLDIR)/teleport.zip https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-windows-amd64-bin.zip; then break; fi; \
 	done
 	for i in $$(seq 10); do \
-		if $(WGET) -O $(TELEPORT_DLDIR)/teleport.tar.gz https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz; then break; fi; \
+		if $(WGET) -O $(TELEPORT_DLDIR)/teleport-linux-amd64.tar.gz https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz; then break; fi; \
 	done
-	unzip -j $(TELEPORT_DLDIR)/teleport.zip teleport/tsh.exe -d $(TELEPORT_DLDIR)/out
-	tar -C $(TELEPORT_DLDIR)/out --strip-components=1 -xzf $(TELEPORT_DLDIR)/teleport.tar.gz teleport/tsh teleport/tctl teleport/teleport
-	$(WGET) -O $(TELEPORT_DLDIR)/out/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
-	$(WGET) -O $(TELEPORT_DLDIR)/out/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
+	for i in $$(seq 10); do \
+		if $(WGET) -O $(TELEPORT_DLDIR)/teleport-darwin-amd64.tar.gz https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-darwin-amd64-bin.tar.gz; then break; fi; \
+	done
+	unzip -j $(TELEPORT_DLDIR)/teleport.zip teleport/tsh.exe -d $(TELEPORT_DLDIR)/teleport-windows-amd64
+	tar -C $(TELEPORT_DLDIR)/teleport-linux-amd64 --strip-components=1 -xzf $(TELEPORT_DLDIR)/teleport-linux-amd64.tar.gz teleport/tsh teleport/tctl teleport/teleport
+	tar -C $(TELEPORT_DLDIR)/teleport-darwin-amd64 --strip-components=1 -xzf $(TELEPORT_DLDIR)/teleport-darwin-amd64.tar.gz teleport/tsh teleport/tctl teleport/teleport
+	$(WGET) -O $(TELEPORT_DLDIR)/common/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
+	$(WGET) -O $(TELEPORT_DLDIR)/common/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
 	touch $@
 
 .PHONY: teleport
 teleport: $(TELEPORT_DOWNLOAD)
 	mkdir -p $(BINDIR) $(SBINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
-	cp $(TELEPORT_DLDIR)/out/tctl $(BINDIR)
-	cp $(TELEPORT_DLDIR)/out/teleport $(SBINDIR)
-	cp $(TELEPORT_DLDIR)/out/tsh $(BINDIR)
-	cp $(TELEPORT_DLDIR)/out/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(TELEPORT_DLDIR)/out/README.md $(DOCDIR)/$@/README.md
-	cp $(TELEPORT_DLDIR)/out/tsh.exe $(WINDOWS_BINDIR)
-	cp $(TELEPORT_DLDIR)/out/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(TELEPORT_DLDIR)/out/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(TELEPORT_DLDIR)/teleport-linux-amd64/tctl $(BINDIR)
+	cp $(TELEPORT_DLDIR)/teleport-linux-amd64/teleport $(SBINDIR)
+	cp $(TELEPORT_DLDIR)/teleport-linux-amd64/tsh $(BINDIR)
+	cp $(TELEPORT_DLDIR)/common/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(TELEPORT_DLDIR)/common/README.md $(DOCDIR)/$@/README.md
+	cp $(TELEPORT_DLDIR)/teleport-windows-amd64/tsh.exe $(WINDOWS_BINDIR)
+	cp $(TELEPORT_DLDIR)/common/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(TELEPORT_DLDIR)/common/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(TELEPORT_DLDIR)/teleport-darwin-amd64/tctl $(BINDIR)
+	cp $(TELEPORT_DLDIR)/teleport-darwin-amd64/teleport $(SBINDIR)
+	cp $(TELEPORT_DLDIR)/teleport-darwin-amd64/tsh $(BINDIR)
+	cp $(TELEPORT_DLDIR)/common/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(TELEPORT_DLDIR)/common/README.md $(DOCDIR)/$@/README.md
 
 $(CKE_DOWNLOAD):
 	mkdir -p $(CKE_DLDIR)
@@ -223,11 +251,11 @@ cke: $(CKE_DOWNLOAD)
 	cp $(CKE_DLDIR)/source/cke $(SBINDIR)/cke
 	cp $(CKE_DLDIR)/source/ckecli $(BINDIR)/ckecli
 
-# TODO: download the kubectl-moco windows binary after MOCO v0.5.0 is released.
 $(MOCO_DOWNLOAD):
 	mkdir -p $(MOCO_DLDIR)
-	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco     https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-linux-amd64
-	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco.exe https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-windows-amd64.exe
+	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco-linux-amd64 https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-linux-amd64
+	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco.exe https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-windows-amd64
+	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco-darwin-amd64 https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-darwin-amd64
 	$(WGET) -O $(MOCO_DLDIR)/LICENSE          https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/LICENSE
 	$(WGET) -O $(MOCO_DLDIR)/README.md        https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/README.md
 	touch $@
@@ -235,13 +263,17 @@ $(MOCO_DOWNLOAD):
 .PHONY: moco
 moco: $(MOCO_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/
-	cp $(MOCO_DLDIR)/kubectl-moco $(BINDIR)/kubectl-moco
+	cp $(MOCO_DLDIR)/kubectl-moco-linux-amd64 $(BINDIR)/kubectl-moco
 	chmod +x $(BINDIR)/kubectl-moco
 	cp $(MOCO_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(MOCO_DLDIR)/README.md $(DOCDIR)/$@/README.md
 	cp $(MOCO_DLDIR)/kubectl-moco.exe $(WINDOWS_BINDIR)
 	cp $(MOCO_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(MOCO_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(MOCO_DLDIR)/kubectl-moco-darwin-amd64 $(MAC_BINDIR)/kubectl-moco
+	chmod +x $(MAC_DOCDIR)/kubectl-moco
+	cp $(MOCO_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(MOCO_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 .PHONY: clean
 clean:
