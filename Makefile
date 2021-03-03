@@ -104,14 +104,17 @@ $(OP_DEB): setup-files-for-deb
 	for DOCNAME in $(OPDEB_DOCNAMES); do \
 		cp -r $(DOCDIR)/$$DOCNAME $(OPDOCDIR) || exit 1 ; \
 	done
+	echo $(VERSION) > $(OPWORKDIR)/VERSION
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(OPWORKDIR) $(DEST)
 
 $(OP_WIN_ZIP): setup-tools
 	mkdir -p $(OPWORKWINDIR)
+	echo $(VERSION) > $(OPWORKWINDIR)/VERSION
 	cd $(OPWORKWINDIR) && zip -r $(abspath .)/$@ *
 
 $(OP_MAC_ZIP): setup-tools
 	mkdir -p $(OPWORKMACDIR)
+	echo $(VERSION) > $(OPWORKMACDIR)/VERSION
 	cd $(OPWORKMACDIR) && zip -r $(abspath .)/$@ *
 
 .PHONY: gcp-deb
