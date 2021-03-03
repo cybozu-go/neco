@@ -73,7 +73,7 @@ test:
 deb: $(DEB)
 
 .PHONY: tools
-tools: $(OP_DEB) $(OP_WINDOWS_ZIP) $(OP_MAC_ZIP)
+tools: $(OP_DEB) $(OP_WIN_ZIP) $(OP_MAC_ZIP)
 
 .PHONY: setup-tools
 setup-tools:
@@ -106,7 +106,7 @@ $(OP_DEB): setup-files-for-deb
 	done
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(OPWORKDIR) $(DEST)
 
-$(OP_WINDOWS_ZIP): setup-tools
+$(OP_WIN_ZIP): setup-tools
 	mkdir -p $(OPWORKWINDIR)
 	cd $(OPWORKWINDIR) && zip -r $(abspath .)/$@ *
 
@@ -135,4 +135,4 @@ setup:
 .PHONY: clean
 clean:
 	$(MAKE) -f Makefile.tools clean
-	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OPWORKWINDIR) $(OP_DEB) $(OP_ZIP)
+	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OPWORKWINDIR) $(OPWORKMACDIR) $(OP_DEB) $(OP_WIN_ZIP) $(OP_MAC_ZIP)
