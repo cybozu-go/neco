@@ -91,7 +91,7 @@ run-placemat-inside-container: $(PLACEMAT_DEPS)
 	$(SUDO) cp $(OUTPUT)/chrony.conf /etc/chrony
 	$(SUDO) cp $(OUTPUT)/squid.conf /etc/squid
 	$(SUDO) sh -c "$(PLACEMAT) $(abspath $(OUTPUT)/cluster.yml) > /var/log/placemat.log  2>&1" &
-	@echo 'Placemat is running.  To kill it, do "make stop".'
+	@echo 'Placemat is running.  To kill it, do "make stop-placemat-inside-container".'
 
 .PHONY: stop-placemat-inside-container
 stop-placemat-inside-container:
