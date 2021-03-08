@@ -19,7 +19,8 @@ VERSION = 0.0.1-main
 DEST = .
 DEB = neco_$(VERSION)_amd64.deb
 OP_DEB = neco-operation-cli-linux_$(VERSION)_amd64.deb
-OP_ZIP = neco-operation-cli-windows_$(VERSION)_amd64.zip
+OP_WIN_ZIP = neco-operation-cli-windows_$(VERSION)_amd64.zip
+OP_MAC_ZIP = neco-operation-cli-mac_$(VERSION)_amd64.zip
 DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/ingress-watcher
@@ -72,7 +73,7 @@ test:
 deb: $(DEB)
 
 .PHONY: tools
-tools: $(OP_DEB) $(OP_ZIP)
+tools: $(OP_DEB) $(OP_WIN_ZIP) $(OP_MAC_ZIP)
 
 .PHONY: setup-tools
 setup-tools:
@@ -103,11 +104,18 @@ $(OP_DEB): setup-files-for-deb
 	for DOCNAME in $(OPDEB_DOCNAMES); do \
 		cp -r $(DOCDIR)/$$DOCNAME $(OPDOCDIR) || exit 1 ; \
 	done
+	echo $(VERSION) > $(OPWORKDIR)/VERSION
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(OPWORKDIR) $(DEST)
 
-$(OP_ZIP): setup-tools
+$(OP_WIN_ZIP): setup-tools
 	mkdir -p $(OPWORKWINDIR)
+	echo $(VERSION) > $(OPWORKWINDIR)/VERSION
 	cd $(OPWORKWINDIR) && zip -r $(abspath .)/$@ *
+
+$(OP_MAC_ZIP): setup-tools
+	mkdir -p $(OPWORKMACDIR)
+	echo $(VERSION) > $(OPWORKMACDIR)/VERSION
+	cd $(OPWORKMACDIR) && zip -r $(abspath .)/$@ *
 
 .PHONY: gcp-deb
 gcp-deb: setup-files-for-deb
@@ -130,4 +138,4 @@ setup:
 .PHONY: clean
 clean:
 	$(MAKE) -f Makefile.tools clean
-	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OPWORKWINDIR) $(OP_DEB) $(OP_ZIP)
+	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OPWORKWINDIR) $(OPWORKMACDIR) $(OP_DEB) $(OP_WIN_ZIP) $(OP_MAC_ZIP)
