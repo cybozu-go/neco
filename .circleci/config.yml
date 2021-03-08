@@ -122,7 +122,6 @@ jobs:
     steps:
       - checkout
       - run: time make SUDO="" setup
-      - run: time make check-generate
       - run: time make test
       - setup-tools
       - run: time make deb SUDO="" FAKEROOT=
@@ -144,7 +143,6 @@ jobs:
     steps:
       - checkout
       - run: time make SUDO="" setup
-      - run: time make check-generate
       - run: time make test
       - setup-tools
       - run:
