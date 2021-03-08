@@ -105,6 +105,7 @@ stop:
 .PHONY: clean
 clean:
 	rm -rf $(OUTPUT)
+	cd ../ && $(MAKE) clean
 
 .PHONY: setup
 setup:
