@@ -61,7 +61,6 @@ $(OUTPUT)/$(CUSTOM_UBUNTU):
 
 # SABAKAN_CONTENTS
 $(DHCP_JSON):
-	go generate ../menu/menuassets/generate_rule.go
 	cd ..; go install ./pkg/placemat-menu
 	$(GOPATH)/bin/placemat-menu -f $(MENU) -o $(OUTPUT)
 
