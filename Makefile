@@ -60,10 +60,11 @@ stop-etcd:
 
 .PHONY: test
 test:
-	test -z "$$(gofmt -s -l . | grep -v '^menu/assets.go\|^build/' | tee /dev/stderr)"
+	test -z "$$(gofmt -s -l . | grep -v '^menu/menuassets/statik.go\|^build/' | tee /dev/stderr)"
 	staticcheck -tags='$(GOTAGS)' ./...
 	nilerr -tags='$(GOTAGS)' ./...
 	test -z "$$(custom-checker -restrictpkg.packages=html/template,log -tags='$(GOTAGS)' ./... | tee /dev/stderr)"
+	go generate ./menu/menuassets/generate_rule.go
 	go build -tags='$(GOTAGS)' ./...
 	go test -tags='$(GOTAGS)' -race -v ./...
 	RUN_COMPACTION_TEST=yes go test -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
@@ -134,6 +135,7 @@ setup:
 	mkdir -p bin
 	curl -sfL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz | tar -xz -C bin
 	chmod a+x bin/kustomize
+	go install github.com/rakyll/statik
 
 .PHONY: clean
 clean:
