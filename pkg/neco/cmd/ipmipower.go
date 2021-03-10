@@ -3,9 +3,11 @@ package cmd
 import (
 	"context"
 	"errors"
+	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -47,7 +49,7 @@ func lookupMachine(ctx context.Context, id string) (*sabakan.Machine, error) {
 	return &machines[0], nil
 }
 
-func ipmiPower(ctx context.Context, action, addr string) error {
+func ipmiPower(ctx context.Context, action, driver, addr string) error {
 	var opts []string
 	switch action {
 	case "start":
@@ -78,7 +80,7 @@ func ipmiPower(ctx context.Context, action, addr string) error {
 		return err
 	}
 
-	args := append(opts, "-u", username, "-p", password, "-h", addr, "-D", "LAN_2_0")
+	args := append(opts, "-u", username, "-p", password, "-h", addr, "-D", driver)
 	cmd := exec.CommandContext(ctx, "ipmipower", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -103,13 +105,14 @@ var ipmiPowerCmd = &cobra.Command{
 	Args:      cobra.ExactArgs(2),
 	ValidArgs: []string{"start", "stop", "restart", "status"},
 	Run: func(cmd *cobra.Command, args []string) {
+		driver := getDriver()
 		well.Go(func(ctx context.Context) error {
 			machine, err := lookupMachine(ctx, args[1])
 			if err != nil {
 				return err
 			}
 
-			return ipmiPower(ctx, args[0], machine.Spec.BMC.IPv4)
+			return ipmiPower(ctx, args[0], driver, machine.Spec.BMC.IPv4)
 		})
 		well.Stop()
 		err := well.Wait()
@@ -117,6 +120,27 @@ var ipmiPowerCmd = &cobra.Command{
 			log.ErrorExit(err)
 		}
 	},
+}
+
+func getDriver() string {
+	ipmiVersion := "2.0"
+	data, err := ioutil.ReadFile("/sys/devices/virtual/dmi/id/sys_vendor")
+	if err != nil {
+		log.ErrorExit(err)
+	}
+	if strings.TrimSpace(string(data)) == "QEMU" {
+		ipmiVersion = "1.5"
+	}
+	var driver string
+	switch ipmiVersion {
+	case "2.0", "2":
+		driver = "LAN_2_0"
+	case "1.5":
+		driver = "LAN"
+	default:
+		log.ErrorExit(errors.New("invalid IPMI version: " + ipmiVersion))
+	}
+	return driver
 }
 
 func init() {

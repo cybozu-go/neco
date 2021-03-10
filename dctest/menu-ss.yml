@@ -45,11 +45,9 @@ type: cs
 spec:
   cpu: 10
   memory: 20G
-  tpm: true
 ---
 kind: Node
 type: ss
 spec:
   cpu: 4
   memory: 10G
-  tpm: true
