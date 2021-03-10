@@ -113,56 +113,6 @@ file: ./docker.img
 kind: Image
 name: docker-image
 ---
-files:
-- file: bird_core.conf
-  name: bird.conf
-- file: squid.conf
-  name: squid.conf
-- file: chrony.conf
-  name: chrony.conf
-kind: DataFolder
-name: core-data
----
-files:
-- file: bird_spine1.conf
-  name: bird.conf
-kind: DataFolder
-name: spine1-data
----
-files:
-- file: bird_spine2.conf
-  name: bird.conf
-kind: DataFolder
-name: spine2-data
----
-files:
-- file: bird_rack0-tor1.conf
-  name: bird.conf
-kind: DataFolder
-name: rack0-tor1-data
----
-files:
-- file: bird_rack0-tor2.conf
-  name: bird.conf
-kind: DataFolder
-name: rack0-tor2-data
----
-files:
-- file: bird_rack1-tor1.conf
-  name: bird.conf
-kind: DataFolder
-name: rack1-tor1-data
----
-files:
-- file: bird_rack1-tor2.conf
-  name: bird.conf
-kind: DataFolder
-name: rack1-tor2-data
----
-dir: sabakan
-kind: DataFolder
-name: sabakan-data
----
 cpu: 2
 interfaces:
 - r0-node1
@@ -182,9 +132,9 @@ volumes:
   name: seed
   network-config: network.yml
   user-data: seed_boot-0.yml
-- folder: sabakan-data
-  kind: vvfat
+- kind: hostPath
   name: sabakan
+  path: {{.}}
 ---
 cpu: 2
 interfaces:
@@ -196,6 +146,7 @@ name: rack0-cs1
 smbios:
   serial: ba49d9a971c5a0344edfda5c8116745ea16fa4dd
 uefi: true
+tpm: true
 volumes:
 - cache: writeback
   kind: raw
@@ -220,6 +171,7 @@ name: rack0-cs2
 smbios:
   serial: e6abb04b4645a765faf91f97536ec64f9cecfb61
 uefi: true
+tpm: true
 volumes:
 - cache: writeback
   kind: raw
@@ -253,9 +205,9 @@ volumes:
   name: seed
   network-config: network.yml
   user-data: seed_boot-1.yml
-- folder: sabakan-data
-  kind: vvfat
+- kind: hostPath
   name: sabakan
+  path: {{.}}
 ---
 cpu: 2
 interfaces:
@@ -267,6 +219,7 @@ name: rack1-cs1
 smbios:
   serial: 4ae0771764376e0184274e24e0b18abd8fa5f285
 uefi: true
+tpm: true
 volumes:
 - cache: writeback
   kind: raw
@@ -291,6 +244,7 @@ name: rack1-cs2
 smbios:
   serial: aec899fb87747909c95a2decaa4f25899f07516e
 uefi: true
+tpm: true
 volumes:
 - cache: writeback
   kind: raw
@@ -314,6 +268,7 @@ memory: 1G
 name: rack1-ss1
 smbios:
   serial: 1145129a085ecf521ab524028302a6b4a4e49a00
+tpm: true
 volumes:
 - cache: writeback
   kind: raw
@@ -345,6 +300,7 @@ memory: 1G
 name: rack1-ss2
 smbios:
   serial: 628c8c360d0113de66db14a225affcb85fb2a27f
+tpm: true
 volumes:
 - cache: writeback
   kind: raw
@@ -367,45 +323,25 @@ volumes:
   kind: image
   name: extra0
 ---
+kind: NetworkNamespace
+name: core
 apps:
-- caps-retain:
-  - CAP_NET_ADMIN
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  image: docker://quay.io/cybozu/bird:2.0
-  mount:
-  - target: /etc/bird
-    volume: config
-  - target: /run/bird
-    volume: run
-  name: bird
-  readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:20.04
-  name: debug
-  readonly-rootfs: true
-- image: docker://quay.io/cybozu/squid:3.5
-  mount:
-  - target: /etc/squid
-    volume: config
-  - target: /var/log/squid
-    volume: squid-log
-  - target: /var/spool/squid
-    volume: squid-spool
-  name: proxy
-  readonly-rootfs: false
-- args:
+- name: bird
+  command:
+  - /usr/sbin/bird
   - -f
-  - /etc/chrony/chrony.conf
-  image: docker://quay.io/cybozu/chrony:4.0
-  mount:
-  - target: /etc/chrony
-    volume: config
-  - target: /run
-    volume: chrony-run
-  - target: /var/lib/chrony
-    volume: chrony-var-lib-chrony
-  name: ntp
-  readonly-rootfs: false
+  - -c
+  - /etc/bird/bird_core.conf
+  - -s
+  - /var/run/bird/bird_core.ctl
+- name: squid
+  command:
+  - /usr/sbin/squid
+  - -N
+- name: chrony
+  command:
+  - /usr/sbin/chronyd
+  - -d
 init-scripts:
 - setup-iptables
 interfaces:
@@ -415,6 +351,12 @@ interfaces:
 - addresses:
   - 10.72.16.2/20
   network: bmc
+- addresses:
+    - 10.0.3.1/24
+  network: core-to-ext
+- addresses:
+    - 10.0.4.1/24
+  network: core-to-op
 - addresses:
   - 10.0.49.3/32
   network: core-node0
@@ -430,55 +372,18 @@ interfaces:
 - addresses:
   - 10.0.2.2/31
   network: core-to-s2
-- addresses:
-  - 10.0.3.1/24
-  network: core-to-ext
-- addresses:
-  - 10.0.4.1/24
-  network: core-to-op
-kind: Pod
-name: core
-volumes:
-- folder: core-data
-  kind: host
-  name: config
-  readonly: true
-- kind: empty
-  name: run
-  readonly: false
-- kind: empty
-  mode: "0777"
-  name: squid-log
-  readonly: false
-- kind: empty
-  mode: "0777"
-  name: squid-spool
-  readonly: false
-- kind: empty
-  mode: "0777"
-  name: chrony-run
-  readonly: false
-- kind: empty
-  mode: "0777"
-  name: chrony-var-lib-chrony
-  readonly: false
 ---
+kind: NetworkNamespace
+name: spine1
 apps:
-- caps-retain:
-  - CAP_NET_ADMIN
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  image: docker://quay.io/cybozu/bird:2.0
-  mount:
-  - target: /etc/bird
-    volume: config
-  - target: /run/bird
-    volume: run
-  name: bird
-  readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:20.04
-  name: debug
-  readonly-rootfs: true
+- name: bird
+  command:
+  - /usr/sbin/bird
+  - -f
+  - -c
+  - /etc/bird/bird_spine1.conf
+  - -s
+  - /var/run/bird/bird_spine1.ctl
 interfaces:
 - addresses:
   - 10.0.2.1/31
@@ -495,33 +400,18 @@ interfaces:
 - addresses:
   - 10.0.1.6/31
   network: s1-to-r1-2
-kind: Pod
-name: spine1
-volumes:
-- folder: spine1-data
-  kind: host
-  name: config
-  readonly: true
-- kind: empty
-  name: run
-  readonly: false
 ---
+kind: NetworkNamespace
+name: spine2
 apps:
-- caps-retain:
-  - CAP_NET_ADMIN
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  image: docker://quay.io/cybozu/bird:2.0
-  mount:
-  - target: /etc/bird
-    volume: config
-  - target: /run/bird
-    volume: run
-  name: bird
-  readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:20.04
-  name: debug
-  readonly-rootfs: true
+- name: bird
+  command:
+  - /usr/sbin/bird
+  - -f
+  - -c
+  - /etc/bird/bird_spine2.conf
+  - -s
+  - /var/run/bird/bird_spine2.ctl
 interfaces:
 - addresses:
   - 10.0.2.3/31
@@ -538,46 +428,26 @@ interfaces:
 - addresses:
   - 10.0.1.14/31
   network: s2-to-r1-2
-kind: Pod
-name: spine2
-volumes:
-- folder: spine2-data
-  kind: host
-  name: config
-  readonly: true
-- kind: empty
-  name: run
-  readonly: false
 ---
+kind: NetworkNamespace
+name: rack0-tor1
 apps:
-- caps-retain:
-  - CAP_NET_ADMIN
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  image: docker://quay.io/cybozu/bird:2.0
-  mount:
-  - target: /etc/bird
-    volume: config
-  - target: /run/bird
-    volume: run
-  name: bird
-  readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:20.04
-  name: debug
-  readonly-rootfs: true
-- args:
+- name: bird
+  command:
+  - /usr/sbin/bird
+  - -f
+  - -c
+  - /etc/bird/bird_rack0-tor1.conf
+  - -s
+  - /var/run/bird/bird_rack0-tor1.ctl
+- name: dnsmasq
+  command:
+  - /usr/sbin/dnsmasq
   - --keep-in-foreground
-  - --pid-file
+  - --pid-file=/var/run/dnsmasq_rack0-tor1.pid
   - --log-facility=-
   - --dhcp-relay
   - 10.69.0.65,10.69.0.195
-  caps-retain:
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.84
-  name: dhcp-relay
-  readonly-rootfs: true
 interfaces:
 - addresses:
   - 10.0.1.1/31
@@ -588,46 +458,26 @@ interfaces:
 - addresses:
   - 10.69.0.65/26
   network: r0-node1
-kind: Pod
-name: rack0-tor1
-volumes:
-- folder: rack0-tor1-data
-  kind: host
-  name: config
-  readonly: true
-- kind: empty
-  name: run
-  readonly: false
 ---
+kind: NetworkNamespace
+name: rack0-tor2
 apps:
-- caps-retain:
-  - CAP_NET_ADMIN
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  image: docker://quay.io/cybozu/bird:2.0
-  mount:
-  - target: /etc/bird
-    volume: config
-  - target: /run/bird
-    volume: run
-  name: bird
-  readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:20.04
-  name: debug
-  readonly-rootfs: true
-- args:
+- name: bird
+  command:
+  - /usr/sbin/bird
+  - -f
+  - -c
+  - /etc/bird/bird_rack0-tor2.conf
+  - -s
+  - /var/run/bird/bird_rack0-tor2.ctl
+- name: dnsmasq
+  command:
+  - /usr/sbin/dnsmasq
   - --keep-in-foreground
-  - --pid-file
+  - --pid-file=/var/run/dnsmasq_rack0-tor2.pid
   - --log-facility=-
   - --dhcp-relay
   - 10.69.0.129,10.69.0.195
-  caps-retain:
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.84
-  name: dhcp-relay
-  readonly-rootfs: true
 interfaces:
 - addresses:
   - 10.0.1.3/31
@@ -638,46 +488,26 @@ interfaces:
 - addresses:
   - 10.69.0.129/26
   network: r0-node2
-kind: Pod
-name: rack0-tor2
-volumes:
-- folder: rack0-tor2-data
-  kind: host
-  name: config
-  readonly: true
-- kind: empty
-  name: run
-  readonly: false
 ---
+kind: NetworkNamespace
+name: rack1-tor1
 apps:
-- caps-retain:
-  - CAP_NET_ADMIN
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  image: docker://quay.io/cybozu/bird:2.0
-  mount:
-  - target: /etc/bird
-    volume: config
-  - target: /run/bird
-    volume: run
-  name: bird
-  readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:20.04
-  name: debug
-  readonly-rootfs: true
-- args:
+- name: bird
+  command:
+  - /usr/sbin/bird
+  - -f
+  - -c
+  - /etc/bird/bird_rack1-tor1.conf
+  - -s
+  - /var/run/bird/bird_rack1-tor1.ctl
+- name: dnsmasq
+  command:
+  - /usr/sbin/dnsmasq
   - --keep-in-foreground
-  - --pid-file
+  - --pid-file=/var/run/dnsmasq_rack1-tor1.pid
   - --log-facility=-
   - --dhcp-relay
   - 10.69.1.1,10.69.0.3
-  caps-retain:
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.84
-  name: dhcp-relay
-  readonly-rootfs: true
 interfaces:
 - addresses:
   - 10.0.1.5/31
@@ -688,46 +518,26 @@ interfaces:
 - addresses:
   - 10.69.1.1/26
   network: r1-node1
-kind: Pod
-name: rack1-tor1
-volumes:
-- folder: rack1-tor1-data
-  kind: host
-  name: config
-  readonly: true
-- kind: empty
-  name: run
-  readonly: false
 ---
+kind: NetworkNamespace
+name: rack1-tor2
 apps:
-- caps-retain:
-  - CAP_NET_ADMIN
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  image: docker://quay.io/cybozu/bird:2.0
-  mount:
-  - target: /etc/bird
-    volume: config
-  - target: /run/bird
-    volume: run
-  name: bird
-  readonly-rootfs: true
-- image: docker://quay.io/cybozu/ubuntu-debug:20.04
-  name: debug
-  readonly-rootfs: true
-- args:
+- name: bird
+  command:
+  - /usr/sbin/bird
+  - -f
+  - -c
+  - /etc/bird/bird_rack1-tor2.conf
+  - -s
+  - /var/run/bird/bird_rack1-tor2.ctl
+- name: dnsmasq
+  command:
+  - /usr/sbin/dnsmasq
   - --keep-in-foreground
-  - --pid-file
+  - --pid-file=/var/run/dnsmasq_rack1-tor2.pid
   - --log-facility=-
   - --dhcp-relay
   - 10.69.1.65,10.69.0.3
-  caps-retain:
-  - CAP_NET_BIND_SERVICE
-  - CAP_NET_RAW
-  - CAP_NET_BROADCAST
-  image: docker://quay.io/cybozu/dnsmasq:2.84
-  name: dhcp-relay
-  readonly-rootfs: true
 interfaces:
 - addresses:
   - 10.0.1.7/31
@@ -738,45 +548,21 @@ interfaces:
 - addresses:
   - 10.69.1.65/26
   network: r1-node2
-kind: Pod
-name: rack1-tor2
-volumes:
-- folder: rack1-tor2-data
-  kind: host
-  name: config
-  readonly: true
-- kind: empty
-  name: run
-  readonly: false
 ---
-apps:
-- args:
-  - infinity
-  exec: /bin/sleep
-  image: docker://quay.io/cybozu/ubuntu-debug:20.04
-  name: ubuntu
-  readonly-rootfs: false
+kind: NetworkNamespace
+name: external
 init-scripts:
 - setup-default-gateway-external
 interfaces:
 - addresses:
   - 10.0.3.2/24
   network: core-to-ext
-kind: Pod
-name: external
 ---
-apps:
-- args:
-  - infinity
-  exec: /bin/sleep
-  image: docker://quay.io/cybozu/ubuntu-debug:20.04
-  name: ubuntu
-  readonly-rootfs: false
+kind: NetworkNamespace
+name: operation
 init-scripts:
 - setup-default-gateway-operation
 interfaces:
 - addresses:
   - 10.0.4.2/24
   network: core-to-op
-kind: Pod
-name: operation

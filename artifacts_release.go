@@ -12,11 +12,11 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.5.6", Private: false},
 		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.9.5.2", Private: false},
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.7.1", Private: true},
-		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "4.13.1", Private: false},
+		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "4.14.1", Private: false},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.6.3.1", Private: false},
 	},
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.1.0"},
 	},
-	CoreOS: CoreOSImage{Channel: "stable", Version: "2605.12.0"},
+	CoreOS: CoreOSImage{Channel: "stable", Version: "2765.2.0"},
 }
