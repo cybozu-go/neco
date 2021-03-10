@@ -40,6 +40,8 @@ systemd:
     mask: true
   - name: ntpd.service
     mask: true
+  - name: systemd-resolved.service
+    mask: true
   - name: systemd-timesyncd.service
     mask: true
   - name: tcsd.service
