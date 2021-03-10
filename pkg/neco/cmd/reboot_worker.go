@@ -167,6 +167,7 @@ func rebootMain() error {
 	for _, node := range cluster.Nodes {
 		ckeNodeAddrs[node.Address] = true
 	}
+	driverVersion := getDriver()
 	for _, m := range machines {
 		if len(m.Spec.IPv4) == 0 {
 			log.Warn("IP addresses not found; skipping", map[string]interface{}{
@@ -190,7 +191,7 @@ func rebootMain() error {
 			"node":   m.Spec.IPv4[0],
 			"bmc":    m.Spec.BMC.IPv4,
 		})
-		err := ipmiPower(context.Background(), "restart", addr)
+		err := ipmiPower(context.Background(), "restart", driverVersion, addr)
 		if err != nil {
 			return err
 		}

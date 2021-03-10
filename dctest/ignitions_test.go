@@ -28,11 +28,11 @@ func testIgnitions() {
 		diskDev string
 	}{
 		{
-			symlink: cryptDiskDir + "pci-0000:00:09.0",
+			symlink: cryptDiskDir + "pci-0000:00:0a.0",
 			diskDev: "vdc",
 		},
 		{
-			symlink: cryptDiskDir + "pci-0000:00:0a.0",
+			symlink: cryptDiskDir + "pci-0000:00:0b.0",
 			diskDev: "vdd",
 		},
 	}
