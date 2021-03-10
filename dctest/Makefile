@@ -1,8 +1,9 @@
 # Makefile for neco-test
 
 # configuration variables
+SUDO = sudo
 OUTPUT = ./output
-PLACEMAT = /usr/bin/placemat
+PLACEMAT = /usr/bin/placemat2
 GINKGO = env GO111MODULE=on $(GOPATH)/bin/ginkgo --failFast -v
 SUITE = bootstrap
 PLACEMAT_DATADIR = /var/scratch/placemat
@@ -15,7 +16,7 @@ endif
 MACHINES_FILE ?= $(abspath $(OUTPUT)/machines.yml)
 ADDRESS_POOLS_FILE = $(abspath ./address_pools.yaml)
 
-export PLACEMAT GINKGO SUITE MACHINES_FILE ADDRESS_POOLS_FILE
+export PLACEMAT GINKGO SUITE MACHINES_FILE ADDRESS_POOLS_FILE SUDO
 
 CUSTOM_UBUNTU = cybozu-ubuntu-20.04-server-cloudimg-amd64.img
 
@@ -33,7 +34,7 @@ else ifdef DATACENTER
 else
   DEB = $(GENERATED_DEB)
 endif
-PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(BMC_USER) $(OUTPUT)/bmc.cert $(OUTPUT)/bmc.key
+PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(BMC_USER)
 TEST_DEPS = $(DEB)
 SSH_PRIVKEY = $(realpath ./dctest_key)
 BOB_PRIVKEY = $(realpath ./bob_key)
@@ -54,18 +55,13 @@ all:
 
 $(OUTPUT)/$(CUSTOM_UBUNTU):
 	cd ../installer; cp cluster.json.example cluster.json
-	cd ../installer; $(MAKE) cloud
+	cd ../installer; $(MAKE) cloud SUDO="$(SUDO)"
 	mkdir -p $(OUTPUT)
 	mv ../installer/build/$(CUSTOM_UBUNTU) $@
 
-$(OUTPUT)/bmc.cert $(OUTPUT)/bmc.key:
-	openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 \
-	-subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=*.www.example.com" \
-	-keyout $(OUTPUT)/bmc.key  -out $(OUTPUT)/bmc.cert
-
 # SABAKAN_CONTENTS
 $(DHCP_JSON):
-	cd ..; go generate ./menu
+	go generate ../menu/menuassets/generate_rule.go
 	cd ..; go install ./pkg/placemat-menu
 	$(GOPATH)/bin/placemat-menu -f $(MENU) -o $(OUTPUT)
 
@@ -87,20 +83,37 @@ $(DOWNLOADED_DEB):
 test: $(TEST_DEPS)
 	./test.sh "$(TARGET)" "$(TAGS)"
 
+.PHONY: run-placemat-inside-container
+run-placemat-inside-container: $(PLACEMAT_DEPS)
+	$(SUDO) rm -rf $(PLACEMAT_DATADIR)
+	$(SUDO) rm -rf $(VM_SHARED_DIR)
+	$(SUDO) cp $(OUTPUT)/bird*.conf /etc/bird
+	$(SUDO) cp $(OUTPUT)/chrony.conf /etc/chrony
+	$(SUDO) cp $(OUTPUT)/squid.conf /etc/squid
+	$(SUDO) sh -c "$(PLACEMAT) $(abspath $(OUTPUT)/cluster.yml) > /var/log/placemat.log  2>&1" &
+	@echo 'Placemat is running.  To kill it, do "make stop-placemat-inside-container".'
+
+.PHONY: stop-placemat-inside-container
+stop-placemat-inside-container:
+	$(SUDO) ./stop_placemat.sh
+
 .PHONY: placemat
 placemat: $(PLACEMAT_DEPS)
-	sudo rm -rf $(PLACEMAT_DATADIR)
-	sudo rm -rf $(VM_SHARED_DIR)
-	sudo systemd-run --unit=placemat.service $(PLACEMAT) -bmc-cert $(abspath output/bmc.cert) -bmc-key $(abspath output/bmc.key) -enable-virtfs $(abspath output/cluster.yml)
+	$(SUDO) rm -rf $(PLACEMAT_DATADIR)
+	$(SUDO) rm -rf $(VM_SHARED_DIR)
+	$(SUDO) cp $(OUTPUT)/bird*.conf /etc/bird
+	$(SUDO) cp $(OUTPUT)/chrony.conf /etc/chrony
+	$(SUDO) cp $(OUTPUT)/squid.conf /etc/squid
+	$(SUDO) systemd-run --unit=placemat.service $(PLACEMAT) $(abspath output/cluster.yml)
 	@echo 'Placemat is running.  To kill it, do "make stop".'
 
 .PHONY: stop
 stop:
-	sudo systemctl stop placemat.service
-	sudo systemctl disable placemat.service
-	sudo rm /run/systemd/transient/placemat.service
-	sudo systemctl daemon-reload
-	sudo systemctl reset-failed placemat.service
+	$(SUDO) systemctl stop placemat.service
+	$(SUDO) systemctl disable placemat.service
+	$(SUDO) rm /run/systemd/transient/placemat.service
+	$(SUDO) systemctl daemon-reload
+	$(SUDO) systemctl reset-failed placemat.service
 
 .PHONY: clean
 clean:
@@ -111,4 +124,5 @@ clean:
 setup:
 	cd ../ && time -p $(MAKE) setup
 	cd ../installer && time -p $(MAKE) setup
+	go install github.com/rakyll/statik
 	go install github.com/onsi/ginkgo/ginkgo
