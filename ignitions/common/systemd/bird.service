@@ -12,6 +12,7 @@ ExecStartPre=-/usr/bin/docker kill bird
 ExecStartPre=-/usr/bin/docker rm bird
 ExecStart=/usr/bin/docker run \
   --name bird \
+  --log-driver=journald \
   --label name=bird \
   --network=host \
   --cap-drop=all \
