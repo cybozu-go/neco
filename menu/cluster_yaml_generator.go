@@ -234,7 +234,7 @@ func createWorkerNode(rack *rack, node *node, diskNumber int, spec *nodeSpec) *t
 			Kind:   "raw",
 			Name:   fmt.Sprintf("data%d", i+1),
 			Size:   "50G",
-			Cache:  "writeback",
+			Cache:  "none",
 			Format: "raw",
 		})
 	}
