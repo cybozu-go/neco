@@ -151,7 +151,16 @@ func testJoinRemove() {
 
 		By("Waiting boot-3 gets removed from etcd")
 		Eventually(func() error {
-			stdout, _, err := execAt(bootServers[0], "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+			// Sometimes, neco-worker aborts the update process.  We need to detect it and recover.
+			stdout, _, err := execAt(bootServers[0], "neco", "status")
+			if err != nil {
+				return err
+			}
+			if bytes.Contains(stdout, []byte("status: aborted")) {
+				execAt(bootServers[0], "neco", "recover")
+			}
+
+			stdout, _, err = execAt(bootServers[0], "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
 				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
 			if err != nil {
 				return err

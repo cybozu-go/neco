@@ -72,6 +72,7 @@ var bootstrapSuite = func() {
 	})
 	Context("unbound", testUnbound)
 	Context("squid", testSquid)
+	Context("node DNS", testNodeDNS)
 }
 
 // functionsSuite is a test suite that tests a full set of functions of Neco in a single version
