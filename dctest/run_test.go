@@ -182,6 +182,13 @@ func waitRequestComplete(check string) {
 			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		}
 		out := string(stdout)
+
+		// Sometimes, neco-worker aborts the update process.  We need to detect it and recover.
+		if strings.Contains(out, "status: aborted") {
+			execAt(bootServers[0], "neco", "recover")
+			return errors.New("update process is aborted: " + out)
+		}
+
 		if !strings.Contains(out, "status: completed") {
 			return errors.New("request is not completed: " + out)
 		}

@@ -85,14 +85,10 @@ func (o *operator) UpdateEtcd(ctx context.Context, req *neco.UpdateRequest) erro
 		}
 	}
 
-	replaced, err := o.replaceEtcdFiles(ctx, req.Servers)
+	err = o.replaceEtcdFiles(ctx, req.Servers)
 	if err != nil {
 		return err
 	}
-
-	// Restarting etcd is done after update will be completed.
-	// Otherwise, the system would become unstable and update would fail randomly.
-	o.etcdRestart = need || replaced
 
 	err = etcd.UpdateNecoConfig(req.Servers)
 	if err != nil {
@@ -192,38 +188,34 @@ func waitEtcdSync(ctx context.Context, ec *clientv3.Client, rev int64) error {
 	}
 }
 
-func (o *operator) replaceEtcdFiles(ctx context.Context, lrns []int) (bool, error) {
+func (o *operator) replaceEtcdFiles(ctx context.Context, lrns []int) error {
 	buf := new(bytes.Buffer)
 	err := etcd.GenerateService(buf, o.containerRuntime)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	r1, err := replaceFile(neco.ServiceFile(neco.EtcdService), buf.Bytes(), 0644)
+	_, err = replaceFile(neco.ServiceFile(neco.EtcdService), buf.Bytes(), 0644)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	buf.Reset()
 	err = etcd.GenerateConf(buf, o.mylrn, lrns)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	r2, err := replaceFile(neco.EtcdConfFile, buf.Bytes(), 0644)
+	_, err = replaceFile(neco.EtcdConfFile, buf.Bytes(), 0644)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return r1 || r2, nil
+	return nil
 }
 
 // RestartEtcd restarts etcd after all other steps are completed.
 func (o *operator) RestartEtcd(index int, req *neco.UpdateRequest) error {
-	if !o.etcdRestart {
-		return nil
-	}
-
 	// Exit and restart after restarting etcd to reload configurations.
 	defer os.Exit(3)
 

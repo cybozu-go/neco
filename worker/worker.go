@@ -274,7 +274,7 @@ func (w *Worker) runStep(ctx context.Context) (bool, error) {
 		"step":    w.step,
 	})
 
-	// restart etcd if needed.
+	// restart etcd always.
 	err = w.operator.RestartEtcd(sort.SearchInts(w.req.Servers, w.mylrn), w.req)
 	if err != nil {
 		// NOTE: ignore error due to no way to handle etcd cluster after update completed

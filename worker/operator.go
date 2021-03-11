@@ -28,7 +28,7 @@ type Operator interface {
 	// RestoreServices starts installed services at startup.
 	StartServices(ctx context.Context) error
 
-	// RestartEtcd restarts etcd in case it is necessary.
+	// RestartEtcd restarts etcd.
 	RestartEtcd(index int, req *neco.UpdateRequest) error
 }
 
@@ -41,8 +41,6 @@ type operator struct {
 	localClient      *http.Client
 	fetcher          neco.ImageFetcher
 	containerRuntime neco.ContainerRuntime
-
-	etcdRestart bool
 }
 
 // NewOperator creates an Operator
