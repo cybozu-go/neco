@@ -152,10 +152,12 @@ volumes:
   kind: raw
   name: data1
   size: 50G
+  format: raw
 - cache: writeback
   kind: raw
   name: data2
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -177,10 +179,12 @@ volumes:
   kind: raw
   name: data1
   size: 50G
+  format: raw
 - cache: writeback
   kind: raw
   name: data2
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -225,10 +229,12 @@ volumes:
   kind: raw
   name: data1
   size: 50G
+  format: raw
 - cache: writeback
   kind: raw
   name: data2
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -250,10 +256,12 @@ volumes:
   kind: raw
   name: data1
   size: 50G
+  format: raw
 - cache: writeback
   kind: raw
   name: data2
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -274,18 +282,22 @@ volumes:
   kind: raw
   name: data1
   size: 50G
+  format: raw
 - cache: writeback
   kind: raw
   name: data2
   size: 50G
+  format: raw
 - cache: writeback
   kind: raw
   name: data3
   size: 50G
+  format: raw
 - cache: writeback
   kind: raw
   name: data4
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -306,18 +318,22 @@ volumes:
   kind: raw
   name: data1
   size: 50G
+  format: raw
 - cache: writeback
   kind: raw
   name: data2
   size: 50G
+  format: raw
 - cache: writeback
   kind: raw
   name: data3
   size: 50G
+  format: raw
 - cache: writeback
   kind: raw
   name: data4
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
