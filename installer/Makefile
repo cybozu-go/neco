@@ -1,5 +1,7 @@
 # Makefile for custom Ubuntu installer
 
+SUDO = sudo
+
 UBUNTU_VERSION = 20.04.1
 BUILD_DEPS := xorriso qemu-utils qemu-kvm ovmf curl ca-certificates cloud-image-utils gdisk kpartx
 
@@ -110,7 +112,7 @@ $(CUSTOM_CLOUD_PATH): $(ORIGINAL_CLOUD_PATH) $(DEBS) cluster.json
 	cp $< $@
 	qemu-img resize $@ 30G
 	GOBIN=$(abspath build) go install ./setup
-	sudo ./customize-cloud-image $@ $(DEBS) build/setup cluster.json
+	$(SUDO) ./customize-cloud-image $@ $(DEBS) build/setup cluster.json
 
 .PHONY: preview-cloud
 preview-cloud: $(CUSTOM_CLOUD_PATH)
@@ -132,4 +134,4 @@ fullclean:
 
 .PHONY: setup
 setup:
-	sudo apt-get -y install --no-install-recommends $(BUILD_DEPS)
+	$(SUDO) apt-get -y install --no-install-recommends $(BUILD_DEPS)

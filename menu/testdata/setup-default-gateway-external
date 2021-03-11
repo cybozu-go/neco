@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ip route add default via 10.0.3.1

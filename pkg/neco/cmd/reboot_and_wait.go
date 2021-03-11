@@ -92,8 +92,7 @@ func rebootAndWaitMain(target string) error {
 	log.Info("rebooting a machine", map[string]interface{}{
 		"serial_or_ip": target,
 	})
-	driver := getDriver()
-	err = ipmiPower(context.Background(), "restart", driver, machine.Spec.BMC.IPv4)
+	err = ipmiPower(context.Background(), "restart", machine.Spec.BMC.IPv4)
 	if err != nil {
 		log.Error("failed to reboot via IPMI", map[string]interface{}{
 			"serial_or_ip": target,
