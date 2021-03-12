@@ -172,7 +172,7 @@ func execSafeAt(host string, args ...string) []byte {
 
 // waitRequestComplete waits for the current request to be completed.
 // If check is not "", the contents is also checked against the output from "neco status".
-func waitRequestComplete(check string) {
+func waitRequestComplete(check string, recover ...bool) {
 	// wait a moment for neco-updater to put a new request.
 	time.Sleep(time.Second * 2)
 
@@ -183,8 +183,8 @@ func waitRequestComplete(check string) {
 		}
 		out := string(stdout)
 
-		// Sometimes, neco-worker aborts the update process.  We need to detect it and recover.
-		if strings.Contains(out, "status: aborted") {
+		// Sometimes, neco-worker aborts the update process. Detect it and recover if it is necessary.
+		if len(recover) != 0 && recover[0] && strings.Contains(out, "status: aborted") {
 			execAt(bootServers[0], "neco", "recover")
 			return errors.New("update process is aborted: " + out)
 		}

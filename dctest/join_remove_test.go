@@ -150,7 +150,7 @@ func testJoinRemove() {
 		execSafeAt(bootServers[0], "sudo", "env", "VAULT_TOKEN="+token, "neco", "leave", "3")
 
 		By("Waiting for the request to complete")
-		waitRequestComplete("members: [0 1 2]")
+		waitRequestComplete("members: [0 1 2]", true)
 
 		By("Waiting boot-3 gets removed from etcd")
 		Eventually(func() error {
