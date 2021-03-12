@@ -227,11 +227,13 @@ func (o *operator) RestartEtcd(index int, req *neco.UpdateRequest) error {
 
 	err := neco.StopService(ctx, neco.EtcdService)
 	if err != nil {
+		log.Error("failed to stop "+neco.EtcdService, map[string]interface{}{log.FnError: err.Error()})
 		return err
 	}
 
 	err = neco.StartService(ctx, neco.EtcdService)
 	if err != nil {
+		log.Error("failed to start "+neco.EtcdService, map[string]interface{}{log.FnError: err.Error()})
 		return err
 	}
 
@@ -240,17 +242,20 @@ func (o *operator) RestartEtcd(index int, req *neco.UpdateRequest) error {
 
 	ec, err := etcd.WaitEtcdForVault(ctx)
 	if err != nil {
+		log.Error("failed to wait etcd", map[string]interface{}{log.FnError: err.Error()})
 		return err
 	}
 	defer ec.Close()
 
 	resp, err := ec.Get(ctx, "/")
 	if err != nil {
+		log.Error("failed to access etcd", map[string]interface{}{log.FnError: err.Error()})
 		return err
 	}
 
 	err = waitEtcdSync(ctx, ec, resp.Header.Revision)
 	if err != nil {
+		log.Error("failed to wait etcd sync", map[string]interface{}{log.FnError: err.Error()})
 		return err
 	}
 
