@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"time"
@@ -42,7 +42,7 @@ var rebootAndWaitCmd = &cobra.Command{
 		cmd.SilenceUsage = true
 		target := args[0]
 		if target == "-" {
-			data, err := ioutil.ReadAll(os.Stdin)
+			data, err := io.ReadAll(os.Stdin)
 			if err != nil {
 				log.Error("failed to read node object", map[string]interface{}{
 					log.FnError: err,

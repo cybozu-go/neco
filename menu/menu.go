@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -233,7 +232,7 @@ type baseConfig struct {
 // Parse reads a yaml document and create menu
 func Parse(r io.Reader, menuFileDir string) (*menu, error) {
 	menu := &menu{}
-	f := k8sjson.YAMLFramer.NewFrameReader(ioutil.NopCloser(r))
+	f := k8sjson.YAMLFramer.NewFrameReader(io.NopCloser(r))
 	for {
 		y, err := readSingleYamlDoc(f)
 		if err == io.EOF {

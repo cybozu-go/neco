@@ -3,7 +3,6 @@
 package serf
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -44,7 +43,7 @@ func TestGetOSName(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		f, err := ioutil.TempFile("", "")
+		f, err := os.CreateTemp("", "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -80,7 +79,7 @@ func TestGetOSVersionID(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		f, err := ioutil.TempFile("", "")
+		f, err := os.CreateTemp("", "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -107,7 +106,7 @@ func TestGetOSVersionID(t *testing.T) {
 }
 
 func TestGetSerial(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Fatal(err)
 	}

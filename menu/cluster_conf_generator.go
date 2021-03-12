@@ -3,7 +3,7 @@ package menu
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -403,7 +403,7 @@ func export(input, output string, args interface{}) error {
 	}
 	defer r.Close()
 
-	content, err := ioutil.ReadAll(r)
+	content, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}
@@ -429,7 +429,7 @@ func exportFile(input, output string, args interface{}) error {
 	}
 	defer r.Close()
 
-	content, err := ioutil.ReadAll(r)
+	content, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}
@@ -467,10 +467,10 @@ func copyFile(src, dist string) error {
 	}
 	defer r.Close()
 
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(dist, data, 0644)
+	return os.WriteFile(dist, data, 0644)
 }

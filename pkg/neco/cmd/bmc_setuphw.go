@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -20,7 +19,7 @@ import (
 )
 
 func getMyMachine(ctx context.Context) (*sabakan.Machine, error) {
-	data, err := ioutil.ReadFile("/sys/devices/virtual/dmi/id/product_serial")
+	data, err := os.ReadFile("/sys/devices/virtual/dmi/id/product_serial")
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +73,7 @@ func setupHW(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
-	err = ioutil.WriteFile("/etc/neco/bmc-user.json", []byte(bmcUser), 0644)
+	err = os.WriteFile("/etc/neco/bmc-user.json", []byte(bmcUser), 0644)
 	if err != nil {
 		return err
 	}

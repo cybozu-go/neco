@@ -3,7 +3,6 @@ package worker
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -46,11 +45,11 @@ func (o *operator) UpdateSetupSerfTags(ctx context.Context, req *neco.UpdateRequ
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(neco.ServiceFile(setupSerfTags), []byte(setupSerfTagsService), 0644)
+	err = os.WriteFile(neco.ServiceFile(setupSerfTags), []byte(setupSerfTagsService), 0644)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(neco.TimerFile(setupSerfTags), []byte(setupSerfTagsTimer), 0644)
+	err = os.WriteFile(neco.TimerFile(setupSerfTags), []byte(setupSerfTagsTimer), 0644)
 	if err != nil {
 		return err
 	}

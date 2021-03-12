@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
@@ -72,7 +71,7 @@ func writeDummyNetworkConf(name string, addr net.IP) error {
 Name=%s
 Kind=dummy
 `, name)
-	err := ioutil.WriteFile(fmt.Sprintf("/etc/systemd/network/%s.netdev", name), []byte(s), 0644)
+	err := os.WriteFile(fmt.Sprintf("/etc/systemd/network/%s.netdev", name), []byte(s), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create netdev file for %s: %w", name, err)
 	}
@@ -83,7 +82,7 @@ Name=%s
 [Network]
 Address=%s/32
 `, name, addr.String())
-	err = ioutil.WriteFile(fmt.Sprintf("/etc/systemd/network/%s.network", name), []byte(s), 0644)
+	err = os.WriteFile(fmt.Sprintf("/etc/systemd/network/%s.network", name), []byte(s), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create network file for %s: %w", name, err)
 	}
@@ -103,7 +102,7 @@ EmitLLDP=nearest-bridge
 Address=%s/26
 Scope=link
 `, name, addr)
-	err := ioutil.WriteFile(fmt.Sprintf("/etc/systemd/network/%s.network", name), []byte(s), 0644)
+	err := os.WriteFile(fmt.Sprintf("/etc/systemd/network/%s.network", name), []byte(s), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create network file for %s: %w", name, err)
 	}
@@ -269,7 +268,7 @@ func configureBird(asn int, tor1, tor2 net.IP) error {
 		return err
 	}
 
-	err = ioutil.WriteFile("/etc/bird/bird.conf", buf.Bytes(), 0644)
+	err = os.WriteFile("/etc/bird/bird.conf", buf.Bytes(), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write /etc/bird/bird.conf: %w", err)
 	}
@@ -297,7 +296,7 @@ func configureChrony() error {
 		return err
 	}
 
-	err = ioutil.WriteFile("/etc/chrony/chrony.conf", buf.Bytes(), 0644)
+	err = os.WriteFile("/etc/chrony/chrony.conf", buf.Bytes(), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write /etc/chrony/chrony.conf: %w", err)
 	}

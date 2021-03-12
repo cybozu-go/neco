@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 
 	"github.com/cybozu-go/neco"
@@ -30,7 +30,7 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *ht
 	}
 	defer resp.Body.Close()
 
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp("", "")
 	if err != nil {
 		return err
 	}

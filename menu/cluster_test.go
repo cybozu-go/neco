@@ -3,7 +3,7 @@ package menu
 import (
 	"bufio"
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,7 +14,7 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
-	outputDir, err := ioutil.TempDir("", "placemat-menu-test")
+	outputDir, err := os.MkdirTemp("", "placemat-menu-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func injectSabakanDirToExpectedClusterYaml(t *testing.T, testdataDir, outputDir 
 	}
 	defer f1.Close()
 
-	content, err := ioutil.ReadAll(f1)
+	content, err := io.ReadAll(f1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,11 +129,11 @@ func assertTargets(t *testing.T, testdataDir, resultDir string) {
 }
 
 func assertFileEqual(t *testing.T, f1, f2 string) {
-	content1, err := ioutil.ReadFile(f1)
+	content1, err := os.ReadFile(f1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	content2, err := ioutil.ReadFile(f2)
+	content2, err := os.ReadFile(f2)
 	if err != nil {
 		t.Fatal(err)
 	}

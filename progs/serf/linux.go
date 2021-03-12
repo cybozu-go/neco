@@ -3,7 +3,6 @@ package serf
 import (
 	"bufio"
 	"errors"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -49,7 +48,7 @@ func GetOSVersionID() (string, error) {
 
 // GetSerial returns serial number
 func GetSerial() (string, error) {
-	serial, err := ioutil.ReadFile(serialPath)
+	serial, err := os.ReadFile(serialPath)
 	if err != nil {
 		return "", err
 	}

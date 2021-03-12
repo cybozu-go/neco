@@ -2,7 +2,7 @@ package neco
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -36,7 +36,7 @@ func DetectHardware() (HardwareType, error) {
 		return HWTypeNil, errors.New("unsupported hardware type: " + t)
 	}
 
-	vendorBytes, err := ioutil.ReadFile("/sys/class/dmi/id/chassis_vendor")
+	vendorBytes, err := os.ReadFile("/sys/class/dmi/id/chassis_vendor")
 	if err != nil {
 		return HWTypeNil, err
 	}

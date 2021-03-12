@@ -3,7 +3,7 @@ package cke
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"text/template"
 
@@ -26,7 +26,7 @@ func UpdateResources(ctx context.Context) error {
 	}
 
 	for _, filename := range neco.CKEUserResourceFiles {
-		content, err := ioutil.ReadFile(filename)
+		content, err := os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
