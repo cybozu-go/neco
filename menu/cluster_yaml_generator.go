@@ -231,10 +231,11 @@ func createWorkerNode(rack *rack, node *node, diskNumber int, spec *nodeSpec) *t
 
 	for i := 0; i < diskNumber; i++ {
 		nodeSpec.Volumes = append(nodeSpec.Volumes, types.NodeVolumeSpec{
-			Kind:  "raw",
-			Name:  fmt.Sprintf("data%d", i+1),
-			Size:  "50G",
-			Cache: "writeback",
+			Kind:   "raw",
+			Name:   fmt.Sprintf("data%d", i+1),
+			Size:   "50G",
+			Cache:  "none",
+			Format: "raw",
 		})
 	}
 
