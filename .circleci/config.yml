@@ -115,7 +115,7 @@ commands:
 jobs:
   build:
     docker:
-      - image: quay.io/cybozu/golang:1.15-focal
+      - image: quay.io/cybozu/golang:1.16-focal
       - image: quay.io/coreos/etcd:v3.3
     working_directory: /work
     resource_class: xlarge
@@ -136,7 +136,7 @@ jobs:
 
   build_release:
     docker:
-      - image: quay.io/cybozu/golang:1.15-focal
+      - image: quay.io/cybozu/golang:1.16-focal
       - image: quay.io/coreos/etcd:v3.3
     working_directory: /work
     resource_class: xlarge
@@ -163,7 +163,7 @@ jobs:
 
   deploy_github:
     docker:
-      - image: quay.io/cybozu/golang:1.15-focal
+      - image: quay.io/cybozu/golang:1.16-focal
     steps:
       - attach_workspace:
           at: ./artifacts
@@ -265,7 +265,7 @@ jobs:
 
   generate-artifacts:
     docker:
-      - image: quay.io/cybozu/golang:1.15-focal
+      - image: quay.io/cybozu/golang:1.16-focal
     steps:
       - checkout
       - run: go install ./pkg/generate-artifacts/
@@ -364,7 +364,7 @@ jobs:
 
   update-release:
     docker:
-      - image: quay.io/cybozu/golang:1.15-focal
+      - image: quay.io/cybozu/golang:1.16-focal
     steps:
       - add_ssh_keys:
           fingerprints:

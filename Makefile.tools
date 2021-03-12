@@ -239,6 +239,7 @@ teleport: $(TELEPORT_DOWNLOAD)
 $(CKE_DOWNLOAD):
 	mkdir -p $(CKE_DLDIR)
 	git clone --depth 1 -b v$(CKE_VERSION) https://github.com/cybozu-go/cke $(CKE_DLDIR)/source
+	cd $(CKE_DLDIR)/source; go mod tidy
 	cd $(CKE_DLDIR)/source; go build ./pkg/cke
 	cd $(CKE_DLDIR)/source; go build ./pkg/ckecli
 	touch $@
