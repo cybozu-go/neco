@@ -148,14 +148,16 @@ smbios:
 uefi: true
 tpm: true
 volumes:
-- cache: writeback
+- cache: none
   kind: raw
   name: data1
   size: 50G
-- cache: writeback
+  format: raw
+- cache: none
   kind: raw
   name: data2
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -173,14 +175,16 @@ smbios:
 uefi: true
 tpm: true
 volumes:
-- cache: writeback
+- cache: none
   kind: raw
   name: data1
   size: 50G
-- cache: writeback
+  format: raw
+- cache: none
   kind: raw
   name: data2
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -221,14 +225,16 @@ smbios:
 uefi: true
 tpm: true
 volumes:
-- cache: writeback
+- cache: none
   kind: raw
   name: data1
   size: 50G
-- cache: writeback
+  format: raw
+- cache: none
   kind: raw
   name: data2
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -246,14 +252,16 @@ smbios:
 uefi: true
 tpm: true
 volumes:
-- cache: writeback
+- cache: none
   kind: raw
   name: data1
   size: 50G
-- cache: writeback
+  format: raw
+- cache: none
   kind: raw
   name: data2
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -270,22 +278,26 @@ smbios:
   serial: 1145129a085ecf521ab524028302a6b4a4e49a00
 tpm: true
 volumes:
-- cache: writeback
+- cache: none
   kind: raw
   name: data1
   size: 50G
-- cache: writeback
+  format: raw
+- cache: none
   kind: raw
   name: data2
   size: 50G
-- cache: writeback
+  format: raw
+- cache: none
   kind: raw
   name: data3
   size: 50G
-- cache: writeback
+  format: raw
+- cache: none
   kind: raw
   name: data4
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -302,22 +314,26 @@ smbios:
   serial: 628c8c360d0113de66db14a225affcb85fb2a27f
 tpm: true
 volumes:
-- cache: writeback
+- cache: none
   kind: raw
   name: data1
   size: 50G
-- cache: writeback
+  format: raw
+- cache: none
   kind: raw
   name: data2
   size: 50G
-- cache: writeback
+  format: raw
+- cache: none
   kind: raw
   name: data3
   size: 50G
-- cache: writeback
+  format: raw
+- cache: none
   kind: raw
   name: data4
   size: 50G
+  format: raw
 - copy-on-write: true
   image: docker-image
   kind: image
