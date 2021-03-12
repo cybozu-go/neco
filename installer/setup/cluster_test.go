@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
 func TestCluster(t *testing.T) {
-	data, err := ioutil.ReadFile("../cluster.json.example")
+	data, err := os.ReadFile("../cluster.json.example")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -3,14 +3,13 @@ package menu
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"text/template"
 
-	_ "github.com/cybozu-go/neco/menu/menuassets"
 	"github.com/cybozu-go/sabakan/v2"
-	"github.com/rakyll/statik/fs"
 )
 
 const sabakanDir = "sabakan"
@@ -393,17 +392,7 @@ func export(input, output string, args interface{}) error {
 	}
 	defer f.Close()
 
-	statikFS, err := fs.New()
-	if err != nil {
-		return err
-	}
-	r, err := statikFS.Open(input)
-	if err != nil {
-		return err
-	}
-	defer r.Close()
-
-	content, err := ioutil.ReadAll(r)
+	content, err := assets.ReadFile(path.Join("assets", input))
 	if err != nil {
 		return err
 	}
@@ -429,7 +418,7 @@ func exportFile(input, output string, args interface{}) error {
 	}
 	defer r.Close()
 
-	content, err := ioutil.ReadAll(r)
+	content, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}
@@ -457,20 +446,10 @@ func exportExecutableFile(input, output string, args interface{}) error {
 }
 
 func copyFile(src, dist string) error {
-	statikFS, err := fs.New()
-	if err != nil {
-		return err
-	}
-	r, err := statikFS.Open(src)
-	if err != nil {
-		return err
-	}
-	defer r.Close()
-
-	data, err := ioutil.ReadAll(r)
+	data, err := assets.ReadFile(path.Join("assets", src))
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(dist, data, 0644)
+	return os.WriteFile(dist, data, 0644)
 }

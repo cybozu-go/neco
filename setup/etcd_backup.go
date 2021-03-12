@@ -3,7 +3,6 @@ package setup
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"os"
 	"text/template"
 
@@ -77,15 +76,15 @@ func setupEtcdBackup(ctx context.Context, vc *api.Client) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile("/usr/local/bin/etcd-backup", buf.Bytes(), 0755)
+	err = os.WriteFile("/usr/local/bin/etcd-backup", buf.Bytes(), 0755)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(neco.ServiceFile("etcd-backup"), []byte(etcdBackupService), 0644)
+	err = os.WriteFile(neco.ServiceFile("etcd-backup"), []byte(etcdBackupService), 0644)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(neco.TimerFile("etcd-backup"), []byte(etcdBackupTimer), 0644)
+	err = os.WriteFile(neco.TimerFile("etcd-backup"), []byte(etcdBackupTimer), 0644)
 	if err != nil {
 		return err
 	}

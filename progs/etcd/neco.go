@@ -1,7 +1,7 @@
 package etcd
 
 import (
-	"io/ioutil"
+	"os"
 
 	"github.com/cybozu-go/etcdutil"
 	"github.com/cybozu-go/neco"
@@ -20,5 +20,5 @@ func UpdateNecoConfig(lrns []int) error {
 		return err
 	}
 
-	return ioutil.WriteFile(neco.NecoConfFile, data, 0644)
+	return os.WriteFile(neco.NecoConfFile, data, 0644)
 }

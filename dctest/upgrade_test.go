@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -65,7 +64,7 @@ func testUpgrade() {
 	})
 
 	It("should update neco package", func() {
-		data, err := ioutil.ReadFile("../github-token")
+		data, err := os.ReadFile("../github-token")
 		switch {
 		case err == nil:
 			By("setting github-token")

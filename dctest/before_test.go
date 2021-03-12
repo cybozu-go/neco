@@ -3,7 +3,6 @@ package dctest
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,7 +23,7 @@ func runBeforeSuite() {
 	SetDefaultEventuallyPollingInterval(time.Second)
 	SetDefaultEventuallyTimeout(10 * time.Minute)
 
-	data, err := ioutil.ReadFile(machinesFile)
+	data, err := os.ReadFile(machinesFile)
 	Expect(err).NotTo(HaveOccurred())
 
 	machines := struct {

@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -124,7 +123,7 @@ func configureSystemDNS(ctx context.Context, dns string) error {
 	}
 
 	resolvconf := "/etc/resolv.conf"
-	if err := ioutil.WriteFile(resolvconf+".tmp", []byte(fmt.Sprintf("nameserver %s\n", dns)), 0644); err != nil {
+	if err := os.WriteFile(resolvconf+".tmp", []byte(fmt.Sprintf("nameserver %s\n", dns)), 0644); err != nil {
 		return fmt.Errorf("failed to create /etc/resolv.conf.tmp: %w", err)
 	}
 

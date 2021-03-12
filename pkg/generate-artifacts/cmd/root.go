@@ -23,7 +23,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/cybozu-go/neco/generator"
@@ -45,7 +44,7 @@ If --release is given, the generated source code will have a build
 tag "release".  If not, the generated code will have tag "!release".
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		data, err := ioutil.ReadFile(*ignoreFile)
+		data, err := os.ReadFile(*ignoreFile)
 		if err != nil && !os.IsNotExist(err) {
 			fmt.Fprintln(os.Stderr, err.Error())
 			os.Exit(2)

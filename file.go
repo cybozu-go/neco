@@ -1,7 +1,6 @@
 package neco
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -12,5 +11,5 @@ func WriteFile(filename string, data string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filename, []byte(data), 0644)
+	return os.WriteFile(filename, []byte(data), 0644)
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 
@@ -17,11 +16,11 @@ func dumpNecoFiles(lrn int) error {
 		return fmt.Errorf("failed to mkdir %s: %w", neco.NecoDir, err)
 	}
 
-	if err := ioutil.WriteFile(neco.RackFile, []byte(fmt.Sprintf("%d\n", lrn)), 0644); err != nil {
+	if err := os.WriteFile(neco.RackFile, []byte(fmt.Sprintf("%d\n", lrn)), 0644); err != nil {
 		return fmt.Errorf("failed to create %s: %w", neco.RackFile, err)
 	}
 
-	if err := ioutil.WriteFile(neco.ClusterFile, []byte(config.cluster.Name+"\n"), 0644); err != nil {
+	if err := os.WriteFile(neco.ClusterFile, []byte(config.cluster.Name+"\n"), 0644); err != nil {
 		return fmt.Errorf("failed to create %s: %w", neco.ClusterFile, err)
 	}
 
@@ -45,7 +44,7 @@ func dumpNecoFiles(lrn int) error {
 	if err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(neco.SabakanIPAMFile, data, 0644); err != nil {
+	if err := os.WriteFile(neco.SabakanIPAMFile, data, 0644); err != nil {
 		return fmt.Errorf("failed to create%s: %w", neco.SabakanIPAMFile, err)
 	}
 	return nil

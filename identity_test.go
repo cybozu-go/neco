@@ -1,7 +1,6 @@
 package neco
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -9,7 +8,7 @@ import (
 func testMyLRN(t *testing.T) {
 	t.Parallel()
 
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +35,7 @@ func testMyLRN(t *testing.T) {
 func testMyCluster(t *testing.T) {
 	t.Parallel()
 
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Fatal(err)
 	}

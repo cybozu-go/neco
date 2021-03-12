@@ -2,7 +2,7 @@ package sabakan
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 	"os/exec"
 
 	"github.com/cybozu-go/neco"
@@ -26,5 +26,5 @@ func InstallBashCompletion(ctx context.Context) error {
 		return err
 	}
 
-	return ioutil.WriteFile(neco.SabactlBashCompletionFile, output, 0644)
+	return os.WriteFile(neco.SabactlBashCompletionFile, output, 0644)
 }
