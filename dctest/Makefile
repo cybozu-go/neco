@@ -124,5 +124,4 @@ clean:
 setup:
 	cd ../ && time -p $(MAKE) setup
 	cd ../installer && time -p $(MAKE) setup
-	go install github.com/rakyll/statik
 	go install github.com/onsi/ginkgo/ginkgo
