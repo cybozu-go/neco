@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -73,7 +72,7 @@ func uploadOSImages(ctx context.Context, c *sabac.Client, p *http.Client) error 
 
 	kernelURL, initrdURL := neco.CurrentArtifacts.CoreOS.URLs()
 
-	kernelFile, err := ioutil.TempFile("", "kernel")
+	kernelFile, err := os.CreateTemp("", "kernel")
 	if err != nil {
 		return err
 	}
@@ -81,7 +80,7 @@ func uploadOSImages(ctx context.Context, c *sabac.Client, p *http.Client) error 
 		kernelFile.Close()
 		os.Remove(kernelFile.Name())
 	}()
-	initrdFile, err := ioutil.TempFile("", "initrd")
+	initrdFile, err := os.CreateTemp("", "initrd")
 	if err != nil {
 		return err
 	}
@@ -177,7 +176,7 @@ func uploadAssets(ctx context.Context, c *sabac.Client, fetcher neco.ImageFetche
 	}
 
 	// Upload assets for worker node
-	files, err := ioutil.ReadDir(neco.WorkerAssetsPath)
+	files, err := os.ReadDir(neco.WorkerAssetsPath)
 	if err != nil {
 		return err
 	}
@@ -205,7 +204,7 @@ func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Cl
 		return nil
 	}
 
-	f, err := ioutil.TempFile("", "neco-")
+	f, err := os.CreateTemp("", "neco-")
 	if err != nil {
 		return err
 	}

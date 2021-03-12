@@ -1,7 +1,7 @@
 package dctest
 
 import (
-	"io/ioutil"
+	"os"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -18,7 +18,7 @@ func testEtcdpasswd() {
 		execSafeAt(bootServers[0], "etcdpasswd", "set", "default-groups", "sudo,adm")
 		execSafeAt(bootServers[0], "etcdpasswd", "user", "add", user)
 		execSafeAt(bootServers[0], "etcdpasswd", "user", "get", user)
-		keyBytes, err := ioutil.ReadFile(bobPublicKey)
+		keyBytes, err := os.ReadFile(bobPublicKey)
 		Expect(err).ShouldNot(HaveOccurred())
 		_, _, err = execAtWithInput(bootServers[0], keyBytes, "etcdpasswd", "cert", "add", user)
 		Expect(err).ShouldNot(HaveOccurred())

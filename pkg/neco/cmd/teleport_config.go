@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io/ioutil"
 	"os"
 
 	"github.com/cybozu-go/neco"
@@ -64,7 +63,7 @@ func teleportConfig(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(neco.TeleportConfFile, buf.Bytes(), 0600)
+	err = os.WriteFile(neco.TeleportConfFile, buf.Bytes(), 0600)
 	if err != nil {
 		return err
 	}

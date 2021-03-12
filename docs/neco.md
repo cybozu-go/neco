@@ -32,7 +32,7 @@ Features include:
   - [Setup three boot servers as initial cluster](#setup-three-boot-servers-as-initial-cluster)
   - [Add a new boot server](#add-a-new-boot-server)
   - [Setup a new program](#setup-a-new-program)
-  - [Remove a dead boot server](#remove-a-dead-boot-server)
+  - [Remove a boot server](#remove-a-boot-server)
 
 Synopsis
 --------
@@ -346,7 +346,7 @@ When a new program is added to `artifacts.go`, it should be setup as follows:
 1. Run `neco init NAME` on a boot server.
 2. Run `neco init-local NAME` on all boot servers.
 
-### Remove a dead boot server
+### Remove a boot server
 
 1. Run `neco leave LRN` on the current running boot server.
     1. Remove etcd key `<prefix>/bootservers/LRN`.

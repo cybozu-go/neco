@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -25,7 +25,7 @@ var bmcConfigSetBMCUserCmd = &cobra.Command{
 		}
 		defer etcd.Close()
 		st := storage.NewStorage(etcd)
-		data, err := ioutil.ReadFile(args[0])
+		data, err := os.ReadFile(args[0])
 		if err != nil {
 			log.ErrorExit(err)
 		}

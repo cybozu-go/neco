@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -69,7 +68,7 @@ func SetCKETemplate(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
-	ckeTemplate, err := ioutil.ReadFile(neco.CKETemplateFile)
+	ckeTemplate, err := os.ReadFile(neco.CKETemplateFile)
 	if err != nil {
 		return err
 	}
@@ -79,7 +78,7 @@ func SetCKETemplate(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp("", "")
 	if err != nil {
 		return err
 	}

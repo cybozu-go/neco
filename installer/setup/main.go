@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -37,7 +36,7 @@ func sanity() error {
 	if err != nil {
 		return err
 	}
-	data, err := ioutil.ReadFile(filepath.Join(filepath.Dir(myself), "cluster.json"))
+	data, err := os.ReadFile(filepath.Join(filepath.Dir(myself), "cluster.json"))
 	if err != nil {
 		return fmt.Errorf("could not load cluster.json: %w", err)
 	}
@@ -140,7 +139,7 @@ func checkConnectivity() error {
 			continue
 		}
 
-		io.Copy(ioutil.Discard, resp.Body)
+		io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
 		return nil
 	}

@@ -23,10 +23,6 @@
 /neco-operation-cli-linux_*_amd64.deb
 /neco-operation-cli-windows_*_amd64.zip
 
-# ignore go.sum
-/go.sum
-
 # misc
 /build
 /download
-statik.go

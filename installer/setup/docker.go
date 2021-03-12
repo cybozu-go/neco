@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 )
@@ -44,7 +44,7 @@ Environment="HTTPS_PROXY=%s"
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read Docker PGP key: %w", err)
 	}

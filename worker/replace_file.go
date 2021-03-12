@@ -2,12 +2,11 @@ package worker
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 )
 
 func replaceFile(name string, data []byte, mode os.FileMode) (bool, error) {
-	current, err := ioutil.ReadFile(name)
+	current, err := os.ReadFile(name)
 	switch {
 	case os.IsNotExist(err):
 	case err == nil && !bytes.Equal(current, data):

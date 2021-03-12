@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -41,7 +40,7 @@ func enableService(name string) error {
 }
 
 func installService(name string, unit string) error {
-	err := ioutil.WriteFile(filepath.Join("/etc/systemd/system", name+".service"), []byte(unit), 0644)
+	err := os.WriteFile(filepath.Join("/etc/systemd/system", name+".service"), []byte(unit), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create service file for %s: %w", name, err)
 	}
@@ -53,7 +52,7 @@ func installOverrideConf(name string, data string) error {
 	if err != nil {
 		return fmt.Errorf("failed to mkdir /etc/systemd/system/%s.service.d: %w", name, err)
 	}
-	err = ioutil.WriteFile(filepath.Join("/etc/systemd/system", name+".service.d", "override.conf"), []byte(data), 0644)
+	err = os.WriteFile(filepath.Join("/etc/systemd/system", name+".service.d", "override.conf"), []byte(data), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create override.conf for %s: %w", name, err)
 	}

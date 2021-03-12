@@ -3,14 +3,14 @@ package neco
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
 
 // MyLRN returns logical rack number of own node
 func MyLRN() (int, error) {
-	data, err := ioutil.ReadFile(RackFile)
+	data, err := os.ReadFile(RackFile)
 	if err != nil {
 		return 0, err
 	}
@@ -19,7 +19,7 @@ func MyLRN() (int, error) {
 
 // MyCluster returns cluster name of own node
 func MyCluster() (string, error) {
-	data, err := ioutil.ReadFile(ClusterFile)
+	data, err := os.ReadFile(ClusterFile)
 	if err != nil {
 		return "", err
 	}
@@ -30,7 +30,7 @@ func MyCluster() (string, error) {
 // See man os-release
 // e.g. bionic, focal
 func OSCodename() (string, error) {
-	data, err := ioutil.ReadFile("/etc/os-release")
+	data, err := os.ReadFile("/etc/os-release")
 	if err != nil {
 		return "", err
 	}

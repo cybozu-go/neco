@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"strings"
 	"time"
 
@@ -117,7 +116,7 @@ func (d *duration) UnmarshalJSON(b []byte) error {
 }
 
 func parseConfig(reader io.Reader) (*config, error) {
-	data, err := ioutil.ReadAll(reader)
+	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}

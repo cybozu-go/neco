@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"strings"
@@ -87,7 +86,7 @@ func parsePrivateKey(keyPath string) (ssh.Signer, error) {
 	}
 	defer f.Close()
 
-	data, err := ioutil.ReadAll(f)
+	data, err := io.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +171,7 @@ func execSafeAt(host string, args ...string) []byte {
 
 // waitRequestComplete waits for the current request to be completed.
 // If check is not "", the contents is also checked against the output from "neco status".
-func waitRequestComplete(check string) {
+func waitRequestComplete(check string, recover ...bool) {
 	// wait a moment for neco-updater to put a new request.
 	time.Sleep(time.Second * 2)
 
@@ -182,6 +181,13 @@ func waitRequestComplete(check string) {
 			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		}
 		out := string(stdout)
+
+		// Sometimes, neco-worker aborts the update process. Detect it and recover if it is necessary.
+		if len(recover) != 0 && recover[0] && strings.Contains(out, "status: aborted") {
+			execAt(bootServers[0], "neco", "recover")
+			return errors.New("update process is aborted: " + out)
+		}
+
 		if !strings.Contains(out, "status: completed") {
 			return errors.New("request is not completed: " + out)
 		}

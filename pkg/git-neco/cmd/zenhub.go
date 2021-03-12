@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -50,7 +50,7 @@ func (zh *ZenHubClient) request(ctx context.Context, method string, url string, 
 	defer resp.Body.Close()
 
 	if 200 <= resp.StatusCode && resp.StatusCode <= 299 {
-		return ioutil.ReadAll(resp.Body)
+		return io.ReadAll(resp.Body)
 	}
 
 	// Error handling

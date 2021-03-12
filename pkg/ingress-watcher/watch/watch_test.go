@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -58,7 +58,7 @@ func TestWatcherRun(t *testing.T) {
 				httpClient: newTestClient(func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+						Body:       io.NopCloser(bytes.NewBuffer([]byte(""))),
 						Header:     make(http.Header),
 					}, nil
 				}),

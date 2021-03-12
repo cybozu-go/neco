@@ -2,7 +2,6 @@ package neco
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,7 +25,7 @@ func TestDockerRuntime(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	if err != nil {
 		t.Fatal(err)
 	}
