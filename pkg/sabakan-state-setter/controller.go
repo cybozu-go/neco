@@ -46,11 +46,7 @@ func (c *Controller) ClearUnhealthy(mss *machineStateSource) {
 }
 
 // NewController returns controller for sabakan-state-setter
-func NewController(ctx context.Context, sabakanAddress, configFile, interval string, parallelSize int) (*Controller, error) {
-	i, err := time.ParseDuration(interval)
-	if err != nil {
-		return nil, err
-	}
+func NewController(sabakanAddress, serfAddress, configFile string, interval time.Duration, parallelSize int) (*Controller, error) {
 	cf, err := os.Open(configFile)
 	if err != nil {
 		return nil, err
@@ -67,7 +63,7 @@ func NewController(ctx context.Context, sabakanAddress, configFile, interval str
 		return nil, err
 	}
 
-	serfClient, err := newSerfClient("127.0.0.1:7373")
+	serfClient, err := newSerfClient(serfAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +71,7 @@ func NewController(ctx context.Context, sabakanAddress, configFile, interval str
 	promClient := newPromClient()
 
 	return &Controller{
-		interval:          i,
+		interval:          interval,
 		parallelSize:      parallelSize,
 		sabakanClient:     sabakanClient,
 		serfClient:        serfClient,
