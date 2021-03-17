@@ -69,7 +69,7 @@ func testControllerRun(t *testing.T) {
 	`
 	ctr := newMockController(gql, metricsInput, serf, machineTypeQEMU)
 	for i := 0; i < 2; i++ {
-		err := ctr.run(context.Background())
+		err := ctr.runOnce(context.Background())
 		if err != nil {
 			t.Error(err)
 		}
@@ -90,7 +90,7 @@ func testControllerRun(t *testing.T) {
 	`
 	ctr = newMockController(gql, metricsInput, serf, machineTypeQEMU)
 	for i := 0; i < 2; i++ {
-		err := ctr.run(context.Background())
+		err := ctr.runOnce(context.Background())
 		if err != nil {
 			t.Error(err)
 		}
@@ -115,7 +115,7 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.
 `
 	ctr = newMockController(gql, metricsInput, serf, machineTypeQEMU)
 	for i := 0; i < 2; i++ {
-		err := ctr.run(context.Background())
+		err := ctr.runOnce(context.Background())
 		if err != nil {
 			t.Error(err)
 		}

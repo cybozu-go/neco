@@ -53,11 +53,14 @@ Usage
 sabakan-state-setter [OPTIONS]
 ```
 
-| Option              | Default value            | Description                                                                                                                 |
-| ------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `--sabakan-address` | `http://localhost:10080` | URL of sabakan                                                                                                              |
-| `--config-file`     | `''`                     | Path of config file                                                                                                         |
-| `--interval`        | `1m`                     | Interval of scraping metrics. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
+| Option              | Default value            | Description                                                                       |
+| ------------------- | ------------------------ | --------------------------------------------------------------------------------- |
+| `-config-file`      | `''`                     | Path of config file.                                                              |
+| `-etcd-session-ttl` | `1m`                     | TTL of etcd session. This value is interpreted as a [duration string][].          |
+| `-interval`         | `1m`                     | Interval of scraping metrics. This value is interpreted as a [duration string][]. |
+| `-parallel`         | `30`                     | The number of parallel execution of getting machines metrics.                     |
+| `-sabakan-url`      | `http://localhost:10080` | sabakan URL.                                                                      |
+| `-serf-address`     | `127.0.0.1:7373`         | serf address.                                                                     |
 
 Settings of target machine peripherals
 --------------------------------------
@@ -72,11 +75,11 @@ You can configure a set of metrics to scrape for each machine type.
 If all metrics defined in the config file are healthy, the machine is healthy. Otherwise, it's unhealthy.
 
 ### `MachineType`
-| Field                             | Default value | Description                                                                                                                                           |
-| --------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name` string                     |               | Name of this machine type. It is expected that this field is unique in setting file.                                                                  |
-| `metrics` [Metric](#Metric) array | `nil`         | Metrics is an array of `Metric` to be checked.                                                                                                        |
-| `grace-period` string             | `1h`          | Time to wait for updating machine state to `unhealthy`. This value is interpreted as a [duration string](https://golang.org/pkg/time/#ParseDuration). |
+| Field                             | Default value | Description                                                                                                 |
+| --------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------- |
+| `name` string                     |               | Name of this machine type. It is expected that this field is unique in setting file.                        |
+| `metrics` [Metric](#Metric) array | `nil`         | Metrics is an array of `Metric` to be checked.                                                              |
+| `grace-period` string             | `1h`          | Time to wait for updating machine state to `unhealthy`. This value is interpreted as a [duration string][]. |
 
 ### `Metric`
 
@@ -103,6 +106,7 @@ https://github.com/cybozu-go/setup-hw/blob/master/docs/rule.md
 i.e. a metric is selected if and only if all of the conditions are satisfied.
 
 
-[serf]: https://www.serf.io/
-[monitor-hw]: https://github.com/cybozu-go/setup-hw/blob/master/docs/monitor-hw.md
 [Dell BOSS]: https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-Boot-Optimized-Storage-Solution.pdf
+[duration string]: https://golang.org/pkg/time/#ParseDuration
+[monitor-hw]: https://github.com/cybozu-go/setup-hw/blob/master/docs/monitor-hw.md
+[serf]: https://www.serf.io/
