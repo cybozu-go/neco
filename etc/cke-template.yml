@@ -26,9 +26,46 @@ reboot:
   command_timeout_seconds: 1800
 options:
   kube-api:
+    audit_log_enabled: true
+    audit_log_path: /var/log/audit/audit.log
+    audit_log_policy: |
+      apiVersion: audit.k8s.io/v1
+      kind: Policy
+      omitStages:
+        - RequestReceived
+      rules:
+        # Avoid logging secret values
+        - level: Metadata
+          resources:
+            - group: ""
+              resources: ["secrets"]
+            - group: "bitnami.com"
+              resources: ["sealedsecrets"]
+        - level: None
+          verbs: ["get", "watch", "list"]
+        - level: Metadata
+          verbs: ["delete", "deletecollection"]
+        - level: None
+          userGroups:
+            - system:nodes
+            - system:serviceaccounts
+        - level: None
+          users:
+            - system:apiserver
+            - system:kube-controller-manager
+            - system:kube-proxy
+            - system:kube-scheduler
+        - level: RequestResponse
     extra_args:
       - "--enable-admission-plugins=PodSecurityPolicy"
       - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true"
+      - "--audit-log-maxage=1"
+      - "--audit-log-maxsize=10"
+      - "--audit-log-maxbackup=10"
+    extra_binds:
+      - source: /var/log/audit
+        destination: /var/log/audit
+        read_only: false
   kube-controller-manager:
     extra_args:
       - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true"
