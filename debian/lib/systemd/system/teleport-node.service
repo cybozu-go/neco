@@ -12,7 +12,7 @@ KillMode=process
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
 RestartSec=10s
-ExecStart=/usr/sbin/teleport start --roles=node -c /etc/teleport/teleport.yaml
+ExecStart=/usr/sbin/teleport start --roles=node --labels=team=neco -c /etc/teleport/teleport.yaml
 
 [Install]
 WantedBy=multi-user.target
