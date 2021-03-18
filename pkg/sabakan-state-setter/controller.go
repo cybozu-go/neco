@@ -95,7 +95,7 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, con
 }
 
 func (c *Controller) Run(ctx context.Context) error {
-	session, err := concurrency.NewSession(c.etcdClient, concurrency.WithContext(ctx), concurrency.WithTTL(c.sessionTTL))
+	session, err := concurrency.NewSession(c.etcdClient, concurrency.WithTTL(c.sessionTTL))
 	if err != nil {
 		return fmt.Errorf("failed to create new session: %s", err.Error())
 	}
@@ -135,6 +135,7 @@ func (c *Controller) Run(ctx context.Context) error {
 	defer func() {
 		select {
 		case <-session.Done():
+			log.Warn("session is closed, skip resign", nil)
 			return
 		default:
 			ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
