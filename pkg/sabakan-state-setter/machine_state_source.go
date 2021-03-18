@@ -8,8 +8,6 @@ import (
 	dto "github.com/prometheus/client_model/go"
 )
 
-const machineTypeLabelName = "machine-type"
-
 // machineStateSource is a struct of machine state collection
 type machineStateSource struct {
 	serial string
@@ -20,12 +18,20 @@ type machineStateSource struct {
 	machineType *machineType
 }
 
-func newMachineStateSource(m machine, members []serf.Member, machineTypes []*machineType) *machineStateSource {
+func newMachineStateSource(m *machine, members []serf.Member, machineTypes []*machineType) *machineStateSource {
+	machineType := findMachineType(m.Type, machineTypes)
+	if machineType == nil {
+		log.Warn(machineTypeLabelName+" is not defined", map[string]interface{}{
+			"serial": m.Serial,
+			"ipv4":   m.IPv4Addr,
+			"name":   m.Type,
+		})
+	}
 	return &machineStateSource{
-		serial:      m.Spec.Serial,
-		ipv4:        m.Spec.IPv4[0],
-		serfStatus:  findMember(members, m.Spec.IPv4[0]),
-		machineType: findMachineType(&m, machineTypes),
+		serial:      m.Serial,
+		ipv4:        m.IPv4Addr,
+		serfStatus:  findMember(members, m.IPv4Addr),
+		machineType: machineType,
 	}
 }
 
@@ -38,32 +44,10 @@ func findMember(members []serf.Member, addr string) *serf.Member {
 	return nil
 }
 
-func findMachineType(m *machine, machineTypes []*machineType) *machineType {
-	mtLabel := findLabel(m.Spec.Labels, machineTypeLabelName)
-	if mtLabel == nil {
-		log.Warn(machineTypeLabelName+" is not set", map[string]interface{}{
-			"serial": m.Spec.Serial,
-			"ipv4":   m.Spec.IPv4,
-		})
-		return nil
-	}
+func findMachineType(name string, machineTypes []*machineType) *machineType {
 	for _, mt := range machineTypes {
-		if mt.Name == mtLabel.Value {
+		if mt.Name == name {
 			return mt
-		}
-	}
-
-	log.Warn(machineTypeLabelName+"["+mtLabel.Value+"] is not defined", map[string]interface{}{
-		"serial": m.Spec.Serial,
-		"ipv4":   m.Spec.IPv4,
-	})
-	return nil
-}
-
-func findLabel(labels []label, key string) *label {
-	for _, l := range labels {
-		if l.Name == key {
-			return &l
 		}
 	}
 	return nil
