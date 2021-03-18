@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
@@ -28,7 +27,7 @@ type Controller struct {
 	promClient    PrometheusClient
 	serfClient    SerfClient
 
-	machineTypes []*machineType
+	machineTypes map[string]*machineType
 
 	unhealthyMachines map[string]time.Time
 
@@ -57,13 +56,7 @@ func (c *Controller) ClearUnhealthy(mss *machineStateSource) {
 
 // NewController returns controller for sabakan-state-setter
 func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, configFile, electionValue string, interval time.Duration, parallelSize int, sessionTTL time.Duration) (*Controller, error) {
-	cf, err := os.Open(configFile)
-	if err != nil {
-		return nil, err
-	}
-	defer cf.Close()
-
-	cfg, err := parseConfig(cf)
+	machineTypes, err := readConfigFile(configFile)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +82,7 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, con
 		sabakanClient:     sabakanClient,
 		serfClient:        serfClient,
 		promClient:        promClient,
-		machineTypes:      cfg.MachineTypes,
+		machineTypes:      machineTypes,
 		unhealthyMachines: make(map[string]time.Time),
 	}, nil
 }

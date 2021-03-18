@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -115,11 +116,26 @@ func (d *duration) UnmarshalJSON(b []byte) error {
 	}
 }
 
-func parseConfig(reader io.Reader) (*config, error) {
+func readConfigFile(name string) (map[string]*machineType, error) {
+	cf, err := os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer cf.Close()
+
+	ret, err := parseConfig(cf)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func parseConfig(reader io.Reader) (map[string]*machineType, error) {
 	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
+
 	cfg := &config{}
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
@@ -129,10 +145,13 @@ func parseConfig(reader io.Reader) (*config, error) {
 	if len(cfg.MachineTypes) == 0 {
 		return nil, errors.New("machine-types are not defined")
 	}
+
+	ret := make(map[string]*machineType)
 	for _, t := range cfg.MachineTypes {
 		if t.GracePeriod.Duration == 0 {
 			t.GracePeriod.Duration = time.Hour
 		}
+		ret[t.Name] = t
 	}
-	return cfg, nil
+	return ret, nil
 }

@@ -15,7 +15,7 @@ func newMockController(gql *gqlMockClient, metricsInput string, serf *serfMockCl
 		sabakanClient:     gql,
 		promClient:        newMockPromClient(metricsInput),
 		serfClient:        serf,
-		machineTypes:      []*machineType{mt},
+		machineTypes:      map[string]*machineType{mt.Name: mt},
 		unhealthyMachines: make(map[string]time.Time),
 	}
 }
