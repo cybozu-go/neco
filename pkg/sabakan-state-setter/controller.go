@@ -33,7 +33,7 @@ type Controller struct {
 	unhealthyMachines map[string]time.Time
 
 	etcdClient    *clientv3.Client
-	sessionTTL    int
+	sessionTTL    time.Duration
 	electionValue string
 }
 
@@ -56,7 +56,7 @@ func (c *Controller) ClearUnhealthy(mss *machineStateSource) {
 }
 
 // NewController returns controller for sabakan-state-setter
-func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, configFile, electionValue string, interval time.Duration, parallelSize, sessionTTL int) (*Controller, error) {
+func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, configFile, electionValue string, interval time.Duration, parallelSize int, sessionTTL time.Duration) (*Controller, error) {
 	cf, err := os.Open(configFile)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, con
 }
 
 func (c *Controller) Run(ctx context.Context) error {
-	session, err := concurrency.NewSession(c.etcdClient, concurrency.WithTTL(c.sessionTTL))
+	session, err := concurrency.NewSession(c.etcdClient, concurrency.WithTTL(int(c.sessionTTL.Seconds())))
 	if err != nil {
 		return fmt.Errorf("failed to create new session: %s", err.Error())
 	}
@@ -118,6 +118,8 @@ func (c *Controller) Run(ctx context.Context) error {
 		doneCh <- election.Campaign(ctx, c.electionValue)
 	}()
 	select {
+	case <-ctx.Done():
+		return ctx.Err()
 	case <-session.Done():
 		return errors.New("failed to campaign: session is closed")
 	case err := <-doneCh:

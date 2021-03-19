@@ -15,8 +15,8 @@ import (
 
 var (
 	flagConfigFile     = flag.String("config-file", "", "path of config file")
-	flagEtcdSessionTTL = flag.String("etcd-session-ttl", "1m", "TTL of etcd session")
-	flagInterval       = flag.String("interval", "1m", "interval of scraping metrics")
+	flagEtcdSessionTTL = flag.Duration("etcd-session-ttl", 1*time.Minute, "TTL of etcd session")
+	flagInterval       = flag.Duration("interval", 1*time.Minute, "interval of scraping metrics")
 	flagParallelSize   = flag.Int("parallel", 30, "The number of parallel execution of getting machines metrics")
 	flagSabakanURL     = flag.String("sabakan-url", "http://localhost:10080", "sabakan URL")
 	flagSerfAddress    = flag.String("serf-address", "127.0.0.1:7373", "serf address")
@@ -24,15 +24,7 @@ var (
 
 func main() {
 	flag.Parse()
-	ttl, err := time.ParseDuration(*flagEtcdSessionTTL)
-	if err != nil {
-		log.ErrorExit(err)
-	}
-	interval, err := time.ParseDuration(*flagInterval)
-	if err != nil {
-		log.ErrorExit(err)
-	}
-	err = well.LogConfig{}.Apply()
+	err := well.LogConfig{}.Apply()
 	if err != nil {
 		log.ErrorExit(err)
 	}
@@ -50,7 +42,7 @@ func main() {
 
 	// Using well.Go for terminating this process when catche a signal.
 	well.Go(func(ctx context.Context) error {
-		ctr, err := sss.NewController(etcdClient, *flagSabakanURL, *flagSerfAddress, *flagConfigFile, hostname, interval, *flagParallelSize, int(ttl.Seconds()))
+		ctr, err := sss.NewController(etcdClient, *flagSabakanURL, *flagSerfAddress, *flagConfigFile, hostname, *flagInterval, *flagParallelSize, *flagEtcdSessionTTL)
 		if err != nil {
 			return fmt.Errorf("failed to create controller: %s", err.Error())
 		}

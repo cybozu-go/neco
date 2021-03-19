@@ -7,7 +7,7 @@ import (
 
 // etcd keys
 const (
-	KeySabakanStateSetterLeader = "leader/setter/"
+	KeySabakanStateSetterLeader = "leader/sabakan-state-setter/"
 	KeyUpdaterLeader            = "leader/updater/"
 	KeyWorkerLeader             = "leader/worker/"
 	KeyInfoPrefix               = "info/"
