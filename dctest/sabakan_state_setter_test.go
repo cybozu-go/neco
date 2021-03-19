@@ -1,10 +1,15 @@
 package dctest
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
+	"strconv"
 
+	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -61,6 +66,76 @@ func testSabakanStateSetter() {
 			return nil
 		}).Should(Succeed())
 	})
+
+	It("should switch the leader", func() {
+		By("getting leader node name")
+		var leaderNodeBefore string
+		Eventually(func() error {
+			node, err := getLeaderNode(storage.KeySabakanStateSetterLeader)
+			if err != nil {
+				return err
+			}
+			leaderNodeBefore = node
+			return nil
+		}).Should(Succeed())
+
+		By("restarting sabakan-state-setter on " + leaderNodeBefore)
+		index, err := strconv.Atoi(leaderNodeBefore[len(leaderNodeBefore)-1:])
+		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAt(bootServers[index], "sudo", "systemctl", "restart", "sabakan-state-setter.service")
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		By("getting leader node name again")
+		var leaderNodeAfter string
+		Eventually(func() error {
+			node, err := getLeaderNode(storage.KeySabakanStateSetterLeader)
+			if err != nil {
+				return err
+			}
+			leaderNodeAfter = node
+			return nil
+		}).Should(Succeed())
+		Expect(leaderNodeAfter).ShouldNot(Equal(leaderNodeBefore))
+	})
+}
+
+func getLeaderNode(leaderKeyPrefix string) (string, error) {
+	stdout, _, err := execAt(bootServers[0], "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
+		"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "get", neco.NecoPrefix+leaderKeyPrefix, "--prefix")
+	if err != nil {
+		return "", err
+	}
+
+	var result struct {
+		KVS []*struct {
+			CreateRevision int    `json:"create_revision"`
+			Value          string `json:"value"`
+		} `json:"kvs"`
+	}
+	err = json.Unmarshal(stdout, &result)
+	if err != nil {
+		return "", err
+	}
+	if len(result.KVS) == 0 {
+		return "", errors.New("there is no candidate")
+	}
+
+	revision := math.MaxInt32
+	var value string
+	for _, kvs := range result.KVS {
+		val, err := base64.StdEncoding.DecodeString(kvs.Value)
+		if err != nil {
+			return "", err
+		}
+		fmt.Printf("- %10d, %s\n", kvs.CreateRevision, string(val))
+
+		if kvs.CreateRevision < revision {
+			revision = kvs.CreateRevision
+			value = string(val)
+		}
+	}
+	fmt.Printf("sabakan-state-setter leader node: %s\n", value)
+	return value, nil
 }
 
 func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
