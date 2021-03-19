@@ -20,6 +20,7 @@ TELEPORT_VERSION = 5.2.1
 # kubeseal is a CLI tool for Sealed Secrets
 # https://github.com/bitnami-labs/sealed-secrets
 KUBESEAL_VERSION = 0.14.1
+LOGCLI_VERSION = 2.1.0
 
 SUDO = sudo
 
