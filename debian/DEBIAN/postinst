@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-SERVICES="node-exporter neco-updater neco-worker sabakan-state-setter ingress-watcher cke teleport-node"
+SERVICES="node-exporter neco-updater neco-worker sabakan-state-setter ingress-watcher cke cke-localproxy teleport-node"
 TIMERS="docker-prune kill-old-login-sessions backup-cke-etcd"
 
 configure() {

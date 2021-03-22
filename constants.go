@@ -101,6 +101,8 @@ const (
 
 	CKEService = "cke"
 	CKEPrefix  = "/cke/"
+
+	CKELocalProxyService = "cke-localproxy"
 )
 
 // ingress-watcher params

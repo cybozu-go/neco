@@ -75,6 +75,9 @@ new a application NAME.`,
 				err = neco.StartService(ctx, neco.SabakanService)
 			case "cke":
 				err = neco.StartService(ctx, neco.CKEService)
+				if err == nil {
+					err = neco.StartService(ctx, neco.CKELocalProxyService)
+				}
 			}
 			return err
 		})
