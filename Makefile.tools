@@ -29,9 +29,11 @@ CKE_DLDIR := $(DOWNLOADDIR)/cke-v$(CKE_VERSION)
 CKE_DOWNLOAD := $(CKE_DLDIR)/downloaded
 MOCO_DLDIR := $(DOWNLOADDIR)/moco-v$(MOCO_VERSION)
 MOCO_DOWNLOAD := $(MOCO_DLDIR)/downloaded
+LOGCLI_DLDIR := $(DOWNLOADDIR)/logcli-v$(LOGCLI_VERSION)
+LOGCLI_DOWNLOAD := $(LOGCLI_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl argocd kubectl kubeseal lvmd stern kustomize teleport cke moco
+all: node_exporter containerd crictl argocd kubectl kubeseal lvmd stern kustomize teleport cke moco logcli
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -274,6 +276,30 @@ moco: $(MOCO_DOWNLOAD)
 	chmod +x $(MAC_BINDIR)/kubectl-moco
 	cp $(MOCO_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
 	cp $(MOCO_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+
+$(LOGCLI_DOWNLOAD):
+	mkdir -p $(LOGCLI_DLDIR)
+	$(WGET) -O $(LOGCLI_DLDIR)/logcli-linux-amd64.zip       https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-linux-amd64.zip
+	$(WGET) -O $(LOGCLI_DLDIR)/logcli-windows-amd64.exe.zip https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-windows-amd64.exe.zip
+	$(WGET) -O $(LOGCLI_DLDIR)/logcli-darwin-amd64.zip      https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-darwin-amd64.zip
+	$(WGET) -O $(LOGCLI_DLDIR)/LICENSE   https://raw.githubusercontent.com/grafana/loki/v$(LOGCLI_VERSION)/LICENSE
+	$(WGET) -O $(LOGCLI_DLDIR)/README.md https://raw.githubusercontent.com/grafana/loki/v$(LOGCLI_VERSION)/README.md
+	touch $@
+
+.PHONY: logcli
+logcli: $(LOGCLI_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	unzip -p $(LOGCLI_DLDIR)/logcli-linux-amd64.zip > $(BINDIR)/logcli
+	chmod +x $(BINDIR)/logcli
+	unzip -p $(LOGCLI_DLDIR)/logcli-windows-amd64.exe.zip > $(WINDOWS_BINDIR)/logcli.exe
+	unzip -p $(LOGCLI_DLDIR)/logcli-darwin-amd64.zip > $(MAC_BINDIR)/logcli 
+	chmod +x $(MAC_BINDIR)/logcli
+	cp $(LOGCLI_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(LOGCLI_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(LOGCLI_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(LOGCLI_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(LOGCLI_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(LOGCLI_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 .PHONY: clean
 clean:
