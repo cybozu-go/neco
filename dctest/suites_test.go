@@ -88,8 +88,8 @@ var rebootWorkerSuite = func() {
 
 // upgradeSuite is a test suite that tests upgrading process works correctry
 var upgradeSuite = func() {
-	Context("sabakan-state-setter", testSabakanStateSetter)
 	Context("upgrade", testUpgrade)
+	Context("upgrade sabakan-state-setter", testSabakanStateSetter)
 	Context("upgraded cke", testCKE)
 	Context("upgraded coil", testCoil)
 	Context("upgraded unbound", testUnbound)
