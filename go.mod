@@ -10,12 +10,12 @@ require (
 	github.com/coreos/ignition v0.32.0 // indirect
 	github.com/cybozu-go/etcdutil v1.3.5
 	github.com/cybozu-go/log v1.6.0
-	github.com/cybozu-go/netutil v1.3.0
-	github.com/cybozu-go/placemat/v2 v2.0.2
+	github.com/cybozu-go/netutil v1.4.1
+	github.com/cybozu-go/placemat/v2 v2.0.4
 	github.com/cybozu-go/sabakan/v2 v2.5.3
 	github.com/cybozu-go/well v1.10.0
 	github.com/docker/docker v1.4.2-0.20191219165747-a9416c67da9f // indirect
-	github.com/google/go-cmp v0.5.4
+	github.com/google/go-cmp v0.5.5
 	github.com/google/go-containerregistry v0.4.0
 	github.com/google/go-github/v33 v33.0.0
 	github.com/hashicorp/go-msgpack v0.5.4 // indirect
