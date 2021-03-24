@@ -17,9 +17,6 @@ import (
 )
 
 func (o *operator) StopCKE(ctx context.Context, req *neco.UpdateRequest) error {
-	if err := o.stopService(ctx, neco.CKELocalProxyService); err != nil {
-		return err
-	}
 	return o.stopService(ctx, neco.CKEService)
 }
 
@@ -34,11 +31,6 @@ func (o *operator) UpdateCKE(ctx context.Context, req *neco.UpdateRequest) error
 	}
 
 	err = neco.RestartService(ctx, neco.CKEService)
-	if err != nil {
-		return err
-	}
-
-	err = neco.RestartService(ctx, neco.CKELocalProxyService)
 	if err != nil {
 		return err
 	}

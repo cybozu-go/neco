@@ -241,16 +241,15 @@ teleport: $(TELEPORT_DOWNLOAD)
 $(CKE_DOWNLOAD):
 	mkdir -p $(CKE_DLDIR)
 	git clone --depth 1 -b v$(CKE_VERSION) https://github.com/cybozu-go/cke $(CKE_DLDIR)/source
-	cd $(CKE_DLDIR)/source; go build -ldflags="-w -s" ./pkg/cke
-	cd $(CKE_DLDIR)/source; go build -ldflags="-w -s" ./pkg/cke-localproxy
-	cd $(CKE_DLDIR)/source; go build -ldflags="-w -s" ./pkg/ckecli
+	cd $(CKE_DLDIR)/source; go mod tidy
+	cd $(CKE_DLDIR)/source; go build ./pkg/cke
+	cd $(CKE_DLDIR)/source; go build ./pkg/ckecli
 	touch $@
 
 .PHONY: cke
 cke: $(CKE_DOWNLOAD)
 	mkdir -p $(BINDIR) $(SBINDIR)
 	cp $(CKE_DLDIR)/source/cke $(SBINDIR)/cke
-	cp $(CKE_DLDIR)/source/cke-localproxy $(SBINDIR)/cke-localproxy
 	cp $(CKE_DLDIR)/source/ckecli $(BINDIR)/ckecli
 
 $(MOCO_DOWNLOAD):
