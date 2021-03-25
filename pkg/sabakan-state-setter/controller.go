@@ -258,8 +258,8 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	now := time.Now()
 
 	for _, mss := range machineStateSources {
-		newState, hasTransition := mss.decideMachineStateCandidate()
-		if !hasTransition {
+		newState := mss.decideMachineState()
+		if newState == noTransition {
 			continue
 		}
 

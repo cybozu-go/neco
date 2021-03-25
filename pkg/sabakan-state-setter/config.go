@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -21,6 +22,22 @@ type targetMetric struct {
 type selector struct {
 	Labels      map[string]string `json:"labels,omitempty"`
 	LabelPrefix map[string]string `json:"label-prefix,omitempty"`
+}
+
+func (s *selector) String() string {
+	if s == nil {
+		return "{}"
+	}
+
+	var ss []string
+	for k, v := range s.Labels {
+		ss = append(ss, k+":"+v)
+	}
+	for k, v := range s.LabelPrefix {
+		ss = append(ss, k+":"+v+"*")
+	}
+	sort.Strings(ss)
+	return "{" + strings.Join(ss, ",") + "}"
 }
 
 func (s *selector) Match(mf *dto.MetricFamily) []*dto.Metric {
