@@ -138,23 +138,21 @@ Since Neco is the system to bootstrap and maintain an on-premise data center, th
 To simulate an on-premise data center, we have created [placemat][], a tool to construct a virtual data center using containers, virtual machines and Linux network stacks.
 
 The virtual data center implements the aforementioned leaf-spine networks with BGP routers.
-To create the virtual data center, run the following commands on Ubuntu 18.04:
+To create the virtual data center, run the following commands on Ubuntu 20.04:
 
 ```console
 $ sudo add-apt-repository ppa:smoser/swtpm
-$ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7AD8C79D
-$ sudo add-apt-repository "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu bionic main"
+$ echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+$ curl -fsSL https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/devel_kubic_libcontainers_stable.gpg > /dev/null
 $ wget -O - https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
 $ sudo apt update
-$ sudo apt install -y build-essential systemd-container lldpd qemu qemu-kvm socat picocom swtpm cloud-utils jq freeipmi-tools unzip skopeo fakeroot docker-ce docker-ce-cli containerd.io
+$ sudo apt install -y build-essential systemd-container lldpd qemu qemu-kvm socat picocom swtpm cloud-utils bird2 squid chrony dnsmasq jq freeipmi-tools unzip skopeo fakeroot docker-ce docker-ce-cli containerd.io
 $ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios.bin
 $ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios-256k.bin
 $ sudo install -m 0644 -b bios.bin bios-256k.bin /usr/share/seabios/
-$ wget https://github.com/rkt/rkt/releases/download/v1.30.0/rkt_1.30.0-1_amd64.deb
-$ sudo dpkg -i rkt_1.30.0-1_amd64.deb
-$ wget https://github.com/cybozu-go/placemat/releases/download/v1.5.3/placemat_1.5.3_amd64.deb
-$ sudo dpkg -i placemat_1.5.3_amd64.deb
+$ wget https://github.com/cybozu-go/placemat/releases/download/v2.0.4/placemat2_2.0.4_amd64.deb
+$ sudo dpkg -i ./placemat2_2.0.4_amd64.deb
 $ git clone https://github.com/cybozu-go/neco
 $ cd neco/dctest
 $ make setup
@@ -165,7 +163,7 @@ $ make test
 - To login a boot server in the virtual data center, run `./dcssh boot-0`.
 - To stop and delete the virtual data center, run `make stop`.
 
-The setup commands above are examined on a GCP VM based on the Ubuntu 18.04 disk image.
+The setup commands above are examined on a GCP VM based on the Ubuntu 20.04 disk image.
 Some more setup steps are needed for the GCP environment.
 
 - [Enable nested virtualization by creating a custom image](https://cloud.google.com/compute/docs/instances/enable-nested-virtualization-vm-instances).

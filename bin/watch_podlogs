@@ -5,10 +5,10 @@
 tail_once() {
   host="$1"
   $GCLOUD 2>/dev/null compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
-    sudo nsenter -n -t '$(sudo pmctl pod show operation | jq .pid)' ssh -F ssh_config \
+    sudo ip netns exec operation ssh -F ssh_config \
      ${host} "test -f .kube/config" || return
   $GCLOUD 2>/dev/null compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
-    sudo nsenter -n -t '$(sudo pmctl pod show operation | jq .pid)' ssh -F ssh_config \
+    sudo ip netns exec operation ssh -F ssh_config \
      ${host} "stern --all-namespaces '\\.\\*'"
 }
 
