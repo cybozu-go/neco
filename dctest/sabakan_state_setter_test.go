@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"strconv"
 
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/sabakan/v2"
@@ -121,21 +121,25 @@ func getLeaderNode(leaderKeyPrefix string) (string, error) {
 		return "", errors.New("there is no candidate")
 	}
 
-	revision := math.MaxInt32
+	var revision int
 	var value string
 	for _, kvs := range result.KVS {
 		val, err := base64.StdEncoding.DecodeString(kvs.Value)
 		if err != nil {
 			return "", err
 		}
-		fmt.Printf("- %10d, %s\n", kvs.CreateRevision, string(val))
+		log.Info("sabakan-state-setter: leader key revision of "+string(val), map[string]interface{}{
+			"revision": kvs.CreateRevision,
+		})
 
-		if kvs.CreateRevision < revision {
+		// revision starts at 1
+		// https://github.com/etcd-io/website/blob/master/content/docs/v3.4.0/learning/glossary.md#revision
+		if revision == 0 || kvs.CreateRevision < revision {
 			revision = kvs.CreateRevision
 			value = string(val)
 		}
 	}
-	fmt.Printf("sabakan-state-setter leader node: %s\n", value)
+	log.Info("sabakan-state-setter: leader is "+value, nil)
 	return value, nil
 }
 
