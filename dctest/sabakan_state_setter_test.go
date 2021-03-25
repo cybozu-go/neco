@@ -86,16 +86,17 @@ func testSabakanStateSetter() {
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("getting leader node name again")
-		var leaderNodeAfter string
 		Eventually(func() error {
-			node, err := getLeaderNode(storage.KeySabakanStateSetterLeader)
+			leaderNodeAfter, err := getLeaderNode(storage.KeySabakanStateSetterLeader)
 			if err != nil {
 				return err
 			}
-			leaderNodeAfter = node
+
+			if leaderNodeAfter == leaderNodeBefore {
+				return errors.New("leader is not changed")
+			}
 			return nil
 		}).Should(Succeed())
-		Expect(leaderNodeAfter).ShouldNot(Equal(leaderNodeBefore))
 	})
 }
 
