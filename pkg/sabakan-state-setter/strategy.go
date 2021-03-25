@@ -10,7 +10,6 @@ const (
 	monitorHWStatusWarning  = 1
 	monitorHWStatusCritical = 2
 	monitorHWStatusNull     = -1
-	systemdUnitsFailedTag   = "systemd-units-failed"
 )
 
 func (mss *machineStateSource) decideMachineStateCandidate() (sabakan.MachineState, bool) {
@@ -21,6 +20,7 @@ func (mss *machineStateSource) decideMachineStateCandidate() (sabakan.MachineSta
 		})
 		return sabakan.StateUnreachable, true
 	}
+
 	if mss.serfStatus.Status != "alive" {
 		log.Info("unreachable; serf status != alive", map[string]interface{}{
 			"serial": mss.serial,
@@ -30,27 +30,27 @@ func (mss *machineStateSource) decideMachineStateCandidate() (sabakan.MachineSta
 		return sabakan.StateUnreachable, true
 	}
 
-	suf, ok := mss.serfStatus.Tags[systemdUnitsFailedTag]
-	if !ok {
-		state := mss.decideByMonitorHW()
-		if state == sabakan.StateHealthy {
-			// Do nothing if there is no systemd-units-failed tag and no hardware failure.
-			// In this case, the machine is starting up.
-			return sabakan.MachineState(""), false
-		}
-		return state, true
-	}
-
-	if len(suf) != 0 {
+	if mss.serfStatus.SystemdUnitsFailed != nil && *mss.serfStatus.SystemdUnitsFailed != "" {
 		log.Info("unhealthy; some systemd units failed", map[string]interface{}{
 			"serial": mss.serial,
 			"ipv4":   mss.ipv4,
-			"failed": suf,
+			"failed": *mss.serfStatus.SystemdUnitsFailed,
 		})
 		return sabakan.StateUnhealthy, true
 	}
 
-	return mss.decideByMonitorHW(), true
+	state := mss.decideByMonitorHW()
+	if state != sabakan.StateHealthy {
+		return state, true
+	}
+
+	if mss.serfStatus.SystemdUnitsFailed == nil {
+		// Do nothing if there is no systemd-units-failed tag and no hardware failure.
+		// In this case, the machine is starting up.
+		return sabakan.MachineState(""), false
+	}
+
+	return sabakan.StateHealthy, true
 }
 
 func (mss *machineStateSource) decideByMonitorHW() sabakan.MachineState {

@@ -207,7 +207,7 @@ func (c *Controller) runOnce(ctx context.Context) error {
 		return nil
 	}
 
-	members, err := c.serfClient.GetSerfMembers()
+	serfStatus, err := c.serfClient.GetSerfStatus()
 	if err != nil {
 		log.Warn("failed to get serf members", map[string]interface{}{
 			log.FnError: err.Error(),
@@ -219,7 +219,7 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	// Construct a slice of machineStateSource
 	machineStateSources := make([]*machineStateSource, len(machines))
 	for i, m := range machines {
-		machineStateSources[i] = newMachineStateSource(m, members, c.machineTypes)
+		machineStateSources[i] = newMachineStateSource(m, serfStatus, c.machineTypes)
 	}
 
 	// Get machine metrics
