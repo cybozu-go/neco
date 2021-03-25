@@ -213,6 +213,12 @@ func getVaultToken() string {
 	return token
 }
 
+func execEtcdctlAt(host string, args ...string) ([]byte, []byte, error) {
+	execArgs := []string{"env", "ETCDCTL_API=3", "etcdctl", "--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key"}
+	execArgs = append(execArgs, args...)
+	return execAt(host, execArgs...)
+}
+
 func checkSystemdServicesOnBoot() {
 	services := []string{
 		"bird.service",
