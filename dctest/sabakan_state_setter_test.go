@@ -101,8 +101,7 @@ func testSabakanStateSetter() {
 }
 
 func getLeaderNode(leaderKeyPrefix string) (string, error) {
-	stdout, _, err := execAt(bootServers[0], "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
-		"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "get", neco.NecoPrefix+leaderKeyPrefix, "--prefix")
+	stdout, _, err := execEtcdctlAt(bootServers[0], "-w", "json", "get", neco.NecoPrefix+leaderKeyPrefix, "--prefix")
 	if err != nil {
 		return "", err
 	}
