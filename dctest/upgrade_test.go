@@ -103,8 +103,7 @@ func testUpgrade() {
 
 		By("Checking version of etcd cluster")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(bootServers[0], "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
-				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key",
+			stdout, stderr, err := execEtcdctlAt(bootServers[0], "-w", "json",
 				"--endpoints=10.69.0.3:2379,10.69.0.195:2379,10.69.1.131:2379",
 				"endpoint", "status")
 			if err != nil {

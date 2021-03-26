@@ -112,8 +112,7 @@ func testJoinRemove() {
 	})
 
 	It("should add boot-3 to etcd cluster", func() {
-		stdout, _, err := execAt(bootServers[0], "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
-			"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
+		stdout, _, err := execEtcdctlAt(bootServers[0], "-w", "json", "member", "list")
 		Expect(err).ShouldNot(HaveOccurred())
 		var mlr struct {
 			Members []struct {
@@ -154,8 +153,7 @@ func testJoinRemove() {
 
 		By("Waiting boot-3 gets removed from etcd")
 		Eventually(func() error {
-			stdout, _, err := execAt(bootServers[0], "env", "ETCDCTL_API=3", "etcdctl", "-w", "json",
-				"--cert=/etc/neco/etcd.crt", "--key=/etc/neco/etcd.key", "member", "list")
+			stdout, _, err := execEtcdctlAt(bootServers[0], "-w", "json", "member", "list")
 			if err != nil {
 				return err
 			}

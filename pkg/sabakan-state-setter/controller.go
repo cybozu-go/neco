@@ -2,13 +2,19 @@ package sss
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/sabakan/v2"
 	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
+	"github.com/cybozu-go/well"
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
@@ -25,6 +31,10 @@ type Controller struct {
 	machineTypes []*machineType
 
 	unhealthyMachines map[string]time.Time
+
+	etcdClient    *clientv3.Client
+	sessionTTL    time.Duration
+	electionValue string
 }
 
 // RegisterUnhealthy registers unhealthy machine and returns true
@@ -46,11 +56,7 @@ func (c *Controller) ClearUnhealthy(mss *machineStateSource) {
 }
 
 // NewController returns controller for sabakan-state-setter
-func NewController(ctx context.Context, sabakanAddress, configFile, interval string, parallelSize int) (*Controller, error) {
-	i, err := time.ParseDuration(interval)
-	if err != nil {
-		return nil, err
-	}
+func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, configFile, electionValue string, interval time.Duration, parallelSize int, sessionTTL time.Duration) (*Controller, error) {
 	cf, err := os.Open(configFile)
 	if err != nil {
 		return nil, err
@@ -67,7 +73,7 @@ func NewController(ctx context.Context, sabakanAddress, configFile, interval str
 		return nil, err
 	}
 
-	serfClient, err := newSerfClient("127.0.0.1:7373")
+	serfClient, err := newSerfClient(serfAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +81,10 @@ func NewController(ctx context.Context, sabakanAddress, configFile, interval str
 	promClient := newPromClient()
 
 	return &Controller{
-		interval:          i,
+		etcdClient:        etcdClient,
+		electionValue:     electionValue,
+		sessionTTL:        sessionTTL,
+		interval:          interval,
 		parallelSize:      parallelSize,
 		sabakanClient:     sabakanClient,
 		serfClient:        serfClient,
@@ -85,23 +94,113 @@ func NewController(ctx context.Context, sabakanAddress, configFile, interval str
 	}, nil
 }
 
-// RunPeriodically runs state management periodically
-func (c *Controller) RunPeriodically(ctx context.Context) error {
-	ticker := time.NewTicker(c.interval)
-	defer ticker.Stop()
+func (c *Controller) Run(ctx context.Context) error {
+	session, err := concurrency.NewSession(c.etcdClient, concurrency.WithTTL(int(c.sessionTTL.Seconds())))
+	if err != nil {
+		return fmt.Errorf("failed to create new session: %s", err.Error())
+	}
+	defer func() {
+		// Checking the session to avoid an error caused by duplicated closing.
+		select {
+		case <-session.Done():
+			return
+		default:
+			session.Close()
+		}
+	}()
+
+	election := concurrency.NewElection(session, storage.KeySabakanStateSetterLeader)
+
+	// When the etcd is stopping, the Campaign will hang up.
+	// So check the session and exit if the session is closed.
+	doneCh := make(chan error)
+	go func() {
+		doneCh <- election.Campaign(ctx, c.electionValue)
+	}()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-session.Done():
+		return errors.New("failed to campaign: session is closed")
+	case err := <-doneCh:
+		if err != nil {
+			return fmt.Errorf("failed to campaign: %s", err.Error())
+		}
+	}
+
+	log.Info("I am the leader", map[string]interface{}{
+		"session": session.Lease(),
+	})
+	leaderKey := election.Key()
+
+	// Release the leader before terminating.
+	defer func() {
+		select {
+		case <-session.Done():
+			log.Warn("session is closed, skip resign", nil)
+			return
+		default:
+			ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			err := election.Resign(ctxWithTimeout)
+			if err != nil {
+				log.Error("failed to resign", map[string]interface{}{
+					log.FnError: err,
+				})
+			}
+		}
+	}()
+
+	env := well.NewEnvironment(ctx)
+	env.Go(func(ctx context.Context) error {
+		// runs state management periodically
+		ticker := time.NewTicker(c.interval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+				if err := c.runOnce(ctx); err != nil {
+					return err
+				}
+			}
+		}
+	})
+	env.Go(func(ctx context.Context) error {
+		err := watchLeaderKey(ctx, session, leaderKey)
+		return fmt.Errorf("failed to watch leader key: %s", err.Error())
+	})
+	env.Stop()
+	return env.Wait()
+}
+
+func watchLeaderKey(ctx context.Context, session *concurrency.Session, leaderKey string) error {
+	ch := session.Client().Watch(ctx, leaderKey, clientv3.WithFilterPut())
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
-		case <-ticker.C:
-		}
-		if err := c.run(ctx); err != nil {
-			return err
+			return ctx.Err()
+		case <-session.Done():
+			return errors.New("session is closed")
+		case resp, ok := <-ch:
+			if !ok {
+				return errors.New("watch is closed")
+			}
+			if resp.Err() != nil {
+				return resp.Err()
+			}
+			for _, ev := range resp.Events {
+				if ev.Type == clientv3.EventTypeDelete {
+					return errors.New("leader key is deleted")
+				}
+			}
 		}
 	}
 }
 
-func (c *Controller) run(ctx context.Context) error {
+func (c *Controller) runOnce(ctx context.Context) error {
 	sm, err := c.sabakanClient.GetSabakanMachines(ctx)
 	if err != nil {
 		log.Warn("failed to get sabakan machines", map[string]interface{}{

@@ -1,10 +1,15 @@
 package dctest
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
+	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/sabakan/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -61,6 +66,80 @@ func testSabakanStateSetter() {
 			return nil
 		}).Should(Succeed())
 	})
+
+	It("should switch the leader", func() {
+		By("getting leader node name")
+		var leaderNodeBefore string
+		Eventually(func() error {
+			node, err := getLeaderNode(storage.KeySabakanStateSetterLeader)
+			if err != nil {
+				return err
+			}
+			leaderNodeBefore = node
+			return nil
+		}).Should(Succeed())
+
+		By("restarting sabakan-state-setter on " + leaderNodeBefore)
+		index, err := strconv.Atoi(leaderNodeBefore[len(leaderNodeBefore)-1:])
+		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAt(bootServers[index], "sudo", "systemctl", "restart", "sabakan-state-setter.service")
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		By("getting leader node name again")
+		Eventually(func() error {
+			leaderNodeAfter, err := getLeaderNode(storage.KeySabakanStateSetterLeader)
+			if err != nil {
+				return err
+			}
+
+			if leaderNodeAfter == leaderNodeBefore {
+				return errors.New("leader is not changed")
+			}
+			return nil
+		}).Should(Succeed())
+	})
+}
+
+func getLeaderNode(leaderKeyPrefix string) (string, error) {
+	stdout, _, err := execEtcdctlAt(bootServers[0], "-w", "json", "get", neco.NecoPrefix+leaderKeyPrefix, "--prefix")
+	if err != nil {
+		return "", err
+	}
+
+	var result struct {
+		KVS []*struct {
+			CreateRevision int    `json:"create_revision"`
+			Value          string `json:"value"`
+		} `json:"kvs"`
+	}
+	err = json.Unmarshal(stdout, &result)
+	if err != nil {
+		return "", err
+	}
+	if len(result.KVS) == 0 {
+		return "", errors.New("there is no candidate")
+	}
+
+	var revision int
+	var value string
+	for _, kvs := range result.KVS {
+		val, err := base64.StdEncoding.DecodeString(kvs.Value)
+		if err != nil {
+			return "", err
+		}
+		log.Info("sabakan-state-setter: leader key revision of "+string(val), map[string]interface{}{
+			"revision": kvs.CreateRevision,
+		})
+
+		// revision starts at 1
+		// https://github.com/etcd-io/website/blob/master/content/docs/v3.4.0/learning/glossary.md#revision
+		if revision == 0 || kvs.CreateRevision < revision {
+			revision = kvs.CreateRevision
+			value = string(val)
+		}
+	}
+	log.Info("sabakan-state-setter: leader is "+value, nil)
+	return value, nil
 }
 
 func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
