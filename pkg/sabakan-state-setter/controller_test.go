@@ -15,7 +15,7 @@ func newMockController(gql *gqlMockClient, metricsInput string, serf *serfMockCl
 		sabakanClient:     gql,
 		promClient:        newMockPromClient(metricsInput),
 		serfClient:        serf,
-		machineTypes:      []*machineType{mt},
+		machineTypes:      map[string]*machineType{mt.Name: mt},
 		unhealthyMachines: make(map[string]time.Time),
 	}
 }
@@ -61,12 +61,12 @@ func testControllerRun(t *testing.T) {
 	}
 
 	// transition machine state to unhealthy due to cpu warning
-	gql := newMockGQLClient("qemu")
+	gql := newMockGQLClient()
 	serf, _ := newMockSerfClient()
 	metricsInput := `
-	hw_processor_status_health{processor="CPU.Socket.1"} 0
-	hw_processor_status_health{processor="CPU.Socket.2"} 1
-	`
+hw_processor_status_health{processor="CPU.Socket.1"} 0
+hw_processor_status_health{processor="CPU.Socket.2"} 1
+`
 	ctr := newMockController(gql, metricsInput, serf, machineTypeQEMU)
 	for i := 0; i < 2; i++ {
 		err := ctr.runOnce(context.Background())
@@ -75,19 +75,19 @@ func testControllerRun(t *testing.T) {
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	if gql.machine.Status.State != sabakan.StateUnhealthy {
-		t.Errorf("machine is not unhealthy: %s", gql.machine.Status.State)
+	if gql.getState("00000001") != sabakan.StateUnhealthy {
+		t.Errorf("machine is not unhealthy: %s", gql.getState("00000001"))
 	}
 
 	// transition machine state to unhealthy due to warning disks become larger than one
-	gql = newMockGQLClient("qemu")
+	gql = newMockGQLClient()
 	serf, _ = newMockSerfClient()
 	metricsInput = `
-	hw_processor_status_health{processor="CPU.Socket.1"} 0
-	hw_processor_status_health{processor="CPU.Socket.2"} 0
-	hw_storage_controller_status_health{controller="SATAHDD.Slot.1"} 1
-	hw_storage_controller_status_health{controller="SATAHDD.Slot.2"} 1
-	`
+hw_processor_status_health{processor="CPU.Socket.1"} 0
+hw_processor_status_health{processor="CPU.Socket.2"} 0
+hw_storage_controller_status_health{controller="SATAHDD.Slot.1"} 1
+hw_storage_controller_status_health{controller="SATAHDD.Slot.2"} 1
+`
 	ctr = newMockController(gql, metricsInput, serf, machineTypeQEMU)
 	for i := 0; i < 2; i++ {
 		err := ctr.runOnce(context.Background())
@@ -96,12 +96,12 @@ func testControllerRun(t *testing.T) {
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	if gql.machine.Status.State != sabakan.StateUnhealthy {
-		t.Errorf("machine is not unhealthy: %s", gql.machine.Status.State)
+	if gql.getState("00000001") != sabakan.StateUnhealthy {
+		t.Errorf("machine is not unhealthy: %s", gql.getState("00000001"))
 	}
 
 	// transition machine state to healthy even one disk warning occurred
-	gql = newMockGQLClient("qemu")
+	gql = newMockGQLClient()
 	serf, _ = newMockSerfClient()
 	metricsInput = `
 # TYPE hw_processor_status_health gauge
@@ -121,8 +121,8 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	if gql.machine.Status.State != sabakan.StateHealthy {
-		t.Errorf("machine is not healthy: %s", gql.machine.Status.State)
+	if gql.getState("00000001") != sabakan.StateHealthy {
+		t.Errorf("machine is not healthy: %s", gql.getState("00000001"))
 	}
 }
 
