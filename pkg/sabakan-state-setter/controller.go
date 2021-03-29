@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -214,6 +215,26 @@ func (c *Controller) runOnce(ctx context.Context) error {
 		})
 		// lint:ignore nilerr  RunPeriodically tries this again.
 		return nil
+	}
+
+	// Check machine types
+	undefinedMachineTypes := map[string][]string{}
+	for _, m := range machines {
+		if _, ok := c.machineTypes[m.Type]; !ok {
+			undefinedMachineTypes[m.Type] = append(undefinedMachineTypes[m.Type], m.Serial)
+		}
+	}
+	for undefinedType, invalidMachines := range undefinedMachineTypes {
+		if undefinedType == "" {
+			log.Warn("machine type is not specified", map[string]interface{}{
+				"machines": strings.Join(invalidMachines, ","),
+			})
+		} else {
+			log.Warn("specified machine type does not exist", map[string]interface{}{
+				"machine-type": undefinedType,
+				"machines":     strings.Join(invalidMachines, ","),
+			})
+		}
 	}
 
 	// Construct a slice of machineStateSource
