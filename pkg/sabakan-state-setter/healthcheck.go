@@ -3,6 +3,7 @@ package sss
 import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/sabakan/v2"
+	dto "github.com/prometheus/client_model/go"
 )
 
 const (
@@ -11,6 +12,25 @@ const (
 	monitorHWStatusCritical = 2
 	monitorHWStatusNull     = -1
 )
+
+// machineStateSource is a struct of machine state collection
+type machineStateSource struct {
+	serial string
+	ipv4   string
+
+	serfStatus  *serfStatus
+	machineType *machineType
+	metrics     map[string]*dto.MetricFamily
+}
+
+func newMachineStateSource(m *machine, serfStatuses map[string]*serfStatus, machineTypes map[string]*machineType) *machineStateSource {
+	return &machineStateSource{
+		serial:      m.Serial,
+		ipv4:        m.IPv4Addr,
+		serfStatus:  serfStatuses[m.IPv4Addr],
+		machineType: machineTypes[m.Type],
+	}
+}
 
 func (mss *machineStateSource) decideMachineStateCandidate() (sabakan.MachineState, bool) {
 	if mss.serfStatus == nil {

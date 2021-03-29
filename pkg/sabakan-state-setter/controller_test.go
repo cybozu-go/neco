@@ -130,45 +130,46 @@ func testControllerUnhealthy(t *testing.T) {
 	t.Parallel()
 
 	mt := &machineType{
+		Name: "type1",
 		GracePeriod: duration{
 			Duration: time.Minute * 60,
 		},
 	}
-	mss1 := &machineStateSource{
-		serial:      "1",
-		machineType: mt,
+	m1 := &machine{
+		Serial: "1",
+		Type:   "type1",
 	}
-	mss2 := &machineStateSource{
-		serial:      "2",
-		machineType: mt,
+	m2 := &machine{
+		Serial: "2",
+		Type:   "type1",
 	}
 	baseTime := time.Now()
 
 	ctr := newMockController(nil, "", nil, mt)
 
-	exceeded := ctr.RegisterUnhealthy(mss1, baseTime)
+	exceeded := ctr.RegisterUnhealthy(m1, baseTime)
 	if exceeded {
 		t.Error("machine is misjudged as long-term unhealthy at the first registration")
 	}
 
-	exceeded = ctr.RegisterUnhealthy(mss1, baseTime.Add(time.Minute*30))
+	exceeded = ctr.RegisterUnhealthy(m1, baseTime.Add(time.Minute*30))
 	if exceeded {
 		t.Error("machine is misjudged as long-term unhealthy during grace period")
 	}
 
-	exceeded = ctr.RegisterUnhealthy(mss1, baseTime.Add(time.Minute*70)) // 60 < 70 < 30+60
+	exceeded = ctr.RegisterUnhealthy(m1, baseTime.Add(time.Minute*70)) // 60 < 70 < 30+60
 	if !exceeded {
 		t.Error("machine is not judged as long-term unhealthy after grace period")
 	}
 
-	ctr.ClearUnhealthy(mss1)
+	ctr.ClearUnhealthy(m1)
 
-	exceeded = ctr.RegisterUnhealthy(mss1, baseTime.Add(time.Minute*80))
+	exceeded = ctr.RegisterUnhealthy(m1, baseTime.Add(time.Minute*80))
 	if exceeded {
 		t.Error("machine is misjudged as long-term unhealthy after clearing registry")
 	}
 
-	exceeded = ctr.RegisterUnhealthy(mss2, baseTime.Add(time.Minute*150)) // 150 > 80+60
+	exceeded = ctr.RegisterUnhealthy(m2, baseTime.Add(time.Minute*150)) // 150 > 80+60
 	if exceeded {
 		t.Error("machine is misjudged as long-term unhealthy by confusion")
 	}

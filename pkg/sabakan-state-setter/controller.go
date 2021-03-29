@@ -40,19 +40,22 @@ type Controller struct {
 // RegisterUnhealthy registers unhealthy machine and returns true
 // if the machine has been unhealthy longer than the GracePeriod
 // specified in its machine type.
-func (c *Controller) RegisterUnhealthy(mss *machineStateSource, now time.Time) bool {
-	startTime, ok := c.unhealthyMachines[mss.serial]
+func (c *Controller) RegisterUnhealthy(m *machine, now time.Time) bool {
+	startTime, ok := c.unhealthyMachines[m.Serial]
 	if !ok {
-		c.unhealthyMachines[mss.serial] = now
+		c.unhealthyMachines[m.Serial] = now
 		return false
 	}
-
-	return startTime.Add(mss.machineType.GracePeriod.Duration).Before(now)
+	machineType, ok := c.machineTypes[m.Type]
+	if !ok {
+		return true
+	}
+	return startTime.Add(machineType.GracePeriod.Duration).Before(now)
 }
 
 // ClearUnhealthy removes machine from unhealthy registry.
-func (c *Controller) ClearUnhealthy(mss *machineStateSource) {
-	delete(c.unhealthyMachines, mss.serial)
+func (c *Controller) ClearUnhealthy(m *machine) {
+	delete(c.unhealthyMachines, m.Serial)
 }
 
 // NewController returns controller for sabakan-state-setter
@@ -200,20 +203,11 @@ func (c *Controller) runOnce(ctx context.Context) error {
 		log.Warn("failed to get sabakan machines", map[string]interface{}{
 			log.FnError: err.Error(),
 		})
-		// lint:ignore nilerr  RunPeriodically tries this again.
+		// lint:ignore nilerr  Run tries this again.
 		return nil
 	}
 	if len(machines) == 0 {
 		log.Warn("no machines found", nil)
-		return nil
-	}
-
-	serfStatus, err := c.serfClient.GetSerfStatus()
-	if err != nil {
-		log.Warn("failed to get serf members", map[string]interface{}{
-			log.FnError: err.Error(),
-		})
-		// lint:ignore nilerr  RunPeriodically tries this again.
 		return nil
 	}
 
@@ -237,10 +231,88 @@ func (c *Controller) runOnce(ctx context.Context) error {
 		}
 	}
 
+	// Do machines health check
+	newStateMap := c.machineHealthCheck(ctx, machines)
+
+	// Do machines retire
+	// T.B.D.
+
+	now := time.Now()
+	for _, m := range machines {
+		newState, ok := newStateMap[m.Serial]
+		if !ok || m.State == newState {
+			continue
+		}
+
+		if newState == sabakan.StateUnhealthy {
+			if ok := c.RegisterUnhealthy(m, now); !ok {
+				continue
+			}
+		} else {
+			c.ClearUnhealthy(m)
+		}
+
+		err := c.sabakanClient.UpdateSabakanState(ctx, m.Serial, newState)
+		if err != nil {
+			switch e := err.(type) {
+			case *gqlerror.Error:
+				// In the case of an invalid state transition, the log may continue to be output.
+				// So the log is not output.
+				if eType, ok := e.Extensions["type"]; ok && eType == gqlsabakan.ErrInvalidStateTransition {
+					continue
+				}
+				log.Warn("gql error occurred when set state", map[string]interface{}{
+					log.FnError: err.Error(),
+					"serial":    m.Serial,
+					"ipv4":      m.IPv4Addr,
+				})
+			default:
+				log.Warn("error occurred when set state", map[string]interface{}{
+					log.FnError: err.Error(),
+					"serial":    m.Serial,
+					"ipv4":      m.IPv4Addr,
+				})
+			}
+		} else {
+			log.Info("change state", map[string]interface{}{
+				"serial": m.Serial,
+				"ipv4":   m.IPv4Addr,
+				"state":  newState,
+			})
+		}
+	}
+
+	return nil
+}
+
+func (c *Controller) machineHealthCheck(ctx context.Context, machines []*machine) map[string]sabakan.MachineState {
+	// Get serf status
+	serfStatus, err := c.serfClient.GetSerfStatus()
+	if err != nil {
+		log.Warn("failed to get serf members", map[string]interface{}{
+			log.FnError: err.Error(),
+		})
+		return map[string]sabakan.MachineState{}
+	}
+
 	// Construct a slice of machineStateSource
-	machineStateSources := make([]*machineStateSource, len(machines))
-	for i, m := range machines {
-		machineStateSources[i] = newMachineStateSource(m, serfStatus, c.machineTypes)
+	machineStateSources := make([]*machineStateSource, 0, len(machines))
+	for _, m := range machines {
+		switch m.State {
+		case sabakan.StateUninitialized:
+		case sabakan.StateHealthy:
+		case sabakan.StateUnhealthy:
+		case sabakan.StateUnreachable:
+		default:
+			// StateUpdating, StateRetiring or StateRetired machines will not do health check.
+			log.Info("skip health check", map[string]interface{}{
+				"serial": m.Serial,
+				"ipv4":   m.IPv4Addr,
+				"state":  m.State,
+			})
+			continue
+		}
+		machineStateSources = append(machineStateSources, newMachineStateSource(m, serfStatus, c.machineTypes))
 	}
 
 	// Get machine metrics
@@ -276,51 +348,18 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	}
 	wg.Wait()
 
-	now := time.Now()
-
+	// Decide next machine state
+	newStateMap := map[string]sabakan.MachineState{}
 	for _, mss := range machineStateSources {
+		log.Info("do health check", map[string]interface{}{
+			"serial": mss.serial,
+			"ipv4":   mss.ipv4,
+		})
 		newState, hasTransition := mss.decideMachineStateCandidate()
 		if !hasTransition {
 			continue
 		}
-
-		if newState == sabakan.StateUnhealthy {
-			if ok := c.RegisterUnhealthy(mss, now); !ok {
-				continue
-			}
-		} else {
-			c.ClearUnhealthy(mss)
-		}
-
-		err := c.sabakanClient.UpdateSabakanState(ctx, mss.serial, newState)
-		if err != nil {
-			switch e := err.(type) {
-			case *gqlerror.Error:
-				// In the case of an invalid state transition, the log may continue to be output.
-				// So the log is not output.
-				if eType, ok := e.Extensions["type"]; ok && eType == gqlsabakan.ErrInvalidStateTransition {
-					continue
-				}
-				log.Warn("gql error occurred when set state", map[string]interface{}{
-					log.FnError: err.Error(),
-					"serial":    mss.serial,
-					"ipv4":      mss.ipv4,
-				})
-			default:
-				log.Warn("error occurred when set state", map[string]interface{}{
-					log.FnError: err.Error(),
-					"serial":    mss.serial,
-					"ipv4":      mss.ipv4,
-				})
-			}
-		} else {
-			log.Info("change state", map[string]interface{}{
-				"serial": mss.serial,
-				"ipv4":   mss.ipv4,
-				"state":  newState,
-			})
-		}
+		newStateMap[mss.serial] = newState
 	}
-
-	return nil
+	return newStateMap
 }
