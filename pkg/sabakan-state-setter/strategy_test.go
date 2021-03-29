@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/cybozu-go/sabakan/v2"
-	serf "github.com/hashicorp/serf/client"
 	dto "github.com/prometheus/client_model/go"
 )
 
@@ -82,11 +81,9 @@ func TestDecideSabakanState(t *testing.T) {
 			expected:      sabakan.StateUnreachable,
 			hasTransition: true,
 			mss: machineStateSource{
-				serfStatus: &serf.Member{
-					Status: "failed",
-					Tags: map[string]string{
-						"systemd-units-failed": "",
-					},
+				serfStatus: &serfStatus{
+					Status:             "failed",
+					SystemdUnitsFailed: strPtr(""),
 				},
 			},
 		},
@@ -95,11 +92,9 @@ func TestDecideSabakanState(t *testing.T) {
 			expected:      sabakan.StateUnhealthy,
 			hasTransition: true,
 			mss: machineStateSource{
-				serfStatus: &serf.Member{
-					Status: "alive",
-					Tags: map[string]string{
-						"systemd-units-failed": "aaa",
-					},
+				serfStatus: &serfStatus{
+					Status:             "alive",
+					SystemdUnitsFailed: strPtr("aaa"),
 				},
 			},
 		},
@@ -108,7 +103,7 @@ func TestDecideSabakanState(t *testing.T) {
 			expected:      sabakan.MachineState(""),
 			hasTransition: false,
 			mss: machineStateSource{
-				serfStatus: &serf.Member{
+				serfStatus: &serfStatus{
 					Status: "alive",
 				},
 				metrics: machineMetrics{
@@ -131,7 +126,7 @@ func TestDecideSabakanState(t *testing.T) {
 			expected:      sabakan.StateUnhealthy,
 			hasTransition: true,
 			mss: machineStateSource{
-				serfStatus: &serf.Member{
+				serfStatus: &serfStatus{
 					Status: "alive",
 				},
 				metrics: machineMetrics{
@@ -154,11 +149,9 @@ func TestDecideSabakanState(t *testing.T) {
 			expected:      sabakan.StateUnreachable,
 			hasTransition: true,
 			mss: machineStateSource{
-				serfStatus: &serf.Member{
-					Status: "failed",
-					Tags: map[string]string{
-						"systemd-units-failed": "",
-					},
+				serfStatus: &serfStatus{
+					Status:             "failed",
+					SystemdUnitsFailed: strPtr(""),
 				},
 				metrics: machineMetrics{
 					Labels: map[string]string{"aaa": "bbb"},
@@ -190,9 +183,9 @@ func TestDecideByMonitorHW(t *testing.T) {
 	parts2 := "parts2_status_health"
 	parts3 := "parts3_status_health"
 
-	base := &serf.Member{
-		Status: "alive",
-		Tags:   map[string]string{"systemd-units-failed": ""},
+	base := &serfStatus{
+		Status:             "alive",
+		SystemdUnitsFailed: strPtr(""),
 	}
 	testCases := []struct {
 		message  string

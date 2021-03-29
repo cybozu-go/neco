@@ -1,11 +1,5 @@
 package sss
 
-import (
-	"net"
-
-	serf "github.com/hashicorp/serf/client"
-)
-
 type serfMockClient struct {
 }
 
@@ -14,14 +8,11 @@ func newMockSerfClient() (*serfMockClient, error) {
 }
 
 // GetSerfMembers returns serf members
-func (s *serfMockClient) GetSerfMembers() ([]serf.Member, error) {
-	return []serf.Member{
-		{
-			Status: "alive",
-			Tags: map[string]string{
-				systemdUnitsFailedTag: "",
-			},
-			Addr: net.ParseIP("10.0.0.100"),
+func (s *serfMockClient) GetSerfStatus() (map[string]*serfStatus, error) {
+	return map[string]*serfStatus{
+		"10.0.0.100": {
+			Status:             "alive",
+			SystemdUnitsFailed: strPtr(""),
 		},
 	}, nil
 }

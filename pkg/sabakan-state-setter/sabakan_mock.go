@@ -7,47 +7,42 @@ import (
 )
 
 type gqlMockClient struct {
-	machine          *sabakan.Machine
-	labelMachineType string
+	machines []*machine
 }
 
-func newMockGQLClient(labelMachineType string) *gqlMockClient {
+func newMockGQLClient() *gqlMockClient {
 	return &gqlMockClient{
-		machine: &sabakan.Machine{
-			Spec: sabakan.MachineSpec{
-				Serial: "00000001",
-				Labels: map[string]string{
-					"machine-type": labelMachineType,
-				},
-			},
-			Status: sabakan.MachineStatus{
-				State: sabakan.StateUninitialized,
+		machines: []*machine{
+			{
+				Serial:   "00000001",
+				Type:     "qemu",
+				IPv4Addr: "10.0.0.100",
+				BMCAddr:  "20.0.0.100",
+				State:    sabakan.StateUninitialized,
 			},
 		},
-		labelMachineType: labelMachineType,
 	}
 }
 
-func (g *gqlMockClient) GetSabakanMachines(ctx context.Context) (*searchMachineResponse, error) {
-	return &searchMachineResponse{
-		SearchMachines: []machine{
-			{
-				Spec: spec{
-					Serial: "00000001",
-					IPv4:   []string{"10.0.0.100"},
-					Labels: []label{
-						{
-							Name:  "machine-type",
-							Value: g.labelMachineType,
-						},
-					},
-				},
-			},
-		},
-	}, nil
+func (g *gqlMockClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) {
+	return g.machines, nil
 }
 
-func (g *gqlMockClient) UpdateSabakanState(ctx context.Context, ms *machineStateSource, state sabakan.MachineState) error {
-	g.machine.Status.State = state
+func (g *gqlMockClient) UpdateSabakanState(ctx context.Context, serial string, state sabakan.MachineState) error {
+	for _, m := range g.machines {
+		if m.Serial == serial {
+			m.State = state
+		}
+	}
 	return nil
+}
+
+// test function
+func (g *gqlMockClient) getState(serial string) sabakan.MachineState {
+	for _, m := range g.machines {
+		if m.Serial == serial {
+			return m.State
+		}
+	}
+	return ""
 }

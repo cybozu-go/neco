@@ -14,24 +14,52 @@ import (
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
-// searchMachineResponse is a machine struct of response from the sabakan
-type searchMachineResponse struct {
-	SearchMachines []machine `json:"searchMachines"`
+const machineTypeLabelName = "machine-type"
+
+// SabakanGQLClient is interface of the sabakan client of GraphQL
+type SabakanGQLClient interface {
+	GetSabakanMachines(ctx context.Context) ([]*machine, error)
+	UpdateSabakanState(ctx context.Context, serial string, state sabakan.MachineState) error
 }
 
+// machine is a subset of sabakan.machine for sabakan-state-setter.
+// This consists of the fields which sabakan-state-setter needs.
 type machine struct {
-	Spec spec `json:"spec"`
+	Serial   string
+	Type     string
+	IPv4Addr string
+	BMCAddr  string
+	State    sabakan.MachineState
+}
+
+// searchMachineResponse is a machine struct of response from the sabakan
+type searchMachineResponse struct {
+	SearchMachines []searchMachine `json:"searchMachines"`
+}
+
+type searchMachine struct {
+	Spec   spec   `json:"spec"`
+	Status status `json:"status"`
 }
 
 type spec struct {
 	Serial string   `json:"serial"`
-	IPv4   []string `json:"ipv4"`
 	Labels []label  `json:"labels"`
+	IPv4   []string `json:"ipv4"`
+	BMC    bmc      `json:"bmc"`
 }
 
 type label struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
+}
+
+type bmc struct {
+	IPv4 string `json:"ipv4"`
+}
+
+type status struct {
+	State string `json:"state"`
 }
 
 type graphQLRequest struct {
@@ -48,10 +76,33 @@ type gqlClient struct {
 	endpoint   string
 }
 
-// SabakanGQLClient is interface of the sabakan client of GraphQL
-type SabakanGQLClient interface {
-	GetSabakanMachines(ctx context.Context) (*searchMachineResponse, error)
-	UpdateSabakanState(ctx context.Context, ms *machineStateSource, state sabakan.MachineState) error
+func toMachineState(str string) sabakan.MachineState {
+	switch str {
+	case "UNINITIALIZED":
+		return sabakan.StateUninitialized
+	case "HEALTHY":
+		return sabakan.StateHealthy
+	case "UNHEALTHY":
+		return sabakan.StateUnhealthy
+	case "UNREACHABLE":
+		return sabakan.StateUnreachable
+	case "UPDATING":
+		return sabakan.StateUpdating
+	case "RETIRING":
+		return sabakan.StateRetiring
+	case "RETIRED":
+		return sabakan.StateRetired
+	}
+	return ""
+}
+
+func findLabelValue(labels []label, name string) string {
+	for _, l := range labels {
+		if l.Name == name {
+			return l.Value
+		}
+	}
+	return ""
 }
 
 func newSabakanGQLClient(address string) (SabakanGQLClient, error) {
@@ -97,17 +148,23 @@ func (g *gqlClient) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte
 }
 
 // GetSabakanMachines returns all machines
-func (g *gqlClient) GetSabakanMachines(ctx context.Context) (*searchMachineResponse, error) {
+func (g *gqlClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) {
 	greq := graphQLRequest{
 		Query: `{
   searchMachines(having: null, notHaving: null) {
     spec {
       serial
-      ipv4
       labels {
         name
         value
       }
+      ipv4
+      bmc {
+        ipv4
+      }
+    }
+    status {
+      state
     }
   }
 }`,
@@ -123,11 +180,21 @@ func (g *gqlClient) GetSabakanMachines(ctx context.Context) (*searchMachineRespo
 		return nil, err
 	}
 
-	return resp, nil
+	ret := make([]*machine, len(resp.SearchMachines))
+	for i, m := range resp.SearchMachines {
+		ret[i] = &machine{
+			Serial:   m.Spec.Serial,
+			Type:     findLabelValue(m.Spec.Labels, machineTypeLabelName),
+			IPv4Addr: m.Spec.IPv4[0],
+			BMCAddr:  m.Spec.BMC.IPv4,
+			State:    toMachineState(m.Status.State),
+		}
+	}
+	return ret, nil
 }
 
 // UpdateSabakanState updates given machine's state
-func (g *gqlClient) UpdateSabakanState(ctx context.Context, ms *machineStateSource, state sabakan.MachineState) error {
+func (g *gqlClient) UpdateSabakanState(ctx context.Context, serial string, state sabakan.MachineState) error {
 	if !state.IsValid() {
 		return fmt.Errorf("invalid state: %s", state)
 	}
@@ -136,7 +203,7 @@ func (g *gqlClient) UpdateSabakanState(ctx context.Context, ms *machineStateSour
   setMachineState(serial: "%s", state: %s) {
     state
   }
-}`, ms.serial, state.GQLEnum()),
+}`, serial, state.GQLEnum()),
 	}
 
 	_, err := g.requestGQL(ctx, greq)

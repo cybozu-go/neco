@@ -18,17 +18,17 @@ func TestParseConfigFile(t *testing.T) {
         labels:
           aaa: bbb
 `
-	cfg, err := parseConfig(strings.NewReader(fileContent))
+	machineTypes, err := parseConfig(strings.NewReader(fileContent))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(cfg.MachineTypes) != 2 {
-		t.Error("len(cfg.MachineTypes) != 2, actual ", len(cfg.MachineTypes))
+	if len(machineTypes) != 2 {
+		t.Error("len(machineTypesMap) != 2, actual ", len(machineTypes))
 	}
-	if cfg.MachineTypes[0].GracePeriod.Duration != 10*time.Second {
+	if machineTypes["qemu"].GracePeriod.Duration != 10*time.Second {
 		t.Error("GracePeriod is not set")
 	}
-	if cfg.MachineTypes[1].GracePeriod.Duration != time.Hour {
+	if machineTypes["boot"].GracePeriod.Duration != time.Hour {
 		t.Error("default value of GracePeriod is not set")
 	}
 
