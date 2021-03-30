@@ -1,0 +1,8 @@
+#!/bin/sh
+# remove verbose metadata in resource yaml
+# 
+# note: fields to be removed may be added as needed. 
+exec rmresf \
+    '.metadata.managedFields' \
+    '.metadata.annotations."kubectl.kubernetes.io/last-applied-configuration"' \
+    "$@"
