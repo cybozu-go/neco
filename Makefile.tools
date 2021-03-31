@@ -31,9 +31,13 @@ MOCO_DLDIR := $(DOWNLOADDIR)/moco-v$(MOCO_VERSION)
 MOCO_DOWNLOAD := $(MOCO_DLDIR)/downloaded
 LOGCLI_DLDIR := $(DOWNLOADDIR)/logcli-v$(LOGCLI_VERSION)
 LOGCLI_DOWNLOAD := $(LOGCLI_DLDIR)/downloaded
+YQ_DLDIR := $(DOWNLOADDIR)/yq-v$(YQ_VERSION)
+YQ_DOWNLOAD := $(YQ_DLDIR)/downloaded
+KUBECTL_NEAT_DLDIR := $(DOWNLOADDIR)/kubectl-neat-v$(KUBECTL_NEAT_VERSION)
+KUBECTL_NEAT_DOWNLOAD := $(KUBECTL_NEAT_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl argocd kubectl kubeseal lvmd stern kustomize teleport cke moco logcli
+all: node_exporter containerd crictl argocd kubectl kubeseal lvmd stern kustomize teleport cke moco logcli yq kubectl-neat
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -299,6 +303,35 @@ logcli: $(LOGCLI_DOWNLOAD)
 	cp $(LOGCLI_DLDIR)/README.md $(DOCDIR)/$@/README.md
 	cp $(LOGCLI_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 	cp $(LOGCLI_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+
+$(YQ_DOWNLOAD):
+	mkdir -p $(YQ_DLDIR)
+	$(WGET) -O $(YQ_DLDIR)/yq.tar.gz https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64.tar.gz
+	$(WGET) -O $(YQ_DLDIR)/LICENSE   https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/LICENSE
+	$(WGET) -O $(YQ_DLDIR)/README.md https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/README.md
+	touch $@
+
+.PHONY: yq
+yq: $(YQ_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	tar xzf $(YQ_DLDIR)/yq.tar.gz -C $(BINDIR)
+	mv $(BINDIR)/yq_linux_amd64 $(BINDIR)/yq
+	cp $(YQ_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(YQ_DLDIR)/README.md $(DOCDIR)/$@/README.md
+
+$(KUBECTL_NEAT_DOWNLOAD):
+	mkdir -p $(KUBECTL_NEAT_DLDIR)
+	$(WGET) -O $(KUBECTL_NEAT_DLDIR)/kubectl-neat.tar.gz https://github.com/itaysk/kubectl-neat/releases/download/v$(KUBECTL_NEAT_VERSION)/kubectl-neat_linux_amd64.tar.gz
+	$(WGET) -O $(KUBECTL_NEAT_DLDIR)/LICENSE   https://raw.githubusercontent.com/itaysk/kubectl-neat/v${KUBECTL_NEAT_VERSION}/LICENSE
+	$(WGET) -O $(KUBECTL_NEAT_DLDIR)/Readme.md https://raw.githubusercontent.com/itaysk/kubectl-neat/v${KUBECTL_NEAT_VERSION}/Readme.md
+	touch $@
+
+.PHONY: kubectl-neat
+kubectl-neat: $(KUBECTL_NEAT_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	tar xzf $(KUBECTL_NEAT_DLDIR)/kubectl-neat.tar.gz -C $(BINDIR)
+	cp $(KUBECTL_NEAT_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(KUBECTL_NEAT_DLDIR)/Readme.md $(DOCDIR)/$@/Readme.md
 
 .PHONY: clean
 clean:

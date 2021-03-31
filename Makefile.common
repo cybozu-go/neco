@@ -21,6 +21,8 @@ TELEPORT_VERSION = 5.2.1
 # https://github.com/bitnami-labs/sealed-secrets
 KUBESEAL_VERSION = 0.14.1
 LOGCLI_VERSION = 2.1.0
+YQ_VERSION = 4.6.3
+KUBECTL_NEAT_VERSION = 2.0.3
 
 SUDO = sudo
 
