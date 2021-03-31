@@ -3,6 +3,7 @@ package dctest
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	. "github.com/onsi/ginkgo"
@@ -76,6 +77,12 @@ func testInitData() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(weight).To(BeNumerically("==", ssweight))
 
-		execSafeAt(bootServers[0], "neco", "init-data")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(bootServers[0], "neco", "init-data")
+			if err != nil {
+				return fmt.Errorf("neco init-data failed; err: %s, stdout: %s, stderr: %s", err, stdout, stderr)
+			}
+			return nil
+		}).Should(Succeed())
 	})
 }
