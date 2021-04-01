@@ -333,8 +333,7 @@ func (c *Controller) machineHealthCheck(ctx context.Context, machines []*machine
 				wg.Done()
 			}()
 
-			addr := "http://" + source.ipv4 + ":9105/metrics"
-			mfs, err := c.promClient.ConnectMetricsServer(ctx, addr)
+			mfs, err := c.promClient.ConnectMetricsServer(ctx, source.ipv4)
 			if err != nil {
 				log.Warn("failed to get metrics", map[string]interface{}{
 					log.FnError: err.Error(),
