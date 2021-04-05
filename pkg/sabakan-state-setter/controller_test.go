@@ -82,19 +82,52 @@ func testControllerRun(t *testing.T) {
 		expected map[string]sabakan.MachineState
 	}{
 		{
-			message: "healthcheck: transition machine state to unhealthy due to cpu warning",
+			message: "do health check for some machines",
 			machines: []*machine{
 				{
-					Serial:   "00000001",
+					Serial:   "00000000",
 					Type:     "qemu",
 					IPv4Addr: "10.0.0.100",
 					BMCAddr:  "20.0.0.100",
 					State:    sabakan.StateUninitialized,
 				},
+				{
+					Serial:   "00000001",
+					Type:     "qemu",
+					IPv4Addr: "10.0.0.101",
+					BMCAddr:  "20.0.0.101",
+					State:    sabakan.StateUninitialized,
+				},
+				{
+					Serial:   "00000002",
+					Type:     "qemu",
+					IPv4Addr: "10.0.0.102",
+					BMCAddr:  "20.0.0.102",
+					State:    sabakan.StateUninitialized,
+				},
+				{
+					Serial:   "00000003",
+					Type:     "qemu",
+					IPv4Addr: "10.0.0.103",
+					BMCAddr:  "20.0.0.103",
+					State:    sabakan.StateHealthy,
+				},
 			},
 			serfStatus: map[string]*serfStatus{
 				"10.0.0.100": {
 					Status:             "alive",
+					SystemdUnitsFailed: strPtr(""),
+				},
+				"10.0.0.101": {
+					Status:             "alive",
+					SystemdUnitsFailed: strPtr(""),
+				},
+				"10.0.0.102": {
+					Status:             "alive",
+					SystemdUnitsFailed: strPtr(""),
+				},
+				"10.0.0.103": {
+					Status:             "failed",
 					SystemdUnitsFailed: strPtr(""),
 				},
 			},
@@ -102,58 +135,14 @@ func testControllerRun(t *testing.T) {
 				"10.0.0.100": `
 hw_processor_status_health{processor="CPU.Socket.1"} 0
 hw_processor_status_health{processor="CPU.Socket.2"} 1
-`},
-			expected: map[string]sabakan.MachineState{
-				"00000001": sabakan.StateUnhealthy,
-			},
-		},
-		{
-			message: "healthcheck: transition machine state to unhealthy due to warning disks become larger than one",
-			machines: []*machine{
-				{
-					Serial:   "00000001",
-					Type:     "qemu",
-					IPv4Addr: "10.0.0.100",
-					BMCAddr:  "20.0.0.100",
-					State:    sabakan.StateUninitialized,
-				},
-			},
-			serfStatus: map[string]*serfStatus{
-				"10.0.0.100": {
-					Status:             "alive",
-					SystemdUnitsFailed: strPtr(""),
-				},
-			},
-			metrics: map[string]string{
-				"10.0.0.100": `
+`,
+				"10.0.0.101": `
 hw_processor_status_health{processor="CPU.Socket.1"} 0
 hw_processor_status_health{processor="CPU.Socket.2"} 0
 hw_storage_controller_status_health{controller="SATAHDD.Slot.1"} 1
 hw_storage_controller_status_health{controller="SATAHDD.Slot.2"} 1
-`},
-			expected: map[string]sabakan.MachineState{
-				"00000001": sabakan.StateUnhealthy,
-			},
-		},
-		{
-			message: "healthcheck: transition machine state to healthy even one disk warning occurred",
-			machines: []*machine{
-				{
-					Serial:   "00000001",
-					Type:     "qemu",
-					IPv4Addr: "10.0.0.100",
-					BMCAddr:  "20.0.0.100",
-					State:    sabakan.StateUninitialized,
-				},
-			},
-			serfStatus: map[string]*serfStatus{
-				"10.0.0.100": {
-					Status:             "alive",
-					SystemdUnitsFailed: strPtr(""),
-				},
-			},
-			metrics: map[string]string{
-				"10.0.0.100": `
+`,
+				"10.0.0.102": `
 # TYPE hw_processor_status_health gauge
 hw_processor_status_health{processor="CPU.Socket.1"} 0
 hw_processor_status_health{processor="CPU.Socket.2"} 0
@@ -164,28 +153,10 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.1", system="System.
 hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.Embedded.1"} 1
 `},
 			expected: map[string]sabakan.MachineState{
-				"00000001": sabakan.StateHealthy,
-			},
-		},
-		{
-			message: "healthcheck: transition machine state to unreachable",
-			machines: []*machine{
-				{
-					Serial:   "00000001",
-					Type:     "qemu",
-					IPv4Addr: "10.0.0.100",
-					BMCAddr:  "20.0.0.100",
-					State:    sabakan.StateHealthy,
-				},
-			},
-			serfStatus: map[string]*serfStatus{
-				"10.0.0.100": {
-					Status:             "failed",
-					SystemdUnitsFailed: strPtr(""),
-				},
-			},
-			expected: map[string]sabakan.MachineState{
-				"00000001": sabakan.StateUnreachable,
+				"00000000": sabakan.StateUnhealthy,   // cpu is warning
+				"00000001": sabakan.StateUnhealthy,   // warning disks become larger than one
+				"00000002": sabakan.StateHealthy,     // warning disks is one
+				"00000003": sabakan.StateUnreachable, // serf status is failed
 			},
 		},
 		{
