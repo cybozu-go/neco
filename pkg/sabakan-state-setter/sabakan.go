@@ -12,6 +12,7 @@ import (
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/sabakan/v2"
 	sabac "github.com/cybozu-go/sabakan/v2/client"
+	"github.com/cybozu-go/sabakan/v2/gql"
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
@@ -19,7 +20,8 @@ const machineTypeLabelName = "machine-type"
 
 // SabakanClientWrapper is interface of the sabakan client for sbakan-state-setter
 type SabakanClientWrapper interface {
-	GetSabakanMachines(ctx context.Context) ([]*machine, error)
+	GetAllMachines(ctx context.Context) ([]*machine, error)
+	GetRetiredMachines(ctx context.Context) ([]*machine, error)
 	UpdateSabakanState(ctx context.Context, serial string, state sabakan.MachineState) error
 	CryptsDelete(ctx context.Context, serial string) error
 }
@@ -58,8 +60,14 @@ type status struct {
 	State string `json:"state"`
 }
 
+// QueryVariables represents the JSON object of the query variables.
+type graphQLVariables struct {
+	Having *gql.MachineParams `json:"having"`
+}
+
 type graphQLRequest struct {
-	Query string `json:"query"`
+	Query     string           `json:"query"`
+	Variables graphQLVariables `json:"variables,omitempty"`
 }
 
 type graphQLResponse struct {
@@ -152,11 +160,11 @@ func (c *sabacWrapper) requestGQL(ctx context.Context, greq graphQLRequest) ([]b
 	return []byte(gresp.Data), nil
 }
 
-// GetSabakanMachines returns all machines
-func (c *sabacWrapper) GetSabakanMachines(ctx context.Context) ([]*machine, error) {
+func (c *sabacWrapper) getMachines(ctx context.Context, having *gql.MachineParams) ([]*machine, error) {
 	greq := graphQLRequest{
-		Query: `{
-  searchMachines(having: null, notHaving: null) {
+		Query: `
+query search($having: MachineParams) {
+  searchMachines(having: $having, notHaving: null) {
     spec {
       serial
       labels {
@@ -170,6 +178,9 @@ func (c *sabacWrapper) GetSabakanMachines(ctx context.Context) ([]*machine, erro
     }
   }
 }`,
+		Variables: graphQLVariables{
+			Having: having,
+		},
 	}
 	gdata, err := c.requestGQL(ctx, greq)
 	if err != nil {
@@ -192,6 +203,18 @@ func (c *sabacWrapper) GetSabakanMachines(ctx context.Context) ([]*machine, erro
 		}
 	}
 	return ret, nil
+}
+
+// GetSabakanMachines returns all machines
+func (c *sabacWrapper) GetAllMachines(ctx context.Context) ([]*machine, error) {
+	return c.getMachines(ctx, nil)
+}
+
+// GetRetiredMachines returns retired machines
+func (c *sabacWrapper) GetRetiredMachines(ctx context.Context) ([]*machine, error) {
+	return c.getMachines(ctx, &gql.MachineParams{
+		States: []sabakan.MachineState{sabakan.StateRetired},
+	})
 }
 
 // UpdateSabakanState updates given machine's state

@@ -1,3 +1,4 @@
+shutdown-schedule: 00 16 * * *
 machine-types:
   - name: qemu
     grace-period: 5s

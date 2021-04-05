@@ -13,32 +13,40 @@ import (
 
 func testRetireServer() {
 	It("retire worker node", func() {
-		By("getting a target node name")
-		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "nodes", "-l", "cke.cybozu.com/role=ss", "-o", "json")
+		By("getting all machines")
+		stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get")
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		var allMachines []*sabakan.Machine
+		err = json.Unmarshal(stdout, &allMachines)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(allMachines).NotTo(HaveLen(0))
+
+		By("selecting a target node")
+		stdout, stderr, err = execAt(bootServers[0], "kubectl", "get", "nodes", "-l", "cke.cybozu.com/role=ss", "-o", "json")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		var nl corev1.NodeList
 		err = json.Unmarshal(stdout, &nl)
 		Expect(err).NotTo(HaveOccurred())
-		nodename := nl.Items[0].Name
+		targetNodename := nl.Items[0].Name
 
-		By("getting the serial")
-		stdout, stderr, err = execAt(bootServers[0], "sabactl", "machines", "get", "--ipv4", nodename)
-		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		By("getting the target node's serial")
+		var targetSerial string
+		for _, m := range allMachines {
+			if m.Spec.IPv4[0] == targetNodename {
+				targetSerial = m.Spec.Serial
+			}
+		}
+		Expect(targetSerial).NotTo(BeEmpty())
 
-		var machines []sabakan.Machine
-		err = json.Unmarshal(stdout, &machines)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(machines).To(HaveLen(1))
-		serial := machines[0].Spec.Serial
-
-		By("retiring the node")
-		execSafeAt(bootServers[0], "kubectl", "drain", nodename, "--delete-local-data=true", "--ignore-daemonsets=true")
-		execSafeAt(bootServers[0], "sabactl", "machines", "set-state", serial, "retiring")
+		By("retiring the target node")
+		execSafeAt(bootServers[0], "kubectl", "drain", targetNodename, "--delete-local-data=true", "--ignore-daemonsets=true")
+		execSafeAt(bootServers[0], "sabactl", "machines", "set-state", targetSerial, "retiring")
 
 		By("waiting until the node's state becomes retired")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get-state", serial)
+			stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get-state", targetSerial)
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
@@ -48,8 +56,8 @@ func testRetireServer() {
 			return nil
 		}).Should(Succeed())
 
-		By("confirming the deletion of disk encryption keys on the sabakan")
-		stdout, stderr, err = execEtcdctlAt(bootServers[0], "-w", "json", "get", "/sabakan/crypts/"+serial, "--prefix")
+		By("confirming that the deletion of disk encryption keys on the sabakan")
+		stdout, stderr, err = execEtcdctlAt(bootServers[0], "-w", "json", "get", "/sabakan/crypts/"+targetSerial, "--prefix")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		var result struct {
@@ -58,5 +66,32 @@ func testRetireServer() {
 		err = json.Unmarshal(stdout, &result)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(result.KVS).To(HaveLen(0))
+
+		By("waiting until the target node becomes powered off")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(bootServers[0], "neco", "power", "status", targetSerial)
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			powerStatus := strings.TrimSpace(string(stdout))
+			if powerStatus != "Off" {
+				return fmt.Errorf("machine power is not off: %s", string(stdout))
+			}
+			return nil
+		}).Should(Succeed())
+
+		By("confirming that orther nodes will not be powered off")
+		for _, m := range allMachines {
+			if m.Spec.IPv4[0] == targetNodename {
+				continue
+			}
+			if m.Spec.Rack == 3 && m.Spec.Role == "boot" {
+				continue
+			}
+			stdout, stderr, err := execAt(bootServers[0], "neco", "power", "status", m.Spec.Serial)
+			Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+			powerStatus := strings.TrimSpace(string(stdout))
+			Expect(powerStatus).To(Equal("On"))
+		}
 	})
 }
