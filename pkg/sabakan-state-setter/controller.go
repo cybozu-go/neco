@@ -229,15 +229,17 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	now := time.Now()
 	for _, m := range machines {
 		newState, ok := newStateMap[m.Serial]
-		if !ok || m.State == newState {
+		switch {
+		case !ok || newState == m.State:
 			c.ClearUnhealthy(m)
 			continue
-		}
-		if newState == sabakan.StateUnhealthy {
+		case newState == sabakan.StateUnhealthy:
 			// Wait for the GracePeriod before changing the machine state to unhealthy.
 			if ok := c.RegisterUnhealthy(m, now); !ok {
 				continue
 			}
+		default:
+			c.ClearUnhealthy(m)
 		}
 
 		err := c.sabakanClient.UpdateSabakanState(ctx, m.Serial, newState)
@@ -280,7 +282,7 @@ func (c *Controller) machineHealthCheck(ctx context.Context, machines []*machine
 		log.Warn("failed to get serf members", map[string]interface{}{
 			log.FnError: err.Error(),
 		})
-		return map[string]sabakan.MachineState{}
+		return nil
 	}
 
 	// Construct a slice of machineStateSource

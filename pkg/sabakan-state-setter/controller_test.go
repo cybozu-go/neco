@@ -153,10 +153,10 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.1", system="System.
 hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.Embedded.1"} 1
 `},
 			expected: map[string]sabakan.MachineState{
-				"00000000": sabakan.StateUnhealthy,   // cpu is warning
-				"00000001": sabakan.StateUnhealthy,   // warning disks become larger than one
-				"00000002": sabakan.StateHealthy,     // warning disks is one
-				"00000003": sabakan.StateUnreachable, // serf status is failed
+				"00000000": sabakan.StateUnhealthy,   // one of two CPUs is issuing a warning
+				"00000001": sabakan.StateUnhealthy,   // all HDD are unhealthy; # of healthy HDDs falls below MinimumHealthyCount (0 < 1)
+				"00000002": sabakan.StateHealthy,     // one of two HDDs is unhealthy, but it is acceptable
+				"00000003": sabakan.StateUnreachable, // serf status is "failed"
 			},
 		},
 		{
