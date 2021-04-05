@@ -8,7 +8,7 @@ import (
 	sabakan "github.com/cybozu-go/sabakan/v2"
 )
 
-func newMockController(gql *gqlMockClient, prom *promMockClient, serf *serfMockClient, mt ...*machineType) *Controller {
+func newMockController(saba *sabakanMockClient, prom *promMockClient, serf *serfMockClient, neco *necoCmdMockExecutor, mt ...*machineType) *Controller {
 	machineTypes := map[string]*machineType{}
 	for _, m := range mt {
 		machineTypes[m.Name] = m
@@ -17,24 +17,25 @@ func newMockController(gql *gqlMockClient, prom *promMockClient, serf *serfMockC
 	return &Controller{
 		interval:          time.Minute,
 		parallelSize:      2,
-		sabakanClient:     gql,
+		sabakanClient:     saba,
 		promClient:        prom,
 		serfClient:        serf,
+		necoExecutor:      neco,
 		machineTypes:      machineTypes,
 		unhealthyMachines: make(map[string]time.Time),
 	}
 }
 
+var machineTypeSerfOnly = &machineType{
+	Name: "serfonly",
+	GracePeriod: duration{
+		Duration: time.Millisecond,
+	},
+	MetricsCheckList: []targetMetric{},
+}
+
 func testControllerRun(t *testing.T) {
 	t.Parallel()
-
-	machineTypeSerfOnly := &machineType{
-		Name: "serfonly",
-		GracePeriod: duration{
-			Duration: time.Millisecond,
-		},
-		MetricsCheckList: []targetMetric{},
-	}
 
 	machineTypeQEMU := &machineType{
 		Name: "qemu",
@@ -156,7 +157,7 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.
 			},
 		},
 		{
-			message: "skip health check",
+			message: "skip health check or retirement",
 			machines: []*machine{
 				{
 					Serial:   "uninitialized",
@@ -232,22 +233,23 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.
 				},
 			},
 			expected: map[string]sabakan.MachineState{
-				"uninitialized": sabakan.StateHealthy,
-				"healthy":       sabakan.StateUnreachable,
-				"unhealthy":     sabakan.StateHealthy,
-				"unreachable":   sabakan.StateHealthy,
-				"updating":      sabakan.StateUpdating, // skip health check
-				"retiring":      sabakan.StateRetiring, // skip health check
-				"retired":       sabakan.StateRetired,  // skip health check
+				"uninitialized": sabakan.StateHealthy,     // healthcheck
+				"healthy":       sabakan.StateUnreachable, // healthcheck
+				"unhealthy":     sabakan.StateHealthy,     // healthcheck
+				"unreachable":   sabakan.StateHealthy,     // healthcheck
+				"updating":      sabakan.StateUpdating,    // nothing to do
+				"retiring":      sabakan.StateRetired,     // retire
+				"retired":       sabakan.StateRetired,     // nothing to do
 			},
 		},
 	}
 
 	for _, tc := range testCases {
-		gqlMock := newMockGQLClient(tc.machines)
+		sabaMock := newMockSabakanClient(tc.machines)
 		promMock := newMockPromClient(tc.metrics)
 		serfMock, _ := newMockSerfClient(tc.serfStatus)
-		ctr := newMockController(gqlMock, promMock, serfMock, machineTypeQEMU, machineTypeSerfOnly)
+		necoMock := newMockNecoCmdExecutor()
+		ctr := newMockController(sabaMock, promMock, serfMock, necoMock, machineTypeQEMU, machineTypeSerfOnly)
 		for i := 0; i < 2; i++ {
 			err := ctr.runOnce(context.Background())
 			if err != nil {
@@ -256,10 +258,34 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.
 			time.Sleep(100 * time.Millisecond)
 		}
 		for serial, expectedState := range tc.expected {
-			if gqlMock.getState(serial) != expectedState {
-				t.Error(tc.message, "serial:", serial, "expected:", expectedState, "actual:", gqlMock.getState(serial))
+			if sabaMock.getState(serial) != expectedState {
+				t.Error(tc.message, "serial:", serial, "expected:", expectedState, "actual:", sabaMock.getState(serial))
 			}
 		}
+	}
+}
+
+func testControllerRunSerfError(t *testing.T) {
+	t.Parallel()
+
+	// When failed to get serf status, controllr should return an error.
+	machines := []*machine{
+		{
+			Serial:   "00000000",
+			Type:     "serfonly",
+			IPv4Addr: "10.0.0.100",
+			State:    sabakan.StateUninitialized,
+		},
+	}
+
+	sabaMock := newMockSabakanClient(machines)
+	promMock := newMockPromClient(map[string]string{})
+	serfMock, _ := newMockSerfClient(nil) // serfMockClient will return an error.
+	necoMock := newMockNecoCmdExecutor()
+	ctr := newMockController(sabaMock, promMock, serfMock, necoMock, machineTypeSerfOnly)
+	err := ctr.runOnce(context.Background())
+	if err == nil {
+		t.Error("return nil")
 	}
 }
 
@@ -282,7 +308,7 @@ func testControllerUnhealthy(t *testing.T) {
 	}
 	baseTime := time.Now()
 
-	ctr := newMockController(nil, nil, nil, mt)
+	ctr := newMockController(nil, nil, nil, nil, mt)
 
 	exceeded := ctr.RegisterUnhealthy(m1, baseTime)
 	if exceeded {
@@ -312,7 +338,79 @@ func testControllerUnhealthy(t *testing.T) {
 	}
 }
 
+func testControllerRetire(t *testing.T) {
+	t.Parallel()
+
+	machines := []*machine{
+		{
+			Serial:   "retiring0",
+			Type:     "serfonly",
+			IPv4Addr: "10.0.0.100",
+			State:    sabakan.StateRetiring,
+		},
+		{
+			Serial:   "retiring1",
+			Type:     "serfonly",
+			IPv4Addr: "10.0.0.101",
+			State:    sabakan.StateRetiring,
+		},
+		{
+			Serial:   "retired",
+			Type:     "serfonly",
+			IPv4Addr: "10.0.0.102",
+			State:    sabakan.StateRetired,
+		},
+		{
+			Serial:   "healthy",
+			Type:     "serfonly",
+			IPv4Addr: "10.0.0.103",
+			State:    sabakan.StateHealthy,
+		},
+	}
+
+	sabaMock := newMockSabakanClient(machines)
+	promMock := newMockPromClient(map[string]string{})
+	serfMock, _ := newMockSerfClient(map[string]*serfStatus{})
+	necoMock := newMockNecoCmdExecutor()
+	ctr := newMockController(sabaMock, promMock, serfMock, necoMock, machineTypeSerfOnly)
+
+	stateMap := ctr.machineRetire(context.Background(), machines)
+	if stateMap == nil {
+		t.Error("return nil")
+	}
+
+	// confirm the retiring machies are retired
+	for _, serial := range []string{"retiring0", "retiring1"} {
+		if stateMap[serial] != sabakan.StateRetired {
+			t.Error(serial, "machine state is not Retired")
+		}
+		if sabaMock.getCryptsDeleteCount(serial) != 1 {
+			t.Error(serial, "sabakan.CryptsDelete is not called")
+		}
+		if necoMock.getTPMClearCount(serial) != 1 {
+			t.Error(serial, "'neco tpm clear' is not called")
+		}
+	}
+
+	// confirm the machines are NOT retired
+	for _, serial := range []string{"retired", "healthy"} {
+		newState, ok := stateMap[serial]
+		if ok {
+			t.Error(serial, "machine state will changed: %s", newState)
+		}
+		if sabaMock.getCryptsDeleteCount(serial) != 0 {
+			t.Error(serial, "sabakan.CryptsDelete is called")
+		}
+		if necoMock.getTPMClearCount(serial) != 0 {
+			t.Error(serial, "'neco tpm clear' is called")
+		}
+	}
+
+}
+
 func TestController(t *testing.T) {
 	t.Run("Run", testControllerRun)
+	t.Run("RunSerfError", testControllerRunSerfError)
 	t.Run("Unhealthy", testControllerUnhealthy)
+	t.Run("Retire", testControllerRetire)
 }

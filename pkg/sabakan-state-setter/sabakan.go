@@ -11,15 +11,17 @@ import (
 
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/sabakan/v2"
+	sabac "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
 const machineTypeLabelName = "machine-type"
 
-// SabakanGQLClient is interface of the sabakan client of GraphQL
-type SabakanGQLClient interface {
+// SabakanClientWrapper is interface of the sabakan client for sbakan-state-setter
+type SabakanClientWrapper interface {
 	GetSabakanMachines(ctx context.Context) ([]*machine, error)
 	UpdateSabakanState(ctx context.Context, serial string, state sabakan.MachineState) error
+	CryptsDelete(ctx context.Context, serial string) error
 }
 
 // machine is a subset of sabakan.machine for sabakan-state-setter.
@@ -65,9 +67,10 @@ type graphQLResponse struct {
 	Errors []gqlerror.Error `json:"errors,omitempty"`
 }
 
-type gqlClient struct {
-	httpClient *http.Client
-	endpoint   string
+type sabacWrapper struct {
+	httpClient    *http.Client
+	sabakanClient *sabac.Client
+	gqlEndpoint   string
 }
 
 func toMachineState(str string) sabakan.MachineState {
@@ -99,22 +102,30 @@ func findLabelValue(labels []label, name string) string {
 	return ""
 }
 
-func newSabakanGQLClient(address string) (SabakanGQLClient, error) {
-	baseURL, err := url.Parse(address)
+func newSabakanGQLClient(address string) (SabakanClientWrapper, error) {
+	httpClient := ext.LocalHTTPClient()
+	sabakanClient, err := sabac.NewClient(address, httpClient)
 	if err != nil {
 		return nil, err
 	}
-	baseURL.Path = path.Join(baseURL.Path, "/graphql")
-	sabakanEndpoint := baseURL.String()
-	return &gqlClient{ext.LocalHTTPClient(), sabakanEndpoint}, nil
+	gqlEndpoint, err := url.Parse(address)
+	if err != nil {
+		return nil, err
+	}
+	gqlEndpoint.Path = path.Join(gqlEndpoint.Path, "/graphql")
+	return &sabacWrapper{
+		httpClient:    httpClient,
+		sabakanClient: sabakanClient,
+		gqlEndpoint:   gqlEndpoint.String(),
+	}, nil
 }
 
-func (g *gqlClient) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte, error) {
+func (c *sabacWrapper) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte, error) {
 	data, err := json.Marshal(greq)
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(http.MethodPost, g.endpoint, bytes.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, c.gqlEndpoint, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +134,7 @@ func (g *gqlClient) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte
 	// gqlgen 0.9+ requires application/json content-type header.
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := g.httpClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +153,7 @@ func (g *gqlClient) requestGQL(ctx context.Context, greq graphQLRequest) ([]byte
 }
 
 // GetSabakanMachines returns all machines
-func (g *gqlClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) {
+func (c *sabacWrapper) GetSabakanMachines(ctx context.Context) ([]*machine, error) {
 	greq := graphQLRequest{
 		Query: `{
   searchMachines(having: null, notHaving: null) {
@@ -160,7 +171,7 @@ func (g *gqlClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) 
   }
 }`,
 	}
-	gdata, err := g.requestGQL(ctx, greq)
+	gdata, err := c.requestGQL(ctx, greq)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +195,7 @@ func (g *gqlClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) 
 }
 
 // UpdateSabakanState updates given machine's state
-func (g *gqlClient) UpdateSabakanState(ctx context.Context, serial string, state sabakan.MachineState) error {
+func (c *sabacWrapper) UpdateSabakanState(ctx context.Context, serial string, state sabakan.MachineState) error {
 	if !state.IsValid() {
 		return fmt.Errorf("invalid state: %s", state)
 	}
@@ -196,6 +207,11 @@ func (g *gqlClient) UpdateSabakanState(ctx context.Context, serial string, state
 }`, serial, state.GQLEnum()),
 	}
 
-	_, err := g.requestGQL(ctx, greq)
+	_, err := c.requestGQL(ctx, greq)
 	return err
+}
+
+// CryptsDelete is wapper function of sabakan.Client's CryptsDelete().
+func (c *sabacWrapper) CryptsDelete(ctx context.Context, serial string) error {
+	return c.sabakanClient.CryptsDelete(ctx, serial)
 }

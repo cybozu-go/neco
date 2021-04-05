@@ -19,21 +19,22 @@ import (
 
 // Controller is sabakan-state-setter controller
 type Controller struct {
-	interval     time.Duration
-	parallelSize int
+	// Etcd and leader election
+	etcdClient    *clientv3.Client
+	electionValue string
+	sessionTTL    time.Duration
 
 	// Clients
-	sabakanClient SabakanGQLClient
+	necoExecutor  NecoCmdExecutor
 	promClient    PrometheusClient
+	sabakanClient SabakanClientWrapper
 	serfClient    SerfClient
 
-	machineTypes map[string]*machineType
-
+	// others
+	interval          time.Duration
+	parallelSize      int
+	machineTypes      map[string]*machineType
 	unhealthyMachines map[string]time.Time
-
-	etcdClient    *clientv3.Client
-	sessionTTL    time.Duration
-	electionValue string
 }
 
 // RegisterUnhealthy registers unhealthy machine and returns true
@@ -75,16 +76,20 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, con
 	}
 
 	promClient := newPromClient()
+	necoExecutor := newNecoCmdExecutor()
 
 	return &Controller{
-		etcdClient:        etcdClient,
-		electionValue:     electionValue,
-		sessionTTL:        sessionTTL,
+		etcdClient:    etcdClient,
+		electionValue: electionValue,
+		sessionTTL:    sessionTTL,
+
+		necoExecutor:  necoExecutor,
+		promClient:    promClient,
+		sabakanClient: sabakanClient,
+		serfClient:    serfClient,
+
 		interval:          interval,
 		parallelSize:      parallelSize,
-		sabakanClient:     sabakanClient,
-		serfClient:        serfClient,
-		promClient:        promClient,
 		machineTypes:      machineTypes,
 		unhealthyMachines: make(map[string]time.Time),
 	}, nil
@@ -232,11 +237,19 @@ func (c *Controller) runOnce(ctx context.Context) error {
 		return err
 	}
 
-	// Do machines health check
-	newStateMap := c.machineHealthCheck(ctx, machines, serfStatus)
+	newStateMap := map[string]sabakan.MachineState{}
 
-	// Do machines retire
-	// T.B.D.
+	// Do machines health check
+	healthcheckResult := c.machineHealthCheck(ctx, machines, serfStatus)
+	for serial, state := range healthcheckResult {
+		newStateMap[serial] = state
+	}
+
+	// Do machines retirement
+	retireResult := c.machineRetire(ctx, machines)
+	for serial, state := range retireResult {
+		newStateMap[serial] = state
+	}
 
 	now := time.Now()
 	for _, m := range machines {
@@ -349,5 +362,46 @@ func (c *Controller) machineHealthCheck(ctx context.Context, machines []*machine
 		}
 		newStateMap[mss.serial] = newState
 	}
+	return newStateMap
+}
+
+func (c *Controller) machineRetire(ctx context.Context, machines []*machine) map[string]sabakan.MachineState {
+	newStateMap := map[string]sabakan.MachineState{}
+
+	for _, m := range machines {
+		switch m.State {
+		case sabakan.StateRetiring:
+		default:
+			// Skip any state expect for StateRetiring.
+			continue
+		}
+
+		err := c.sabakanClient.CryptsDelete(ctx, m.Serial)
+		if err != nil {
+			log.Warn("failed to delete crypts on sabakan", map[string]interface{}{
+				log.FnError: err.Error(),
+				"serial":    m.Serial,
+				"ipv4":      m.IPv4Addr,
+			})
+			continue
+		}
+
+		err = c.necoExecutor.TPMClear(ctx, m.Serial)
+		if err != nil {
+			log.Warn("failed to clear TPM", map[string]interface{}{
+				log.FnError: err.Error(),
+				"serial":    m.Serial,
+				"ipv4":      m.IPv4Addr,
+			})
+			continue
+		}
+
+		log.Info("retirement; encryption keys have been deleted successfully", map[string]interface{}{
+			"serial": m.Serial,
+			"ipv4":   m.IPv4Addr,
+		})
+		newStateMap[m.Serial] = sabakan.StateRetired
+	}
+
 	return newStateMap
 }
