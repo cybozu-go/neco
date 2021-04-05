@@ -230,15 +230,14 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	for _, m := range machines {
 		newState, ok := newStateMap[m.Serial]
 		if !ok || m.State == newState {
+			c.ClearUnhealthy(m)
 			continue
 		}
-
 		if newState == sabakan.StateUnhealthy {
+			// Wait for the GracePeriod before changing the machine state to unhealthy.
 			if ok := c.RegisterUnhealthy(m, now); !ok {
 				continue
 			}
-		} else {
-			c.ClearUnhealthy(m)
 		}
 
 		err := c.sabakanClient.UpdateSabakanState(ctx, m.Serial, newState)
