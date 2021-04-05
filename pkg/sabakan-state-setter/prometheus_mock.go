@@ -9,14 +9,16 @@ import (
 )
 
 type promMockClient struct {
-	input string
+	metrics map[string]string
 }
 
+var _ PrometheusClient = &promMockClient{}
+
 // NewMockPromClient is returns a mock sabakan GraphQL client
-func newMockPromClient(input string) PrometheusClient {
-	return &promMockClient{input: input}
+func newMockPromClient(metrics map[string]string) *promMockClient {
+	return &promMockClient{metrics: metrics}
 }
 
 func (g *promMockClient) ConnectMetricsServer(ctx context.Context, addr string) (map[string]*dto.MetricFamily, error) {
-	return (&expfmt.TextParser{}).TextToMetricFamilies(strings.NewReader(g.input))
+	return (&expfmt.TextParser{}).TextToMetricFamilies(strings.NewReader(g.metrics[addr]))
 }

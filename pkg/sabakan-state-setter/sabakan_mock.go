@@ -10,18 +10,8 @@ type gqlMockClient struct {
 	machines []*machine
 }
 
-func newMockGQLClient() *gqlMockClient {
-	return &gqlMockClient{
-		machines: []*machine{
-			{
-				Serial:   "00000001",
-				Type:     "qemu",
-				IPv4Addr: "10.0.0.100",
-				BMCAddr:  "20.0.0.100",
-				State:    sabakan.StateUninitialized,
-			},
-		},
-	}
+func newMockGQLClient(machines []*machine) *gqlMockClient {
+	return &gqlMockClient{machines: machines}
 }
 
 func (g *gqlMockClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) {

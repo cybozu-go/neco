@@ -106,7 +106,13 @@ func testCKE() {
 	It("wait for Kubernetes cluster to become ready", func() {
 		By("generating kubeconfig for cluster admin")
 		execSafeAt(bootServers[0], "mkdir", "-p", ".kube")
-		execSafeAt(bootServers[0], "ckecli", "kubernetes", "issue", ">", ".kube/config")
+		Eventually(func() error {
+			_, stderr, err := execAt(bootServers[0], "ckecli", "kubernetes", "issue", ">", ".kube/config")
+			if err != nil {
+				return fmt.Errorf("err: %v, stderr: %s", err, stderr)
+			}
+			return nil
+		}).Should(Succeed())
 
 		By("waiting nodes")
 		Eventually(func() error {

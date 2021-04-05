@@ -1,18 +1,16 @@
 package sss
 
 type serfMockClient struct {
+	status map[string]*serfStatus
 }
 
-func newMockSerfClient() (*serfMockClient, error) {
-	return &serfMockClient{}, nil
+func newMockSerfClient(status map[string]*serfStatus) (*serfMockClient, error) {
+	return &serfMockClient{
+		status: status,
+	}, nil
 }
 
 // GetSerfMembers returns serf members
 func (s *serfMockClient) GetSerfStatus() (map[string]*serfStatus, error) {
-	return map[string]*serfStatus{
-		"10.0.0.100": {
-			Status:             "alive",
-			SystemdUnitsFailed: strPtr(""),
-		},
-	}, nil
+	return s.status, nil
 }

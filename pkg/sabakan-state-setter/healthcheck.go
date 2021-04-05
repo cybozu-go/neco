@@ -3,6 +3,7 @@ package sss
 import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/sabakan/v2"
+	dto "github.com/prometheus/client_model/go"
 )
 
 const (
@@ -12,13 +13,34 @@ const (
 	monitorHWStatusNull     = -1
 )
 
-func (mss *machineStateSource) decideMachineStateCandidate() (sabakan.MachineState, bool) {
+const doNotChangeState = sabakan.MachineState("")
+
+// machineStateSource is a struct of machine state collection
+type machineStateSource struct {
+	serial string
+	ipv4   string
+
+	serfStatus  *serfStatus
+	machineType *machineType
+	metrics     map[string]*dto.MetricFamily
+}
+
+func newMachineStateSource(m *machine, serfStatuses map[string]*serfStatus, machineTypes map[string]*machineType) *machineStateSource {
+	return &machineStateSource{
+		serial:      m.Serial,
+		ipv4:        m.IPv4Addr,
+		serfStatus:  serfStatuses[m.IPv4Addr],
+		machineType: machineTypes[m.Type],
+	}
+}
+
+func (mss *machineStateSource) decideMachineStateCandidate() sabakan.MachineState {
 	if mss.serfStatus == nil {
 		log.Info("unreachable; serf status is nil", map[string]interface{}{
 			"serial": mss.serial,
 			"ipv4":   mss.ipv4,
 		})
-		return sabakan.StateUnreachable, true
+		return sabakan.StateUnreachable
 	}
 
 	if mss.serfStatus.Status != "alive" {
@@ -27,7 +49,7 @@ func (mss *machineStateSource) decideMachineStateCandidate() (sabakan.MachineSta
 			"ipv4":   mss.ipv4,
 			"status": mss.serfStatus.Status,
 		})
-		return sabakan.StateUnreachable, true
+		return sabakan.StateUnreachable
 	}
 
 	if mss.serfStatus.SystemdUnitsFailed != nil && *mss.serfStatus.SystemdUnitsFailed != "" {
@@ -36,21 +58,21 @@ func (mss *machineStateSource) decideMachineStateCandidate() (sabakan.MachineSta
 			"ipv4":   mss.ipv4,
 			"failed": *mss.serfStatus.SystemdUnitsFailed,
 		})
-		return sabakan.StateUnhealthy, true
+		return sabakan.StateUnhealthy
 	}
 
 	state := mss.decideByMonitorHW()
 	if state != sabakan.StateHealthy {
-		return state, true
+		return state
 	}
 
 	if mss.serfStatus.SystemdUnitsFailed == nil {
 		// Do nothing if there is no systemd-units-failed tag and no hardware failure.
 		// In this case, the machine is starting up.
-		return sabakan.MachineState(""), false
+		return doNotChangeState
 	}
 
-	return sabakan.StateHealthy, true
+	return sabakan.StateHealthy
 }
 
 func (mss *machineStateSource) decideByMonitorHW() sabakan.MachineState {
