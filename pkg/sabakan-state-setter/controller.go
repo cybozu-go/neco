@@ -338,8 +338,8 @@ func (c *Controller) machineHealthCheck(ctx context.Context, machines []*machine
 	// Decide next machine state
 	newStateMap := map[string]sabakan.MachineState{}
 	for _, mss := range machineStateSources {
-		newState, hasTransition := mss.decideMachineStateCandidate()
-		if !hasTransition {
+		newState := mss.decideMachineStateCandidate()
+		if newState == doNotChangeState {
 			continue
 		}
 		newStateMap[mss.serial] = newState
