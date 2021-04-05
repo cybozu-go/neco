@@ -28,8 +28,8 @@ func newMockController(gql *gqlMockClient, prom *promMockClient, serf *serfMockC
 func testControllerRun(t *testing.T) {
 	t.Parallel()
 
-	machineTypeSkip := &machineType{
-		Name: "skip",
+	machineTypeSerfOnly := &machineType{
+		Name: "serfonly",
 		GracePeriod: duration{
 			Duration: time.Millisecond,
 		},
@@ -193,49 +193,49 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.
 			machines: []*machine{
 				{
 					Serial:   "uninitialized",
-					Type:     "skip",
+					Type:     "serfonly",
 					IPv4Addr: "10.0.0.100",
 					BMCAddr:  "20.0.0.100",
 					State:    sabakan.StateUninitialized,
 				},
 				{
 					Serial:   "healthy",
-					Type:     "skip",
+					Type:     "serfonly",
 					IPv4Addr: "10.0.0.101",
 					BMCAddr:  "20.0.0.101",
 					State:    sabakan.StateHealthy,
 				},
 				{
 					Serial:   "unhealthy",
-					Type:     "skip",
+					Type:     "serfonly",
 					IPv4Addr: "10.0.0.102",
 					BMCAddr:  "20.0.0.102",
 					State:    sabakan.StateUnhealthy,
 				},
 				{
 					Serial:   "unreachable",
-					Type:     "skip",
+					Type:     "serfonly",
 					IPv4Addr: "10.0.0.103",
 					BMCAddr:  "20.0.0.103",
 					State:    sabakan.StateUnreachable,
 				},
 				{
 					Serial:   "updating",
-					Type:     "skip",
+					Type:     "serfonly",
 					IPv4Addr: "10.0.0.104",
 					BMCAddr:  "20.0.0.104",
 					State:    sabakan.StateUpdating,
 				},
 				{
 					Serial:   "retiring",
-					Type:     "skip",
+					Type:     "serfonly",
 					IPv4Addr: "10.0.0.105",
 					BMCAddr:  "20.0.0.105",
 					State:    sabakan.StateRetiring,
 				},
 				{
 					Serial:   "retired",
-					Type:     "skip",
+					Type:     "serfonly",
 					IPv4Addr: "10.0.0.106",
 					BMCAddr:  "20.0.0.106",
 					State:    sabakan.StateRetired,
@@ -287,7 +287,7 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.
 		gqlMock := newMockGQLClient(tc.machines)
 		promMock := newMockPromClient(tc.metrics)
 		serfMock, _ := newMockSerfClient(tc.serfStatus)
-		ctr := newMockController(gqlMock, promMock, serfMock, machineTypeQEMU, machineTypeSkip)
+		ctr := newMockController(gqlMock, promMock, serfMock, machineTypeQEMU, machineTypeSerfOnly)
 		for i := 0; i < 2; i++ {
 			err := ctr.runOnce(context.Background())
 			if err != nil {
