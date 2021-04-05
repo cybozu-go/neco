@@ -63,23 +63,20 @@ func TestCheckSpecifyTarget(t *testing.T) {
 
 func TestDecideSabakanState(t *testing.T) {
 	testCases := []struct {
-		message       string
-		hasTransition bool
-		expected      sabakan.MachineState
-		mss           machineStateSource
+		message  string
+		expected sabakan.MachineState
+		mss      machineStateSource
 	}{
 		{
-			message:       "cannot get serf status",
-			expected:      sabakan.StateUnreachable,
-			hasTransition: true,
+			message:  "cannot get serf status",
+			expected: sabakan.StateUnreachable,
 			mss: machineStateSource{
 				serfStatus: nil,
 			},
 		},
 		{
-			message:       "failed",
-			expected:      sabakan.StateUnreachable,
-			hasTransition: true,
+			message:  "failed",
+			expected: sabakan.StateUnreachable,
 			mss: machineStateSource{
 				serfStatus: &serfStatus{
 					Status:             "failed",
@@ -88,9 +85,8 @@ func TestDecideSabakanState(t *testing.T) {
 			},
 		},
 		{
-			message:       "alive, but units failed",
-			expected:      sabakan.StateUnhealthy,
-			hasTransition: true,
+			message:  "alive, but units failed",
+			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: &serfStatus{
 					Status:             "alive",
@@ -99,9 +95,8 @@ func TestDecideSabakanState(t *testing.T) {
 			},
 		},
 		{
-			message:       "alive, but `systemd-units-failed` is not set, and metrics are healthy",
-			expected:      sabakan.MachineState(""),
-			hasTransition: false,
+			message:  "alive, but `systemd-units-failed` is not set, and metrics are healthy",
+			expected: sabakan.MachineState(""),
 			mss: machineStateSource{
 				serfStatus: &serfStatus{
 					Status: "alive",
@@ -122,9 +117,8 @@ func TestDecideSabakanState(t *testing.T) {
 			},
 		},
 		{
-			message:       "alive, but `systemd-units-failed` is not set, and metrics are null",
-			expected:      sabakan.StateUnhealthy,
-			hasTransition: true,
+			message:  "alive, but `systemd-units-failed` is not set, and metrics are null",
+			expected: sabakan.StateUnhealthy,
 			mss: machineStateSource{
 				serfStatus: &serfStatus{
 					Status: "alive",
@@ -145,9 +139,8 @@ func TestDecideSabakanState(t *testing.T) {
 			},
 		},
 		{
-			message:       "failed, and metrics are warning",
-			expected:      sabakan.StateUnreachable,
-			hasTransition: true,
+			message:  "failed, and metrics are warning",
+			expected: sabakan.StateUnreachable,
 			mss: machineStateSource{
 				serfStatus: &serfStatus{
 					Status:             "failed",
@@ -171,9 +164,9 @@ func TestDecideSabakanState(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		out, hasTransition := tc.mss.decideMachineStateCandidate()
-		if hasTransition != tc.hasTransition || out != tc.expected {
-			t.Error(tc.message, "expected:", tc.expected, "actual:", out, "hasTransition:", hasTransition)
+		out := tc.mss.decideMachineStateCandidate()
+		if out != tc.expected {
+			t.Error(tc.message, "expected:", tc.expected, "actual:", out)
 		}
 	}
 }
@@ -741,7 +734,7 @@ func TestDecideByMonitorHW(t *testing.T) {
 
 	for _, tc := range testCases {
 		fmt.Println("TEST:", tc.message)
-		out, _ := tc.mss.decideMachineStateCandidate()
+		out := tc.mss.decideMachineStateCandidate()
 		if out != tc.expected {
 			t.Error(tc.message, "| expected:", tc.expected, "actual:", out)
 		}

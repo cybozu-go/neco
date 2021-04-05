@@ -30,7 +30,8 @@ func (p *promClient) ConnectMetricsServer(ctx context.Context, addr string) (map
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	url := "http://" + addr + ":9105/metrics"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
