@@ -220,8 +220,20 @@ func (c *Controller) runOnce(ctx context.Context) error {
 		}
 	}
 
+	// Get serf status
+	serfStatus, err := c.serfClient.GetSerfStatus()
+	if err != nil {
+		log.Warn("failed to get serf members", map[string]interface{}{
+			log.FnError: err.Error(),
+		})
+		// If the serf service is restarted, the connection of the serf client is closed.
+		// In this case, GetSerfStatus() will never succeed unless recreating the client.
+		// So return an error to exit this process.
+		return err
+	}
+
 	// Do machines health check
-	newStateMap := c.machineHealthCheck(ctx, machines)
+	newStateMap := c.machineHealthCheck(ctx, machines, serfStatus)
 
 	// Do machines retire
 	// T.B.D.
@@ -275,16 +287,7 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	return nil
 }
 
-func (c *Controller) machineHealthCheck(ctx context.Context, machines []*machine) map[string]sabakan.MachineState {
-	// Get serf status
-	serfStatus, err := c.serfClient.GetSerfStatus()
-	if err != nil {
-		log.Warn("failed to get serf members", map[string]interface{}{
-			log.FnError: err.Error(),
-		})
-		return nil
-	}
-
+func (c *Controller) machineHealthCheck(ctx context.Context, machines []*machine, serfStatus map[string]*serfStatus) map[string]sabakan.MachineState {
 	// Construct a slice of machineStateSource
 	machineStateSources := make([]*machineStateSource, 0, len(machines))
 	for _, m := range machines {
