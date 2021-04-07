@@ -80,6 +80,7 @@ var bootstrapSuite = func() {
 var functionsSuite = func() {
 	Context("join/remove", testJoinRemove)
 	Context("reboot-all-boot-servers", testRebootAllBootServers)
+	Context("retire-server", testRetireServer)
 }
 
 // rebootWorkerSuite is a test suite that tests neco reboot-worker command
