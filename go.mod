@@ -30,7 +30,7 @@ require (
 	github.com/onsi/gomega v1.10.5
 	github.com/opencontainers/image-spec v1.0.2-0.20190823105129-775207bd45b6 // indirect
 	github.com/pelletier/go-toml v1.3.0 // indirect
-	github.com/prometheus/client_golang v1.9.0
+	github.com/prometheus/client_golang v1.9.0 // indirect
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.15.0
 	github.com/sirupsen/logrus v1.7.0 // indirect

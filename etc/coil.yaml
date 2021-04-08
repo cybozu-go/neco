@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: coil
@@ -64,7 +64,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: coil
@@ -130,7 +130,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: coil
@@ -217,7 +217,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: coil
@@ -4735,7 +4735,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        image: ghcr.io/cybozu-go/coil:2.0.5
+        image: ghcr.io/cybozu-go/coil:2.0.6
         livenessProbe:
           httpGet:
             host: localhost
@@ -4812,7 +4812,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: ghcr.io/cybozu-go/coil:2.0.5
+        image: ghcr.io/cybozu-go/coil:2.0.6
         livenessProbe:
           httpGet:
             host: localhost
@@ -4855,7 +4855,7 @@ spec:
             configMapKeyRef:
               key: cni_netconf
               name: coil-config-85b6k6c66t
-        image: ghcr.io/cybozu-go/coil:2.0.5
+        image: ghcr.io/cybozu-go/coil:2.0.6
         name: coil-installer
         securityContext:
           privileged: true
@@ -4900,8 +4900,8 @@ metadata:
     app.kubernetes.io/name: coil
   name: coilv2-mutating-webhook-configuration
 webhooks:
-- clientConfig:
-    caBundle: Cg==
+- admissionReviewVersions: null
+  clientConfig:
     service:
       name: coilv2-webhook-service
       namespace: kube-system
@@ -4929,8 +4929,8 @@ metadata:
     app.kubernetes.io/name: coil
   name: coilv2-validating-webhook-configuration
 webhooks:
-- clientConfig:
-    caBundle: Cg==
+- admissionReviewVersions: null
+  clientConfig:
     service:
       name: coilv2-webhook-service
       namespace: kube-system
@@ -4948,8 +4948,8 @@ webhooks:
     resources:
     - addresspools
   sideEffects: None
-- clientConfig:
-    caBundle: Cg==
+- admissionReviewVersions: null
+  clientConfig:
     service:
       name: coilv2-webhook-service
       namespace: kube-system
