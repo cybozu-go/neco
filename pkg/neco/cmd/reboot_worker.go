@@ -190,7 +190,7 @@ func rebootMain() error {
 			"node":   m.Spec.IPv4[0],
 			"bmc":    m.Spec.BMC.IPv4,
 		})
-		err := ipmiPower(context.Background(), "restart", addr)
+		err := power(context.Background(), "restart", addr)
 		if err != nil {
 			return err
 		}

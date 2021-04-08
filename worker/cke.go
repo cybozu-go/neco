@@ -102,9 +102,6 @@ func (o *operator) UpdateCKEContents(ctx context.Context, req *neco.UpdateReques
 			}
 			return errors.New("cke: update of contents failed by preceding worker")
 		}
-		if !status.Success {
-			return errors.New("cke: unexpected status; success must be true if versions differ")
-		}
 	}
 
 	err = cke.UploadContents(ctx, o.localClient, o.proxyClient, req.Version, o.fetcher)
@@ -175,9 +172,6 @@ func (o *operator) UpdateCKETemplate(ctx context.Context, req *neco.UpdateReques
 				return nil
 			}
 			return errors.New("cke: update of cke-template.yml failed by preceding worker")
-		}
-		if !status.Success {
-			return errors.New("cke: unexpected status; success must be true if versions differ")
 		}
 	}
 
@@ -250,9 +244,6 @@ func (o *operator) UpdateUserResources(ctx context.Context, req *neco.UpdateRequ
 				return nil
 			}
 			return errors.New("update of user-defined resources failed by preceding worker")
-		}
-		if !status.Success {
-			return errors.New("unexpected status; success must be true if versions differ")
 		}
 	}
 
