@@ -213,20 +213,6 @@ func UploadImageAssets(ctx context.Context, img neco.ContainerImage, c *sabac.Cl
 		os.Remove(f.Name())
 	}()
 
-	err = neco.RetryWithSleep(ctx, retryCount, time.Second, func(ctx context.Context) error {
-		if err := f.Truncate(0); err != nil {
-			return err
-		}
-		if _, err := f.Seek(0, io.SeekStart); err != nil {
-			return err
-		}
-		return fetcher.GetTarball(ctx, img, f)
-	}, func(e error) {
-		log.Warn("docker: failed to copy a container image to an archive", map[string]interface{}{
-			log.FnError: err,
-			"image":     img.Name,
-		})
-	})
 	if err := fetcher.GetTarball(ctx, img, f); err != nil {
 		return err
 	}

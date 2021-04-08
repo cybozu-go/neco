@@ -36,7 +36,7 @@ func (f ImageFetcher) GetTarball(ctx context.Context, img ContainerImage, w io.W
 	}
 
 	auth := f.auth
-	if auth == nil {
+	if auth == nil || !img.Private {
 		auth = authn.Anonymous
 	}
 	rimg, err := remote.Image(ref, remote.WithAuth(auth), remote.WithContext(ctx), remote.WithJobs(1), remote.WithTransport(f.transport))
