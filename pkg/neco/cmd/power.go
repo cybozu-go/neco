@@ -3,9 +3,8 @@ package cmd
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
-	"os"
-	"os/exec"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -15,6 +14,8 @@ import (
 	sabaclient "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
+	"github.com/stmcginnis/gofish"
+	"github.com/stmcginnis/gofish/redfish"
 )
 
 func lookupMachine(ctx context.Context, id string) (*sabakan.Machine, error) {
@@ -47,49 +48,92 @@ func lookupMachine(ctx context.Context, id string) (*sabakan.Machine, error) {
 	return &machines[0], nil
 }
 
-func ipmiPower(ctx context.Context, action, addr string) error {
-	var opts []string
-	switch action {
-	case "start":
-		opts = append(opts, "--on", "--wait-until-on")
-	case "stop":
-		opts = append(opts, "--off", "--wait-until-off")
-	case "restart":
-		opts = append(opts, "--reset")
-	case "status":
-		opts = append(opts, "--stat")
-	default:
-		return errors.New("invalid action: " + action)
-	}
-
+func getBMCUsernameAndPassword(ctx context.Context) (string, string, error) {
 	etcd, err := neco.EtcdClient()
 	if err != nil {
-		return err
+		return "", "", err
 	}
 	defer etcd.Close()
 	st := storage.NewStorage(etcd)
 
 	username, err := st.GetBMCIPMIUser(ctx)
 	if err != nil {
-		return err
+		return "", "", err
 	}
 	password, err := st.GetBMCIPMIPassword(ctx)
+	if err != nil {
+		return "", "", err
+	}
+	return username, password, nil
+}
+
+func getComputerSystem(service *gofish.Service) (*redfish.ComputerSystem, error) {
+	systems, err := service.Systems()
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if the collection contains 1 computer system
+	if len(systems) != 1 {
+		return nil, fmt.Errorf("computer Systems length should be 1, actual: %d", len(systems))
+	}
+
+	return systems[0], nil
+}
+
+func power(ctx context.Context, action, bmcAddr string) error {
+	username, password, err := getBMCUsernameAndPassword(ctx)
 	if err != nil {
 		return err
 	}
 
-	args := append(opts, "-u", username, "-p", password, "-h", addr, "-D", "LAN_2_0")
-	cmd := exec.CommandContext(ctx, "ipmipower", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	config := gofish.ClientConfig{
+		Endpoint:  fmt.Sprintf("https://%s", bmcAddr),
+		Username:  username,
+		Password:  password,
+		BasicAuth: true,
+		Insecure:  true,
+	}
+	c, err := gofish.Connect(config)
+	if err != nil {
+		return err
+	}
+	defer c.Logout()
+
+	system, err := getComputerSystem(c.Service)
+	if err != nil {
+		return err
+	}
+
+	var resetType redfish.ResetType
+	switch action {
+	case "start":
+		resetType = redfish.OnResetType
+	case "stop":
+		resetType = redfish.GracefulShutdownResetType
+	case "restart":
+		// Use 'ForceRestart' because some machines don't support 'GracefulRestart'.
+		resetType = redfish.ForceRestartResetType
+	case "status":
+		fmt.Println(system.PowerState)
+		return nil
+	default:
+		return errors.New("invalid action: " + action)
+	}
+
+	err = system.Reset(resetType)
+	if err != nil {
+		return err
+	}
+	fmt.Println("ok")
+	return nil
 }
 
-var ipmiPowerCmd = &cobra.Command{
-	Use:     "ipmipower ACTION SERIAL|IP",
-	Aliases: []string{"power"},
+var powerCmd = &cobra.Command{
+	Use:     "power ACTION SERIAL|IP",
+	Aliases: []string{"ipmipower"},
 	Short:   "control power of a machine",
-	Long: `Control power of a machine using ipmipower command.
+	Long: `Control power of a machine using Redfish API.
 	
 	ACTION should be one of:
 		- start:   to turn on the machine power.
@@ -109,7 +153,7 @@ var ipmiPowerCmd = &cobra.Command{
 				return err
 			}
 
-			return ipmiPower(ctx, args[0], machine.Spec.BMC.IPv4)
+			return power(ctx, args[0], machine.Spec.BMC.IPv4)
 		})
 		well.Stop()
 		err := well.Wait()
@@ -120,5 +164,5 @@ var ipmiPowerCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(ipmiPowerCmd)
+	rootCmd.AddCommand(powerCmd)
 }
