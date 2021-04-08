@@ -8,7 +8,7 @@ teleport:
   data_dir: /var/lib/teleport
   auth_token: {{ .AuthToken }}
   advertise_ip: {{ .AdvertiseIP }}
-  auth_servers: [teleport-auth.teleport.svc.cluster.local:3025]
+  auth_servers: ["teleport-auth.teleport.svc:3025"]
   log:
     output: stderr
     severity: INFO
