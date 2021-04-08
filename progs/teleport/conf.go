@@ -7,15 +7,12 @@ import (
 )
 
 // GenerateConf generates teleport.yaml from template.
-func GenerateConf(w io.Writer, mylrn int, authToken string, authServers []string) error {
+func GenerateConf(w io.Writer, mylrn int, authToken string) error {
 	return confTmpl.Execute(w, struct {
 		AdvertiseIP string
 		AuthToken   string
-		AuthServers []string
 	}{
 		AdvertiseIP: neco.BootNode0IP(mylrn).String(),
 		AuthToken:   authToken,
-		AuthServers: authServers,
 	})
-
 }
