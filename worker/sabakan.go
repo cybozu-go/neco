@@ -125,9 +125,6 @@ func (o *operator) UpdateSabakanContents(ctx context.Context, req *neco.UpdateRe
 			}
 			return errors.New("update of Sabakan contents failed by preceding worker")
 		}
-		if !status.Success {
-			return errors.New("unexpected status; success must be true if versions differ")
-		}
 	}
 
 	err = sabakan.UploadContents(ctx, o.localClient, o.proxyClient, req.Version, o.fetcher, o.storage)
@@ -227,9 +224,6 @@ func (o *operator) UpdateDHCPJSON(ctx context.Context, req *neco.UpdateRequest) 
 				return nil
 			}
 			return errors.New("update of dhcp.json failed by preceding worker")
-		}
-		if !status.Success {
-			return errors.New("unexpected status; success must be true if versions differ")
 		}
 	}
 
