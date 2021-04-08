@@ -19,7 +19,6 @@ var (
 	}
 
 	installList = []string{
-		"freeipmi-tools",
 		"jq",
 	}
 )
