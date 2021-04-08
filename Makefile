@@ -23,7 +23,7 @@ OP_WIN_ZIP = neco-operation-cli-windows_$(VERSION)_amd64.zip
 OP_MAC_ZIP = neco-operation-cli-mac_$(VERSION)_amd64.zip
 DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco
-SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker ./pkg/ingress-watcher
+SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
 OPDEB_BINNAMES = argocd kubectl kubeseal kustomize logcli stern tsh kubectl-moco
 OPDEB_DOCNAMES = argocd kubectl kubeseal kustomize logcli stern teleport moco
 
@@ -68,6 +68,10 @@ test:
 	go test -tags='$(GOTAGS)' -race -v ./...
 	RUN_COMPACTION_TEST=yes go test -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
 	go vet -tags='$(GOTAGS)' ./...
+
+.PHONY: check-coil-version
+check-coil-version:
+	grep -F $(COIL_VERSION) etc/coil.yaml
 
 .PHONY: deb
 deb: $(DEB)
