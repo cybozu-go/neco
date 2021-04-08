@@ -38,6 +38,7 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.1
+	github.com/stmcginnis/gofish v0.7.0
 	github.com/tcnksm/go-input v0.0.0-20180404061846-548a7d7a8ee8
 	github.com/vektah/gqlparser v1.3.1
 	github.com/vishvananda/netlink v1.1.0
