@@ -1,12 +1,26 @@
 sabakan-state-setter
 ====================
 
-sabakan-state-setter set sabakan machine states according to [serf][] status and [monitor-hw][] metrics.
+sabakan-state-setter changes the state of machines. It has the following two functions.
 
-Machine state selection
------------------------
+1. Health check
+    Decide sabakan machine states according to [serf][] status and [monitor-hw][] metrics. And update the states.
+    The target machines are whose current sabakan machine state is `Uninitialized`, `Healthy`, `Unhealthy`, or `Unreachable`.
+    Health check is just update sabakan machine state. There is no any side effect.
+
+2. Retirement
+    Retire machines which are `Retiring`.
+    When the `Retiring` machines exist, sabakan-state-setter will delete disk encryption keys on the sabakan.
+    And clear TPM devices on the machines by `neco tpm clear`.
+    If the retirement is succeeded, change the machine's state to `Retired`.
+    The power state of retired machines after this retirement are depends on the TPM clear logic in `neco tpm clear`.
 
 See machine state types at [Sabakan lifecycle management](https://github.com/cybozu-go/sabakan/blob/master/docs/lifecycle.md).
+
+Health check
+------------
+
+### Strategy
 
 `sabakan-state-setter` decides machine state by the strategy as follows:
 
@@ -25,8 +39,7 @@ See machine state types at [Sabakan lifecycle management](https://github.com/cyb
 - Nothing to judge machine state
   - `sabakan-state-setter` can not access to `serf.service` of the same boot server.
   
-Grace period of setting unhealthy state
---------------------------------------
+### Grace period of setting unhealthy state
 
 In order not to be too sensitive to temporary problem of machines' metrics,
 sabakan-state-setter waits a grace period before updating a machine's state to `unhealthy`.
@@ -34,8 +47,7 @@ sabakan-state-setter waits a grace period before updating a machine's state to `
 sabakan-state-setter updates the machine state
 if and only if it judges the machine's state as `unhealthy` for the time specified in this value. 
 
-Target machine peripherals
---------------------------
+### Target machine peripherals
 
 - CPU
 - Memory
@@ -45,6 +57,15 @@ Target machine peripherals
 - Hard drives on the storage servers
 
 Describe in the configuration file the metrics names with labels.
+
+Retirement
+----------
+
+`sabakan-state-setter` retires machines by the following steps:
+
+1. Delete disk encryption keys on the sbakan.
+2. Clear TPM devices on the machine by `neco tpm clear`.
+3. Change the mahcine's state to `Retired`.
 
 Usage
 -----
