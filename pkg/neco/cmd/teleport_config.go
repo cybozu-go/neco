@@ -48,18 +48,13 @@ func teleportConfig(ctx context.Context) error {
 		return errors.New("no teleport token is found")
 	}
 
-	authServers, err := st.GetTeleportAuthServers(context.Background())
-	if err != nil {
-		return err
-	}
-
 	mylrn, err := neco.MyLRN()
 	if err != nil {
 		return err
 	}
 
 	buf := &bytes.Buffer{}
-	err = teleport.GenerateConf(buf, mylrn, string(token), authServers)
+	err = teleport.GenerateConf(buf, mylrn, string(token))
 	if err != nil {
 		return err
 	}

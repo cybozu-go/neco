@@ -51,11 +51,7 @@ func main() {
 			return err
 		}
 
-		dns, err := st.GetDNSConfig(ctx)
-		if err != nil && err != storage.ErrNotFound {
-			return err
-		}
-		if err := configureSystemDNS(ctx, dns); err != nil {
+		if err := configureSystemDNS(ctx); err != nil {
 			return err
 		}
 
@@ -113,17 +109,17 @@ Environment="HTTPS_PROXY=%s"
 	return neco.RestartService(ctx, "docker")
 }
 
-func configureSystemDNS(ctx context.Context, dns string) error {
-	if dns == "" {
-		return nil
-	}
-
+func configureSystemDNS(ctx context.Context) error {
 	if hasResolved, _ := neco.IsActiveService(ctx, "systemd-resolved"); hasResolved {
 		return errors.New("systemd-resolved.service is running")
 	}
 
 	resolvconf := "/etc/resolv.conf"
-	if err := os.WriteFile(resolvconf+".tmp", []byte(fmt.Sprintf("nameserver %s\n", dns)), 0644); err != nil {
+	contents := `nameserver 127.0.0.1
+search cluster.local
+options ndots:3
+`
+	if err := os.WriteFile(resolvconf+".tmp", []byte(contents), 0644); err != nil {
 		return fmt.Errorf("failed to create /etc/resolv.conf.tmp: %w", err)
 	}
 
