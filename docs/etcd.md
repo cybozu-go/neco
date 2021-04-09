@@ -169,10 +169,6 @@ IPMI username for power management.
 
 IPMI password for power management.
 
-## `<prefix>/teleport/auth-servers`
-
-Teleport auth servers in a JSON array.
-
 ## `<prefix>/teleport/auth-token`
 
 Token for accessing to teleport auth server
