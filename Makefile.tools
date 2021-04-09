@@ -17,8 +17,6 @@ KUBECTL_DLDIR := $(DOWNLOADDIR)/kubectl-v$(K8S_VERSION)
 KUBECTL_DOWNLOAD := $(KUBECTL_DLDIR)/downloaded
 KUBESEAL_DLDIR := $(DOWNLOADDIR)/kubeseal-v$(KUBESEAL_VERSION)
 KUBESEAL_DOWNLOAD := $(KUBESEAL_DLDIR)/downloaded
-LVMD_DLDIR := $(DOWNLOADDIR)/lvmd-v$(TOPOLVM_VERSION)
-LVMD_DOWNLOAD := $(LVMD_DLDIR)/downloaded
 STERN_DLDIR := $(DOWNLOADDIR)/stern-v$(STERN_VERSION)
 STERN_DOWNLOAD := $(STERN_DLDIR)/downloaded
 KUSTOMIZE_DLDIR := $(DOWNLOADDIR)/kustomize-v$(KUSTOMIZE_VERSION)
@@ -37,7 +35,7 @@ KUBECTL_NEAT_DLDIR := $(DOWNLOADDIR)/kubectl-neat-v$(KUBECTL_NEAT_VERSION)
 KUBECTL_NEAT_DOWNLOAD := $(KUBECTL_NEAT_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl argocd kubectl kubeseal lvmd stern kustomize teleport cke moco logcli yq kubectl-neat
+all: node_exporter containerd crictl argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -158,20 +156,6 @@ kubeseal: $(KUBESEAL_DOWNLOAD)
 	chmod +x $(MAC_BINDIR)/kubeseal
 	cp $(KUBESEAL_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
 	cp $(KUBESEAL_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
-
-$(LVMD_DOWNLOAD):
-	mkdir -p $(LVMD_DLDIR)
-	$(WGET) -O $(LVMD_DLDIR)/lvmd.tar.gz https://github.com/cybozu-go/topolvm/releases/download/v$(TOPOLVM_VERSION)/lvmd-$(TOPOLVM_VERSION).tar.gz
-	$(WGET) -O $(LVMD_DLDIR)/LICENSE   https://raw.githubusercontent.com/topolvm/topolvm/v$(TOPOLVM_VERSION)/LICENSE
-	$(WGET) -O $(LVMD_DLDIR)/README.md https://raw.githubusercontent.com/topolvm/topolvm/v$(TOPOLVM_VERSION)/README.md
-	touch $@
-
-.PHONY: lvmd
-lvmd: $(LVMD_DOWNLOAD)
-	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
-	tar xzf $(LVMD_DLDIR)/lvmd.tar.gz -C $(LIBEXECDIR)
-	cp $(LVMD_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(LVMD_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
 $(STERN_DOWNLOAD):
 	mkdir -p $(STERN_DLDIR)
