@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/cybozu-go/log"
@@ -11,24 +12,25 @@ import (
 	"github.com/stmcginnis/gofish/redfish"
 )
 
+// Redfish API endpoints used for clearing TPM device on Dell equipment.
+// These values will probably not be changed. So define as constants.
+// If you want to get these values dynamically, you can get them as follows.
+//
+// $ curl --insecure -sS -X GET -u $BMC_USER:$BMC_PASS \
+//        https://$BMC_ADDR/redfish/v1/Managers/iDRAC.Embedded.1 | jq .Links.Oem.Dell.Jobs
+// {
+//   "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Jobs"
+//  }
+
+// $ curl --insecure -sS -X GET -u $BMC_USER:$BMC_PASS \
+//        https://$BMC_ADDR/redfish/v1/Systems/System.Embedded.1/Bios | jq '."@Redfish.Settings".SettingsObject'
+// {
+//   "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Bios/Settings"
+// }
 const (
-	jobUri          = "/redfish/v1/Managers/iDRAC.Embedded.1/Jobs"
-	biosSettingsUri = "/redfish/v1/Systems/System.Embedded.1/Bios/Settings"
+	jobURI          = "/redfish/v1/Managers/iDRAC.Embedded.1/Jobs"
+	biosSettingsURI = "/redfish/v1/Systems/System.Embedded.1/Bios/Settings"
 )
-
-/*
-$ curl --insecure -sS -X GET -u $BMC_USER:$BMC_PASS \
-       https://$BMC_ADDR/redfish/v1/Managers/iDRAC.Embedded.1 | jq .Links.Oem.Dell.Jobs
-{
-  "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Jobs"
- }
-
-$ curl --insecure -sS -X GET -u $BMC_USER:$BMC_PASS \
-       https://$BMC_ADDR/redfish/v1/Systems/System.Embedded.1/Bios | jq '."@Redfish.Settings".SettingsObject'
-{
-  "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Bios/Settings"
-}
-*/
 
 func setTpmAttribute(client *gofish.APIClient) error {
 	system, err := getComputerSystem(client.Service)
@@ -48,9 +50,9 @@ func setTpmAttribute(client *gofish.APIClient) error {
 
 func createBiosSettingsJob(client *gofish.APIClient) (string, error) {
 	payload := map[string]string{
-		"TargetSettingsURI": biosSettingsUri,
+		"TargetSettingsURI": biosSettingsURI,
 	}
-	resp, err := client.Post(jobUri, payload)
+	resp, err := client.Post(jobURI, payload)
 	if err != nil {
 		return "", err
 	}
@@ -63,12 +65,24 @@ func createBiosSettingsJob(client *gofish.APIClient) (string, error) {
 	return jobID, nil
 }
 
-func restart(client *gofish.APIClient) error {
+func startOrRestart(client *gofish.APIClient) error {
 	system, err := getComputerSystem(client.Service)
 	if err != nil {
 		return err
 	}
-	return system.Reset(redfish.ForceRestartResetType)
+
+	var resetType redfish.ResetType
+	switch system.PowerState {
+	case redfish.OnPowerState:
+		resetType = redfish.ForceRestartResetType
+	case redfish.OffPowerState:
+		resetType = redfish.OnResetType
+	default:
+		// PoweringOnPowerState or PoweringOffPowerState
+		return fmt.Errorf("unsupported power state: %s", system.PowerState)
+	}
+
+	return system.Reset(resetType)
 }
 
 func clearTpm(client *gofish.APIClient) error {
@@ -82,22 +96,25 @@ func clearTpm(client *gofish.APIClient) error {
 	if err != nil {
 		return err
 	}
-	log.Info("bios setting job is cteated", map[string]interface{}{
+	log.Info("bios setting job is created", map[string]interface{}{
 		"job_id": jobId,
 	})
 
-	err = restart(client)
+	err = startOrRestart(client)
 	if err != nil {
 		return err
 	}
-	log.Info("machine is restared", nil)
+	log.Info("machine power operation has been performed", nil)
 	return nil
 }
 
 var tpmClearCmd = &cobra.Command{
 	Use:   "clear SERIAL|IP",
-	Short: "clear",
-	Long:  `clear`,
+	Short: "clear TPM devices on a machine",
+	Long: `Clear TPM devices on a machine.
+	
+	SERIAL is the serial number of the machine.
+	IP is one of the IP addresses owned by the machine.`,
 
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

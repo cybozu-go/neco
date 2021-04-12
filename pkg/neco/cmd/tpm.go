@@ -6,7 +6,7 @@ import (
 
 var tpmCmd = &cobra.Command{
 	Use:   "tpm",
-	Short: "tpm",
+	Short: "tpm related commands",
 	Long:  `tpm`,
 }
 
