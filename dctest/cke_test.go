@@ -1,9 +1,11 @@
 package dctest
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/cybozu-go/sabakan/v2"
@@ -134,5 +136,28 @@ func testCKE() {
 			}
 			return nil
 		}).Should(Succeed())
+	})
+}
+
+// testCKE tests CKE etcd backup metrics
+func testCKEBackupMetrics() {
+	It("check for CKE etcd backup metrics", func() {
+		execSafeAt(bootServers[0], "sudo", "/usr/sbin/backup-cke-etcd")
+		stdout, _, err := execAt(bootServers[0], "curl", "-s", "http://localhost:9100/metrics")
+		Expect(err).ShouldNot(HaveOccurred())
+		metrics := []string{"cke_etcd_backup_last_executed_time", "cke_etcd_backup_last_succeeded_time"}
+		exists := make([]bool, len(metrics))
+		scanner := bufio.NewScanner(bytes.NewReader(stdout))
+		for scanner.Scan() {
+			s := scanner.Text()
+			for i, m := range metrics {
+				if strings.HasPrefix(s, m) {
+					exists[i] = true
+				}
+			}
+		}
+		for _, b := range exists {
+			Expect(b).To(Equal(true))
+		}
 	})
 }
