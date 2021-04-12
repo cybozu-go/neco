@@ -1,0 +1,18 @@
+#!/bin/sh
+
+METRICSDIR=/var/lib/node_exporter/textfile
+mkdir -p ${METRICSDIR}
+
+/usr/bin/ckecli etcd local-backup
+STATUS=$?
+NOW=$(date +%s)
+cat <<EOT > ${METRICSDIR}/cke_etcd_backup_last_executed_time.prom
+# TYPE cke_etcd_backup_last_executed_time gauge
+cke_etcd_backup_last_executed_time ${NOW}
+EOT
+if [ ${STATUS} = "0" ]; then
+    cat <<EOT > ${METRICSDIR}/cke_etcd_backup_last_succeeded_time.prom
+# TYPE cke_etcd_backup_last_succeeded_time gauge
+cke_etcd_backup_last_succeeded_time ${NOW}
+EOT
+fi
