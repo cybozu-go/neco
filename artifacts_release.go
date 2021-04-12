@@ -16,7 +16,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.6.3.1", Private: false},
 	},
 	Debs: []DebianPackage{
-		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.1.0"},
+		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.1.1"},
 	},
 	CoreOS: CoreOSImage{Channel: "stable", Version: "2765.2.0"},
 }
