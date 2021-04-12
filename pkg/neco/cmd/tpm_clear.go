@@ -53,7 +53,10 @@ func createBiosSettingsJob(client *gofish.APIClient) (string, error) {
 		"TargetSettingsURI": biosSettingsURI,
 	}
 	resp, err := client.Post(jobURI, payload)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "SYS011") {
+		// When a job has already been registered, "SYS011" will be returned.
+		// We face this error when we re-execute "neco tpm clear" command due to the failure of the machine restart.
+		// In order to succeed the re-executed command, ignore the "SYS011" error.
 		return "", err
 	}
 	jobURL, err := resp.Location()
