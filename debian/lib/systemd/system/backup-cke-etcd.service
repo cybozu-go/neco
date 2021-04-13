@@ -7,4 +7,4 @@ ConditionVirtualization=false
 [Service]
 Type=oneshot
 ExecStartPre=/bin/mkdir -p /var/cke/etcd-backups
-ExecStart=/usr/bin/ckecli etcd local-backup
+ExecStart=/usr/sbin/backup-cke-etcd
