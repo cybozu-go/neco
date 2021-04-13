@@ -7,7 +7,8 @@ Wants=network-online.target
 Type=simple
 Restart=always
 RestartForceExitStatus=SIGPIPE
-ExecStart=/usr/sbin/node_exporter
+ExecStartPre=/bin/mkdir -p /var/lib/node_exporter/textfile
+ExecStart=/usr/sbin/node_exporter --collector.textfile.directory /var/lib/node_exporter/textfile
 
 [Install]
 WantedBy=multi-user.target

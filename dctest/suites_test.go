@@ -65,6 +65,7 @@ var bootstrapSuite = func() {
 	Context("cke", func() {
 		testCKESetup()
 		testCKE()
+		testCKEBackupMetrics()
 	})
 	Context("coil", func() {
 		testCoilSetup()
