@@ -15,6 +15,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
+	"github.com/stmcginnis/gofish/redfish"
 	"github.com/tcnksm/go-input"
 	"sigs.k8s.io/yaml"
 )
@@ -77,7 +78,8 @@ var rebootWorkerCmd = &cobra.Command{
 	Long: `Reboot all worker nodes for their updates.
 
 This uses CKE's function of graceful reboot for the nodes used by CKE.
-As for the other nodes, this reboots them immediately.`,
+As for the other nodes, this reboots them immediately.
+If some nodes are already powered off, this command does not do anything to those nodes.`,
 
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -163,6 +165,7 @@ func rebootMain() error {
 		}
 	}
 
+	var errorNodes []string
 	ckeNodeAddrs := make(map[string]bool, len(cluster.Nodes))
 	for _, node := range cluster.Nodes {
 		ckeNodeAddrs[node.Address] = true
@@ -185,17 +188,49 @@ func rebootMain() error {
 			})
 			continue
 		}
-		log.Info("rebooting node via IPMI", map[string]interface{}{
+		log.Info("rebooting node", map[string]interface{}{
 			"serial": m.Spec.Serial,
 			"node":   m.Spec.IPv4[0],
 			"bmc":    m.Spec.BMC.IPv4,
 		})
-		err := power(context.Background(), "restart", addr)
+		err := rebootNode(context.Background(), addr)
 		if err != nil {
-			return err
+			log.Warn("failed to restart node", map[string]interface{}{
+				"serial":    m.Spec.Serial,
+				"node":      m.Spec.IPv4[0],
+				log.FnError: err,
+			})
+			errorNodes = append(errorNodes, m.Spec.Serial)
 		}
 	}
+	if len(errorNodes) != 0 {
+		return fmt.Errorf("failed to reboot on some nodes: %s", strings.Join(errorNodes, ","))
+	}
+	return nil
+}
 
+func rebootNode(ctx context.Context, bmdAddr string) error {
+	client, err := getRedfishClient(ctx, bmdAddr)
+	if err != nil {
+		return fmt.Errorf("failed to get redfish client: %s", err.Error())
+	}
+	defer client.Logout()
+
+	system, err := getComputerSystem(client.Service)
+	if err != nil {
+		return fmt.Errorf("failed to get system instance: %s", err.Error())
+	}
+
+	if system.PowerState == redfish.OffPowerState {
+		fmt.Println("skip: already powered OFF")
+		return nil
+	}
+
+	err = system.Reset(redfish.ForceRestartResetType)
+	if err != nil {
+		return fmt.Errorf("failed to reset: %s", err.Error())
+	}
+	fmt.Println("ok")
 	return nil
 }
 

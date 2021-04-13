@@ -188,6 +188,7 @@ Synopsis
 
     This uses CKE's function of [graceful reboot](https://github.com/cybozu-go/cke/blob/main/docs/reboot.md) for the nodes used by CKE.
     As for the other nodes, this reboots them immediately.
+    If some nodes are already powered off, this command does not do anything to those nodes.
 
 ### CKE related functions
 

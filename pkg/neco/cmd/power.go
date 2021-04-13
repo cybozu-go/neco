@@ -67,6 +67,22 @@ func getBMCUsernameAndPassword(ctx context.Context) (string, string, error) {
 	return username, password, nil
 }
 
+func getRedfishClient(ctx context.Context, bmcAddr string) (*gofish.APIClient, error) {
+	username, password, err := getBMCUsernameAndPassword(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	config := gofish.ClientConfig{
+		Endpoint:  fmt.Sprintf("https://%s", bmcAddr),
+		Username:  username,
+		Password:  password,
+		BasicAuth: true,
+		Insecure:  true,
+	}
+	return gofish.Connect(config)
+}
+
 func getComputerSystem(service *gofish.Service) (*redfish.ComputerSystem, error) {
 	systems, err := service.Systems()
 	if err != nil {
@@ -82,25 +98,13 @@ func getComputerSystem(service *gofish.Service) (*redfish.ComputerSystem, error)
 }
 
 func power(ctx context.Context, action, bmcAddr string) error {
-	username, password, err := getBMCUsernameAndPassword(ctx)
+	client, err := getRedfishClient(ctx, bmcAddr)
 	if err != nil {
 		return err
 	}
+	defer client.Logout()
 
-	config := gofish.ClientConfig{
-		Endpoint:  fmt.Sprintf("https://%s", bmcAddr),
-		Username:  username,
-		Password:  password,
-		BasicAuth: true,
-		Insecure:  true,
-	}
-	c, err := gofish.Connect(config)
-	if err != nil {
-		return err
-	}
-	defer c.Logout()
-
-	system, err := getComputerSystem(c.Service)
+	system, err := getComputerSystem(client.Service)
 	if err != nil {
 		return err
 	}
