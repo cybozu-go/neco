@@ -238,7 +238,7 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.
 				"unhealthy":     sabakan.StateHealthy,     // healthcheck
 				"unreachable":   sabakan.StateHealthy,     // healthcheck
 				"updating":      sabakan.StateUpdating,    // nothing to do
-				"retiring":      sabakan.StateRetired,     // retire
+				"retiring":      sabakan.StateRetired,     // retirement
 				"retired":       sabakan.StateRetired,     // nothing to do
 			},
 		},
@@ -379,7 +379,7 @@ func testControllerRetire(t *testing.T) {
 		t.Error("return nil")
 	}
 
-	// confirm the retiring machies are retired
+	// confirm that the "retiring" machines will be "retired".
 	for _, serial := range []string{"retiring0", "retiring1"} {
 		if stateMap[serial] != sabakan.StateRetired {
 			t.Error(serial, "machine state is not Retired")
@@ -392,7 +392,7 @@ func testControllerRetire(t *testing.T) {
 		}
 	}
 
-	// confirm the machines are NOT retired
+	// confirm that other machines will NOT be changed.
 	for _, serial := range []string{"retired", "healthy"} {
 		newState, ok := stateMap[serial]
 		if ok {

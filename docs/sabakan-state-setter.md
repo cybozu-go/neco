@@ -9,7 +9,7 @@ sabakan-state-setter changes the state of machines. It has the following two fun
     Health check is just update sabakan machine state. There is no any side effect.
 
 2. Retirement
-    Retire machines which are `Retiring`.
+    `sabakan-state-setter` let retiring machines retire.
     When the `Retiring` machines exist, sabakan-state-setter will delete disk encryption keys on the sabakan.
     And clear TPM devices on the machines by `neco tpm clear`.
     If the retirement is succeeded, change the machine's state to `Retired`.
@@ -61,7 +61,7 @@ Describe in the configuration file the metrics names with labels.
 Retirement
 ----------
 
-`sabakan-state-setter` retires machines by the following steps:
+`sabakan-state-setter` let retiring machines retire by the following steps:
 
 1. Delete disk encryption keys on the sbakan.
 2. Clear TPM devices on the machine by `neco tpm clear`.
