@@ -28,7 +28,6 @@ type machine struct {
 	Serial   string
 	Type     string
 	IPv4Addr string
-	BMCAddr  string
 	State    sabakan.MachineState
 }
 
@@ -46,16 +45,11 @@ type spec struct {
 	Serial string   `json:"serial"`
 	Labels []label  `json:"labels"`
 	IPv4   []string `json:"ipv4"`
-	BMC    bmc      `json:"bmc"`
 }
 
 type label struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
-}
-
-type bmc struct {
-	IPv4 string `json:"ipv4"`
 }
 
 type status struct {
@@ -159,9 +153,6 @@ func (g *gqlClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) 
         value
       }
       ipv4
-      bmc {
-        ipv4
-      }
     }
     status {
       state
@@ -186,7 +177,6 @@ func (g *gqlClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) 
 			Serial:   m.Spec.Serial,
 			Type:     findLabelValue(m.Spec.Labels, machineTypeLabelName),
 			IPv4Addr: m.Spec.IPv4[0],
-			BMCAddr:  m.Spec.BMC.IPv4,
 			State:    toMachineState(m.Status.State),
 		}
 	}
