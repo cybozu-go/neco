@@ -52,9 +52,9 @@ var tpmShowCmd = &cobra.Command{
 	Use:   "show SERIAL|IP",
 	Short: "show TPM devices on a machine",
 	Long: `Show TPM devices on a machine.
-	
-	SERIAL is the serial number of the machine.
-	IP is one of the IP addresses owned by the machine.`,
+
+SERIAL is the serial number of the machine.
+IP is one of the IP addresses owned by the machine.`,
 
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
