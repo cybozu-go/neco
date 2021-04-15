@@ -12,6 +12,24 @@ import (
 	"github.com/stmcginnis/gofish/redfish"
 )
 
+const machineTypeLabelName = "machine-type"
+
+const (
+	tpmClearLogicTypeNotImplemented = iota
+	tpmClearLogicTypeNothing
+	tpmClearLogicTypeDellRedfish
+)
+
+var supportedMachineTypes = map[string]int{
+	"qemu":        tpmClearLogicTypeNothing,     // Placemat VM. Clear logic is not implemented on placemat.
+	"r640-boot-1": tpmClearLogicTypeNothing,     // Dell, TPM 1.2
+	"r640-boot-2": tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
+	"r640-cs-1":   tpmClearLogicTypeNothing,     // Dell, TPM 1.2
+	"r640-cs-2":   tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
+	"r740xd-ss-1": tpmClearLogicTypeNothing,     // Dell, TPM 1.2
+	"r740xd-ss-2": tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
+}
+
 // Redfish API endpoints used for clearing TPM device on Dell equipment.
 // These values will probably not be changed. So define as constants.
 // If you want to get these values dynamically, you can get them as follows.
@@ -28,11 +46,11 @@ import (
 //   "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Bios/Settings"
 // }
 const (
-	jobURI          = "/redfish/v1/Managers/iDRAC.Embedded.1/Jobs"
-	biosSettingsURI = "/redfish/v1/Systems/System.Embedded.1/Bios/Settings"
+	dellRedfishJobURI          = "/redfish/v1/Managers/iDRAC.Embedded.1/Jobs"
+	dellRedfishBiosSettingsURI = "/redfish/v1/Systems/System.Embedded.1/Bios/Settings"
 )
 
-func setTpmAttribute(client *gofish.APIClient) error {
+func dellRedfishSetTpmAttribute(client *gofish.APIClient) error {
 	system, err := getComputerSystem(client.Service)
 	if err != nil {
 		return err
@@ -48,11 +66,11 @@ func setTpmAttribute(client *gofish.APIClient) error {
 	return bios.UpdateBiosAttributes(attr)
 }
 
-func createBiosSettingsJob(client *gofish.APIClient) (string, error) {
+func dellRedfishCreateBiosSettingsJob(client *gofish.APIClient) (string, error) {
 	payload := map[string]string{
-		"TargetSettingsURI": biosSettingsURI,
+		"TargetSettingsURI": dellRedfishBiosSettingsURI,
 	}
-	resp, err := client.Post(jobURI, payload)
+	resp, err := client.Post(dellRedfishJobURI, payload)
 	if err != nil && !strings.Contains(err.Error(), "SYS011") {
 		// When a job has already been registered, "SYS011" will be returned.
 		// We face this error when we re-execute "neco tpm clear" command due to the failure of the machine restart.
@@ -88,16 +106,22 @@ func startOrRestart(client *gofish.APIClient) error {
 	return system.Reset(resetType)
 }
 
-func clearTpm(client *gofish.APIClient) error {
-	err := setTpmAttribute(client)
+func dellRedfishClearTpm(ctx context.Context, bmcAddr string) error {
+	client, err := getRedfishClient(ctx, bmcAddr)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get redfish client: %s", err.Error())
+	}
+	defer client.Logout()
+
+	err = dellRedfishSetTpmAttribute(client)
+	if err != nil {
+		return fmt.Errorf("failed to set bios attribute: %s", err.Error())
 	}
 	log.Info("bios attribute is updated", nil)
 
-	jobId, err := createBiosSettingsJob(client)
+	jobId, err := dellRedfishCreateBiosSettingsJob(client)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create bios setting job: %s", err.Error())
 	}
 	log.Info("bios setting job is created", map[string]interface{}{
 		"job_id": jobId,
@@ -105,7 +129,7 @@ func clearTpm(client *gofish.APIClient) error {
 
 	err = startOrRestart(client)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to reset: %s", err.Error())
 	}
 	log.Info("machine power operation has been performed", nil)
 	return nil
@@ -115,9 +139,9 @@ var tpmClearCmd = &cobra.Command{
 	Use:   "clear SERIAL|IP",
 	Short: "clear TPM devices on a machine",
 	Long: `Clear TPM devices on a machine.
-	
-	SERIAL is the serial number of the machine.
-	IP is one of the IP addresses owned by the machine.`,
+
+SERIAL is the serial number of the machine.
+IP is one of the IP addresses owned by the machine.`,
 
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -127,13 +151,23 @@ var tpmClearCmd = &cobra.Command{
 				return err
 			}
 
-			client, err := getRedfishClient(ctx, machine.Spec.BMC.IPv4)
-			if err != nil {
-				return err
+			machineType := machine.Spec.Labels[machineTypeLabelName]
+			logicType, ok := supportedMachineTypes[machineType]
+			if !ok {
+				return fmt.Errorf("unknown machine type: machine-type=%s", machineType)
 			}
-			defer client.Logout()
 
-			return clearTpm(client)
+			switch logicType {
+			case tpmClearLogicTypeNotImplemented:
+				return fmt.Errorf("clear logic is not implemented: machine-type=%s", machineType)
+			case tpmClearLogicTypeNothing:
+				log.Info("nothing to do", nil)
+				return nil
+			case tpmClearLogicTypeDellRedfish:
+				return dellRedfishClearTpm(ctx, machine.Spec.BMC.IPv4)
+			default:
+				return fmt.Errorf("unknown logic type: %d", logicType)
+			}
 		})
 		well.Stop()
 		err := well.Wait()

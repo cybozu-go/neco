@@ -6,20 +6,24 @@ import (
 	"github.com/cybozu-go/sabakan/v2"
 )
 
-type gqlMockClient struct {
+type sabakanMockClient struct {
 	machines []*machine
+	count    map[string]int
 }
 
-func newMockGQLClient(machines []*machine) *gqlMockClient {
-	return &gqlMockClient{machines: machines}
+func newMockSabakanClient(machines []*machine) *sabakanMockClient {
+	return &sabakanMockClient{
+		machines: machines,
+		count:    map[string]int{},
+	}
 }
 
-func (g *gqlMockClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) {
-	return g.machines, nil
+func (c *sabakanMockClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) {
+	return c.machines, nil
 }
 
-func (g *gqlMockClient) UpdateSabakanState(ctx context.Context, serial string, state sabakan.MachineState) error {
-	for _, m := range g.machines {
+func (c *sabakanMockClient) UpdateSabakanState(ctx context.Context, serial string, state sabakan.MachineState) error {
+	for _, m := range c.machines {
 		if m.Serial == serial {
 			m.State = state
 		}
@@ -27,12 +31,22 @@ func (g *gqlMockClient) UpdateSabakanState(ctx context.Context, serial string, s
 	return nil
 }
 
+func (c *sabakanMockClient) CryptsDelete(ctx context.Context, serial string) error {
+	c.count[serial]++
+	return nil
+}
+
 // test function
-func (g *gqlMockClient) getState(serial string) sabakan.MachineState {
-	for _, m := range g.machines {
+func (c *sabakanMockClient) getState(serial string) sabakan.MachineState {
+	for _, m := range c.machines {
 		if m.Serial == serial {
 			return m.State
 		}
 	}
 	return ""
+}
+
+// test function
+func (c *sabakanMockClient) getCryptsDeleteCount(serial string) int {
+	return c.count[serial]
 }
