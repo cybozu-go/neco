@@ -396,7 +396,7 @@ func testControllerRetire(t *testing.T) {
 	for _, serial := range []string{"retired", "healthy"} {
 		newState, ok := stateMap[serial]
 		if ok {
-			t.Error(serial, "machine state will changed: %s", newState)
+			t.Error(serial, "machine state will be changed: "+newState)
 		}
 		if sabaMock.getCryptsDeleteCount(serial) != 0 {
 			t.Error(serial, "sabakan.CryptsDelete is called")
