@@ -14,9 +14,9 @@ func newMockNecoCmdExecutor() *necoCmdMockExecutor {
 	}
 }
 
-func (e *necoCmdMockExecutor) TPMClear(ctx context.Context, serial string) error {
+func (e *necoCmdMockExecutor) TPMClear(ctx context.Context, serial string) ([]byte, error) {
 	e.tpm[serial]++
-	return nil
+	return []byte("log message"), nil
 }
 
 // test function
