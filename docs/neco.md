@@ -15,6 +15,7 @@ Features include:
   - [Vault related functions](#vault-related-functions)
   - [BMC management functions](#bmc-management-functions)
   - [CKE related functions](#cke-related-functions)
+  - [TPM related functions](#tpm-related-functions)
   - [Miscellaneous](#miscellaneous)
 - [Configurations](#configurations)
   - [`env`](#env)
@@ -218,6 +219,18 @@ See details [Role and weights](https://github.com/cybozu-go/cke/blob/main/docs/s
 * `neco cke update`
 
     Update cke template using overriding weights. This is useful if administrator updates role and weights in the running Kubernetes cluster.
+
+### TPM related functions
+
+* `neco tpm clear SERIAL_OR_IP`
+
+Clear TPM devices on a machine having `SERIAL` or `IP` address.
+The command fails when the target machine's status is not retiring.
+`--force` option is explicitly required.
+
+* `neco tpm show SERIAL_OR_IP`
+
+Show TPM devices on a machine having `SERIAL` or `IP` address.
 
 ### Miscellaneous
 

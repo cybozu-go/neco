@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/sabakan/v2"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 	"github.com/stmcginnis/gofish"
@@ -19,6 +21,8 @@ const (
 	tpmClearLogicTypeNothing
 	tpmClearLogicTypeDellRedfish
 )
+
+var tpmClearForce bool
 
 var supportedMachineTypes = map[string]int{
 	"qemu":        tpmClearLogicTypeNothing,     // Placemat VM. Clear logic is not implemented on placemat.
@@ -146,9 +150,16 @@ IP is one of the IP addresses owned by the machine.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		well.Go(func(ctx context.Context) error {
+			if !tpmClearForce {
+				return errors.New("use --force explicitly")
+			}
+
 			machine, err := lookupMachine(ctx, args[0])
 			if err != nil {
 				return err
+			}
+			if machine.Status.State != sabakan.StateRetiring {
+				return errors.New("machine is not retiring")
 			}
 
 			machineType := machine.Spec.Labels[machineTypeLabelName]
@@ -178,5 +189,6 @@ IP is one of the IP addresses owned by the machine.`,
 }
 
 func init() {
+	tpmClearCmd.Flags().BoolVar(&tpmClearForce, "force", false, "forces the clearing TPM devices")
 	tpmCmd.AddCommand(tpmClearCmd)
 }

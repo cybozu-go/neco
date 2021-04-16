@@ -386,12 +386,13 @@ func (c *Controller) machineRetire(ctx context.Context, machines []*machine) map
 			continue
 		}
 
-		err = c.necoExecutor.TPMClear(ctx, m.Serial)
+		cmdOutput, err := c.necoExecutor.TPMClear(ctx, m.Serial)
 		if err != nil {
 			log.Warn("failed to clear TPM", map[string]interface{}{
 				log.FnError: err.Error(),
 				"serial":    m.Serial,
 				"ipv4":      m.IPv4Addr,
+				"cmdlog":    string(cmdOutput),
 			})
 			continue
 		}
