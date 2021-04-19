@@ -1,10 +1,11 @@
 #!/bin/sh -eu
 
 VG=vg1
-LVLIST="k8s-containerd docker kubelet"
+LVLIST="k8s-containerd docker kubelet systemd"
 CONTAINERD_SIZE=20g
 DOCKER_SIZE=10g
 KUBELET_SIZE=10g
+SYSTEMD_SIZE=1g
 
 lvsize() {
     case $1 in
@@ -16,6 +17,9 @@ lvsize() {
         ;;
     kubelet)
         echo $KUBELET_SIZE
+        ;;
+    systemd)
+        echo $SYSTEMD_SIZE
         ;;
     esac
 }

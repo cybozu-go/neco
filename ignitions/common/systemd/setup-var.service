@@ -3,7 +3,7 @@ Description=Setup filesystem for /var
 Wants=lvm2-lvmetad.service lvm2-monitor.service
 Requires=sabakan-cryptsetup.service
 After=lvm2-lvmetad.service sabakan-cryptsetup.service
-Before=lvm2-monitor.service
+Before=lvm2-monitor.service systemd-pstore.service
 DefaultDependencies=no
 
 [Service]
