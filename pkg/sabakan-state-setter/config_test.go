@@ -9,7 +9,7 @@ import (
 
 func TestParseConfigFile(t *testing.T) {
 	fileContent := `
-shutdown-schedule: 00 16 * * *
+shutdown-schedule: 0 16 * * *
 machine-types:
   - name: qemu
     grace-period: 10s
@@ -24,8 +24,8 @@ machine-types:
 	if err != nil {
 		t.Fatal(err)
 	}
-	if shutdownSchedule != "00 16 * * *" {
-		t.Errorf("shutdownSchedule != \"00 16 * * *\", actual \"%s\"", shutdownSchedule)
+	if shutdownSchedule != "0 16 * * *" {
+		t.Errorf("shutdownSchedule != \"0 16 * * *\", actual \"%s\"", shutdownSchedule)
 	}
 	if len(machineTypes) != 2 {
 		t.Error("len(machineTypesMap) != 2, actual ", len(machineTypes))
