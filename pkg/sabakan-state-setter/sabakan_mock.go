@@ -18,8 +18,18 @@ func newMockSabakanClient(machines []*machine) *sabakanMockClient {
 	}
 }
 
-func (c *sabakanMockClient) GetSabakanMachines(ctx context.Context) ([]*machine, error) {
+func (c *sabakanMockClient) GetAllMachines(ctx context.Context) ([]*machine, error) {
 	return c.machines, nil
+}
+
+func (c *sabakanMockClient) GetRetiredMachines(ctx context.Context) ([]*machine, error) {
+	var retired []*machine
+	for _, m := range c.machines {
+		if m.State == sabakan.StateRetired {
+			retired = append(retired, m)
+		}
+	}
+	return retired, nil
 }
 
 func (c *sabakanMockClient) UpdateSabakanState(ctx context.Context, serial string, state sabakan.MachineState) error {

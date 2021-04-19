@@ -82,7 +82,8 @@ type machineType struct {
 }
 
 type config struct {
-	MachineTypes []*machineType `json:"machine-types"`
+	ShutdownSchedule string         `json:"shutdown-schedule,omitempty"`
+	MachineTypes     []*machineType `json:"machine-types"`
 }
 
 type duration struct {
@@ -116,42 +117,41 @@ func (d *duration) UnmarshalJSON(b []byte) error {
 	}
 }
 
-func readConfigFile(name string) (map[string]*machineType, error) {
+func readConfigFile(name string) (string, map[string]*machineType, error) {
 	cf, err := os.Open(name)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 	defer cf.Close()
 
-	ret, err := parseConfig(cf)
+	shutdownSchedule, machineTypes, err := parseConfig(cf)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
-	return ret, nil
+	return shutdownSchedule, machineTypes, nil
 }
 
-func parseConfig(reader io.Reader) (map[string]*machineType, error) {
+func parseConfig(reader io.Reader) (string, map[string]*machineType, error) {
 	data, err := io.ReadAll(reader)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
 	cfg := &config{}
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
 	if len(cfg.MachineTypes) == 0 {
-		return nil, errors.New("machine-types are not defined")
+		return "", nil, errors.New("machine-types are not defined")
 	}
-
-	ret := make(map[string]*machineType)
+	machineTypes := make(map[string]*machineType)
 	for _, t := range cfg.MachineTypes {
 		if t.GracePeriod.Duration == 0 {
 			t.GracePeriod.Duration = time.Hour
 		}
-		ret[t.Name] = t
+		machineTypes[t.Name] = t
 	}
-	return ret, nil
+	return cfg.ShutdownSchedule, machineTypes, nil
 }

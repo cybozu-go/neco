@@ -1,7 +1,7 @@
 sabakan-state-setter
 ====================
 
-sabakan-state-setter changes the state of machines. It has the following two functions.
+sabakan-state-setter changes the state of machines. It has the following three functions.
 
 1. Health check
     Decide sabakan machine states according to [serf][] status and [monitor-hw][] metrics. And update the states.
@@ -14,6 +14,10 @@ sabakan-state-setter changes the state of machines. It has the following two fun
     And clear TPM devices on the machines by `neco tpm clear`.
     If the retirement is succeeded, change the machine's state to `Retired`.
     The power state of retired machines after this retirement are depends on the TPM clear logic in `neco tpm clear`.
+
+3. Shutdown
+    Shutdown the `Retired` machines periodically.
+    The execution cycle can be specified in a config file.
 
 See machine state types at [Sabakan lifecycle management](https://github.com/cybozu-go/sabakan/blob/master/docs/lifecycle.md).
 
@@ -49,14 +53,18 @@ if and only if it judges the machine's state as `unhealthy` for the time specifi
 
 ### Target machine peripherals
 
+You can define the metrics used for health checking in in the configuration file.
+
+The set of the metrics depends on its machine type. So you need configure a set of metrics for each machine type.
+
+Basically, check the following peripherals.
+
 - CPU
 - Memory
 - Storage controllers
 - NVMe SSD
 - [Dell BOSS][]
 - Hard drives on the storage servers
-
-Describe in the configuration file the metrics names with labels.
 
 Retirement
 ----------
@@ -66,6 +74,12 @@ Retirement
 1. Delete disk encryption keys on the sbakan.
 2. Clear TPM devices on the machine by `neco tpm clear`.
 3. Change the mahcine's state to `Retired`.
+
+Shutdown
+--------
+
+`sabakan-state-setter` shutdown retired machines periodically.
+The execution cycle can be specified in a config file.
 
 Usage
 -----
@@ -83,19 +97,16 @@ sabakan-state-setter [OPTIONS]
 | `-sabakan-url`      | `http://localhost:10080` | sabakan URL.                                                                      |
 | `-serf-address`     | `127.0.0.1:7373`         | serf address.                                                                     |
 
-Settings of target machine peripherals
---------------------------------------
+Config file
+-----------
 
-The set of metrics used for health checking depends on its machine type.
-You can configure a set of metrics to scrape for each machine type.
-
-| Field                                             | Default value | Description                                                                                           |
-| ------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------- |
-| `machine-types` [MachineType](#MachineType) array | `nil`         | Machine types is a list of `MachineType`. You should list all machine types used in your data center. |
-
-If all metrics defined in the config file are healthy, the machine is healthy. Otherwise, it's unhealthy.
+| Field                                             | Default value | Description                                                                                                      |
+| ------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `shutdown-schedule` string                        | `""`          | Schedule in Cron format for retired machines shutdown. If this field is omitted, shutdown will not be performed. |
+| `machine-types` [MachineType](#MachineType) array | `nil`         | Machine types is a list of `MachineType`. You should list all machine types used in your data center.            |
 
 ### `MachineType`
+
 | Field                             | Default value | Description                                                                                                 |
 | --------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------- |
 | `name` string                     |               | Name of this machine type. It is expected that this field is unique in setting file.                        |
