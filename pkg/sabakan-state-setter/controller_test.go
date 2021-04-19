@@ -405,7 +405,69 @@ func testControllerRetire(t *testing.T) {
 			t.Error(serial, "'neco tpm clear' is called")
 		}
 	}
+}
 
+func testControllerShutdown(t *testing.T) {
+	t.Parallel()
+
+	machines := []*machine{
+		{
+			Serial:   "retired-power-off",
+			Type:     "serfonly",
+			IPv4Addr: "10.0.0.100",
+			State:    sabakan.StateRetired,
+		},
+		{
+			Serial:   "retired-power-on",
+			Type:     "serfonly",
+			IPv4Addr: "10.0.0.101",
+			State:    sabakan.StateRetired,
+		},
+		{
+			Serial:   "healthy",
+			Type:     "serfonly",
+			IPv4Addr: "10.0.0.103",
+			State:    sabakan.StateHealthy,
+		},
+		{
+			Serial:   "retiring",
+			Type:     "serfonly",
+			IPv4Addr: "10.0.0.104",
+			State:    sabakan.StateRetiring,
+		},
+	}
+
+	// set initial power state for retired machines.
+	necoMock := newMockNecoCmdExecutor()
+	necoMock.setPowerState("retired-power-off", "Off")
+	necoMock.setPowerState("retired-power-on", "On")
+
+	sabaMock := newMockSabakanClient(machines)
+	promMock := newMockPromClient(map[string]string{})
+	serfMock, _ := newMockSerfClient(map[string]*serfStatus{})
+	ctr := newMockController(sabaMock, promMock, serfMock, necoMock, machineTypeSerfOnly)
+
+	ctr.machineShutdown(context.Background())
+
+	// confirm that the "retired-power-off" machines will NOT be powered off.
+	if necoMock.getPowerStopCount("retired-power-off") != 0 {
+		t.Error("retired-power-off", "'neco power stop' is called")
+	}
+
+	// confirm that the "retired-power-on" machines will be powered off.
+	if necoMock.getPowerStopCount("retired-power-on") == 0 {
+		t.Error("retired-power-on", "'neco power stop' is not called")
+	}
+
+	// confirm that other machines will NOT be changed.
+	for _, serial := range []string{"healthy", "retiring"} {
+		if necoMock.getPowerStopCount(serial) != 0 {
+			t.Error(serial, "'neco power stop' is called")
+		}
+		if necoMock.getPowerStatusCount(serial) != 0 {
+			t.Error(serial, "'neco power status' is called")
+		}
+	}
 }
 
 func TestController(t *testing.T) {
@@ -413,4 +475,5 @@ func TestController(t *testing.T) {
 	t.Run("RunSerfError", testControllerRunSerfError)
 	t.Run("Unhealthy", testControllerUnhealthy)
 	t.Run("Retire", testControllerRetire)
+	t.Run("Shutdown", testControllerShutdown)
 }

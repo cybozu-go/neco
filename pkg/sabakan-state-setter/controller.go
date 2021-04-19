@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/cybozu-go/sabakan/v2"
 	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
 	"github.com/cybozu-go/well"
+	"github.com/robfig/cron/v3"
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
@@ -33,6 +35,7 @@ type Controller struct {
 	// others
 	interval          time.Duration
 	parallelSize      int
+	shutdownSchedule  string
 	machineTypes      map[string]*machineType
 	unhealthyMachines map[string]time.Time
 }
@@ -60,7 +63,7 @@ func (c *Controller) ClearUnhealthy(m *machine) {
 
 // NewController returns controller for sabakan-state-setter
 func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, configFile, electionValue string, interval time.Duration, parallelSize int, sessionTTL time.Duration) (*Controller, error) {
-	machineTypes, err := readConfigFile(configFile)
+	shutdownSchedule, machineTypes, err := readConfigFile(configFile)
 	if err != nil {
 		return nil, err
 	}
@@ -90,6 +93,7 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, con
 
 		interval:          interval,
 		parallelSize:      parallelSize,
+		shutdownSchedule:  shutdownSchedule,
 		machineTypes:      machineTypes,
 		unhealthyMachines: make(map[string]time.Time),
 	}, nil
@@ -152,6 +156,19 @@ func (c *Controller) Run(ctx context.Context) error {
 		}
 	}()
 
+	if c.shutdownSchedule == "" {
+		log.Info("skip to start shutdown cron job", nil)
+	} else {
+		sched, err := cron.ParseStandard(c.shutdownSchedule)
+		if err != nil {
+			return fmt.Errorf("failed to start shutdown cron job: %s", err.Error())
+		}
+		shutdownCron := cron.New()
+		shutdownCron.Schedule(sched, cron.FuncJob(func() { c.machineShutdown(ctx) }))
+		shutdownCron.Start()
+		log.Info("start shutdown cron job", nil)
+	}
+
 	env := well.NewEnvironment(ctx)
 	env.Go(func(ctx context.Context) error {
 		// runs state management periodically
@@ -202,7 +219,7 @@ func watchLeaderKey(ctx context.Context, session *concurrency.Session, leaderKey
 }
 
 func (c *Controller) runOnce(ctx context.Context) error {
-	machines, err := c.sabakanClient.GetSabakanMachines(ctx)
+	machines, err := c.sabakanClient.GetAllMachines(ctx)
 	if err != nil {
 		log.Warn("failed to get sabakan machines", map[string]interface{}{
 			log.FnError: err.Error(),
@@ -405,4 +422,65 @@ func (c *Controller) machineRetire(ctx context.Context, machines []*machine) map
 	}
 
 	return newStateMap
+}
+
+func (c *Controller) machineShutdown(ctx context.Context) {
+	machines, err := c.sabakanClient.GetRetiredMachines(ctx)
+	if err != nil {
+		log.Warn("shutdown; failed to get retired machines", map[string]interface{}{
+			log.FnError: err.Error(),
+		})
+		return
+	}
+	if len(machines) == 0 {
+		log.Info("shutdown; no retired machines found", nil)
+		return
+	}
+
+	var errorMachines []string
+	for _, m := range machines {
+		cmdOutput, err := c.necoExecutor.PowerStatus(ctx, m.Serial)
+		if err != nil {
+			log.Warn("shutdown; failed to get power status", map[string]interface{}{
+				log.FnError: err.Error(),
+				"serial":    m.Serial,
+				"ipv4":      m.IPv4Addr,
+				"cmdlog":    string(cmdOutput),
+			})
+			errorMachines = append(errorMachines, m.Serial)
+			continue
+		}
+
+		// When `neco power status` succeeds, only power status (e.g. "On", "Off") is output.
+		powerStatus := strings.TrimSpace(string(cmdOutput))
+		if powerStatus == "Off" {
+			log.Info("shutdown; already powered OFF", map[string]interface{}{
+				"serial": m.Serial,
+				"ipv4":   m.IPv4Addr,
+			})
+			continue
+		}
+
+		cmdOutput, err = c.necoExecutor.PowerStop(ctx, m.Serial)
+		if err != nil {
+			log.Warn("shutdown; failed to shutdown", map[string]interface{}{
+				log.FnError: err.Error(),
+				"serial":    m.Serial,
+				"ipv4":      m.IPv4Addr,
+				"cmdlog":    string(cmdOutput),
+			})
+			errorMachines = append(errorMachines, m.Serial)
+			continue
+		}
+
+		log.Info("shutdown successfully", map[string]interface{}{
+			"serial": m.Serial,
+			"ipv4":   m.IPv4Addr,
+		})
+	}
+	if len(errorMachines) != 0 {
+		log.Warn("shutdown; failed to shutdown some machines", map[string]interface{}{
+			"serials": strings.Join(errorMachines, ","),
+		})
+	}
 }

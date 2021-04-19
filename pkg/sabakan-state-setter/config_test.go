@@ -8,7 +8,9 @@ import (
 )
 
 func TestParseConfigFile(t *testing.T) {
-	fileContent := `machine-types:
+	fileContent := `
+shutdown-schedule: 0 16 * * *
+machine-types:
   - name: qemu
     grace-period: 10s
   - name: boot
@@ -18,9 +20,12 @@ func TestParseConfigFile(t *testing.T) {
         labels:
           aaa: bbb
 `
-	machineTypes, err := parseConfig(strings.NewReader(fileContent))
+	shutdownSchedule, machineTypes, err := parseConfig(strings.NewReader(fileContent))
 	if err != nil {
 		t.Fatal(err)
+	}
+	if shutdownSchedule != "0 16 * * *" {
+		t.Errorf("shutdownSchedule != \"0 16 * * *\", actual \"%s\"", shutdownSchedule)
 	}
 	if len(machineTypes) != 2 {
 		t.Error("len(machineTypesMap) != 2, actual ", len(machineTypes))
@@ -32,7 +37,22 @@ func TestParseConfigFile(t *testing.T) {
 		t.Error("default value of GracePeriod is not set")
 	}
 
-	_, err = parseConfig(strings.NewReader("machine-types:"))
+	fileContent2 := `
+machine-types:
+  - name: qemu
+`
+	shutdownSchedule, machineTypes, err = parseConfig(strings.NewReader(fileContent2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if shutdownSchedule != "" {
+		t.Errorf("shutdownSchedule != \"\", actual \"%s\"", shutdownSchedule)
+	}
+	if len(machineTypes) != 1 {
+		t.Error("len(machineTypesMap) != 1, actual ", len(machineTypes))
+	}
+
+	_, _, err = parseConfig(strings.NewReader("machine-types:"))
 	if err == nil {
 		t.Error(errors.New("it should be raised an error"))
 	}

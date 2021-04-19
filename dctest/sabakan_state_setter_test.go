@@ -98,6 +98,25 @@ func testSabakanStateSetter() {
 			return nil
 		}).Should(Succeed())
 	})
+
+	It("should change shutdown job schedule", func() {
+		// Run the shutdown job every minute in dctest.
+		for _, boot := range bootServers {
+			execSafeAt(boot, "sudo", "sed", "-i", "'s/shutdown-schedule:.*/shutdown-schedule: \"@every 1m\"/'", "/usr/share/neco/sabakan-state-setter.yml")
+			execSafeAt(boot, "sudo", "systemctl", "restart", "sabakan-state-setter.service")
+		}
+
+		By("checking status of sabakan-state-setter")
+		Eventually(func() error {
+			for _, boot := range bootServers {
+				stdout, _, err := execAt(boot, "systemctl", "is-active", "sabakan-state-setter.service")
+				if err != nil {
+					return fmt.Errorf("sabakan-state-setter on %s is not active: %s", boot, stdout)
+				}
+			}
+			return nil
+		}).Should(Succeed())
+	})
 }
 
 func getLeaderNode(leaderKeyPrefix string) (string, error) {
