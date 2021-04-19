@@ -1,0 +1,25 @@
+[Unit]
+Description=Promtail container
+Wants=network-online.target docker.service
+After=network-online.target cke-localproxy.service docker.service
+StartLimitIntervalSec=600s
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=30s
+ExecStartPre=-/usr/bin/docker kill promtail
+ExecStartPre=-/usr/bin/docker rm promtail
+ExecStart=/usr/bin/docker run --name=promtail --rm \
+  --network=host \
+  --log-driver=journald \
+  --pull=never \
+  --read-only \
+  --user=root \
+  --volume=/etc/promtail:/etc/promtail:ro \
+  --volume=/run/promtail:/run/promtail \
+  --volume=/var/log/journal:/var/log/journal \
+  {{ .Image }} -config.file={{ .ConfFile }}
+
+[Install]
+WantedBy=multi-user.target
