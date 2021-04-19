@@ -1,4 +1,5 @@
 /dev/vg1/k8s-containerd /var/lib/k8s-containerd ext4 x-systemd.device-timeout=600 0 0
 /dev/vg1/docker         /var/lib/docker         ext4 x-systemd.device-timeout=600 0 0
 /dev/vg1/kubelet        /var/lib/kubelet        ext4 x-systemd.device-timeout=600 0 0
+/dev/vg1/systemd        /var/lib/systemd        ext4 x-systemd.device-timeout=600 0 0
 none                    /var/lib/rook           tmpfs defaults                    0 0

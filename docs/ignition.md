@@ -104,12 +104,15 @@ There are clear and strong reasons why the process is ordered this way.
 
 * What directories are mounted, and why?
 
-    Currently, following directories are mounted to keep data on
-    disks because the size of data in these directories are large.
+    Currently, the following directories are mounted to keep data on disks.
+    `/var/lib/systemd` is mounted to persist `pstore` that stores logs created
+    on a kernel panic, whereas the rest are mounted because the size of data in
+    these directories is large.
 
     - `/var/lib/k8s-containerd`
     - `/var/lib/docker`
     - `/var/lib/kubelet`
+    - `/var/lib/systemd`
 
 ### Reconfigure network with BIRD
 
