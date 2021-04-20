@@ -50,12 +50,6 @@ type PullRequest struct {
 	Permalink string
 }
 
-// Issue represents an issue on GitHub.
-type Issue struct {
-	ID    string
-	Title string
-}
-
 // ExtractGitHubRepositoryName extracts repository owner and name from a string.
 // This function treats following syntax.
 // 1. GitHub URL
@@ -374,11 +368,10 @@ func (gh GitHubClient) AddAssigneeToPullRequest(ctx context.Context, userID, prI
 }
 
 // GetIssueTitle returns issue title.
-func (gh GitHubClient) GetIssue(ctx context.Context, repo *GitHubRepository, issue int) (*Issue, error) {
+func (gh GitHubClient) GetIssueTitle(ctx context.Context, repo *GitHubRepository, issue int) (string, error) {
 	query := `query getIssue($owner: String!, $name: String!, $number: Int!) {
   repository(owner: $owner, name: $name) {
     issue(number: $number){
-      id,
       title,
     }
   }
@@ -391,24 +384,20 @@ func (gh GitHubClient) GetIssue(ctx context.Context, repo *GitHubRepository, iss
 
 	data, err := gh.request(ctx, query, vars)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	var resp struct {
 		Repository struct {
 			Issue struct {
-				ID    string `json:"id"`
 				Title string `json:"title"`
 			} `json:"issue"`
 		} `json:"repository"`
 	}
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &Issue{
-		ID:    resp.Repository.Issue.ID,
-		Title: resp.Repository.Issue.Title,
-	}, nil
+	return resp.Repository.Issue.Title, nil
 }
