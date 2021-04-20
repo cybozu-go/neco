@@ -3,23 +3,13 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"path"
-	"strconv"
 	"strings"
 )
 
-const zenhubAPIv4Endpoint = "https://api.zenhub.io/v4"
-
-func getZenHubURL(addPath string) *url.URL {
-	u, _ := url.Parse(zenhubAPIv4Endpoint)
-	u.Path = path.Join(u.Path, addPath)
-	return u
-}
+const zenhubGraphQLV1Endpoint = "https://api.zenhub.io/v1/graphql"
 
 // ZenHubClient implements a partial ZenHub API.
 type ZenHubClient struct {
@@ -39,8 +29,9 @@ func (zh *ZenHubClient) request(ctx context.Context, method string, url string, 
 		return nil, err
 	}
 	req = req.WithContext(ctx)
+	req.Method = "POST"
 	req.Header.Set("X-Authentication-Token", zh.token)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Type", "application/json")
 
 	client := new(http.Client)
 	resp, err := client.Do(req)
@@ -49,33 +40,80 @@ func (zh *ZenHubClient) request(ctx context.Context, method string, url string, 
 	}
 	defer resp.Body.Close()
 
-	if 200 <= resp.StatusCode && resp.StatusCode <= 299 {
-		return io.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("status code should be 200, but got %d", resp.StatusCode)
 	}
 
-	// Error handling
-	var errResp struct {
-		Message string `json:"message"`
-	}
-	err = json.NewDecoder(resp.Body).Decode(&errResp)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	return nil, errors.New(errResp.Message)
+
+	var rl []responseItem
+	err = json.Unmarshal(b, &rl)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %s", err, b)
+	}
+
+	for _, r := range rl {
+		if len(r.Errors) == 0 {
+			continue
+		}
+		return nil, fmt.Errorf("got response with errors: %s", string(b))
+	}
+	return b, nil
 }
 
 // Connect connect a pull request with an issue.
-func (zh *ZenHubClient) Connect(ctx context.Context, issueRepo int, issue int, prRepo int, pr int) error {
-	u := getZenHubURL(fmt.Sprintf("repositories/%d/connection", issueRepo))
+func (zh *ZenHubClient) Connect(ctx context.Context, issueID, pullRequestID string) error {
+	body, err := json.Marshal(newPayload(issueID, pullRequestID))
+	if err != nil {
+		return err
+	}
 
-	v := url.Values{}
-	v.Set("issue_number", strconv.Itoa(issue))
-	v.Add("connected_repo_id", strconv.Itoa(prRepo))
-	v.Add("connected_issue_number", strconv.Itoa(pr))
-
-	_, err := zh.request(ctx, http.MethodPost, u.String(), v.Encode())
+	_, err = zh.request(ctx, http.MethodPost, zenhubGraphQLV1Endpoint, string(body))
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+type payloadItem struct {
+	OperationName string     `json:"operationName"`
+	Query         string     `json:"query"`
+	Variables     *variables `json:"variables"`
+}
+
+type variables struct {
+	Input *zenHubInput `json:"input"`
+}
+
+type zenHubInput struct {
+	IssueID       string `json:"issueId"`
+	PullRequestID string `json:"pullRequestId"`
+}
+
+type responseItem struct {
+	Errors []errorItem `json:"errors"`
+}
+
+type errorItem struct {
+	Message string `json:"message"`
+}
+
+// This payload can be observed by connecting PR with issue on ZenHub WebUI and
+// open Network tab of Chrome Developer Tool
+func newPayload(issueID, pullRequestID string) []payloadItem {
+	return []payloadItem{
+		{
+			OperationName: "CreateIssuePrConnection",
+			Query:         "mutation CreateIssuePrConnection($input: CreateIssuePrConnectionInput!) {\n  createIssuePrConnection(input: $input) {\n    issue {\n      id\n      __typename\n    }\n    __typename\n  }\n}\n",
+			Variables: &variables{
+				&zenHubInput{
+					IssueID:       issueID,
+					PullRequestID: pullRequestID,
+				},
+			},
+		},
+	}
 }
