@@ -8,7 +8,7 @@ const systemdDir = "/etc/systemd/system"
 var SabakanImages = []string{"bird", "chrony", "coil", "serf", "setup-hw", "squid"}
 
 // BootImages is the list of container image names to be run on boot servers.
-var BootImages = []string{"etcd", "setup-hw", "sabakan", "serf", "vault"}
+var BootImages = []string{"etcd", "promtail", "setup-hw", "sabakan", "serf", "vault"}
 
 // Neco params
 const (
@@ -105,6 +105,13 @@ const (
 	CKELocalProxyService = "cke-localproxy"
 )
 
+// Promtail params
+const (
+	PromtailDir = "/etc/promtail"
+
+	PromtailService = "promtail"
+)
+
 // Assets path for worker node
 const (
 	WorkerAssetsPath = "/usr/libexec/neco"
@@ -172,6 +179,8 @@ var (
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
 	NecoConfFile = filepath.Join(NecoDir, "config.yml")
 	NecoBin      = "/usr/bin/neco"
+
+	PromtailConfFile = filepath.Join(PromtailDir, "promtail.yaml")
 
 	IgnitionDirectory = filepath.Join(NecoDataDir, "ignitions")
 )
