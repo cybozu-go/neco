@@ -24,7 +24,7 @@ func NewZenHubClient(token string) *ZenHubClient {
 }
 
 func (zh *ZenHubClient) request(ctx context.Context, query string, vars map[string]interface{}) ([]byte, error) {
-	greq := []graphQLRequest{{Query: query, Variables: vars}}
+	greq := graphQLRequest{Query: query, Variables: vars}
 	data, err := json.Marshal(greq)
 	if err != nil {
 		return nil, err
@@ -49,23 +49,19 @@ func (zh *ZenHubClient) request(ctx context.Context, query string, vars map[stri
 		return nil, fmt.Errorf("status code should be 200, but got %d", resp.StatusCode)
 	}
 
-	var gresp []graphQLResponse
+	var gresp graphQLResponse
 	err = json.NewDecoder(resp.Body).Decode(&gresp)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(gresp) != 1 {
-		return nil, fmt.Errorf("response should have only 1 item, but got %d", len(gresp))
+	if len(gresp.Errors) > 0 {
+		return nil, errors.New(gresp.Errors[0].Message)
 	}
-
-	r := gresp[0]
-	if len(r.Errors) > 0 {
-		return nil, errors.New(r.Errors[0].Message)
-	}
-	return []byte(r.Data), nil
+	return []byte(gresp.Data), nil
 }
 
+// NOTE:
 // Queries are copied from the value showen on the Network tab on Chrome
 // Developer tool when manually connecting a PR with an issue.
 
