@@ -66,10 +66,11 @@ func (zh *ZenHubClient) request(ctx context.Context, query string, vars map[stri
 	return []byte(r.Data), nil
 }
 
+// Queries are copied from the value showen on the Network tab on Chrome
+// Developer tool when manually connecting a PR with an issue.
+
 // Connect connect a pull request with an issue.
 func (zh *ZenHubClient) Connect(ctx context.Context, issueID, pullRequestID string) error {
-	// This query is copied from the value showen on the Network tab on Chrome
-	// Developer tool when manually connecting a PR with an issue.
 	query := "mutation CreateIssuePrConnection($input: CreateIssuePrConnectionInput!) {\n  createIssuePrConnection(input: $input) {\n    issue {\n      id\n      __typename\n    }\n    __typename\n  }\n}\n"
 	vars := map[string]interface{}{
 		"input": map[string]interface{}{
@@ -83,4 +84,31 @@ func (zh *ZenHubClient) Connect(ctx context.Context, issueID, pullRequestID stri
 		return err
 	}
 	return nil
+}
+
+// GetIssueID gets a zenhub internal ID for either PR or issue.
+func (zh *ZenHubClient) GetIssueID(ctx context.Context, repositoryGhID, issueGhNumber int) (string, error) {
+	query := fmt.Sprintf(
+		"query IssueByInfo {\n  issueByInfo(repositoryGhId: %d, issueNumber: %d) {\n    id\n    __typename\n  }\n}\n",
+		repositoryGhID,
+		issueGhNumber,
+	)
+	vars := map[string]interface{}{}
+
+	data, err := zh.request(ctx, query, vars)
+	if err != nil {
+		return "", err
+	}
+
+	var resp struct {
+		IssueByInfo struct {
+			ID string `json:"id"`
+		} `json:"issueByInfo"`
+	}
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		return "", err
+	}
+
+	return resp.IssueByInfo.ID, nil
 }
