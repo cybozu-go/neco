@@ -119,12 +119,21 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 		return err
 	}
 
+	var issueID string
 	if draftOpts.issue != 0 {
-		if ok, err := confirmIssue(ctx, gc, issueRepo, draftOpts.issue); err != nil {
+		issue, err := gc.GetIssue(ctx, issueRepo, draftOpts.issue)
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("%s/%s#%d: %s\n", issueRepo.Owner, issueRepo.Name, draftOpts.issue, issue.Title)
+		ok, err := askYorN("Is this ok?")
+		if err != nil {
 			return err
 		} else if !ok {
 			return nil
 		}
+		issueID = issue.ID
 	}
 
 	if err := git("push", "-u", "origin", branch+":"+branch); err != nil {
@@ -150,7 +159,7 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 	fmt.Printf("Connect %s/%s#%d with %s/%s#%d.\n",
 		curRepo.Owner, curRepo.Name, pr.Number, issueRepo.Owner, issueRepo.Name, draftOpts.issue)
 	zh := NewZenHubClient(config.ZenhubToken)
-	return zh.Connect(ctx, issueRepo.ID, pr.ID)
+	return zh.Connect(ctx, issueID, pr.ID)
 }
 
 func askYorN(query string) (bool, error) {
@@ -180,16 +189,6 @@ func confirmUncommitted() (bool, error) {
 
 	fmt.Println("WARNING: you have uncommitted files.")
 	return askYorN("Continue?")
-}
-
-func confirmIssue(ctx context.Context, gc GitHubClient, repo *GitHubRepository, issue int) (bool, error) {
-	title, err := gc.GetIssueTitle(ctx, repo, issue)
-	if err != nil {
-		return false, err
-	}
-
-	fmt.Printf("%s/%s#%d: %s\n", repo.Owner, repo.Name, issue, title)
-	return askYorN("Is this ok?")
 }
 
 func getRepo(ctx context.Context, gc GitHubClient, repo string) (*GitHubRepository, error) {
