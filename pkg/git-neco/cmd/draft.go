@@ -150,7 +150,15 @@ func runDraftCmd(cmd *cobra.Command, args []string, draft bool) error {
 	fmt.Printf("Connect %s/%s#%d with %s/%s#%d.\n",
 		curRepo.Owner, curRepo.Name, pr.Number, issueRepo.Owner, issueRepo.Name, draftOpts.issue)
 	zh := NewZenHubClient(config.ZenhubToken)
-	return zh.Connect(ctx, issueRepo.DatabaseID, draftOpts.issue, curRepo.DatabaseID, pr.Number)
+	prID, err := zh.GetIssueID(ctx, curRepo.DatabaseID, pr.Number)
+	if err != nil {
+		return err
+	}
+	issueID, err := zh.GetIssueID(ctx, issueRepo.DatabaseID, draftOpts.issue)
+	if err != nil {
+		return err
+	}
+	return zh.Connect(ctx, issueID, prID)
 }
 
 func askYorN(query string) (bool, error) {

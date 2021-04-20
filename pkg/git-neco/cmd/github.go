@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -119,6 +120,10 @@ func (gh GitHubClient) request(ctx context.Context, query string, vars map[strin
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("status code should be 200, but got %d", resp.StatusCode)
+	}
 
 	var gresp graphQLResponse
 	err = json.NewDecoder(resp.Body).Decode(&gresp)

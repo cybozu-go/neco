@@ -1,25 +1,15 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
-	"path"
-	"strconv"
-	"strings"
 )
 
-const zenhubAPIv4Endpoint = "https://api.zenhub.io/v4"
-
-func getZenHubURL(addPath string) *url.URL {
-	u, _ := url.Parse(zenhubAPIv4Endpoint)
-	u.Path = path.Join(u.Path, addPath)
-	return u
-}
+const zenhubGraphQLV1Endpoint = "https://api.zenhub.io/v1/graphql"
 
 // ZenHubClient implements a partial ZenHub API.
 type ZenHubClient struct {
@@ -33,14 +23,20 @@ func NewZenHubClient(token string) *ZenHubClient {
 	}
 }
 
-func (zh *ZenHubClient) request(ctx context.Context, method string, url string, body string) ([]byte, error) {
-	req, err := http.NewRequest(method, url, strings.NewReader(body))
+func (zh *ZenHubClient) request(ctx context.Context, query string, vars map[string]interface{}) ([]byte, error) {
+	greq := graphQLRequest{Query: query, Variables: vars}
+	data, err := json.Marshal(greq)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, zenhubGraphQLV1Endpoint, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
 	req = req.WithContext(ctx)
 	req.Header.Set("X-Authentication-Token", zh.token)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Type", "application/json")
 
 	client := new(http.Client)
 	resp, err := client.Do(req)
@@ -49,33 +45,66 @@ func (zh *ZenHubClient) request(ctx context.Context, method string, url string, 
 	}
 	defer resp.Body.Close()
 
-	if 200 <= resp.StatusCode && resp.StatusCode <= 299 {
-		return io.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("status code should be 200, but got %d", resp.StatusCode)
 	}
 
-	// Error handling
-	var errResp struct {
-		Message string `json:"message"`
-	}
-	err = json.NewDecoder(resp.Body).Decode(&errResp)
+	var gresp graphQLResponse
+	err = json.NewDecoder(resp.Body).Decode(&gresp)
 	if err != nil {
 		return nil, err
 	}
-	return nil, errors.New(errResp.Message)
+
+	if len(gresp.Errors) > 0 {
+		return nil, errors.New(gresp.Errors[0].Message)
+	}
+	return []byte(gresp.Data), nil
 }
 
+// NOTE:
+// Queries are copied from the value showen on the Network tab on Chrome
+// Developer tool when manually connecting a PR with an issue.
+
 // Connect connect a pull request with an issue.
-func (zh *ZenHubClient) Connect(ctx context.Context, issueRepo int, issue int, prRepo int, pr int) error {
-	u := getZenHubURL(fmt.Sprintf("repositories/%d/connection", issueRepo))
+func (zh *ZenHubClient) Connect(ctx context.Context, issueID, pullRequestID string) error {
+	query := "mutation CreateIssuePrConnection($input: CreateIssuePrConnectionInput!) {\n  createIssuePrConnection(input: $input) {\n    issue {\n      id\n      __typename\n    }\n    __typename\n  }\n}\n"
+	vars := map[string]interface{}{
+		"input": map[string]interface{}{
+			"issueId":       issueID,
+			"pullRequestId": pullRequestID,
+		},
+	}
 
-	v := url.Values{}
-	v.Set("issue_number", strconv.Itoa(issue))
-	v.Add("connected_repo_id", strconv.Itoa(prRepo))
-	v.Add("connected_issue_number", strconv.Itoa(pr))
-
-	_, err := zh.request(ctx, http.MethodPost, u.String(), v.Encode())
+	_, err := zh.request(ctx, query, vars)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// GetIssueID gets a zenhub internal ID for either PR or issue.
+func (zh *ZenHubClient) GetIssueID(ctx context.Context, repositoryGhID, issueGhNumber int) (string, error) {
+	query := fmt.Sprintf(
+		"query IssueByInfo {\n  issueByInfo(repositoryGhId: %d, issueNumber: %d) {\n    id\n    __typename\n  }\n}\n",
+		repositoryGhID,
+		issueGhNumber,
+	)
+	vars := map[string]interface{}{}
+
+	data, err := zh.request(ctx, query, vars)
+	if err != nil {
+		return "", err
+	}
+
+	var resp struct {
+		IssueByInfo struct {
+			ID string `json:"id"`
+		} `json:"issueByInfo"`
+	}
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		return "", err
+	}
+
+	return resp.IssueByInfo.ID, nil
 }
