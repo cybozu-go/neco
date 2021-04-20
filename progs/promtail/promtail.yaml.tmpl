@@ -1,0 +1,28 @@
+server:
+  log_level: info
+  http_listen_port: 3101
+
+client:
+  url: http://distributor.logging.svc:3100/loki/api/v1/push
+
+positions:
+  filename: /run/promtail/positions.yaml
+
+scrape_configs:
+  - job_name: journal
+    journal:
+      json: false
+      max_age: 12h
+      path: /var/log/journal
+      labels:
+        job: systemd-journal
+        instance: {{ .ServerIP }}
+    relabel_configs:
+      - source_labels: ["__journal__systemd_unit"]
+        target_label: "unit"
+      - source_labels: ["__journal_syslog_identifier"]
+        target_label: "syslog_identifier"
+      - source_labels: ["__journal_container_name"]
+        target_label: "container_name"
+      - source_labels: ["__journal__hostname"]
+        target_label: "hostname"

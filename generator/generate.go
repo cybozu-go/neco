@@ -25,6 +25,7 @@ var imageRepos = []string{
 	"quay.io/cybozu/bird",
 	"quay.io/cybozu/chrony",
 	"quay.io/cybozu/etcd",
+	"quay.io/cybozu/promtail",
 	"quay.io/cybozu/sabakan",
 	"quay.io/cybozu/serf",
 	"quay.io/cybozu/setup-hw",
