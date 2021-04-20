@@ -14,7 +14,7 @@ func testNodeDNS() {
 		pods := &corev1.PodList{}
 		stdout := execSafeAt(bootServers[0], "kubectl", "-n", "kube-system", "get", "pods", "-o", "json")
 		err := json.Unmarshal(stdout, pods)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
 		Expect(pods.Items).NotTo(BeEmpty())
 		nodeAddr := pods.Items[0].Spec.NodeName
 

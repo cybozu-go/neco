@@ -39,7 +39,7 @@ func runBeforeSuite() {
 		} `yaml:"racks"`
 	}{}
 	err = yaml.Unmarshal(data, &machines)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).NotTo(HaveOccurred(), "data=%s", data)
 
 	for i, rack := range machines.Racks {
 		addr := strings.Split(rack.Boot.Bastion, "/")[0]
@@ -91,9 +91,9 @@ func runBeforeSuiteInstall() {
 	for _, host := range allBootServers {
 		_, err := f.Seek(0, io.SeekStart)
 		Expect(err).NotTo(HaveOccurred())
-		_, _, err = execAtWithStream(host, f, "dd", "of="+remoteFilename)
-		Expect(err).NotTo(HaveOccurred())
-		stdout, stderr, err := execAt(host, "sudo", "dpkg", "-i", remoteFilename)
+		stdout, stderr, err := execAtWithStream(host, f, "dd", "of="+remoteFilename)
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		stdout, stderr, err = execAt(host, "sudo", "dpkg", "-i", remoteFilename)
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 	}
 
@@ -110,8 +110,8 @@ func runBeforeSuiteCopy() {
 	for _, host := range allBootServers {
 		_, err := f.Seek(0, io.SeekStart)
 		Expect(err).NotTo(HaveOccurred())
-		_, _, err = execAtWithStream(host, f, "dd", "of="+remoteFilename)
-		Expect(err).NotTo(HaveOccurred())
+		stdout, stderr, err := execAtWithStream(host, f, "dd", "of="+remoteFilename)
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 	}
 
 	fmt.Println("Begin tests...")

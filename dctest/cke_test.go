@@ -55,17 +55,17 @@ func testCKESetup() {
 func testCKE() {
 	It("all systemd units are active", func() {
 		By("getting machines list")
-		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		var csMachines []sabakan.Machine
 		err = json.Unmarshal(stdout, &csMachines)
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 
-		stdout, _, err = execAt(bootServers[0], "sabactl", "machines", "get", "--role=ss")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err = execAt(bootServers[0], "sabactl", "machines", "get", "--role=ss")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		var ssMachines []sabakan.Machine
 		err = json.Unmarshal(stdout, &ssMachines)
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 
 		availableNodes := len(csMachines) + len(ssMachines)
 		Expect(availableNodes).NotTo(Equal(0))
@@ -143,8 +143,8 @@ func testCKE() {
 func testCKEBackupMetrics() {
 	It("check for CKE etcd backup metrics", func() {
 		execSafeAt(bootServers[0], "sudo", "/usr/sbin/backup-cke-etcd")
-		stdout, _, err := execAt(bootServers[0], "curl", "-s", "http://localhost:9100/metrics")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAt(bootServers[0], "curl", "-s", "http://localhost:9100/metrics")
+		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
 		metrics := []string{"cke_etcd_backup_last_executed_time", "cke_etcd_backup_last_succeeded_time"}
 		exists := make([]bool, len(metrics))
 		scanner := bufio.NewScanner(bytes.NewReader(stdout))

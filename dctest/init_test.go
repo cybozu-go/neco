@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -36,14 +35,8 @@ func testInit() {
 		for _, host := range bootServers {
 			stdout, stderr, err := execAt(
 				host, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "etcdpasswd")
-			if err != nil {
-				log.Error("neco init-local etcdpasswd", map[string]interface{}{
-					"host":   host,
-					"stdout": string(stdout),
-					"stderr": string(stderr),
-				})
-				Expect(err).NotTo(HaveOccurred())
-			}
+			Expect(err).ShouldNot(HaveOccurred(), "host=%s, stdout=%s, stderr=%s", host, stdout, stderr)
+
 			execSafeAt(host, "test", "-f", neco.EtcdpasswdConfFile)
 			execSafeAt(host, "test", "-f", neco.EtcdpasswdKeyFile)
 			execSafeAt(host, "test", "-f", neco.EtcdpasswdCertFile)
@@ -99,14 +92,8 @@ func testInit() {
 		for _, host := range bootServers {
 			stdout, stderr, err := execAt(
 				host, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "sabakan")
-			if err != nil {
-				log.Error("neco init-local sabakan", map[string]interface{}{
-					"host":   host,
-					"stdout": string(stdout),
-					"stderr": string(stderr),
-				})
-				Expect(err).NotTo(HaveOccurred())
-			}
+			Expect(err).ShouldNot(HaveOccurred(), "host=%s, stdout=%s, stderr=%s", host, stdout, stderr)
+
 			execSafeAt(host, "test", "-d", neco.SabakanDataDir)
 			execSafeAt(host, "test", "-f", neco.SabakanConfFile)
 			execSafeAt(host, "test", "-f", neco.SabakanKeyFile)
@@ -127,14 +114,8 @@ func testInit() {
 		for _, host := range bootServers {
 			stdout, stderr, err := execAt(
 				host, "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "cke")
-			if err != nil {
-				log.Error("neco init-local cke", map[string]interface{}{
-					"host":   host,
-					"stdout": string(stdout),
-					"stderr": string(stderr),
-				})
-				Expect(err).NotTo(HaveOccurred())
-			}
+			Expect(err).ShouldNot(HaveOccurred(), "host=%s, stdout=%s, stderr=%s", host, stdout, stderr)
+
 			execSafeAt(host, "test", "-f", neco.CKEConfFile)
 			execSafeAt(host, "test", "-f", neco.CKEKeyFile)
 			execSafeAt(host, "test", "-f", neco.CKECertFile)
