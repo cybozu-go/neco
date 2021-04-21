@@ -103,12 +103,9 @@ func (c *ReleaseChecker) update(ctx context.Context) error {
 		return err
 	}
 
-	isNewer, err := currentRelease.isNewerThan(latestRelease)
-	if err != nil {
-		return err
-	}
-	if isNewer {
-		log.Info("got wrong neco release", map[string]interface{}{
+	isNewer := latestRelease.isNewerThan(currentRelease)
+	if !isNewer {
+		log.Info("got neco release with older version", map[string]interface{}{
 			"latest":  latest,
 			"current": c.current,
 		})
