@@ -27,6 +27,9 @@ SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
 OPDEB_BINNAMES = argocd kubectl kubeseal kustomize logcli stern tsh kubectl-moco
 OPDEB_DOCNAMES = argocd kubectl kubeseal kustomize logcli stern teleport moco
 
+### for building kind node
+KIND_NODE_VERSION = v1.21.0
+
 .PHONY: all
 all:
 	@echo "Specify one of these targets:"
@@ -143,3 +146,8 @@ setup:
 clean:
 	$(MAKE) -f Makefile.tools clean
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OPWORKWINDIR) $(OPWORKMACDIR) $(OP_DEB) $(OP_WIN_ZIP) $(OP_MAC_ZIP)
+
+.PHONY: kind-node
+kind-node:
+	git clone --depth 1 https://github.com/kubernetes/kubernetes.git -b $(KIND_NODE_VERSION) /tmp/kind-node
+	kind build node-image --kube-root /tmp/kind-node --image quay.io/topolvm/kind-node:$(KIND_NODE_VERSION)
