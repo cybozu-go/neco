@@ -87,7 +87,7 @@ func (w *Worker) Run(ctx context.Context) error {
 			continue
 		}
 
-		if w.version < req.Version {
+		if w.version != req.Version {
 			// After update of "neco" package, old neco-worker should stop.
 			return w.operator.UpdateNeco(ctx, req)
 		}
