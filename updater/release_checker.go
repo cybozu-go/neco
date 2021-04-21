@@ -90,7 +90,7 @@ func (c *ReleaseChecker) update(ctx context.Context) error {
 		return err
 	}
 
-	if c.current == latest {
+	if latest == c.current {
 		return nil
 	}
 
