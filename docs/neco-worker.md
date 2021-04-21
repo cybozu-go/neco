@@ -17,7 +17,7 @@ When `neco-worker` is started at the first time, it compares its debian package
 version against the current system version recorded in [etcd](etcd.md).
 
 If the version matches, it installs programs as specified in `artifacts.go`.
-If not match, `neco-worker` updates itself with the new debian package and retry.
+If the fetched version is newer than the current system version, `neco-worker` updates itself with the new debian package and retry.
 
 Updating programs
 -----------------
