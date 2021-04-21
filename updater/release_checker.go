@@ -3,7 +3,10 @@ package updater
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -90,7 +93,28 @@ func (c *ReleaseChecker) update(ctx context.Context) error {
 		return err
 	}
 
-	if latest == c.current {
+	if c.current == latest {
+		return nil
+	}
+
+	currentRelease, err := newNecoRelease(c.current)
+	if err != nil {
+		return err
+	}
+	latestRelease, err := newNecoRelease(latest)
+	if err != nil {
+		return err
+	}
+
+	isNewer, err := currentRelease.isNewerThan(latestRelease)
+	if err != nil {
+		return err
+	}
+	if isNewer {
+		log.Info("got wrong neco release", map[string]interface{}{
+			"latest":  latest,
+			"current": c.current,
+		})
 		return nil
 	}
 
@@ -100,4 +124,30 @@ func (c *ReleaseChecker) update(ctx context.Context) error {
 	})
 
 	return c.storage.UpdateNecoRelease(ctx, latest, c.leaderKey)
+}
+
+type necoRelease struct {
+	prefix  string
+	date    time.Time
+	version int
+}
+
+func newNecoRelease(tag string) (*necoRelease, error) {
+	tags := strings.Split(tag, "-")
+	if len(tags) != 3 {
+		return nil, fmt.Errorf(`tag should have "test-YYYY.MM.DD-UNIQUE_ID", but got %s`, tag)
+	}
+	d, err := time.Parse("2006.01.02", tags[1])
+	if err != nil {
+		return nil, err
+	}
+	v, err := strconv.Atoi(tags[2])
+	if err != nil {
+		return nil, err
+	}
+	return &necoRelease{tags[0], d, v}, nil
+}
+
+func (r necoRelease) isNewerThan(target *necoRelease) (bool, error) {
+	return r.date.After(target.date) && r.version < target.version, nil
 }
