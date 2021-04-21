@@ -71,20 +71,26 @@ func TestNecoReleaseIsNewerThan(t *testing.T) {
 		want   bool
 	}{
 		{
-			name:   "should be newer than given neco release argument",
+			name:   "should be newer than given neco release argument on version and date",
 			fields: fields{"release", time.Date(2021, time.April, 20, 0, 0, 0, 0, time.UTC), 13966},
 			args:   args{&necoRelease{"release", time.Date(2021, time.April, 19, 0, 0, 0, 0, time.UTC), 13965}},
 			want:   true,
 		},
 		{
-			name:   "should be older than given neco release argument on version",
+			name:   "should be newer than given neco release argument on version",
+			fields: fields{"release", time.Date(2021, time.April, 19, 0, 0, 0, 0, time.UTC), 13966},
+			args:   args{&necoRelease{"release", time.Date(2021, time.April, 19, 0, 0, 0, 0, time.UTC), 13965}},
+			want:   true,
+		},
+		{
+			name:   "should be older than given neco release argument on version and date",
 			fields: fields{"release", time.Date(2021, time.April, 18, 0, 0, 0, 0, time.UTC), 13964},
 			args:   args{&necoRelease{"release", time.Date(2021, time.April, 19, 0, 0, 0, 0, time.UTC), 13965}},
 			want:   false,
 		},
 		{
 			name:   "should be older than given neco release argument on date",
-			fields: fields{"release", time.Date(2021, time.April, 18, 0, 0, 0, 0, time.UTC), 13965},
+			fields: fields{"release", time.Date(2021, time.April, 19, 0, 0, 0, 0, time.UTC), 13964},
 			args:   args{&necoRelease{"release", time.Date(2021, time.April, 19, 0, 0, 0, 0, time.UTC), 13965}},
 			want:   false,
 		},
