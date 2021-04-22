@@ -20,8 +20,8 @@ func testEtcdpasswd() {
 		execSafeAt(bootServers[0], "etcdpasswd", "user", "get", user)
 		keyBytes, err := os.ReadFile(bobPublicKey)
 		Expect(err).ShouldNot(HaveOccurred())
-		_, _, err = execAtWithInput(bootServers[0], keyBytes, "etcdpasswd", "cert", "add", user)
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAtWithInput(bootServers[0], keyBytes, "etcdpasswd", "cert", "add", user)
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("executing command with sudo at boot servers")
 		sshKey, err := parsePrivateKey(bobPrivateKey)

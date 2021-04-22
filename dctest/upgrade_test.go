@@ -46,19 +46,19 @@ func testUpgrade() {
 	// However, we should delete after upgrading.
 	It("should set `machine-type` label", func() {
 		stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get")
-		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		var machines []sabakan.Machine
 		err = json.Unmarshal(stdout, &machines)
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 		for _, m := range machines {
 			By("checking label: " + m.Spec.IPv4[0])
 			if val, ok := m.Spec.Labels["machine-type"]; ok && val != "" {
 				continue
 			}
 			By("setting label: " + m.Spec.IPv4[0])
-			stdout, _, err := execAt(bootServers[0], "curl", "-sS", "--stderr", "-", "-X", "PUT",
+			stdout, stderr, err := execAt(bootServers[0], "curl", "-sS", "--stderr", "-", "-X", "PUT",
 				"-d", `'{ "machine-type": "qemu" }'`, "http://localhost:10080/api/v1/labels/"+m.Spec.Serial)
-			Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 			Expect(string(stdout)).To(Equal(""))
 		}
 	})
@@ -70,10 +70,10 @@ func testUpgrade() {
 			By("setting github-token")
 
 			token := string(bytes.TrimSpace(data))
-			_, _, err = execAt(bootServers[0], "neco", "config", "set", "github-token", token)
-			Expect(err).NotTo(HaveOccurred())
-			stdout, _, err := execAt(bootServers[0], "neco", "config", "get", "github-token")
-			Expect(err).NotTo(HaveOccurred())
+			_, stderr, err := execAt(bootServers[0], "neco", "config", "set", "github-token", token)
+			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
+			stdout, stderr, err := execAt(bootServers[0], "neco", "config", "get", "github-token")
+			Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
 			Expect(string(stdout)).To(Equal(token + "\n"))
 		case os.IsNotExist(err):
 		default:
@@ -136,8 +136,8 @@ func testUpgrade() {
 	})
 
 	It("should re-configure vault for CKE >= 1.14.3", func() {
-		stdout, _, err := execAt(bootServers[0], "ckecli", "--version")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAt(bootServers[0], "ckecli", "--version")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		fields := strings.Fields(string(stdout))
 		Expect(fields).To(HaveLen(3))
@@ -149,17 +149,17 @@ func testUpgrade() {
 		}
 
 		token := getVaultToken()
-		_, _, err = execAt(bootServers[0], "env", "VAULT_TOKEN="+token, "ckecli", "vault", "init")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err = execAt(bootServers[0], "env", "VAULT_TOKEN="+token, "ckecli", "vault", "init")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 	})
 
 	It("should running newer cke desired image version", func() {
 		stdout, stderr, err := execAt(bootServers[0], "ckecli", "cluster", "get")
-		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		cluster := new(ckeCluster)
 		err = yaml.Unmarshal(stdout, cluster)
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 
 		By("generating kubeconfig for cluster admin")
 		execSafeAt(bootServers[0], "mkdir", "-p", ".kube")
@@ -172,7 +172,7 @@ func testUpgrade() {
 		}).Should(Succeed())
 
 		stdout, stderr, err = execAt(bootServers[0], "ckecli", "images")
-		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		for _, img := range strings.Fields(string(stdout)) {
 			By("checking " + img + " is running")
@@ -226,7 +226,7 @@ func testUpgrade() {
 	It("should running newer neco desired image version", func() {
 		for _, img := range neco.CurrentArtifacts.Images {
 			stdout, stderr, err := execAt(bootServers[0], "neco", "image", img.Name)
-			Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 			newImage := string(bytes.TrimSpace(stdout))
 			By("checking " + newImage + " is running")
 
@@ -277,10 +277,10 @@ func testUpgrade() {
 		}).Should(Succeed())
 
 		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod/testhttpd", "-o=json")
-		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		pod := new(corev1.Pod)
 		err = json.Unmarshal(stdout, pod)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
 		By("checking SHA1 veth for namespace: " + pod.Namespace + ", name:" + pod.Name)
 		checkVethPeerNameIsSHA1(pod)
 
@@ -337,10 +337,10 @@ func testUpgrade() {
 		}).Should(Succeed())
 
 		stdout, stderr, err := execAt(bootServers[0], "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
-		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		podList := new(corev1.PodList)
 		err = json.Unmarshal(stdout, podList)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
 
 		for _, pod := range podList.Items {
 			if pod.Name != notTarget {
