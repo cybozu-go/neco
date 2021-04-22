@@ -19,7 +19,7 @@ func testRetireServer() {
 
 		var allMachines []*sabakan.Machine
 		err = json.Unmarshal(stdout, &allMachines)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
 		Expect(allMachines).NotTo(HaveLen(0))
 
 		By("selecting a target node")
@@ -28,7 +28,7 @@ func testRetireServer() {
 
 		var nl corev1.NodeList
 		err = json.Unmarshal(stdout, &nl)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
 		targetNodename := nl.Items[0].Name
 
 		By("getting the target node's serial")
@@ -58,7 +58,7 @@ func testRetireServer() {
 
 		By("confirming that the deletion of disk encryption keys on the sabakan")
 		stdout, stderr, err = execEtcdctlAt(bootServers[0], "-w", "json", "get", "/sabakan/crypts/"+targetSerial, "--prefix")
-		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		Expect(err).NotTo(HaveOccurred(), "stderr=%s", stderr)
 
 		var result struct {
 			KVS []interface{} `json:"kvs,omitempty"`

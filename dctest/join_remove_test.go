@@ -18,12 +18,12 @@ import (
 // testJoinRemove test boot server join/remove scenario
 func testJoinRemove() {
 	It("copies root CA certificate from existing server", func() {
-		stdout, _, err := execAt(bootServers[0], "cat", neco.ServerCAFile)
-		Expect(err).ShouldNot(HaveOccurred())
-		_, _, err = execAtWithInput(allBootServers[3], stdout, "sudo", "tee", neco.ServerCAFile)
-		Expect(err).ShouldNot(HaveOccurred())
-		_, _, err = execAt(allBootServers[3], "sudo", "update-ca-certificates")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAt(bootServers[0], "cat", neco.ServerCAFile)
+		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+		_, stderr, err = execAtWithInput(allBootServers[3], stdout, "sudo", "tee", neco.ServerCAFile)
+		Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+		stdout, stderr, err = execAt(allBootServers[3], "sudo", "update-ca-certificates")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 	})
 
 	It("should add a new boot server", func() {
@@ -35,14 +35,8 @@ func testJoinRemove() {
 		token := getVaultToken()
 		stdout, stderr, err = execAt(
 			allBootServers[3], "sudo", "env", "VAULT_TOKEN="+token, "neco", "join", "0", "1", "2")
-		if err != nil {
-			log.Error("neco join failed", map[string]interface{}{
-				"host":   "boot-3",
-				"stdout": string(stdout),
-				"stderr": string(stderr),
-			})
-			Expect(err).ShouldNot(HaveOccurred())
-		}
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
 		execSafeAt(allBootServers[3], "test", "-f", neco.NecoConfFile)
 		execSafeAt(allBootServers[3], "test", "-f", neco.NecoCertFile)
 		execSafeAt(allBootServers[3], "test", "-f", neco.NecoKeyFile)
@@ -71,26 +65,20 @@ func testJoinRemove() {
 		time.Sleep(time.Second * 7)
 
 		By("Checking etcd installation")
-		_, _, err := execAt(allBootServers[3], "systemctl", "-q", "is-active", neco.EtcdService+".service")
-		Expect(err).ShouldNot(HaveOccurred())
-		_, _, err = execAt(allBootServers[3], "test", "-f", "/usr/local/bin/etcdctl")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAt(allBootServers[3], "systemctl", "-q", "is-active", neco.EtcdService+".service")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		stdout, stderr, err = execAt(allBootServers[3], "test", "-f", "/usr/local/bin/etcdctl")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		By("Checking vault installation")
-		_, _, err = execAt(allBootServers[3], "systemctl", "-q", "is-active", neco.VaultService+".service")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err = execAt(allBootServers[3], "systemctl", "-q", "is-active", neco.VaultService+".service")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 	})
 
 	It("should setup sabakan on boot-3", func() {
 		stdout, stderr, err := execAt(
 			allBootServers[3], "sudo", "env", "VAULT_TOKEN="+getVaultToken(), "neco", "init-local", "sabakan")
-		if err != nil {
-			log.Error("neco init-local sabakan", map[string]interface{}{
-				"host":   allBootServers[3],
-				"stdout": string(stdout),
-				"stderr": string(stderr),
-			})
-			Expect(err).NotTo(HaveOccurred())
-		}
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
 		execSafeAt(allBootServers[3], "test", "-d", neco.SabakanDataDir)
 		execSafeAt(allBootServers[3], "test", "-f", neco.SabakanConfFile)
 		execSafeAt(allBootServers[3], "test", "-f", neco.SabakanKeyFile)
@@ -112,8 +100,8 @@ func testJoinRemove() {
 	})
 
 	It("should add boot-3 to etcd cluster", func() {
-		stdout, _, err := execEtcdctlAt(bootServers[0], "-w", "json", "member", "list")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execEtcdctlAt(bootServers[0], "-w", "json", "member", "list")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		var mlr struct {
 			Members []struct {
 				Name string `json:"name"`
@@ -121,7 +109,7 @@ func testJoinRemove() {
 		}
 
 		err = json.Unmarshal(stdout, &mlr)
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 
 		names := make([]string, len(mlr.Members))
 		for i, m := range mlr.Members {

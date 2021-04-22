@@ -40,7 +40,7 @@ func testSquid() {
 			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		}
 		err = json.Unmarshal(stdout, &pdb)
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
 	})
 

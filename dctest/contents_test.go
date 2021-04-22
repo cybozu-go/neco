@@ -36,7 +36,7 @@ func testInitData() {
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		var result map[string]int
 		err = json.Unmarshal(stdout, &result)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
 		v, ok := result["cs"]
 		Expect(ok).To(BeTrue())
 		Expect(v).To(Equal(csweight))
@@ -58,7 +58,7 @@ func testInitData() {
 
 		var ckeTemplate map[string]interface{}
 		err = yaml.Unmarshal(stdout, &ckeTemplate)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
 		nodes, found, err := unstructured.NestedSlice(ckeTemplate, "nodes")
 		Expect(found).To(BeTrue())
 		Expect(err).NotTo(HaveOccurred())
@@ -67,14 +67,14 @@ func testInitData() {
 		Expect(found).To(BeTrue())
 		Expect(err).NotTo(HaveOccurred())
 		weight, err := strconv.ParseFloat(labels[ckeLabelWeight], 64)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "data=%s", labels[ckeLabelWeight])
 		Expect(weight).To(BeNumerically("==", csweight))
 
 		labels, found, err = unstructured.NestedStringMap(nodes[2].(map[string]interface{}), "labels")
 		Expect(found).To(BeTrue())
 		Expect(err).NotTo(HaveOccurred())
 		weight, err = strconv.ParseFloat(labels[ckeLabelWeight], 64)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "data=%s", labels[ckeLabelWeight])
 		Expect(weight).To(BeNumerically("==", ssweight))
 
 		Eventually(func() error {

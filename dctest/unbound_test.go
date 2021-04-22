@@ -37,7 +37,7 @@ func testUnbound() {
 		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "poddisruptionbudgets", "unbound-pdb", "-n", "internet-egress", "-o", "json")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		err = json.Unmarshal(stdout, &pdb)
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
 	})
 

@@ -19,17 +19,17 @@ import (
 func testSabakanStateSetter() {
 	It("should wait for all nodes to join serf", func() {
 		By("getting machines list")
-		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		var csMachines []sabakan.Machine
 		err = json.Unmarshal(stdout, &csMachines)
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 
-		stdout, _, err = execAt(bootServers[0], "sabactl", "machines", "get", "--role=ss")
-		Expect(err).ShouldNot(HaveOccurred())
+		stdout, stderr, err = execAt(bootServers[0], "sabactl", "machines", "get", "--role=ss")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		var ssMachines []sabakan.Machine
 		err = json.Unmarshal(stdout, &ssMachines)
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 
 		availableNodes := len(csMachines) + len(ssMachines)
 		Expect(availableNodes).NotTo(Equal(0))
@@ -81,7 +81,7 @@ func testSabakanStateSetter() {
 
 		By("restarting sabakan-state-setter on " + leaderNodeBefore)
 		index, err := strconv.Atoi(leaderNodeBefore[len(leaderNodeBefore)-1:])
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", leaderNodeBefore[len(leaderNodeBefore)-1:])
 		stdout, stderr, err := execAt(bootServers[index], "sudo", "systemctl", "restart", "sabakan-state-setter.service")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
