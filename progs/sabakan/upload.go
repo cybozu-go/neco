@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	imageOS = "coreos"
+	imageOS = "flatcar"
 )
 
 const retryCount = 40
@@ -64,13 +64,13 @@ func uploadOSImages(ctx context.Context, c *sabac.Client, p *http.Client) error 
 		return err
 	}
 
-	version := neco.CurrentArtifacts.CoreOS.Version
+	version := neco.CurrentArtifacts.Flatcar.Version
 	if len(index) != 0 && index[len(index)-1].ID == version {
 		// already uploaded
 		return nil
 	}
 
-	kernelURL, initrdURL := neco.CurrentArtifacts.CoreOS.URLs()
+	kernelURL, initrdURL := neco.CurrentArtifacts.Flatcar.URLs()
 
 	kernelFile, err := os.CreateTemp("", "kernel")
 	if err != nil {
