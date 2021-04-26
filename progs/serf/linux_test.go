@@ -40,7 +40,7 @@ func TestGetOSName(t *testing.T) {
 		name    string
 	}{
 		{content: ubuntu, name: "Ubuntu"},
-		{content: containerLinux, name: "Container Linux by CoreOS"},
+		{content: containerLinux, name: "Flatcar Container Linux by Kinvolk"},
 	}
 
 	for _, c := range cases {
@@ -76,7 +76,7 @@ func TestGetOSVersionID(t *testing.T) {
 		id      string
 	}{
 		{content: ubuntu, id: "18.04"},
-		{content: containerLinux, id: "1911.3.0"},
+		{content: containerLinux, id: "2765.2.0"},
 	}
 
 	for _, c := range cases {
