@@ -192,7 +192,7 @@ func waitRequestComplete(check string, recover ...bool) {
 			return errors.New("request is not completed: " + out)
 		}
 		if check != "" && !strings.Contains(out, check) {
-			return errors.New("request is not completed: " + out)
+			return fmt.Errorf("should contain %q: "+out, check)
 		}
 		return nil
 

@@ -35,7 +35,7 @@ There are three types of test suites.
     Before running upgrade test suite, bootstrap test with an old Neco package and old procedures must be executed.
     This old package is downloaded from GitHub releases, and the old procedures get checked-out from git repository.
     Upgrade test suite then upgrades Neco with the generated deb package,
-    which is versioned as `9999.99.99`.
+    which is versioned as `9999.12.31-99999`.
 
 3. functions
 
