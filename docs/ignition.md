@@ -1,7 +1,7 @@
-How CoreOS Container Linux boots in Neco
+How Flatcar Container Linux boots in Neco
 ========================================
 
-Ignition is a provisioning system for CoreOS Container Linux.
+Ignition is a provisioning system for Flatcar Container Linux.
 Users can do virtually anything during boot process by writing systemd units.
 
 This document describes how Neco constructs Ignition configurations and what
@@ -20,7 +20,7 @@ Resources
     This is the ignition template.  The template references files in
     [`ignitions/common/`](../ignitions/common/) directory.
 
-* [Ignition documentation](https://coreos.com/ignition/docs/latest/)
+* [Ignition documentation](https://kinvolk.io/docs/flatcar-container-linux/latest/provisioning/ignition/)
 
     The current template is written in [spec version 2.2](https://coreos.com/ignition/docs/latest/configuration-v2_2.html).
 
@@ -217,7 +217,7 @@ Container Linux will periodically update serf tags as follows:
 | Name                   | Description                               |
 | ---------------------- | ----------------------------------------- |
 | `serial`               | The serial code of the machine.           |
-| `os-name`              | "Container Linux by CoreOS"               |
+| `os-name`              | "Flatcar Container Linux by Kinvolk"      |
 | `os-version`           | Container Linux version.                  |
 | `uptime`               | Output of `uptime` command.               |
 | `systemd-units-failed` | Failed unit names.                        |
