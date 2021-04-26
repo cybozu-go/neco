@@ -48,7 +48,7 @@ var debRepos = []string{
 
 var templ = template.Must(template.New("").Parse(artifactSetTemplate))
 
-const coreOSFeed = "https://www.flatcar-linux.org/releases-json/releases-stable.json"
+const coreOSFeed = "https://kinvolk.io/flatcar-container-linux/releases-json/releases-stable.json"
 
 func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*neco.DebianPackage, coreos *neco.CoreOSImage) error {
 	var data struct {
