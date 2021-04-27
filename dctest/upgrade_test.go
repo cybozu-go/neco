@@ -80,10 +80,17 @@ func testUpgrade() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
-		// TODO: this line should be uncommented after #1561 is released
-		// By("Changing env for test")
-		// stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
-		// Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		// TODO: this block should be deleted after #1561 is released
+		// Eventually is to wait until dpkg lock is released
+		By("stopping neco-updater")
+		for _, h := range bootServers {
+			stdout, stderr, err := execAt(h, "sudo", "systemctl", "stop", "neco-updater.service")
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
+
+		By("Changing env for test")
+		stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("Waiting for request to complete")
 		// TODO: this line should be uncommented after #1561 is released
@@ -91,16 +98,13 @@ func testUpgrade() {
 
 		// TODO: this block should be deleted after #1561 is released
 		// Eventually is to wait until dpkg lock is released
-		debName := fmt.Sprintf("/tmp/neco_%s_amd64.deb", debVer)
+		for _, h := range bootServers {
+			stdout, stderr, err := execAt(h, "sudo", "dpkg", "-i", fmt.Sprintf("/tmp/neco_%s_amd64.deb", debVer))
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
+
 		for _, h := range bootServers {
 			Eventually(func() error {
-				stdout, stderr, err := execAt(h, "sudo", "dpkg", "-i", debName)
-				if err != nil {
-					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
-				}
-				return nil
-			}).Should(Succeed())
-			Consistently(func() error {
 				stdout, stderr, err := execAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 				if err != nil {
 					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
@@ -122,13 +126,13 @@ func testUpgrade() {
 					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
 				}
 				return nil
-			}, 30*time.Second, 1*time.Second).Should(Succeed())
+			}).Should(Succeed())
 		}
 
-		// By("Checking installed Neco version")
-		// output := execSafeAt(bootServers[0], "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
-		// necoVersion := string(output)
-		// Expect(necoVersion).Should(Equal(debVer))
+		By("Checking installed Neco version")
+		output := execSafeAt(bootServers[0], "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
+		necoVersion := string(output)
+		Expect(necoVersion).Should(Equal(debVer))
 
 		By("Checking status of services enabled at postinst")
 		for _, h := range bootServers {
