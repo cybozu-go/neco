@@ -80,9 +80,10 @@ func testUpgrade() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
-		By("Changing env for test")
-		stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		// TODO: this line should be uncommented after #1561 is released
+		// By("Changing env for test")
+		// stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
+		// Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("Waiting for request to complete")
 		// TODO: this line should be uncommented after #1561 is released
@@ -100,7 +101,7 @@ func testUpgrade() {
 				return nil
 			}).Should(Succeed())
 			Eventually(func() error {
-				stdout, stderr, err = execAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
+				stdout, stderr, err := execAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 				if err != nil {
 					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
 				}
@@ -124,10 +125,10 @@ func testUpgrade() {
 			}).Should(Succeed())
 		}
 
-		By("Checking installed Neco version")
-		output := execSafeAt(bootServers[0], "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
-		necoVersion := string(output)
-		Expect(necoVersion).Should(Equal(debVer))
+		// By("Checking installed Neco version")
+		// output := execSafeAt(bootServers[0], "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
+		// necoVersion := string(output)
+		// Expect(necoVersion).Should(Equal(debVer))
 
 		By("Checking status of services enabled at postinst")
 		for _, h := range bootServers {
