@@ -20,6 +20,7 @@ var (
 
 	installList = []string{
 		"jq",
+		"ipvsadm",
 	}
 )
 
