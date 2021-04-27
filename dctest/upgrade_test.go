@@ -80,24 +80,32 @@ func testUpgrade() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
-		// TODO: this block should be deleted after #1561 is released
-		// Eventually is to wait until dpkg lock is released
-		By("stopping neco-updater")
-		for _, h := range bootServers {
-			stdout, stderr, err := execAt(h, "sudo", "systemctl", "stop", "neco-updater.service")
-			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		}
-
 		By("Changing env for test")
 		stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
-		By("Waiting for request to complete")
+		// TODO: this block should be deleted after #1561 is released
+		By("Waiting for request to be failed")
+		EventuallyWithOffset(1, func() error {
+			stdout, stderr, err := execAt(bootServers[0], "neco", "status")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			out := string(stdout)
+
+			// As of the problem of neco-updater, updating neco is always fails
+			if strings.Contains(out, "status: aborted") {
+				return nil
+			}
+			return fmt.Errorf("status: aborted is not occuring. output: %v", out)
+		}).Should(Succeed())
+
 		// TODO: this line should be uncommented after #1561 is released
 		// waitRequestComplete("version: " + debVer)
 
 		// TODO: this block should be deleted after #1561 is released
 		// Eventually is to wait until dpkg lock is released
+		By("Installing neco deb manually")
 		for _, h := range bootServers {
 			stdout, stderr, err := execAt(h, "sudo", "dpkg", "-i", fmt.Sprintf("/tmp/neco_%s_amd64.deb", debVer))
 			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
@@ -128,6 +136,9 @@ func testUpgrade() {
 				return nil
 			}).Should(Succeed())
 		}
+
+		By("Recovering neco status")
+		waitRequestComplete("version: "+debVer, true)
 
 		By("Checking installed Neco version")
 		output := execSafeAt(bootServers[0], "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
