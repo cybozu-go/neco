@@ -100,7 +100,7 @@ func testUpgrade() {
 				}
 				return nil
 			}).Should(Succeed())
-			Eventually(func() error {
+			Consistently(func() error {
 				stdout, stderr, err := execAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 				if err != nil {
 					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
@@ -122,7 +122,7 @@ func testUpgrade() {
 					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
 				}
 				return nil
-			}).Should(Succeed())
+			}, 30*time.Second, 1*time.Second).Should(Succeed())
 		}
 
 		// By("Checking installed Neco version")
