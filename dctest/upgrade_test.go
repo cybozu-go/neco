@@ -84,45 +84,32 @@ func testUpgrade() {
 		stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
-		By("Waiting for request to complete")
-		// TODO: this line should be uncommented after #1561 is released
-		// waitRequestComplete("version: " + debVer)
+		// TODO: this block should be deleted after #1561 is released
+		By("Stopping neco-updater")
+		for _, h := range bootServers {
+			stdout, stderr, err := execAt(h, "sudo", "systemctl", "stop", "neco-updater.service")
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
 
 		// TODO: this block should be deleted after #1561 is released
-		// Eventually is to wait until dpkg lock is released
-		debName := fmt.Sprintf("/tmp/neco_%s_amd64.deb", debVer)
+		By("Replacing neco-updater binary")
+		necoDebDir := "/tmp/neco_deb/"
 		for _, h := range bootServers {
-			Eventually(func() error {
-				stdout, stderr, err := execAt(h, "sudo", "dpkg", "-i", debName)
-				if err != nil {
-					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
-				}
-				return nil
-			}).Should(Succeed())
-			Eventually(func() error {
-				stdout, stderr, err = execAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
-				if err != nil {
-					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
-				}
-				stdout, stderr, err = execAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
-				if err != nil {
-					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
-				}
-				stdout, stderr, err = execAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
-				if err != nil {
-					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
-				}
-				stdout, stderr, err = execAt(h, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
-				if err != nil {
-					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
-				}
-				stdout, stderr, err = execAt(h, "systemctl", "-q", "is-active", "cke.service")
-				if err != nil {
-					return fmt.Errorf("stdout=%s, stderr=%s", stdout, stderr)
-				}
-				return nil
-			}).Should(Succeed())
+			execSafeAt(h, "sudo", "mkdir", "-p", necoDebDir)
+			stdout, stderr, err := execAt(h, "sudo", "dpkg", "-x", fmt.Sprintf("/tmp/neco_%s_amd64.deb", debVer), necoDebDir)
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+			execSafeAt(h, "sudo", "mv", necoDebDir+"usr/sbin/neco-updater", "/usr/sbin/neco-updater")
 		}
+
+		// TODO: this block should be deleted after #1561 is released
+		By("Starting neco-updater")
+		for _, h := range bootServers {
+			stdout, stderr, err := execAt(h, "sudo", "systemctl", "start", "neco-updater.service")
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
+
+		By("Waiting for request to complete")
+		waitRequestComplete("version: " + debVer)
 
 		By("Checking installed Neco version")
 		output := execSafeAt(bootServers[0], "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
