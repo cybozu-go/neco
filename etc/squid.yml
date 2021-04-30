@@ -1,35 +1,3 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: squid
-  namespace: internet-egress
-automountServiceAccountToken: false
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  namespace: internet-egress
-  name: psp:squid
-rules:
-  - apiGroups: ["policy"]
-    resources: ["podsecuritypolicies"]
-    verbs: ["use"]
-    resourceNames: ["squid"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  namespace: internet-egress
-  name: squid:psp:squid
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: psp:squid
-subjects:
-- kind: ServiceAccount
-  name: squid
-  namespace: internet-egress
----
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -228,7 +196,6 @@ spec:
                   values:
                   - squid
               topologyKey: "cke.cybozu.com/rack"
-      serviceAccountName: squid
       containers:
         - name: squid
           image: {{ .squid }}
