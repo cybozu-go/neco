@@ -57,7 +57,6 @@ options:
             - system:kube-scheduler
         - level: RequestResponse
     extra_args:
-      - "--enable-admission-plugins=PodSecurityPolicy"
       - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true"
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
