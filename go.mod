@@ -8,7 +8,7 @@ require (
 	github.com/coreos/etcd v3.3.25+incompatible
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/coreos/ignition v0.32.0 // indirect
-	github.com/cybozu-go/etcdutil v1.3.5
+	github.com/cybozu-go/etcdutil v1.3.6
 	github.com/cybozu-go/log v1.6.0
 	github.com/cybozu-go/netutil v1.4.1
 	github.com/cybozu-go/placemat/v2 v2.0.4
