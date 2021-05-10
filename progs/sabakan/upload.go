@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	imageOS = "flatcar"
+	imageOS = "coreos"
 )
 
 const retryCount = 40
