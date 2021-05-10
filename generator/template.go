@@ -16,6 +16,6 @@ var CurrentArtifacts = ArtifactSet{
 		{{$deb.MarshalGo}},
 {{- end}}
 	},
-	Flatcar: {{.Flatcar.MarshalGo}},
+	OSImage: {{.OSImage.MarshalGo}},
 }
 `

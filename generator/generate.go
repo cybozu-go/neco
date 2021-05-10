@@ -50,12 +50,12 @@ var templ = template.Must(template.New("").Parse(artifactSetTemplate))
 
 const coreOSFeed = "https://kinvolk.io/flatcar-container-linux/releases-json/releases-stable.json"
 
-func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*neco.DebianPackage, flatcar *neco.FlatcarImage) error {
+func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*neco.DebianPackage, osImage *neco.OSImage) error {
 	var data struct {
 		Tag     string
 		Images  []*neco.ContainerImage
 		Debs    []*neco.DebianPackage
-		Flatcar *neco.FlatcarImage
+		OSImage *neco.OSImage
 	}
 
 	if release {
@@ -66,7 +66,7 @@ func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*ne
 
 	data.Images = images
 	data.Debs = debs
-	data.Flatcar = flatcar
+	data.OSImage = osImage
 
 	return templ.Execute(w, data)
 }
@@ -82,7 +82,7 @@ type Config struct {
 type IgnoreConfig struct {
 	Images  []ignoreImageConfig   `json:"images"`
 	Debs    []ignoreDebConfig     `json:"debs"`
-	Flatcar []ignoreFlatcarConfig `json:"flatcar"`
+	OSImage []ignoreOSImageConfig `json:"osimage"`
 }
 
 type ignoreImageConfig struct {
@@ -95,7 +95,7 @@ type ignoreDebConfig struct {
 	Versions []string `json:"versions"`
 }
 
-type ignoreFlatcarConfig struct {
+type ignoreOSImageConfig struct {
 	Channel  string   `json:"channel"`
 	Versions []string `json:"versions"`
 }
@@ -118,8 +118,8 @@ func (c *IgnoreConfig) getDebVersions(name string) []string {
 	return nil
 }
 
-func (c *IgnoreConfig) getFlatcarVersions() []string {
-	for _, core := range c.Flatcar {
+func (c *IgnoreConfig) getOSImageVersions() []string {
+	for _, core := range c.OSImage {
 		if core.Channel == "stable" {
 			return core.Versions
 		}
@@ -155,12 +155,12 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 		debs = append(debs, deb)
 	}
 
-	flatcar, err := getLatestFlatcar(ctx, cfg.Ignored.getFlatcarVersions())
+	osImage, err := getLatestOSImage(ctx, cfg.Ignored.getOSImageVersions())
 	if err != nil {
 		return err
 	}
 
-	return render(out, cfg.Release, images, debs, flatcar)
+	return render(out, cfg.Release, images, debs, osImage)
 }
 
 func getLatestImage(ctx context.Context, repo name.Repository, release bool, ignoreVersions []string) (*neco.ContainerImage, error) {
@@ -268,14 +268,14 @@ OUTER:
 	}, nil
 }
 
-func getLatestFlatcar(ctx context.Context, ignoreVersions []string) (*neco.FlatcarImage, error) {
-	resp, err := http.Get(flatcarFeed)
+func getLatestOSImage(ctx context.Context, ignoreVersions []string) (*neco.OSImage, error) {
+	resp, err := http.Get(osImageFeed)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to get Flatcar feed. status = %d", resp.StatusCode)
+		return nil, fmt.Errorf("failed to get OSImage feed. status = %d", resp.StatusCode)
 	}
 
 	var feed map[string]interface{}
@@ -305,7 +305,7 @@ OUTER:
 		versions = append(versions, v)
 	}
 	sort.Sort(sort.Reverse(version.Collection(versions)))
-	return &neco.FlatcarImage{
+	return &neco.OSImage{
 		Channel: "stable",
 		Version: versions[0].Original(),
 	}, nil
