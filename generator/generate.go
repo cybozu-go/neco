@@ -82,7 +82,7 @@ type Config struct {
 type IgnoreConfig struct {
 	Images  []ignoreImageConfig   `json:"images"`
 	Debs    []ignoreDebConfig     `json:"debs"`
-	OSImage []ignoreOSImageConfig `json:"osimage"`
+	OSImage []ignoreOSImageConfig `json:"osImage"`
 }
 
 type ignoreImageConfig struct {
