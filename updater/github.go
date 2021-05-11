@@ -9,7 +9,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v35/github"
 	version "github.com/hashicorp/go-version"
 )
 

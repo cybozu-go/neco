@@ -11,6 +11,8 @@ CONTAINERD_DLDIR := $(DOWNLOADDIR)/containerd-v$(CONTAINERD_VERSION)
 CONTAINERD_DOWNLOAD := $(CONTAINERD_DLDIR)/downloaded
 CRICTL_DLDIR := $(DOWNLOADDIR)/crictl-v$(CRITOOLS_VERSION)
 CRICTL_DOWNLOAD := $(CRICTL_DLDIR)/downloaded
+RUNC_DLDIR := $(DOWNLOADDIR)/runc-v$(RUNC_VERSION)
+RUNC_DOWNLOAD := $(RUNC_DLDIR)/downloaded
 ARGOCD_DLDIR := $(DOWNLOADDIR)/argocd-v$(ARGOCD_VERSION)
 ARGOCD_DOWNLOAD := $(ARGOCD_DLDIR)/downloaded
 KUBECTL_DLDIR := $(DOWNLOADDIR)/kubectl-v$(K8S_VERSION)
@@ -35,7 +37,7 @@ KUBECTL_NEAT_DLDIR := $(DOWNLOADDIR)/kubectl-neat-v$(KUBECTL_NEAT_VERSION)
 KUBECTL_NEAT_DOWNLOAD := $(KUBECTL_NEAT_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat
+all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -84,6 +86,23 @@ crictl: $(CRICTL_DOWNLOAD)
 	tar zxf $(CRICTL_DLDIR)/crictl.tar.gz --no-same-owner -C $(LIBEXECDIR)
 	cp $(CRICTL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(CRICTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
+
+$(RUNC_DOWNLOAD):
+	mkdir -p $(RUNC_DLDIR)
+	$(WGET) -O $(RUNC_DLDIR)/runc.amd64 https://github.com/opencontainers/runc/releases/download/v$(RUNC_VERSION)/runc.amd64
+	$(WGET) -O $(RUNC_DLDIR)/LICENSE    https://raw.githubusercontent.com/opencontainers/runc/v$(RUNC_VERSION)/LICENSE
+	$(WGET) -O $(RUNC_DLDIR)/NOTICE     https://raw.githubusercontent.com/opencontainers/runc/v$(RUNC_VERSION)/NOTICE
+	$(WGET) -O $(RUNC_DLDIR)/README.md  https://raw.githubusercontent.com/opencontainers/runc/v$(RUNC_VERSION)/README.md
+	touch $@
+
+.PHONY: runc
+runc: $(RUNC_DOWNLOAD)
+	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
+	cp $(RUNC_DLDIR)/runc.amd64 $(LIBEXECDIR)/k8s-runc
+	chmod +x $(LIBEXECDIR)/k8s-runc
+	cp $(RUNC_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
+	cp $(RUNC_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
+	cp $(RUNC_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
 $(ARGOCD_DOWNLOAD):
 	mkdir -p $(ARGOCD_DLDIR)

@@ -12,7 +12,7 @@ import (
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/sabakan/v2"
 	sabac "github.com/cybozu-go/sabakan/v2/client"
-	"github.com/cybozu-go/sabakan/v2/gql"
+	"github.com/cybozu-go/sabakan/v2/gql/graph/model"
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
@@ -62,7 +62,7 @@ type status struct {
 
 // QueryVariables represents the JSON object of the query variables.
 type graphQLVariables struct {
-	Having *gql.MachineParams `json:"having"`
+	Having *model.MachineParams `json:"having"`
 }
 
 type graphQLRequest struct {
@@ -160,7 +160,7 @@ func (c *sabacWrapper) requestGQL(ctx context.Context, greq graphQLRequest) ([]b
 	return []byte(gresp.Data), nil
 }
 
-func (c *sabacWrapper) getMachines(ctx context.Context, having *gql.MachineParams) ([]*machine, error) {
+func (c *sabacWrapper) getMachines(ctx context.Context, having *model.MachineParams) ([]*machine, error) {
 	greq := graphQLRequest{
 		Query: `
 query search($having: MachineParams) {
@@ -212,7 +212,7 @@ func (c *sabacWrapper) GetAllMachines(ctx context.Context) ([]*machine, error) {
 
 // GetRetiredMachines returns retired machines
 func (c *sabacWrapper) GetRetiredMachines(ctx context.Context) ([]*machine, error) {
-	return c.getMachines(ctx, &gql.MachineParams{
+	return c.getMachines(ctx, &model.MachineParams{
 		States: []sabakan.MachineState{sabakan.StateRetired},
 	})
 }

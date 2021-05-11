@@ -33,6 +33,14 @@ for i in $(seq 20); do
 done
 
 for i in $(seq 20); do
+    rm -f /opt/sbin/k8s-runc
+    if curl -sfSL -o /opt/sbin/k8s-runc {{ MyURL }}/api/v1/assets/k8s-runc; then
+        break
+    fi
+    sleep 5
+done
+
+for i in $(seq 20); do
     rm -f /opt/bin/ctr
     if curl -sfSL -o /opt/bin/ctr {{ MyURL }}/api/v1/assets/ctr; then
         break
@@ -52,5 +60,6 @@ chmod a+x /opt/sbin/containerd
 chmod a+x /opt/sbin/containerd-shim
 chmod a+x /opt/sbin/containerd-shim-runc-v1
 chmod a+x /opt/sbin/containerd-shim-runc-v2
+chmod a+x /opt/sbin/k8s-runc
 chmod a+x /opt/bin/ctr
 chmod a+x /opt/bin/crictl
