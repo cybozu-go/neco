@@ -84,6 +84,30 @@ func testUpgrade() {
 		stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
+		// TODO: this block should be deleted after #1560 is released
+		By("Stopping neco-updater")
+		for _, h := range bootServers {
+			stdout, stderr, err := execAt(h, "sudo", "systemctl", "stop", "neco-updater.service")
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
+
+		// TODO: this block should be deleted after #1560 is released
+		By("Replacing neco-updater binary")
+		necoDebDir := "/tmp/neco_deb/"
+		for _, h := range bootServers {
+			execSafeAt(h, "sudo", "mkdir", "-p", necoDebDir)
+			stdout, stderr, err := execAt(h, "sudo", "dpkg", "-x", fmt.Sprintf("/tmp/neco_%s_amd64.deb", debVer), necoDebDir)
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+			execSafeAt(h, "sudo", "mv", necoDebDir+"usr/sbin/neco-updater", "/usr/sbin/neco-updater")
+		}
+
+		// TODO: this block should be deleted after #1560 is released
+		By("Starting neco-updater")
+		for _, h := range bootServers {
+			stdout, stderr, err := execAt(h, "sudo", "systemctl", "start", "neco-updater.service")
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
+
 		By("Waiting for request to complete")
 		waitRequestComplete("version: " + debVer)
 
