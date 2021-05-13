@@ -46,7 +46,7 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 		}
 	case neco.TestEnv:
 		c.check = func(ctx context.Context) (string, error) {
-			return "9999.99.99", nil
+			return "9999.12.31-99999", nil
 		}
 	case neco.StagingEnv:
 		c.check = github.GetLatestPublishedTag
@@ -94,23 +94,23 @@ func (c *ReleaseChecker) update(ctx context.Context) error {
 		return nil
 	}
 
-	// currentRelease, err := newNecoRelease(c.current)
-	// if err != nil {
-	// 	return err
-	// }
-	// latestRelease, err := newNecoRelease(latest)
-	// if err != nil {
-	// 	return err
-	// }
+	currentRelease, err := newNecoRelease(c.current)
+	if err != nil {
+		return err
+	}
+	latestRelease, err := newNecoRelease(latest)
+	if err != nil {
+		return err
+	}
 
-	// isNewer := latestRelease.isNewerThan(currentRelease)
-	// if !isNewer {
-	// 	log.Info("got neco release with older version", map[string]interface{}{
-	// 		"latest":  latest,
-	// 		"current": c.current,
-	// 	})
-	// 	return nil
-	// }
+	isNewer := latestRelease.isNewerThan(currentRelease)
+	if !isNewer {
+		log.Info("got neco release with older version", map[string]interface{}{
+			"latest":  latest,
+			"current": c.current,
+		})
+		return nil
+	}
 
 	c.current = latest
 	log.Info("found a new neco release", map[string]interface{}{

@@ -24,7 +24,7 @@ CUSTOM_UBUNTU = cybozu-ubuntu-20.04-server-cloudimg-amd64.img
 SABAKAN_DIR = $(OUTPUT)/sabakan
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
 BMC_USER = $(SABAKAN_DIR)/bmc-user.json
-DEBVER = 9999.99.99
+DEBVER = 9999.12.31-99999
 GENERATED_DEB = $(abspath $(OUTPUT)/neco_$(DEBVER)_amd64.deb)
 DOWNLOADED_DEB = $(abspath $(OUTPUT)/neco_release_amd64.deb)
 ifneq ($(SUITE),bootstrap)
