@@ -74,21 +74,28 @@ var rebootWorkerGetOpts sabakanMachinesGetOpts
 func rebootMain() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	machines, err := sabakanMachinesGetExcludingBootServers(ctx, &rebootWorkerGetOpts)
+	machines, err := sabakanMachinesGet(ctx, &rebootWorkerGetOpts)
 	if err != nil {
 		return err
 	}
 
-	return rebootMachines(machines)
+	toreboot := []sabakan.Machine{}
+	for _, m := range machines {
+		if m.Spec.Role != "boot" {
+			toreboot = append(toreboot, m)
+		}
+	}
+
+	return rebootMachines(toreboot)
 }
 
 func rebootMachines(machines []sabakan.Machine) error {
-	machineAddrs := make(map[string]struct{}, len(machines))
+	machineAddrs := make(map[string]bool, len(machines))
 	for _, m := range machines {
 		if m.Spec.Role == "boot" {
 			return fmt.Errorf("it's not allowed to reboot boot servers")
 		}
-		machineAddrs[m.Spec.IPv4[0]] = struct{}{}
+		machineAddrs[m.Spec.IPv4[0]] = true
 	}
 
 	comm := exec.Command(neco.CKECLIBin, "cluster", "get")
@@ -105,7 +112,7 @@ func rebootMachines(machines []sabakan.Machine) error {
 
 	var ss, nonss []string
 	for _, node := range cluster.Nodes {
-		if _, ok := machineAddrs[node.Address]; !ok {
+		if machineAddrs[node.Address] {
 			continue
 		}
 

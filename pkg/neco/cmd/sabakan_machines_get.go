@@ -46,19 +46,3 @@ func sabakanMachinesGet(ctx context.Context, opts *sabakanMachinesGetOpts) ([]sa
 	}
 	return c.MachinesGet(ctx, params)
 }
-
-// sabakanMachinesGetExcludingBootServers does the same as `sabactl machines get` and returns its result excluding boot servers
-func sabakanMachinesGetExcludingBootServers(ctx context.Context, opts *sabakanMachinesGetOpts) ([]sabakan.Machine, error) {
-	machines, err := sabakanMachinesGet(ctx, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	ret := []sabakan.Machine{}
-	for _, m := range machines {
-		if m.Spec.Role != "boot" {
-			ret = append(ret, m)
-		}
-	}
-	return ret, nil
-}
