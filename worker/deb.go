@@ -10,7 +10,7 @@ import (
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v35/github"
 )
 
 // InstallDebianPackage installs a debian package

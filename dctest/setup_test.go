@@ -12,7 +12,7 @@ import (
 
 // testSetup tests "neco setup"
 func testSetup() {
-	It("should complete on all boot servers", func(done Done) {
+	It("should complete on all boot servers", func() {
 		env := well.NewEnvironment(context.Background())
 		env.Go(func(ctx context.Context) error {
 			stdout, stderr, err := execAt(
@@ -56,8 +56,7 @@ func testSetup() {
 		env.Stop()
 
 		Expect(env.Wait()).NotTo(HaveOccurred())
-		close(done)
-	}, 300)
+	})
 
 	It("should install files", func() {
 		for _, h := range bootServers {
