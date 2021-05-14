@@ -3,7 +3,7 @@ package neco
 import (
 	"net/http"
 
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v35/github"
 )
 
 // NewGitHubClient returns a properly configured *github.Client.

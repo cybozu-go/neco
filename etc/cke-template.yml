@@ -57,7 +57,7 @@ options:
             - system:kube-scheduler
         - level: RequestResponse
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true"
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
       - "--audit-log-maxbackup=10"
@@ -67,11 +67,20 @@ options:
         read_only: false
   kube-controller-manager:
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true"
   kube-proxy:
-    extra_args:
-      - "--ipvs-strict-arp=true"
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true"
+    config:
+      apiVersion: kubeproxy.config.k8s.io/v1alpha1
+      kind: KubeProxyConfiguration
+      mode: ipvs
+      ipvs:
+        strictARP: true
+      featureGates:
+        EphemeralContainers: true
+        GenericEphemeralVolume: true
+        TTLAfterFinished: true
+        CronJobControllerV2: true
+        MixedProtocolLBService: true
   kube-scheduler:
     config:
       apiVersion: kubescheduler.config.k8s.io/v1beta1
@@ -104,17 +113,22 @@ options:
               topologyKey: topology.kubernetes.io/zone
               whenUnsatisfiable: ScheduleAnyway
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true"
   kubelet:
     config:
       apiVersion: kubelet.config.k8s.io/v1beta1
       kind: KubeletConfiguration
       containerLogMaxSize: 10Mi
       containerLogMaxFiles: 10
+      featureGates:
+        EphemeralContainers: true
+        GenericEphemeralVolume: true
+        TTLAfterFinished: true
+        CronJobControllerV2: true
+        MixedProtocolLBService: true
     cri_endpoint: unix:///var/run/k8s-containerd.sock
     extra_args:
       - "--containerd=/var/run/k8s-containerd.sock"
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true"
     extra_binds:
       - source: /var/lib/k8s-containerd
         destination: /var/lib/k8s-containerd
