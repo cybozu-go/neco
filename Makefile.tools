@@ -200,17 +200,25 @@ stern: $(STERN_DOWNLOAD)
 
 $(KUSTOMIZE_DOWNLOAD):
 	mkdir -p $(KUSTOMIZE_DLDIR)
-	$(WGET) -O $(KUSTOMIZE_DLDIR)/kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz
+	$(WGET) -O $(KUSTOMIZE_DLDIR)/kustomize-linux-amd64.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz
+	$(WGET) -O $(KUSTOMIZE_DLDIR)/kustomize-darwin-amd64.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_darwin_amd64.tar.gz
+	$(WGET) -O $(KUSTOMIZE_DLDIR)/kustomize-windows-amd64.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_windows_amd64.tar.gz
 	$(WGET) -O $(KUSTOMIZE_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
 	$(WGET) -O $(KUSTOMIZE_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
 	touch $@
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE_DOWNLOAD)
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/
-	tar xzf $(KUSTOMIZE_DLDIR)/kustomize.tar.gz -C $(BINDIR)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	tar xzf $(KUSTOMIZE_DLDIR)/kustomize-linux-amd64.tar.gz -C $(BINDIR)
+	tar xzf $(KUSTOMIZE_DLDIR)/kustomize-windows-amd64.tar.gz -C $(WINDOWS_BINDIR)
+	tar xzf $(KUSTOMIZE_DLDIR)/kustomize-darwin-amd64.tar.gz -C $(MAC_BINDIR)
 	cp $(KUSTOMIZE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(KUSTOMIZE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(KUSTOMIZE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(KUSTOMIZE_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(KUSTOMIZE_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(TELEPORT_DOWNLOAD):
 	mkdir -p $(TELEPORT_DLDIR)/common -p $(TELEPORT_DLDIR)/teleport-linux-amd64 -p $(TELEPORT_DLDIR)/teleport-darwin-amd64 -p $(TELEPORT_DLDIR)/teleport-windows-amd64
