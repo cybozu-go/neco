@@ -16,6 +16,7 @@ Features include:
   - [BMC management functions](#bmc-management-functions)
   - [CKE related functions](#cke-related-functions)
   - [TPM related functions](#tpm-related-functions)
+  - [Automated firmware application functions](#automated-firmware-application-functions)
   - [Miscellaneous](#miscellaneous)
 - [Configurations](#configurations)
   - [`env`](#env)
@@ -232,6 +233,14 @@ The command fails when the target machine's status is not retiring.
 * `neco tpm show SERIAL_OR_IP`
 
 Show TPM devices on a machine having `SERIAL` or `IP` address.
+
+### Automated firmware application functions
+
+* `neco apply-firmware UPDATER_FILE...`
+
+Send firmware updaters to BMC and schedule reboot.
+
+You can use `sabactl machines get`-like options to narrow down the machines to be updated.
 
 ### Miscellaneous
 
