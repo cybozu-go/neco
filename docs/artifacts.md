@@ -50,7 +50,7 @@ images:
 debs:
 - name: etcdpasswd
   versions: ["v1.2.3"]
-flatcar:
+osImage:
 - channel: stable
   versions: ["2247.5.0"]
 ```
