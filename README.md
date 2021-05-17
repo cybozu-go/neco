@@ -66,7 +66,7 @@ Boot servers are symmetrical with each other except for host names and IP addres
 
 All persistent data are stored in an [etcd][] cluster.  Thanks to etcd, adding or removing a boot server can be done easily.
 
-[Sabakan][] is a network boot server that supports DHCP and HTTP.  It can also manage an inventory of Node servers and assign IP addresses automatically.  Node servers should use [UEFI HTTP boot][HTTPBoot] to load [CoreOS][] from sabakan.
+[Sabakan][] is a network boot server that supports DHCP and HTTP.  It can also manage an inventory of Node servers and assign IP addresses automatically.  Node servers should use [UEFI HTTP boot][HTTPBoot] to load [Flatcar][] from sabakan.
 
 [CKE][], or Cybozu Kubernetes Engines, is a CNCF certified Kubernetes installer.  It queries Node server status to Sabakan and chooses Nodes to construct Kubernetes control plane and worker nodes.  TLS certificates required for Kubernetes are issued by [Vault][].
 
@@ -195,7 +195,7 @@ Other than Go packages, this repository has the following directories:
 - [`debian/`](debian/): Ingredients for Debian package.
 - [`docs/`](docs/): miscellaneous documentation.
 - [`etc/`](etc/): Kubernetes manifests for networking and other configuration files.
-- [`ignitions/`](ignitions/): [CoreOS Ignition][Ignition] template files.
+- [`ignitions/`](ignitions/): [Ignition][] template files.
 
 [releases]: https://github.com/cybozu-go/neco/releases
 [godoc]: https://godoc.org/github.com/cybozu-go/neco
@@ -208,12 +208,12 @@ Other than Go packages, this repository has the following directories:
 [CNCF]: https://www.cncf.io
 [CNI]: https://github.com/containernetworking/cni
 [Coil]: https://github.com/cybozu-go/coil
-[CoreOS]: https://coreos.com/os/docs/latest/
 [CSI]: https://github.com/container-storage-interface/spec
 [Cybozu]: https://cybozu-global.com
 [etcd]: https://etcd.io
+[Flatcar]: https://kinvolk.io/docs/flatcar-container-linux/latest/
 [HTTPBoot]: https://github.com/tianocore/tianocore.github.io/wiki/HTTP-Boot
-[Ignition]: https://coreos.com/ignition/docs/latest/
+[Ignition]: https://kinvolk.io/docs/flatcar-container-linux/latest/provisioning/ignition/
 [Kintone]: https://www.kintone.com
 [Kubernetes]: https://kubernetes.io
 [MetalLB]: https://metallb.universe.tf

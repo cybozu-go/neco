@@ -48,14 +48,14 @@ var debRepos = []string{
 
 var templ = template.Must(template.New("").Parse(artifactSetTemplate))
 
-const coreOSFeed = "https://kinvolk.io/flatcar-container-linux/releases-json/releases-stable.json"
+const osImageFeed = "https://kinvolk.io/flatcar-container-linux/releases-json/releases-stable.json"
 
-func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*neco.DebianPackage, coreos *neco.CoreOSImage) error {
+func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*neco.DebianPackage, osImage *neco.OSImage) error {
 	var data struct {
-		Tag    string
-		Images []*neco.ContainerImage
-		Debs   []*neco.DebianPackage
-		CoreOS *neco.CoreOSImage
+		Tag     string
+		Images  []*neco.ContainerImage
+		Debs    []*neco.DebianPackage
+		OSImage *neco.OSImage
 	}
 
 	if release {
@@ -66,7 +66,7 @@ func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*ne
 
 	data.Images = images
 	data.Debs = debs
-	data.CoreOS = coreos
+	data.OSImage = osImage
 
 	return templ.Execute(w, data)
 }
@@ -80,9 +80,9 @@ type Config struct {
 
 // IgnoreConfig defines the ignored versions of components.
 type IgnoreConfig struct {
-	Images []ignoreImageConfig  `json:"images"`
-	Debs   []ignoreDebConfig    `json:"debs"`
-	CoreOS []ignoreCoreOSConfig `json:"coreOS"`
+	Images  []ignoreImageConfig   `json:"images"`
+	Debs    []ignoreDebConfig     `json:"debs"`
+	OSImage []ignoreOSImageConfig `json:"osImage"`
 }
 
 type ignoreImageConfig struct {
@@ -95,7 +95,7 @@ type ignoreDebConfig struct {
 	Versions []string `json:"versions"`
 }
 
-type ignoreCoreOSConfig struct {
+type ignoreOSImageConfig struct {
 	Channel  string   `json:"channel"`
 	Versions []string `json:"versions"`
 }
@@ -118,8 +118,8 @@ func (c *IgnoreConfig) getDebVersions(name string) []string {
 	return nil
 }
 
-func (c *IgnoreConfig) getCoreOSVersions() []string {
-	for _, core := range c.CoreOS {
+func (c *IgnoreConfig) getOSImageVersions() []string {
+	for _, core := range c.OSImage {
 		if core.Channel == "stable" {
 			return core.Versions
 		}
@@ -155,12 +155,12 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 		debs = append(debs, deb)
 	}
 
-	coreos, err := getLatestCoreOS(ctx, cfg.Ignored.getCoreOSVersions())
+	osImage, err := getLatestOSImage(ctx, cfg.Ignored.getOSImageVersions())
 	if err != nil {
 		return err
 	}
 
-	return render(out, cfg.Release, images, debs, coreos)
+	return render(out, cfg.Release, images, debs, osImage)
 }
 
 func getLatestImage(ctx context.Context, repo name.Repository, release bool, ignoreVersions []string) (*neco.ContainerImage, error) {
@@ -268,14 +268,14 @@ OUTER:
 	}, nil
 }
 
-func getLatestCoreOS(ctx context.Context, ignoreVersions []string) (*neco.CoreOSImage, error) {
-	resp, err := http.Get(coreOSFeed)
+func getLatestOSImage(ctx context.Context, ignoreVersions []string) (*neco.OSImage, error) {
+	resp, err := http.Get(osImageFeed)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to get CoreOS feed. status = %d", resp.StatusCode)
+		return nil, fmt.Errorf("failed to get OSImage feed. status = %d", resp.StatusCode)
 	}
 
 	var feed map[string]interface{}
@@ -305,7 +305,7 @@ OUTER:
 		versions = append(versions, v)
 	}
 	sort.Sort(sort.Reverse(version.Collection(versions)))
-	return &neco.CoreOSImage{
+	return &neco.OSImage{
 		Channel: "stable",
 		Version: versions[0].Original(),
 	}, nil

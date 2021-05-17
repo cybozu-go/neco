@@ -57,20 +57,20 @@ func UploadContents(ctx context.Context, sabakanHTTP *http.Client, proxyHTTP *ht
 	return uploadIgnitions(ctx, client, version, st)
 }
 
-// uploadOSImages uploads CoreOS images
+// uploadOSImages uploads OS images
 func uploadOSImages(ctx context.Context, c *sabac.Client, p *http.Client) error {
 	index, err := c.ImagesIndex(ctx, imageOS)
 	if err != nil {
 		return err
 	}
 
-	version := neco.CurrentArtifacts.CoreOS.Version
+	version := neco.CurrentArtifacts.OSImage.Version
 	if len(index) != 0 && index[len(index)-1].ID == version {
 		// already uploaded
 		return nil
 	}
 
-	kernelURL, initrdURL := neco.CurrentArtifacts.CoreOS.URLs()
+	kernelURL, initrdURL := neco.CurrentArtifacts.OSImage.URLs()
 
 	kernelFile, err := os.CreateTemp("", "kernel")
 	if err != nil {
