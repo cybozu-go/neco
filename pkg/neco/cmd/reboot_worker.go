@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,6 +11,8 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/sabakan/v2"
+	"github.com/cybozu-go/sabakan/v2/client"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 	"github.com/stmcginnis/gofish/redfish"
@@ -24,42 +24,43 @@ var httpClient = &well.HTTPClient{
 	Client: &http.Client{},
 }
 
-// Machine represents a machine registered with sabakan.
-type Machine struct {
-	Spec struct {
-		Serial string `json:"serial"`
-		Labels []struct {
-			Name  string `json:"name"`
-			Value string `json:"value"`
-		} `json:"labels"`
-		Role string   `json:"role"`
-		IPv4 []string `json:"ipv4"`
-		BMC  BMC      `json:"bmc"`
-	} `json:"spec"`
+// sabakanMachinesGetOpts is a struct to receive option values for `sabactl machines get`-like options
+type sabakanMachinesGetOpts struct {
+	params map[string]*string
 }
 
-// BMC contains a machine's BMC information.
-type BMC struct {
-	IPv4 string `json:"ipv4"`
-}
-
-// graphQLQuery is GraphQL query to retrieve machine information from sabakan.
-const graphQLQuery = `
-query rebootSearch($having: MachineParams = null,
-					$notHaving: MachineParams = {
-						roles: ["boot"]
-					}) {
-	searchMachines(having: $having, notHaving: $notHaving) {
-		spec {
-			serial
-			ipv4
-			bmc {
-				ipv4
-			}
-		}
+// addSabapanMachinesGetOpts adds flags for `sabactl machines get`-like options to cobra.Command
+func addSabakanMachinesGetOpts(cmd *cobra.Command, opts *sabakanMachinesGetOpts) {
+	getOpts := map[string]string{
+		"serial":   "Serial name",
+		"rack":     "Rack name",
+		"role":     "Role name",
+		"labels":   "Label name and value (--labels key=val,...)",
+		"ipv4":     "IPv4 address",
+		"ipv6":     "IPv6 address",
+		"bmc-type": "BMC type",
+		"state":    "State",
+	}
+	opts.params = make(map[string]*string)
+	for k, v := range getOpts {
+		val := new(string)
+		opts.params[k] = val
+		cmd.Flags().StringVar(val, k, "", v)
 	}
 }
-`
+
+// sabakanMachinesGet does the same as `sabactl machines get`
+func sabakanMachinesGet(ctx context.Context, opts *sabakanMachinesGetOpts) ([]sabakan.Machine, error) {
+	params := make(map[string]string)
+	for k, v := range opts.params {
+		params[k] = *v
+	}
+	c, err := client.NewClient(neco.SabakanLocalEndpoint, httpClient.Client)
+	if err != nil {
+		return nil, err
+	}
+	return c.MachinesGet(ctx, params)
+}
 
 // ckeCluster is part of cke.Cluster in github.com/cybozu-go/cke
 type ckeCluster struct {
@@ -107,13 +108,33 @@ If some nodes are already powered off, this command does not do anything to thos
 	},
 }
 
+var rebootWorkerGetOpts sabakanMachinesGetOpts
+
 func rebootMain() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	graphQLEndpoint := neco.SabakanLocalEndpoint + "/graphql"
-	machines, err := doQuery(ctx, graphQLEndpoint, graphQLQuery, httpClient)
+	machines, err := sabakanMachinesGet(ctx, &rebootWorkerGetOpts)
 	if err != nil {
 		return err
+	}
+
+	toreboot := []sabakan.Machine{}
+	for _, m := range machines {
+		if m.Spec.Role != "boot" {
+			toreboot = append(toreboot, m)
+		}
+	}
+
+	return rebootMachines(toreboot)
+}
+
+func rebootMachines(machines []sabakan.Machine) error {
+	machineAddrs := make(map[string]bool, len(machines))
+	for _, m := range machines {
+		if m.Spec.Role == "boot" {
+			return fmt.Errorf("it's not allowed to reboot boot servers")
+		}
+		machineAddrs[m.Spec.IPv4[0]] = true
 	}
 
 	comm := exec.Command(neco.CKECLIBin, "cluster", "get")
@@ -130,6 +151,10 @@ func rebootMain() error {
 
 	var ss, nonss []string
 	for _, node := range cluster.Nodes {
+		if !machineAddrs[node.Address] {
+			continue
+		}
+
 		if node.Labels["cke.cybozu.com/role"] == "ss" {
 			ss = append(ss, node.Address)
 			continue
@@ -250,56 +275,7 @@ func askYorN(query string) (bool, error) {
 	return false, nil
 }
 
-func doQuery(ctx context.Context, url string, query string, hc *well.HTTPClient) ([]Machine, error) {
-	body := struct {
-		Query string `json:"query"`
-	}{
-		query,
-	}
-	data, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-
-	// gqlgen 0.9+ requires application/json content-type header.
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := hc.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("sabakan returns %d", resp.StatusCode)
-	}
-
-	var result struct {
-		Data struct {
-			Machines []Machine `json:"searchMachines"`
-		} `json:"data"`
-		Errors []struct {
-			Message string `json:"message"`
-		} `json:"errors"`
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(result.Errors) > 0 {
-		return nil, fmt.Errorf("sabakan returns error: %v", result.Errors)
-	}
-	return result.Data.Machines, nil
-}
-
 func init() {
 	rootCmd.AddCommand(rebootWorkerCmd)
+	addSabakanMachinesGetOpts(rebootWorkerCmd, &rebootWorkerGetOpts)
 }
