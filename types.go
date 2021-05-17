@@ -17,8 +17,8 @@ type ArtifactSet struct {
 	// Debian package list
 	Debs []DebianPackage
 
-	// CoreOS image version
-	CoreOS CoreOSImage
+	// OSImage image version
+	OSImage OSImage
 }
 
 // FindContainerImage finds a ContainerImage from name
@@ -120,20 +120,20 @@ func (deb DebianPackage) MarshalGo() string {
 		deb.Name, deb.Owner, deb.Repository, deb.Release)
 }
 
-// CoreOSImage represents CoreOS Container Linux kernel and initrd images.
-type CoreOSImage struct {
+// OSImage represents Flatcar Container Linux kernel and initrd images.
+type OSImage struct {
 	Channel string
 	Version string
 }
 
 // MarshalGo formats the struct in Go syntax.
-func (c CoreOSImage) MarshalGo() string {
-	return fmt.Sprintf("CoreOSImage{Channel: %q, Version: %q}",
+func (c OSImage) MarshalGo() string {
+	return fmt.Sprintf("OSImage{Channel: %q, Version: %q}",
 		c.Channel, c.Version)
 }
 
 // URLs returns kernel and initrd URLs.
-func (c CoreOSImage) URLs() (string, string) {
+func (c OSImage) URLs() (string, string) {
 	kernel := fmt.Sprintf("https://%s.release.flatcar-linux.net/amd64-usr/%s/flatcar_production_pxe.vmlinuz", c.Channel, c.Version)
 	initrd := fmt.Sprintf("https://%s.release.flatcar-linux.net/amd64-usr/%s/flatcar_production_pxe_image.cpio.gz", c.Channel, c.Version)
 	return kernel, initrd

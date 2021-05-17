@@ -21,16 +21,17 @@ VERSION_CODENAME=bionic
 UBUNTU_CODENAME=bionic
 `
 
-const containerLinux = `NAME="Container Linux by CoreOS"
-ID=coreos
-VERSION=1911.3.0
-VERSION_ID=1911.3.0
-BUILD_ID=2018-11-05-1815
-PRETTY_NAME="Container Linux by CoreOS 1911.3.0 (Rhyolite)"
+const containerLinux = `NAME="Flatcar Container Linux by Kinvolk"
+ID=flatcar
+ID_LIKE=coreos
+VERSION=2765.2.0
+VERSION_ID=2765.2.0
+BUILD_ID=2021-03-02-1918
+PRETTY_NAME="Flatcar Container Linux by Kinvolk 2765.2.0 (Oklo)"
 ANSI_COLOR="38;5;75"
-HOME_URL="https://coreos.com/"
-BUG_REPORT_URL="https://issues.coreos.com"
-COREOS_BOARD="amd64-usr"
+HOME_URL="https://flatcar-linux.org/"
+BUG_REPORT_URL="https://issues.flatcar-linux.org"
+FLATCAR_BOARD="amd64-usr"
 `
 
 func TestGetOSName(t *testing.T) {
@@ -39,7 +40,7 @@ func TestGetOSName(t *testing.T) {
 		name    string
 	}{
 		{content: ubuntu, name: "Ubuntu"},
-		{content: containerLinux, name: "Container Linux by CoreOS"},
+		{content: containerLinux, name: "Flatcar Container Linux by Kinvolk"},
 	}
 
 	for _, c := range cases {
@@ -75,7 +76,7 @@ func TestGetOSVersionID(t *testing.T) {
 		id      string
 	}{
 		{content: ubuntu, id: "18.04"},
-		{content: containerLinux, id: "1911.3.0"},
+		{content: containerLinux, id: "2765.2.0"},
 	}
 
 	for _, c := range cases {

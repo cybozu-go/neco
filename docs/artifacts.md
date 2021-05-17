@@ -1,7 +1,7 @@
 Artifacts
 =========
 
-[Artifacts](../artifacts.go) is the collection of components tested in [dctest](../dctest/), which consists of container images, debian package, and CoreOS image.
+[Artifacts](../artifacts.go) is the collection of components tested in [dctest](../dctest/), which consists of container images, debian package, and Flatcar image.
 
 There are two artifacts files.  When generating neco binaries and the neco deb package, `artifacts.go` is used
 by default.  `artifacts_release.go` is used only when `release` build tag is given.
@@ -50,7 +50,7 @@ images:
 debs:
 - name: etcdpasswd
   versions: ["v1.2.3"]
-coreOS:
+osImage:
 - channel: stable
   versions: ["2247.5.0"]
 ```
