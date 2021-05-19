@@ -19,7 +19,7 @@ import (
 )
 
 var applyFirmwareCmd = &cobra.Command{
-	Use:   "apply-firmware UPATER_FILE...",
+	Use:   "apply-firmware UPDATER_FILE...",
 	Short: "initiate firmware application",
 	Long: `Send firmware updaters to BMCs and schedule reboot of workers.
 
@@ -61,19 +61,18 @@ func applyFirmwareRun(cmd *cobra.Command, args []string) {
 		log.ErrorExit(err)
 	}
 	assetUrlRoot := "http://" + hostAddr.String() + ":10080/api/v1/assets/"
-	assetMeta := map[string]string{}
 	assetUrls := []string{}
 	for _, filename := range filenames {
 		name := filepath.Base(filename)
-		_, err := sabakanClient.AssetsUpload(ctx, name, filename, assetMeta)
+		_, err := sabakanClient.AssetsUpload(ctx, name, filename, nil)
 		if err != nil {
 			log.ErrorExit(err)
 		}
 		assetUrl := assetUrlRoot + name
 		log.Info("asset uploaded", map[string]interface{}{
-			"file": filename,
-			"name": name,
-			"url":  assetUrl,
+			"file":      filename,
+			"name":      name,
+			"asset_url": assetUrl,
 		})
 		assetUrls = append(assetUrls, assetUrl)
 	}

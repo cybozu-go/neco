@@ -240,7 +240,7 @@ Show TPM devices on a machine having `SERIAL` or `IP` address.
 
 Send firmware updaters to BMC and schedule reboot.
 
-You can use `sabactl machines get`-like options to narrow down the machines to be updated.
+[`sabactl machines get`-like options](https://github.com/cybozu-go/sabakan/blob/main/docs/sabactl.md#sabactl-machines-get-query_param) can be used to narrow down the machines to be updated.
 
 ### Miscellaneous
 
