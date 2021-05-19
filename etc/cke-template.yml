@@ -23,7 +23,7 @@ dns_service: internet-egress/unbound
 reboot:
   command: ["/usr/bin/neco", "reboot-and-wait", "-"]
   eviction_timeout_seconds: 1800
-  command_timeout_seconds: 1800
+  command_timeout_seconds: 3600
 options:
   kube-api:
     audit_log_enabled: true
