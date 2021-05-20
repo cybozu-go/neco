@@ -57,7 +57,7 @@ options:
             - system:kube-scheduler
         - level: RequestResponse
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
       - "--audit-log-maxbackup=10"
@@ -67,7 +67,7 @@ options:
         read_only: false
   kube-controller-manager:
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
   kube-proxy:
     config:
       apiVersion: kubeproxy.config.k8s.io/v1alpha1
@@ -81,6 +81,7 @@ options:
         TTLAfterFinished: true
         CronJobControllerV2: true
         MixedProtocolLBService: true
+        ServiceLBNodePortControl: true
   kube-scheduler:
     config:
       apiVersion: kubescheduler.config.k8s.io/v1beta1
@@ -113,7 +114,7 @@ options:
               topologyKey: topology.kubernetes.io/zone
               whenUnsatisfiable: ScheduleAnyway
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true"
+      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
   kubelet:
     config:
       apiVersion: kubelet.config.k8s.io/v1beta1
@@ -126,6 +127,7 @@ options:
         TTLAfterFinished: true
         CronJobControllerV2: true
         MixedProtocolLBService: true
+        ServiceLBNodePortControl: true
     cri_endpoint: unix:///var/run/k8s-containerd.sock
     extra_args:
       - "--containerd=/var/run/k8s-containerd.sock"
