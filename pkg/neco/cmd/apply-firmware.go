@@ -36,9 +36,12 @@ var applyFirmwareRebootOption bool
 
 func applyFirmwareRun(cmd *cobra.Command, args []string) {
 	ctx := context.Background()
-	filenames := args
 
-	machines, err := sabakanMachinesGet(ctx, &applyFirmwareGetOpts)
+	uploadAssetsAndRunCommandOnWorkers(ctx, &applyFirmwareGetOpts, args, []string{"docker", "exec", "setup-hw", "setup-apply-firmware"}, applyFirmwareRebootOption)
+}
+
+func uploadAssetsAndRunCommandOnWorkers(ctx context.Context, getOpts *sabakanMachinesGetOpts, filenames []string, cmdline []string, needReboot bool) {
+	machines, err := sabakanMachinesGet(ctx, getOpts)
 	if err != nil {
 		log.ErrorExit(err)
 	}
@@ -87,7 +90,9 @@ func applyFirmwareRun(cmd *cobra.Command, args []string) {
 		go func(machine sabakan.Machine) {
 			defer wg.Done()
 			addr := machine.Spec.IPv4[0]
-			cmdArgs := append([]string{"ssh", addr, "docker", "exec", "setup-hw", "setup-apply-firmware"}, assetUrls...)
+			cmdArgs := []string{"ssh", addr}
+			cmdArgs = append(cmdArgs, cmdline...)
+			cmdArgs = append(cmdArgs, assetUrls...)
 			output, err := well.CommandContext(ctx, neco.CKECLIBin, cmdArgs...).Output()
 
 			mtx.Lock()
@@ -113,7 +118,7 @@ Failed:    %d %v
 
 `, len(machines), len(succeededAddrs), succeededAddrs, len(failedAddrs), failedAddrs)
 
-	if !applyFirmwareRebootOption {
+	if !needReboot {
 		return
 	}
 
