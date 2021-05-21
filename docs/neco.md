@@ -236,6 +236,12 @@ Show TPM devices on a machine having `SERIAL` or `IP` address.
 
 ### Automated firmware application functions
 
+* `neco isoreboot ISO_FILE`
+
+Connect iso file to Virtual DVD and schedule reboot.
+
+[`sabactl machines get`-like options](https://github.com/cybozu-go/sabakan/blob/main/docs/sabactl.md#sabactl-machines-get-query_param) can be used to narrow down the machines to be updated.
+
 * `neco apply-firmware UPDATER_FILE...`
 
 Send firmware updaters to BMC and schedule reboot.
