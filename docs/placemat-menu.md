@@ -222,6 +222,7 @@ type: cs
 spec:
   cpu: 2
   memory: 2G
+  disk-count: 4
   image: ubuntu-cloud-image
   data:
     - docker-lib-image
@@ -238,6 +239,7 @@ The available properties are as following:
     - `ss`: storage servers
 - `cpu`: The number of the virtual CPU cores
 - `memory`: The size of the memory.
+- `disk-count`: The count of disk storages. This property is used for cs and ss (Ignored for boot machine).
 - `image`: The name of an image resource for boot (optional)
 - `data`: The name of image resources for additional data (optional)
 - `smbios`: The name of BIOS mode (optional. See [Node resource of placemat](https://github.com/cybozu-go/placemat/blob/main/docs/resource.md#node-resource))

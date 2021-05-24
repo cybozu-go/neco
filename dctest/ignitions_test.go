@@ -35,6 +35,22 @@ func testIgnitions() {
 			symlink: cryptDiskDir + "pci-0000:00:0a.0",
 			diskDev: "vdd",
 		},
+		{
+			symlink: cryptDiskDir + "pci-0000:00:0b.0",
+			diskDev: "vde",
+		},
+		{
+			symlink: cryptDiskDir + "pci-0000:00:0c.0",
+			diskDev: "vdf",
+		},
+		{
+			symlink: cryptDiskDir + "pci-0000:00:0d.0",
+			diskDev: "vdg",
+		},
+		{
+			symlink: cryptDiskDir + "pci-0000:00:0e.0",
+			diskDev: "vdh",
+		},
 	}
 
 	var ssNodeIP string
