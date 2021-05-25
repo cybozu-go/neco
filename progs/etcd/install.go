@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/etcdutil"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	version "github.com/hashicorp/go-version"
+	"go.etcd.io/etcd/clientv3"
 )
 
 var leastClusterVersion = version.Must(version.NewVersion("3.1.0"))

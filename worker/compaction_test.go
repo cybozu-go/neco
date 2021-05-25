@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/neco/storage/test"
 	"github.com/cybozu-go/well"
+	"go.etcd.io/etcd/clientv3"
 )
 
 func TestEtcdCompaction(t *testing.T) {

@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/serf"
 	"github.com/cybozu-go/neco/storage"
+	"go.etcd.io/etcd/clientv3/concurrency"
 )
 
 func (o *operator) UpdateSerf(ctx context.Context, req *neco.UpdateRequest) error {

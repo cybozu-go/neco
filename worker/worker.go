@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
+	"go.etcd.io/etcd/clientv3"
 )
 
 // Worker implements Neco auto update worker process.

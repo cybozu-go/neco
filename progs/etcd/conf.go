@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/coreos/etcd/etcdserver/etcdserverpb"
 	"github.com/cybozu-go/neco"
+	"go.etcd.io/etcd/etcdserver/etcdserverpb"
 )
 
 // GenerateConf generates etcd.conf.yml from template.
