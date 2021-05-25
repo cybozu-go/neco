@@ -8,8 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/sabakan/v2"
@@ -17,6 +15,8 @@ import (
 	"github.com/cybozu-go/well"
 	"github.com/robfig/cron/v3"
 	"github.com/vektah/gqlparser/gqlerror"
+	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/clientv3/concurrency"
 )
 
 // Controller is sabakan-state-setter controller

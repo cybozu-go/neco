@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/google/go-containerregistry/pkg/authn"
+	"go.etcd.io/etcd/clientv3"
 )
 
 // Operator installs or updates programs

@@ -3,8 +3,8 @@ package neco
 import (
 	"os"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/etcdutil"
+	"go.etcd.io/etcd/clientv3"
 	"sigs.k8s.io/yaml"
 )
 

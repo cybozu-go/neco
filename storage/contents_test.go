@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage/test"
 	"github.com/google/go-cmp/cmp"
+	"go.etcd.io/etcd/clientv3/concurrency"
 )
 
 func testSabakanContentsStatus(t *testing.T) {

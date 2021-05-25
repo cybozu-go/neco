@@ -7,12 +7,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
+	"go.etcd.io/etcd/clientv3/concurrency"
 )
 
 // Server represents neco-updater server
