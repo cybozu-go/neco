@@ -6,13 +6,13 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/etcd"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
+	"go.etcd.io/etcd/clientv3"
 )
 
 var initParams struct {

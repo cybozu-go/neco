@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/coreos/etcd/clientv3"
+	"go.etcd.io/etcd/clientv3"
 )
 
 // Finish stores the finished stage number for a bootserver to storage

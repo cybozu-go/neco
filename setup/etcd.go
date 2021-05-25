@@ -3,10 +3,10 @@ package setup
 import (
 	"context"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/etcd"
+	"go.etcd.io/etcd/clientv3"
 )
 
 func enableEtcdAuth(ctx context.Context, ec *clientv3.Client) error {

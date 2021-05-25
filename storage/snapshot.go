@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/neco"
+	"go.etcd.io/etcd/clientv3"
 )
 
 // Snapshot is the up-to-date snapshot of etcd database.

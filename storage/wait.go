@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/cybozu-go/neco"
+	"go.etcd.io/etcd/clientv3"
 )
 
 // WaitRequest waits for a UpdateRequest to be written to etcd and returns it.
