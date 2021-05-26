@@ -32,6 +32,16 @@ func testRebootAllBootServers() {
 			}
 			return nil
 		}).Should(Succeed())
+
+		// .kube directory is mounted by tmpfs, so reissuing config file is necessary
+		By("generating kubeconfig for cluster admin")
+		Eventually(func() error {
+			_, stderr, err := execAt(bootServers[0], "ckecli", "kubernetes", "issue", ">", ".kube/config")
+			if err != nil {
+				return fmt.Errorf("err: %v, stderr: %s", err, stderr)
+			}
+			return nil
+		}).Should(Succeed())
 	})
 }
 
