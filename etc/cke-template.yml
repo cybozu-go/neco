@@ -45,6 +45,10 @@ options:
           verbs: ["get", "watch", "list"]
         - level: Metadata
           verbs: ["delete", "deletecollection"]
+        - level: RequestResponse
+          resources:
+            - group: ""
+              resources: ["events"]
         - level: None
           userGroups:
             - system:nodes
