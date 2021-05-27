@@ -204,15 +204,15 @@ func (c *Cluster) appendNodes(spec *types.ClusterSpec, sabakanDir string) {
 		spec.Nodes = append(spec.Nodes, bootNode)
 
 		for _, cs := range rack.csList {
-			spec.Nodes = append(spec.Nodes, createWorkerNode(rack, cs, 2, cs.spec))
+			spec.Nodes = append(spec.Nodes, createWorkerNode(rack, cs, cs.spec))
 		}
 		for _, ss := range rack.ssList {
-			spec.Nodes = append(spec.Nodes, createWorkerNode(rack, ss, 4, ss.spec))
+			spec.Nodes = append(spec.Nodes, createWorkerNode(rack, ss, ss.spec))
 		}
 	}
 }
 
-func createWorkerNode(rack *rack, node *node, diskNumber int, spec *nodeSpec) *types.NodeSpec {
+func createWorkerNode(rack *rack, node *node, spec *nodeSpec) *types.NodeSpec {
 	nodeSpec := &types.NodeSpec{
 		Kind: "Node",
 		Name: fmt.Sprintf("%s-%s", rack.name, node.name),
@@ -229,7 +229,7 @@ func createWorkerNode(rack *rack, node *node, diskNumber int, spec *nodeSpec) *t
 		},
 	}
 
-	for i := 0; i < diskNumber; i++ {
+	for i := 0; i < spec.DiskCount; i++ {
 		nodeSpec.Volumes = append(nodeSpec.Volumes, types.NodeVolumeSpec{
 			Kind:   "raw",
 			Name:   fmt.Sprintf("data%d", i+1),

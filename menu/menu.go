@@ -203,6 +203,7 @@ func (n *nodeMenu) validate() error {
 type nodeSpec struct {
 	CPU               int      `json:"cpu"`
 	Memory            string   `json:"memory"`
+	DiskCount         int      `json:"disk-count"`
 	Image             string   `json:"image"`
 	Data              []string `json:"data"`
 	UEFI              bool     `json:"uefi"`
