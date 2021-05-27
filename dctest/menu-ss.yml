@@ -45,6 +45,7 @@ type: cs
 spec:
   cpu: 10
   memory: 20G
+  disk-count: 4
   tpm: true
 ---
 kind: Node
@@ -52,4 +53,5 @@ type: ss
 spec:
   cpu: 4
   memory: 10G
+  disk-count: 8
   tpm: true
