@@ -17,23 +17,28 @@ func testSetup() {
 	It("should create mount service", func() {
 		mountUnit := `
 [Unit]
-Description=Mount .kube directory by tmpfs
+Description=mount ,kube directory by tmpfs
 Wants=network-online.target
 After=network-online.target
 
-[Service]
-Type=oneshot
-ExecStartPre=/bin/mkdir -p /home/cybozu/.kube
-ExecStart=mount -t tmpfs -o size=5M tmpfs /home/cybozu/.kube`
-		mountServicePath := "/lib/systemd/system/mount.service"
+[Mount]
+What=tmpfs
+Where=/home/cybozu/.kube
+DirectoryMode=0777
+Type=tmpfs
+Options=strictatime,nosuid,nodev
+
+[Install]
+WantedBy=multi-user.target`
+		mountServicePath := "/lib/systemd/system/home-cybozu-.kube.mount"
 
 		for _, v := range bootServers {
 			stdout, stderr, err := execAtWithInput(v, []byte(mountUnit), "sudo", "tee", mountServicePath)
 			Expect(err).NotTo(HaveOccurred(), "host=%s, stdout=%s, stderr=%s, err=%v", v, stdout, stderr, err)
 			execSafeAt(v, "test", "-f", mountServicePath)
-			execSafeAt(v, "sudo", "systemctl", "enable", "mount")
-			execSafeAt(v, "sudo", "systemctl", "start", "mount")
-			execSafeAt(v, "systemctl", "-q", "is-active", "mount")
+			execSafeAt(v, "sudo", "systemctl", "enable", "home-cybozu-.kube.mount")
+			execSafeAt(v, "sudo", "systemctl", "start", "home-cybozu-.kube.mount")
+			execSafeAt(v, "systemctl", "-q", "is-active", "home-cybozu-.kube.mount")
 		}
 	})
 
