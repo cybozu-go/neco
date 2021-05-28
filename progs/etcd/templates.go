@@ -57,7 +57,7 @@ peer-transport-security:
   trusted-ca-file: /etc/etcd/ca-peer.crt
 
 # Specify 'stdout' or 'stderr' to skip journald logging even when running under systemd.
-log-outputs: stderr
+log-outputs: [stderr]
 
 # auto compaction
 auto-compaction-mode: periodic
