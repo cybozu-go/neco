@@ -162,7 +162,6 @@ func testUpgrade() {
 		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 
 		By("generating kubeconfig for cluster admin")
-		execSafeAt(bootServers[0], "mkdir", "-p", ".kube")
 		Eventually(func() error {
 			_, stderr, err := execAt(bootServers[0], "ckecli", "kubernetes", "issue", ">", ".kube/config")
 			if err != nil {
