@@ -72,6 +72,9 @@ options:
   kube-controller-manager:
     extra_args:
       - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
+      - "--leader-elect-retry-period=5s"
+      - "--leader-elect-renew-deadline=15s"
+      - "--leader-elect-lease-duration=20s"
   kube-proxy:
     config:
       apiVersion: kubeproxy.config.k8s.io/v1alpha1
@@ -119,6 +122,9 @@ options:
               whenUnsatisfiable: ScheduleAnyway
     extra_args:
       - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
+      - "--leader-elect-retry-period=5s"
+      - "--leader-elect-renew-deadline=15s"
+      - "--leader-elect-lease-duration=20s"
   kubelet:
     config:
       apiVersion: kubelet.config.k8s.io/v1beta1
@@ -142,6 +148,16 @@ options:
       - source: /var/lib/rook
         destination: /var/lib/rook
         read_only: false
+  rivers:
+    extra_args:
+      - "--dial-timeout=4s"
+      - "--dial-keep-alive=6s"
+      - "--check-interval=5s"
+  etcd-rivers:
+    extra_args:
+      - "--dial-timeout=4s"
+      - "--dial-keep-alive=6s"
+      - "--check-interval=5s"
   etcd:
     extra_args:
       - "--listen-metrics-urls=http://0.0.0.0:2381"
