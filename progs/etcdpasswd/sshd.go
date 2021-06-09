@@ -11,6 +11,7 @@ const (
 
 AuthorizedKeysFile	.ssh/authorized_keys
 PasswordAuthentication no
+ForceCommand /usr/bin/neco session-log start
 `
 )
 
