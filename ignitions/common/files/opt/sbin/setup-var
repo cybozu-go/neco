@@ -24,6 +24,15 @@ lvsize() {
     esac
 }
 
+always_mkfs() {
+    case $1 in
+    kubelet)
+        return 0
+        ;;
+    esac
+    return 1
+}
+
 prepare_lv() {
     # enable COW volume auto extension
     lvmconfig --config activation/snapshot_autoextend_threshold=70 \
@@ -91,7 +100,7 @@ for label in $LVLIST; do
         sleep 1
     done
 
-    if [ $label != "$(lsblk -n -o LABEL $DEVICE)" ]; then
+    if always_mkfs $label || [ $label != "$(lsblk -n -o LABEL $DEVICE)" ]; then
         mkfs.ext4 -L $label $DEVICE
     fi
 done
