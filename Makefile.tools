@@ -35,9 +35,11 @@ YQ_DLDIR := $(DOWNLOADDIR)/yq-v$(YQ_VERSION)
 YQ_DOWNLOAD := $(YQ_DLDIR)/downloaded
 KUBECTL_NEAT_DLDIR := $(DOWNLOADDIR)/kubectl-neat-v$(KUBECTL_NEAT_VERSION)
 KUBECTL_NEAT_DOWNLOAD := $(KUBECTL_NEAT_DLDIR)/downloaded
+KUBECTL_HNS_DLDIR := $(DOWNLOADDIR)/kubectl-hns-v$(KUBECTL_HNS_VERSION)
+KUBECTL_HNS_DOWNLOAD := $(KUBECTL_HNS_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat
+all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat kubectl-hns
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -344,6 +346,26 @@ kubectl-neat: $(KUBECTL_NEAT_DOWNLOAD)
 	tar xzf $(KUBECTL_NEAT_DLDIR)/kubectl-neat.tar.gz -C $(BINDIR)
 	cp $(KUBECTL_NEAT_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(KUBECTL_NEAT_DLDIR)/Readme.md $(DOCDIR)/$@/Readme.md
+
+$(KUBECTL_HNS_DOWNLOAD):
+	mkdir -p $(KUBECTL_HNS_DLDIR)
+	$(WGET) -O $(KUBECTL_HNS_DLDIR)/kubectl-hns_linux_amd64 https://github.com/kubernetes-sigs/multi-tenancy/releases/download/hnc-v${KUBECTL_HNS_VERSION}/kubectl-hns_linux_amd64
+	$(WGET) -O $(KUBECTL_HNS_DLDIR)/kubectl-hns_darwin_amd64 https://github.com/kubernetes-sigs/multi-tenancy/releases/download/hnc-v${KUBECTL_HNS_VERSION}/kubectl-hns_darwin_amd64
+	$(WGET) -O $(KUBECTL_HNS_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes-sigs/hierarchical-namespaces/hnc-v${KUBECTL_HNS_VERSION}/LICENSE
+	$(WGET) -O $(KUBECTL_HNS_DLDIR)/README.md   https://raw.githubusercontent.com/kubernetes-sigs/hierarchical-namespaces/hnc-v${KUBECTL_HNS_VERSION}/README.md
+	touch $@
+
+.PHONY: kubectl-hns
+kubectl-hns: $(KUBECTL_HNS_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	cp $(KUBECTL_HNS_DLDIR)/kubectl-hns_linux_amd64 $(BINDIR)/kubectl-hns
+	chmod +x $(BINDIR)/kubectl-hns
+	cp $(KUBECTL_HNS_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(KUBECTL_HNS_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(KUBECTL_HNS_DLDIR)/kubectl-hns_darwin_amd64 $(MAC_BINDIR)/kubectl-hns
+	chmod +x $(MAC_BINDIR)/kubectl-hns
+	cp $(KUBECTL_HNS_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(KUBECTL_HNS_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 .PHONY: clean
 clean:
