@@ -25,7 +25,7 @@ DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
 OPDEB_BINNAMES = argocd kubectl kubeseal kustomize logcli stern tsh kubectl-moco kubectl-hns
-OPDEB_DOCNAMES = argocd kubectl kubeseal kustomize logcli stern teleport moco
+OPDEB_DOCNAMES = argocd kubectl kubeseal kustomize logcli stern teleport moco kubectl-hns
 
 .PHONY: all
 all:
