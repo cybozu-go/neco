@@ -174,11 +174,10 @@ func (c *Cluster) appendNodes(spec *types.ClusterSpec, sabakanDir string) {
 		}
 		if bootSpec.Image != "" {
 			bootNode.Volumes = append(bootNode.Volumes, types.NodeVolumeSpec{
-				Kind:        "image",
-				Name:        "root",
-				Image:       bootSpec.Image,
-				CopyOnWrite: true,
-				Cache:       "writeback",
+				Kind:  "image",
+				Name:  "root",
+				Image: bootSpec.Image,
+				Cache: "none",
 			})
 
 			if bootSpec.CloudInitTemplate != "" {

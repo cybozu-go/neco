@@ -123,8 +123,7 @@ name: boot-0
 smbios:
   serial: fb8f2417d0b4db30050719c31ce02a2e8141bbd8
 volumes:
-- cache: writeback
-  copy-on-write: true
+- cache: none
   image: ubuntu-cloud-image
   kind: image
   name: root
@@ -200,8 +199,7 @@ name: boot-1
 smbios:
   serial: fa362303b7af8c4291773ab496aaca16726beaa3
 volumes:
-- cache: writeback
-  copy-on-write: true
+- cache: none
   image: ubuntu-cloud-image
   kind: image
   name: root

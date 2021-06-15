@@ -3,20 +3,17 @@
 IMAGE=$1
 shift
 
-NBD=/dev/nbd0
-NBDp1=/dev/mapper/nbd0p1
-
-modprobe nbd
-qemu-nbd -c $NBD $IMAGE
-trap "kpartx -d $NBD 2>/dev/null; qemu-nbd -d $NBD" INT QUIT TERM 0
+losetup -f $IMAGE
+LO=$(sudo losetup -j $IMAGE | cut -d: -f1)
+LOp1=/dev/mapper/${LO##*/}p1
+trap "kpartx -d $LO 2>/dev/null; losetup -d $LO" INT QUIT TERM 0
 
 # resize part1
-growpart $NBD 1
+growpart $LO 1
+kpartx -a $LO
+mount $LOp1 /mnt
 
 # copy files
-kpartx -a $NBD
-sleep 2
-mount $NBDp1 /mnt
 mkdir /mnt/extras
 cp -a "$@" /mnt/extras
 chroot /mnt systemctl disable systemd-resolved.service

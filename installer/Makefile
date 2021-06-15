@@ -109,8 +109,8 @@ $(ORIGINAL_CLOUD_PATH):
 	curl -o $@ -fsL https://cloud-images.ubuntu.com/releases/20.04/release/$(ORIGINAL_CLOUD_IMAGE)
 
 $(CUSTOM_CLOUD_PATH): $(ORIGINAL_CLOUD_PATH) $(DEBS) cluster.json
-	cp $< $@
-	qemu-img resize $@ 30G
+	qemu-img convert -O raw $< $@
+	qemu-img resize -f raw $@ 30G
 	GOBIN=$(abspath build) go install ./setup
 	$(SUDO) ./customize-cloud-image $@ $(DEBS) build/setup cluster.json
 
