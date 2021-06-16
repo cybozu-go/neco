@@ -4,12 +4,12 @@
 
 # Run multi-host test
 for i in $(seq 300); do
-  if $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- test -S /tmp/boot-0.socket >/dev/null; then
+  if $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- pmctl2 node show boot-0 >/dev/null; then
     break
   fi
   sleep 1
 done
-if [ i = 100 ]; then
+if [ $i = 300 ]; then
   echo &>2 "Timed-out for launching boot-0..."
   exit 1
 fi
