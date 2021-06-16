@@ -30,6 +30,7 @@ func init() {
 
 const s3gwEndpoint = "http://s3gw.session-log.svc"
 const sftpServer = "/usr/lib/openssh/sftp-server"
+const userShell = "/usr/bin/bash" // XXX
 
 // sessionLogStartGetParam calculates child process invocation param
 // note: tmpdir == "" implies Mkdirtmp failure
@@ -40,7 +41,7 @@ func sessionLogStartGetParam(originalCommand, tmpdir string) ( /* cmdline */ []s
 
 	if tmpdir == "" {
 		// even if session log recording fails, we have to invoke shell
-		cmdline = []string{"/usr/bin/bash"} // XXX
+		cmdline = []string{userShell}
 	} else {
 		typescriptPath := filepath.Join(tmpdir, "typescript")
 		timingfilePath := filepath.Join(tmpdir, "timingfile")
@@ -59,6 +60,14 @@ func sessionLogStartGetParam(originalCommand, tmpdir string) ( /* cmdline */ []s
 			runViaScript = false
 		} else if originalCommand == sftpServer || strings.HasPrefix(originalCommand, "scp -t") {
 			cmdline = []string{"/bin/sh"}
+			runViaScript = false
+		} else if originalCommand != "" {
+			/*
+			 * According to script(1) man page, it is not recommended to run script in non-interactive shells.
+			 * Actually, running script like `cat large.yaml | dcssh boot-0 kubectl apply -f -` results hung up.
+			 * Remote commands should not be run via scripts.
+			 */
+			cmdline = []string{userShell}
 			runViaScript = false
 		}
 		cmdline = append(cmdline, "-c", originalCommand)

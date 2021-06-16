@@ -21,11 +21,13 @@ func TestSessionLogStart(t *testing.T) {
 			ExpectedTarMemberFiles: []string{"typescript", "timingfile"},
 		},
 		{
-			Name:                   "normal remote command",
-			InputOriginalCommand:   "ls",
-			InputTmpdir:            "/tmp/a",
-			ExpectedCmdline:        []string{"/usr/bin/script", "-q", "-t/tmp/a/timingfile", "-e", "/tmp/a/typescript", "-c", "ls"},
-			ExpectedTarMemberFiles: []string{"SSH_ORIGINAL_COMMAND", "typescript", "timingfile"},
+			Name:                 "normal remote command",
+			InputOriginalCommand: "ls",
+			InputTmpdir:          "/tmp/a",
+			//ExpectedCmdline:        []string{"/usr/bin/script", "-q", "-t/tmp/a/timingfile", "-e", "/tmp/a/typescript", "-c", "ls"},
+			//ExpectedTarMemberFiles: []string{"SSH_ORIGINAL_COMMAND", "typescript", "timingfile"},
+			ExpectedCmdline:        []string{"/usr/bin/bash", "-c", "ls"},
+			ExpectedTarMemberFiles: []string{"SSH_ORIGINAL_COMMAND"},
 		},
 		{
 			Name:                   "normal internal-sftp (1)",
