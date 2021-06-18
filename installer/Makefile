@@ -110,7 +110,7 @@ $(ORIGINAL_CLOUD_PATH):
 
 $(CUSTOM_CLOUD_PATH): $(ORIGINAL_CLOUD_PATH) $(DEBS) cluster.json
 	qemu-img convert -O raw $< $@
-	qemu-img resize -f raw $@ 30G
+	qemu-img resize -f raw --preallocation=full $@ 15G
 	GOBIN=$(abspath build) go install ./setup
 	$(SUDO) ./customize-cloud-image $@ $(DEBS) build/setup cluster.json
 
