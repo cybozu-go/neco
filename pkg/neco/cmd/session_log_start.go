@@ -30,13 +30,12 @@ func init() {
 
 const s3gwEndpoint = "http://s3gw.session-log.svc"
 const sftpServer = "/usr/lib/openssh/sftp-server"
-const userShell = "/usr/bin/bash" // XXX
+const userShell = "/usr/bin/bash" // XXX should retrieve from /etc/passwd ...?
 
 // sessionLogStartGetParam calculates child process invocation param
 // note: tmpdir == "" implies Mkdirtmp failure
-func sessionLogStartGetParam(originalCommand, tmpdir string) ( /* cmdline */ []string /* tarMemberFiles */, []string) {
-	var cmdline []string
-	tarMemberFiles := []string{}
+func sessionLogStartGetParam(originalCommand, tmpdir string) (cmdline []string, tarMemberFiles []string) {
+	tarMemberFiles = []string{}
 	runViaScript := false
 
 	if tmpdir == "" {
@@ -53,30 +52,29 @@ func sessionLogStartGetParam(originalCommand, tmpdir string) ( /* cmdline */ []s
 			os.WriteFile(filepath.Join(tmpdir, "SSH_ORIGINAL_COMMAND"), []byte(originalCommand), 0600)
 			tarMemberFiles = append(tarMemberFiles, "SSH_ORIGINAL_COMMAND")
 		}
-		// those should not run via script
+
+		runViaScript = false
 		if originalCommand == "internal-sftp" {
 			originalCommand = sftpServer
 			cmdline = []string{"/bin/sh"}
-			runViaScript = false
 		} else if originalCommand == sftpServer || strings.HasPrefix(originalCommand, "scp -t") {
 			cmdline = []string{"/bin/sh"}
-			runViaScript = false
-		} else if originalCommand != "" {
+		} else {
 			/*
 			 * According to script(1) man page, it is not recommended to run script in non-interactive shells.
 			 * Actually, running script like `cat large.yaml | dcssh boot-0 kubectl apply -f -` results hung up.
 			 * Remote commands should not be run via scripts.
 			 */
 			cmdline = []string{userShell}
-			runViaScript = false
 		}
+
 		cmdline = append(cmdline, "-c", originalCommand)
 	}
 	if runViaScript {
 		tarMemberFiles = append(tarMemberFiles, "typescript", "timingfile")
 	}
 
-	return cmdline, tarMemberFiles
+	return
 }
 
 func sessionLogStartRun(cmd *cobra.Command, args []string) {
@@ -108,8 +106,12 @@ func sessionLogStartRun(cmd *cobra.Command, args []string) {
 			if err != nil {
 				user.Username = "unknown"
 			}
-			filename := fmt.Sprintf("session-log-%s-%d-%s-%s.tar.gz", startTimeStr, os.Getpid(), durationStr, user.Username)
-			cmdline := []string{"/bin/tar", "zcvf", filename}
+			hostname, err := os.Hostname()
+			if err != nil {
+				hostname = "unknown"
+			}
+			filename := fmt.Sprintf("session-log-%s-%s-%d-%s-%s.tar.gz", startTimeStr, hostname, os.Getpid(), durationStr, user.Username)
+			cmdline := []string{"/bin/tar", "zcf", filename}
 			cmdline = append(cmdline, tarMemberFiles...)
 			err = exec.CommandContext(ctx, cmdline[0], cmdline[1:]...).Run()
 			if err != nil {
