@@ -17,6 +17,7 @@ Features include:
   - [CKE related functions](#cke-related-functions)
   - [TPM related functions](#tpm-related-functions)
   - [Automated firmware application functions](#automated-firmware-application-functions)
+  - [Session log recording](#session-log-recording)
   - [Miscellaneous](#miscellaneous)
 - [Configurations](#configurations)
   - [`env`](#env)
@@ -247,6 +248,12 @@ Connect iso file to Virtual DVD and schedule reboot.
 Send firmware updaters to BMC and schedule reboot.
 
 [`sabactl machines get`-like options](https://github.com/cybozu-go/sabakan/blob/main/docs/sabactl.md#sabactl-machines-get-query_param) can be used to narrow down the machines to be updated.
+
+### Session log recording
+
+* `neco session-log start`
+
+Start session logging by script(1). After invoked shell exits, session log is put to the object bucket located at http://s3gw.session-log.svc .
 
 ### Miscellaneous
 
