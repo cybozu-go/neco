@@ -16,6 +16,10 @@ func (o *operator) UpdateEtcdpasswd(ctx context.Context, req *neco.UpdateRequest
 		return err
 	}
 
+	if err := neco.RestartService(ctx, "ssh"); err != nil {
+		return err
+	}
+
 	if err := etcdpasswd.InstallSudoers(); err != nil {
 		return err
 	}
