@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/sabakan/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -120,6 +121,23 @@ func rebootAndWaitMain(target string) error {
 			continue
 		}
 		if member.Tags[serfTagUptime] != oldUptime {
+			break
+		}
+	}
+
+	for {
+		time.Sleep(1 * time.Second)
+
+		machine, err := lookupMachine(context.Background(), target)
+		if err != nil {
+			log.Error("failed to lookup serial or IP address", map[string]interface{}{
+				"serial_or_ip": target,
+				log.FnError:    err,
+			})
+			return err
+		}
+
+		if machine.Status.State == sabakan.StateHealthy {
 			return nil
 		}
 	}
