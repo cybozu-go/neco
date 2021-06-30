@@ -1,11 +1,14 @@
 #!/bin/sh -eu
 
 VG=vg1
-LVLIST="k8s-containerd docker kubelet systemd"
+LVLIST="k8s-containerd docker kubelet systemd coredump"
+
+# these values are for qemu (dctest env). see below for real machines.
 CONTAINERD_SIZE=20g
 DOCKER_SIZE=10g
 KUBELET_SIZE=10g
 SYSTEMD_SIZE=1g
+COREDUMP_SIZE=1g
 
 lvsize() {
     case $1 in
@@ -20,6 +23,9 @@ lvsize() {
         ;;
     systemd)
         echo $SYSTEMD_SIZE
+        ;;
+    coredump)
+        echo $COREDUMP_SIZE
         ;;
     esac
 }
@@ -81,12 +87,14 @@ elif ls /dev/mapper/crypt-nvme* >/dev/null 2>&1; then
     CONTAINERD_SIZE=1t
     DOCKER_SIZE=50g
     KUBELET_SIZE=100g
+    COREDUMP_SIZE=50g
     prepare_lv
 else
     # for storage node
     PVS=$(find_boss)
     CONTAINERD_SIZE=50g
     DOCKER_SIZE=50g
+    COREDUMP_SIZE=20g
     prepare_lv
 fi
 
