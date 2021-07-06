@@ -6,7 +6,7 @@ LVLIST="k8s-containerd docker kubelet systemd coredump"
 # these values are for qemu (dctest env). see below for real machines.
 CONTAINERD_SIZE=20g
 DOCKER_SIZE=10g
-KUBELET_SIZE=10g
+KUBELET_SIZE=40g
 SYSTEMD_SIZE=1g
 COREDUMP_SIZE=1g
 
@@ -79,7 +79,7 @@ find_boss() {
 
 if ls /dev/mapper/crypt-vd* >/dev/null 2>&1; then
     # for qemu
-    PVS="/dev/mapper/crypt-vda /dev/mapper/crypt-vdb"
+    PVS=$(ls /dev/mapper/crypt-vd[abcd])
     prepare_lv
 elif ls /dev/mapper/crypt-nvme* >/dev/null 2>&1; then
     # for compute node
@@ -94,6 +94,7 @@ else
     PVS=$(find_boss)
     CONTAINERD_SIZE=50g
     DOCKER_SIZE=50g
+    KUBELET_SIZE=10g
     COREDUMP_SIZE=20g
     prepare_lv
 fi
