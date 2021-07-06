@@ -14,6 +14,7 @@ files:
   - /etc/neco/version
   - /etc/resolv.conf
   - /etc/sysctl.d/70-cybozu.conf
+  - /etc/systemd/coredump.conf
   - /etc/systemd/system.conf.d/50-cybozu.conf
   - /etc/systemd/system/rngd.service.d/non_vm.conf
   - /etc/systemd/system/systemd-journald.service.d/oom_score_adj.conf
