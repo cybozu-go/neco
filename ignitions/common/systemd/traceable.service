@@ -1,0 +1,11 @@
+[Unit]
+Description=remount tracing
+After=network.target
+# "After=network.target" is same as rc-local.service
+
+[Service]
+Type=oneshot
+ExecStart=mount -o remount,mode=755 /sys/kernel/tracing/
+
+[Install]
+WantedBy=multi-user.target

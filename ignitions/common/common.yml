@@ -113,6 +113,8 @@ systemd:
   - name: udev-trigger.service
   - name: udev-trigger.timer
     enabled: true
+  - name: traceable.service
+    enabled: true
 networkd:
   - 01-eth0.network
   - 01-eth1.network
