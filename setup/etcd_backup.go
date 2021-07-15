@@ -16,7 +16,7 @@ var etcdBackupTmpl = template.Must(template.New("").Parse(`#!/bin/sh
 set -ue
 
 SNAPSHOT=snapshot-$(date '+%Y%m%d_%H%M%S')
-ETCDCTL="env ETCDCTL_API=3 /usr/local/bin/etcdctl --cert={{ .CertFile }} --key={{ .KeyFile }}"
+ETCDCTL="/usr/local/bin/etcdctl --cert={{ .CertFile }} --key={{ .KeyFile }}"
 
 $ETCDCTL snapshot save /var/lib/etcd-backup/${SNAPSHOT}
 tar --remove-files -cvzf /var/lib/etcd-backup/${SNAPSHOT}.tar.gz /var/lib/etcd-backup/${SNAPSHOT}
