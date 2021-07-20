@@ -17,6 +17,7 @@ files:
   - /etc/systemd/coredump.conf
   - /etc/systemd/system.conf.d/50-cybozu.conf
   - /etc/systemd/system/rngd.service.d/non_vm.conf
+  - /etc/systemd/system/sys-kernel-tracing.mount.d/mode.conf
   - /etc/systemd/system/systemd-journald.service.d/oom_score_adj.conf
   - /opt/bin/load-containerd-image
   - /opt/bin/load-docker-image
