@@ -45,7 +45,6 @@ The project consists of a lot of repositories including:
 
 - [cybozu-go/neco][neco]: The main repository.
 - [cybozu-go/neco-apps][neco-apps]: Kubernetes application manifests for Argo CD.
-- [cybozu/neco-ubuntu][neco-ubuntu]: Custom Ubuntu installer for boot servers.
 - [cybozu/neco-containers][neco-containers]: Dockerfiles to build container images.
 - [cybozu-go/sabakan][Sabakan]: Versatile network boot server.
 - [cybozu-go/cke][CKE]: Cybozu Kubernetes Engine.
@@ -220,7 +219,6 @@ Other than Go packages, this repository has the following directories:
 [neco]: https://github.com/cybozu-go/neco
 [neco-apps]: https://github.com/cybozu-go/neco-apps
 [neco-containers]: https://github.com/cybozu/neco-containers
-[neco-ubuntu]: https://github.com/cybozu/neco-ubuntu
 [placemat]: https://github.com/cybozu-go/placemat
 [Sabakan]: https://github.com/cybozu-go/sabakan
 [Teleport]: https://gravitational.com/teleport/
