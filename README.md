@@ -69,6 +69,8 @@ All persistent data are stored in an [etcd][] cluster.  Thanks to etcd, adding o
 
 [CKE][], or Cybozu Kubernetes Engines, is a CNCF certified Kubernetes installer.  It queries Node server status to Sabakan and chooses Nodes to construct Kubernetes control plane and worker nodes.  TLS certificates required for Kubernetes are issued by [Vault][].
 
+Boot servers are set up using a custom Ubuntu installer. [`installer`](./installer) directory contains the tools to build the custom installer.
+
 ### Neco Continuous Delivery System (Neco CD)
 
 To bootstrap and maintain boot servers, a simple continuous delivery system called Neco CD is implemented in this repository.
