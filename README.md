@@ -45,7 +45,6 @@ The project consists of a lot of repositories including:
 
 - [cybozu-go/neco][neco]: The main repository.
 - [cybozu-go/neco-apps][neco-apps]: Kubernetes application manifests for Argo CD.
-- [cybozu/neco-ubuntu][neco-ubuntu]: Custom Ubuntu installer for boot servers.
 - [cybozu/neco-containers][neco-containers]: Dockerfiles to build container images.
 - [cybozu-go/sabakan][Sabakan]: Versatile network boot server.
 - [cybozu-go/cke][CKE]: Cybozu Kubernetes Engine.
@@ -69,6 +68,8 @@ All persistent data are stored in an [etcd][] cluster.  Thanks to etcd, adding o
 [Sabakan][] is a network boot server that supports DHCP and HTTP.  It can also manage an inventory of Node servers and assign IP addresses automatically.  Node servers should use [UEFI HTTP boot][HTTPBoot] to load [Flatcar][] from sabakan.
 
 [CKE][], or Cybozu Kubernetes Engines, is a CNCF certified Kubernetes installer.  It queries Node server status to Sabakan and chooses Nodes to construct Kubernetes control plane and worker nodes.  TLS certificates required for Kubernetes are issued by [Vault][].
+
+Boot servers are set up using a custom Ubuntu installer. [`installer`](./installer) directory contains the tools to build the custom installer.
 
 ### Neco Continuous Delivery System (Neco CD)
 
@@ -220,7 +221,6 @@ Other than Go packages, this repository has the following directories:
 [neco]: https://github.com/cybozu-go/neco
 [neco-apps]: https://github.com/cybozu-go/neco-apps
 [neco-containers]: https://github.com/cybozu/neco-containers
-[neco-ubuntu]: https://github.com/cybozu/neco-ubuntu
 [placemat]: https://github.com/cybozu-go/placemat
 [Sabakan]: https://github.com/cybozu-go/sabakan
 [Teleport]: https://gravitational.com/teleport/
