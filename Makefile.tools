@@ -349,13 +349,17 @@ kubectl-neat: $(KUBECTL_NEAT_DOWNLOAD)
 
 $(ACCURATE_DOWNLOAD):
 	mkdir -p $(ACCURATE_DLDIR)
-	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate-linux-amd64
+	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate-linux-amd64 https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate-linux-amd64
+	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate-windows-amd64.exe https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate-windows-amd64.exe
+	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate-darwin-amd64 https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate-darwin-amd64
 	touch $@
 
 .PHONY: accurate
 accurate: $(ACCURATE_DOWNLOAD)
-	mkdir -p $(BINDIR)
-	cp $(ACCURATE_DLDIR)/kubectl-accurate $(BINDIR)
+	mkdir -p $(BINDIR) $(WINDOWS_BINDIR) $(MAC_BINDIR)
+	cp $(ACCURATE_DLDIR)/kubectl-accurate-linux-amd64 $(BINDIR)/kubectl-accurate
+	cp $(ACCURATE_DLDIR)/kubectl-accurate-windows-amd64.exe $(WINDOWS_BINDIR)/kubectl-accurate.exe
+	cp $(ACCURATE_DLDIR)/kubectl-accurate-darwin-amd64 $(MAC_BINDIR)/kubectl-accurate
 
 .PHONY: clean
 clean:
