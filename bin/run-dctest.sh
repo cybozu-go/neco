@@ -102,7 +102,8 @@ EOF
 chmod +x run.sh
 
 # Send files to GCE instance
-tar czf /tmp/neco.tgz .
+# The latter half (after '||') is workaround for "tar: .: file changed as we read it"
+tar czf /tmp/neco.tgz . || [ $? = 1 ]
 $GCLOUD compute scp --zone=${ZONE} /tmp/neco.tgz cybozu@${INSTANCE_NAME}:
 $GCLOUD compute scp --zone=${ZONE} run.sh cybozu@${INSTANCE_NAME}:
 
