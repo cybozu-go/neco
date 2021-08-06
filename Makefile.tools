@@ -35,9 +35,11 @@ YQ_DLDIR := $(DOWNLOADDIR)/yq-v$(YQ_VERSION)
 YQ_DOWNLOAD := $(YQ_DLDIR)/downloaded
 KUBECTL_NEAT_DLDIR := $(DOWNLOADDIR)/kubectl-neat-v$(KUBECTL_NEAT_VERSION)
 KUBECTL_NEAT_DOWNLOAD := $(KUBECTL_NEAT_DLDIR)/downloaded
+ACCURATE_DLDIR := $(DOWNLOADDIR)/accurate-v$(ACCURATE_VERSION)
+ACCURATE_DOWNLOAD := $(ACCURATE_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat
+all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat accurate
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -344,6 +346,20 @@ kubectl-neat: $(KUBECTL_NEAT_DOWNLOAD)
 	tar xzf $(KUBECTL_NEAT_DLDIR)/kubectl-neat.tar.gz -C $(BINDIR)
 	cp $(KUBECTL_NEAT_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(KUBECTL_NEAT_DLDIR)/Readme.md $(DOCDIR)/$@/Readme.md
+
+$(ACCURATE_DOWNLOAD):
+	mkdir -p $(ACCURATE_DLDIR)
+	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate-linux-amd64 https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate-linux-amd64
+	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate-windows-amd64.exe https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate-windows-amd64.exe
+	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate-darwin-amd64 https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate-darwin-amd64
+	touch $@
+
+.PHONY: accurate
+accurate: $(ACCURATE_DOWNLOAD)
+	mkdir -p $(BINDIR) $(WINDOWS_BINDIR) $(MAC_BINDIR)
+	cp $(ACCURATE_DLDIR)/kubectl-accurate-linux-amd64 $(BINDIR)/kubectl-accurate
+	cp $(ACCURATE_DLDIR)/kubectl-accurate-windows-amd64.exe $(WINDOWS_BINDIR)/kubectl-accurate.exe
+	cp $(ACCURATE_DLDIR)/kubectl-accurate-darwin-amd64 $(MAC_BINDIR)/kubectl-accurate
 
 .PHONY: clean
 clean:
