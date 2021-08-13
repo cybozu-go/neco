@@ -198,6 +198,7 @@ Other than Go packages, this repository has the following directories:
 - [`etc/`](etc/): Kubernetes manifests for networking and other configuration files.
 - [`ignitions/`](ignitions/): [Ignition][] template files.
 
+
 [releases]: https://github.com/cybozu-go/neco/releases
 [godoc]: https://godoc.org/github.com/cybozu-go/neco
 [ArgoCD]: https://argoproj.github.io/argo-cd/
