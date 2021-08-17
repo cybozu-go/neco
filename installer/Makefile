@@ -2,7 +2,7 @@
 
 SUDO = sudo
 
-UBUNTU_VERSION = 20.04.1
+UBUNTU_VERSION = 20.04.2
 BUILD_DEPS := xorriso qemu-utils qemu-kvm ovmf curl ca-certificates cloud-image-utils gdisk kpartx
 
 ORIGINAL_ISO_NAME = ubuntu-$(UBUNTU_VERSION)-live-server-amd64.iso
