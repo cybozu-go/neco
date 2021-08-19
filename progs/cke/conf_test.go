@@ -273,8 +273,10 @@ nodes:
 reboot:
   command: ["test"]
   protected_namespaces:
-    matchLabels:
-      team: neco
+    matchExpressions:
+      - key: development
+        operator: NotIn
+        values: ["true"]
 `
 	err = yaml.Unmarshal([]byte(expectedTemplate), &expected)
 	if err != nil {
