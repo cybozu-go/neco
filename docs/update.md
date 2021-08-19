@@ -165,7 +165,7 @@ Updater updates container image and restart `sabakan` in any timing.
 3. Check if each sabakan content can be updated. If so, download artifacts, then upload them to sabakan.
 4. Put `<prefix>/contents/sabakan` with value.
 
-If on failure, `neco recover` command removes also this key.
+If on failure, run `neco recover` to recover. This command removes `<prefix>/contents/*` keys in addition to `<prefix>/status/*` keys.
 
 ### CKE contents
 

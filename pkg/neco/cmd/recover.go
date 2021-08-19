@@ -22,7 +22,7 @@ var recoverCmd = &cobra.Command{
 		defer etcd.Close()
 		st := storage.NewStorage(etcd)
 
-		well.Go(st.ClearStatus)
+		well.Go(st.ClearStatusAndContents)
 		well.Stop()
 		err = well.Wait()
 		if err != nil {

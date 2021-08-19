@@ -216,13 +216,13 @@ func (s Storage) GetStatuses(ctx context.Context) (map[int]*neco.UpdateStatus, e
 	return s.getStatusesAt(ctx, 0)
 }
 
-// ClearStatus removes KeyStatusPrefix/* from storage.
+// ClearStatusAndContents removes KeyStatusPrefix/* and KeyContentsPrefix/* from storage.
 //
 // It first checks that "stop" field in KeyCurrent is true.  If not,
 // ErrNotStopped will be returned.
 //
 // Then it removes status keys in a single transaction.
-func (s Storage) ClearStatus(ctx context.Context) error {
+func (s Storage) ClearStatusAndContents(ctx context.Context) error {
 RETRY:
 	req, modRev, _, err := s.GetRequestWithRev(ctx)
 	if err != nil {
@@ -235,7 +235,10 @@ RETRY:
 
 	resp, err := s.etcd.Txn(ctx).
 		If(clientv3.Compare(clientv3.ModRevision(KeyCurrent), "=", modRev)).
-		Then(clientv3.OpDelete(KeyStatusPrefix, clientv3.WithPrefix())).
+		Then(
+			clientv3.OpDelete(KeyStatusPrefix, clientv3.WithPrefix()),
+			clientv3.OpDelete(KeyContentsPrefix, clientv3.WithPrefix()),
+		).
 		Commit()
 	if err != nil {
 		return err
