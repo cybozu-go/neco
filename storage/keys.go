@@ -17,6 +17,7 @@ const (
 	KeyStatusPrefix             = "status/"
 	KeyCurrent                  = "status/current"
 	KeyWorkerStatusPrefix       = "status/bootservers/"
+	KeyContentsPrefix           = "contents/"
 	KeySabakanContents          = "contents/sabakan"
 	KeyCKEContents              = "contents/cke"
 	KeyDHCPJSONContents         = "contents/dhcp.json"

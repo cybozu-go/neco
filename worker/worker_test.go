@@ -103,7 +103,7 @@ func inputStatus(lrn int, status *neco.UpdateStatus, wait bool) testInput {
 
 func inputClear() testInput {
 	return func(ctx context.Context, st storage.Storage, bch <-chan struct{}) error {
-		return st.ClearStatus(ctx)
+		return st.ClearStatusAndContents(ctx)
 	}
 }
 
