@@ -29,14 +29,14 @@ users in nodes.
 
 ## `<prefix>/contents/<target>`
 
-`<target>` is either `sabakan` or `cke`.
+`<target>` includes `sabakan`, `cke`, etc.
 
 The value is a JSON object with these fields:
 
-Name      | Type   | Description
-----      | ----   | -----------
-`version` | string | sabakan contents version (the same as `neco` package version).
-`success` | bool   | If `true`, update succeeded.
+| Name      | Type   | Description                                                    |
+| --------- | ------ | -------------------------------------------------------------- |
+| `version` | string | sabakan contents version (the same as `neco` package version). |
+| `success` | bool   | If `true`, update succeeded.                                   |
 
 ```json
 {
@@ -68,12 +68,12 @@ A leader of `neco-updater` creates and updates this key.
 
 The value is a JSON object with these fields:
 
-Name         | Type   | Description
-----         | ----   | -----------
-`version`    | string | Target `neco` version to be updated for all `servers`.
-`servers`    | []int  | LRNs of current available boot servers under update. This is created using `<prefix>/bootservers`.
-`stop`       | bool   | If `true`, `neco-worker` stops the update process.
-`started_at` | string | Updating start time.
+| Name         | Type   | Description                                                                                        |
+| ------------ | ------ | -------------------------------------------------------------------------------------------------- |
+| `version`    | string | Target `neco` version to be updated for all `servers`.                                             |
+| `servers`    | []int  | LRNs of current available boot servers under update. This is created using `<prefix>/bootservers`. |
+| `stop`       | bool   | If `true`, `neco-worker` stops the update process.                                                 |
+| `started_at` | string | Updating start time.                                                                               |
 
 ```json
 {
@@ -93,12 +93,12 @@ If `stop` becomes true, `neco-worker` should stop the ongoing update process imm
 
 The value is a JSON object with these fields:
 
-Name      | Type   | Description
-----      | ----   | -----------
-`version` | string | Target `neco` version to be updated.
-`step`    | int    | Current update step.
-`cond`    | int    | [`UpdateCondition`](https://godoc.org/github.com/cybozu-go/neco#UpdateCondition)
-`message` | string | Description of an error.
+| Name      | Type   | Description                                                                      |
+| --------- | ------ | -------------------------------------------------------------------------------- |
+| `version` | string | Target `neco` version to be updated.                                             |
+| `step`    | int    | Current update step.                                                             |
+| `cond`    | int    | [`UpdateCondition`](https://godoc.org/github.com/cybozu-go/neco#UpdateCondition) |
+| `message` | string | Description of an error.                                                         |
 
 ```json
 {
@@ -177,9 +177,9 @@ Token for accessing to teleport auth server
 
 A JSON object with these fields:
 
-Name     | Type  | Description
-----     | ----  | -----------
-`<ROLE>` | float | A role of weight.
+| Name     | Type  | Description       |
+| -------- | ----- | ----------------- |
+| `<ROLE>` | float | A role of weight. |
 
 This is used when `neco-worker` and `neco init-data` run `ckecli sabakan set-template`.
 

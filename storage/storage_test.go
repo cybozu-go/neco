@@ -157,7 +157,7 @@ func testStatus(t *testing.T) {
 	}
 }
 
-func testClearStatus(t *testing.T) {
+func testClearStatusAndContents(t *testing.T) {
 	t.Parallel()
 
 	etcd := test.NewEtcdClient(t)
@@ -165,7 +165,7 @@ func testClearStatus(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	err := st.ClearStatus(ctx)
+	err := st.ClearStatusAndContents(ctx)
 	if err != ErrNotFound {
 		t.Error("unexpected error", err)
 	}
@@ -188,7 +188,7 @@ func testClearStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = st.ClearStatus(ctx)
+	err = st.ClearStatusAndContents(ctx)
 	if err != ErrNotStopped {
 		t.Error("unexpected error", err)
 	}
@@ -209,7 +209,13 @@ func testClearStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = st.ClearStatus(ctx)
+	reqContents := neco.ContentsUpdateStatus{Version: "1.0.0", Success: false}
+	err = st.PutSabakanContentsStatus(ctx, &reqContents, leaderKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = st.ClearStatusAndContents(ctx)
 	if err != nil {
 		t.Error("ClearStatus should succeed", err)
 	}
@@ -217,6 +223,11 @@ func testClearStatus(t *testing.T) {
 	_, err = st.GetStatus(ctx, 1)
 	if err != ErrNotFound {
 		t.Error("worker status should have been cleared", err)
+	}
+
+	_, err = st.GetSabakanContentsStatus(ctx)
+	if err != ErrNotFound {
+		t.Error("worker contents should have been cleared", err)
 	}
 }
 
@@ -272,7 +283,7 @@ func TestStorage(t *testing.T) {
 	t.Run("DebVersion", testDebVersion)
 	t.Run("Request", testRequest)
 	t.Run("Status", testStatus)
-	t.Run("ClearStatus", testClearStatus)
+	t.Run("ClearStatus", testClearStatusAndContents)
 	t.Run("Finish", testFinish)
 	t.Run("SabakanContentsStatus", testSabakanContentsStatus)
 }
