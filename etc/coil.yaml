@@ -5036,7 +5036,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        image: ghcr.io/cybozu-go/coil:2.0.9
+        image: ghcr.io/cybozu-go/coil:2.0.10
         livenessProbe:
           httpGet:
             host: localhost
@@ -5115,7 +5115,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: ghcr.io/cybozu-go/coil:2.0.9
+        image: ghcr.io/cybozu-go/coil:2.0.10
         livenessProbe:
           httpGet:
             host: localhost
@@ -5158,7 +5158,7 @@ spec:
             configMapKeyRef:
               key: cni_netconf
               name: coil-config-85b6k6c66t
-        image: ghcr.io/cybozu-go/coil:2.0.9
+        image: ghcr.io/cybozu-go/coil:2.0.10
         name: coil-installer
         securityContext:
           privileged: true
@@ -5203,6 +5203,26 @@ metadata:
     app.kubernetes.io/name: coil
   name: coilv2-mutating-webhook-configuration
 webhooks:
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: coilv2-webhook-service
+      namespace: kube-system
+      path: /mutate-coil-cybozu-com-v2-addresspool
+  failurePolicy: Fail
+  name: maddresspool.kb.io
+  rules:
+  - apiGroups:
+    - coil.cybozu.com
+    apiVersions:
+    - v2
+    operations:
+    - CREATE
+    resources:
+    - addresspools
+  sideEffects: None
 - admissionReviewVersions:
   - v1
   - v1beta1
