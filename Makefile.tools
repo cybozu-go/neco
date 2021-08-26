@@ -358,8 +358,10 @@ $(ACCURATE_DOWNLOAD):
 accurate: $(ACCURATE_DOWNLOAD)
 	mkdir -p $(BINDIR) $(WINDOWS_BINDIR) $(MAC_BINDIR)
 	cp $(ACCURATE_DLDIR)/kubectl-accurate-linux-amd64 $(BINDIR)/kubectl-accurate
+	chmod +x $(BINDIR)/kubectl-accurate
 	cp $(ACCURATE_DLDIR)/kubectl-accurate-windows-amd64.exe $(WINDOWS_BINDIR)/kubectl-accurate.exe
 	cp $(ACCURATE_DLDIR)/kubectl-accurate-darwin-amd64 $(MAC_BINDIR)/kubectl-accurate
+	chmod +x $(MAC_BINDIR)/kubectl-accurate
 
 .PHONY: clean
 clean:
