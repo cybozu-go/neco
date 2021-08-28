@@ -21,7 +21,7 @@ CHRONY_URL = http://archive.ubuntu.com/ubuntu/pool/main/c/chrony/chrony_3.5-6ubu
 CHRONY_DEB = build/$(notdir $(CHRONY_URL))
 BIRD2_URL = http://archive.ubuntu.com/ubuntu/pool/universe/b/bird2/bird2_2.0.7-2_amd64.deb
 BIRD2_DEB = build/$(notdir $(BIRD2_URL))
-LIBSSH_URL = http://archive.ubuntu.com/ubuntu/pool/main/libs/libssh/libssh-gcrypt-4_0.9.3-2ubuntu2.1_amd64.deb
+LIBSSH_URL = http://archive.ubuntu.com/ubuntu/pool/main/libs/libssh/libssh-gcrypt-4_0.9.3-2ubuntu2.2_amd64.deb
 LIBSSH_DEB = build/$(notdir $(LIBSSH_URL))
 DEBS = $(CHRONY_DEB) $(BIRD2_DEB) $(LIBSSH_DEB)
 
