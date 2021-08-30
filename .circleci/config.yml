@@ -440,13 +440,13 @@ workflows:
       - dctest-functions-release:
           requires:
             - generate-artifacts
-      - dctest-upgrade-release:
-          requires:
-            - generate-artifacts
+#      - dctest-upgrade-release:
+#          requires:
+#            - generate-artifacts
       - update-release:
           requires:
             - dctest-functions-release
-            - dctest-upgrade-release
+#            - dctest-upgrade-release
 
   # For updating `artifact_release.go` regularly, run the same job as `main` workflow.
   daily:
