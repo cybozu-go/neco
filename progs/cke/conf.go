@@ -52,8 +52,12 @@ func GenerateCKETemplate(ctx context.Context, st storage.Storage, name string, c
 	if name == "stage0" {
 		if r, ok := tmpl["reboot"].(map[string]interface{}); ok {
 			r["protected_namespaces"] = map[string]interface{}{
-				"matchLabels": map[string]interface{}{
-					"team": "neco",
+				"matchExpressions": []interface{}{
+					map[string]interface{}{
+						"key":      "development",
+						"operator": "NotIn",
+						"values":   []string{"true"},
+					},
 				},
 			}
 		}
