@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"time"
 
+	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/well"
 	"github.com/google/go-github/v35/github"
@@ -24,11 +26,33 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *ht
 		return err
 	}
 
-	resp, err := client.Get(downloadURL)
+	var data []byte
+	const retryCount = 10
+	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
+		func(ctx context.Context) error {
+			resp, err := client.Get(downloadURL)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+
+			if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+				return fmt.Errorf("status code %d is not a success", resp.StatusCode)
+			}
+
+			data, err = io.ReadAll(resp.Body)
+			return err
+		},
+		func(err error) {
+			log.Warn("deb: failed to download debian package", map[string]interface{}{
+				log.FnError:   err,
+				"downloadURL": downloadURL,
+			})
+		},
+	)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
 	f, err := os.CreateTemp("", "")
 	if err != nil {
@@ -36,7 +60,7 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *ht
 	}
 	defer f.Close()
 
-	_, err = io.Copy(f, resp.Body)
+	_, err = f.Write(data)
 	if err != nil {
 		return err
 	}
