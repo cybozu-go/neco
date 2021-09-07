@@ -67,7 +67,7 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *ht
 
 	command := []string{"sh", "-c", "dpkg -i " + f.Name() + " && rm " + f.Name()}
 	if background {
-		command = append([]string{"systemd-run", "-q"}, command...)
+		command = append([]string{"systemd-run", "-q", "--wait"}, command...)
 	}
 	return well.CommandContext(context.Background(), command[0], command[1:]...).Run()
 }
@@ -75,7 +75,7 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *ht
 func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage) error {
 	debVersion := pkg.Release[len("release-"):]
 	deb := fmt.Sprintf("/tmp/%s_%s_amd64.deb", pkg.Name, debVersion)
-	return well.CommandContext(context.Background(), "systemd-run", "-q", "dpkg", "-i", deb).Run()
+	return well.CommandContext(context.Background(), "systemd-run", "-q", "--wait", "dpkg", "-i", deb).Run()
 }
 
 // GetGitHubDownloadURL returns URL of specified Debian package hosted in GitHub releases.
