@@ -37,9 +37,11 @@ KUBECTL_NEAT_DLDIR := $(DOWNLOADDIR)/kubectl-neat-v$(KUBECTL_NEAT_VERSION)
 KUBECTL_NEAT_DOWNLOAD := $(KUBECTL_NEAT_DLDIR)/downloaded
 ACCURATE_DLDIR := $(DOWNLOADDIR)/accurate-v$(ACCURATE_VERSION)
 ACCURATE_DOWNLOAD := $(ACCURATE_DLDIR)/downloaded
+ALERTMANAGER_DLDIR := $(DOWNLOADDIR)/alertmanager-v$(ALERTMANAGER_VERSION)
+ALERTMANAGER_DOWNLOAD := $(ALERTMANAGER_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat accurate
+all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat accurate alertmanager
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -362,6 +364,23 @@ accurate: $(ACCURATE_DOWNLOAD)
 	cp $(ACCURATE_DLDIR)/kubectl-accurate-windows-amd64.exe $(WINDOWS_BINDIR)/kubectl-accurate.exe
 	cp $(ACCURATE_DLDIR)/kubectl-accurate-darwin-amd64 $(MAC_BINDIR)/kubectl-accurate
 	chmod +x $(MAC_BINDIR)/kubectl-accurate
+
+$(ALERTMANAGER_DOWNLOAD):
+	mkdir -p $(ALERTMANAGER_DLDIR)
+	$(WGET) -O $(ALERTMANAGER_DLDIR)/alertmanager-linux-amd64.tar.gz https://github.com/prometheus/alertmanager/releases/download/v$(ALERTMANAGER_VERSION)/alertmanager-$(ALERTMANAGER_VERSION).linux-amd64.tar.gz
+	$(WGET) -O $(ALERTMANAGER_DLDIR)/alertmanager-windows-amd64.tar.gz https://github.com/prometheus/alertmanager/releases/download/v$(ALERTMANAGER_VERSION)/alertmanager-$(ALERTMANAGER_VERSION).windows-amd64.tar.gz
+	$(WGET) -O $(ALERTMANAGER_DLDIR)/alertmanager-darwin-amd64.tar.gz https://github.com/prometheus/alertmanager/releases/download/v$(ALERTMANAGER_VERSION)/alertmanager-$(ALERTMANAGER_VERSION).darwin-amd64.tar.gz
+	touch $@
+
+.PHONY: alertmanager
+alertmanager: $(ALERTMANAGER_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	tar xzf $(ALERTMANAGER_DLDIR)/alertmanager-linux-amd64.tar.gz --strip-components=1 -C $(BINDIR) alertmanager-$(ALERTMANAGER_VERSION).linux-amd64/amtool alertmanager-$(ALERTMANAGER_VERSION).linux-amd64/LICENSE
+	mv $(BINDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	tar xzf $(ALERTMANAGER_DLDIR)/alertmanager-windows-amd64.tar.gz --strip-components=1 -C $(WINDOWS_BINDIR) alertmanager-$(ALERTMANAGER_VERSION).windows-amd64/amtool.exe alertmanager-$(ALERTMANAGER_VERSION).windows-amd64/LICENSE
+	mv $(WINDOWS_BINDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	tar xzf $(ALERTMANAGER_DLDIR)/alertmanager-darwin-amd64.tar.gz --strip-components=1 -C $(MAC_BINDIR) alertmanager-$(ALERTMANAGER_VERSION).darwin-amd64/amtool alertmanager-$(ALERTMANAGER_VERSION).darwin-amd64/LICENSE
+	mv $(MAC_BINDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
 
 .PHONY: clean
 clean:
