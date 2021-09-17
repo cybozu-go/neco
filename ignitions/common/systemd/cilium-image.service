@@ -1,0 +1,17 @@
+[Unit]
+Description=Load cilium container image
+Wants=network-online.target
+Requires=docker.service
+After=network-online.target wait-k8s-containerd-socket.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/bin/load-containerd-image {{ MyURL }}/api/v1/assets/{{ Metadata "cilium.img" }} {{ Metadata "cilium.ref" }}
+StandardOutput=journal+console
+StandardError=journal+console
+
+
+[Install]
+WantedBy=multi-user.target
+
