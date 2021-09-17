@@ -21,7 +21,7 @@ import (
 )
 
 var imageRepos = []string{
-	"ghcr.io/cybozu-go/coil",
+	"quay.io/ysksuzuki/coil",
 	"quay.io/cybozu/bird",
 	"quay.io/cybozu/chrony",
 	"quay.io/cybozu/etcd",
@@ -31,6 +31,8 @@ var imageRepos = []string{
 	"quay.io/cybozu/setup-hw",
 	"quay.io/cybozu/squid",
 	"quay.io/cybozu/vault",
+	"quay.io/cilium/cilium",
+	"quay.io/cilium/operator-generic",
 }
 
 func imageName(repo name.Repository) string {
