@@ -100,18 +100,14 @@ The value can be `bootstrap` (default), `upgrade`, `functions`, or `reboot`.
 
 `make test` accepts this variable.
 
-The value of `SUITE` is interpreted as a Go package name.  You can write
-a new test suite and specify its package name by `SUITE`.  As a side note,
-the forms of `./bootstrap`, `./upgrade`, `./functions`, and `./reboot` are more proper.
-
 ### `DATACENTER`
 
-When building the base of upgrading test with `SUITE=./bootstrap`,
+When building the base of upgrading test with `SUITE=bootstrap`,
 you can choose reproduced environment by specifying `DATACENTER` make
 variable.
 The value can be `staging` or `production`.
 
-This variable makes sense only when `SUITE=./bootstrap` is specified.
+This variable makes sense only when `SUITE=bootstrap` is specified.
 
 `make test` accepts this variable.
 
