@@ -24,8 +24,6 @@ ExecStart=/usr/bin/docker run \
   --cap-add=SYS_NICE \
   --ulimit memlock=-1 \
   --oom-kill-disable \
-  --cpu-rt-runtime=475000 \
-  --ulimit rtprio=99 \
   --read-only \
   -v /etc/chrony.conf:/etc/chrony.conf:ro \
   --mount type=tmpfs,destination=/run/chrony,tmpfs-mode=0700 \
