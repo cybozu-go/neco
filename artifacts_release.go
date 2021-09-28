@@ -8,7 +8,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "coil", Repository: "ghcr.io/cybozu-go/coil", Tag: "2.0.11", Private: false},
 		{Name: "bird", Repository: "quay.io/cybozu/bird", Tag: "2.0.8.2", Private: false},
 		{Name: "chrony", Repository: "quay.io/cybozu/chrony", Tag: "4.1.0.2", Private: false},
-		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.4.16.1", Private: false},
+		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.4.16.2", Private: false},
 		{Name: "promtail", Repository: "quay.io/cybozu/promtail", Tag: "2.3.0.1", Private: false},
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.7.1", Private: false},
 		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.9.5.4", Private: false},
