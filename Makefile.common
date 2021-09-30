@@ -11,21 +11,21 @@ STERN_VERSION = 1.17.0
 
 
 ## These should be updated regularly
-ARGOCD_VERSION = 2.0.3
+ARGOCD_VERSION = 2.1.2
 # Follow Argo CD installed kustomize version
-# https://github.com/cybozu/neco-containers/blob/main/argocd/Dockerfile#L22
-KUSTOMIZE_VERSION = 4.1.3
-MOCO_VERSION = 0.9.0
-NODE_EXPORTER_VERSION = 1.1.2
-TELEPORT_VERSION = 6.2.0
+# https://github.com/cybozu/neco-containers/blob/main/argocd/Dockerfile#L11
+KUSTOMIZE_VERSION = 4.2.0
+MOCO_VERSION = 0.10.5
+NODE_EXPORTER_VERSION = 1.2.2
+TELEPORT_VERSION = 6.2.11
 # kubeseal is a CLI tool for Sealed Secrets
 # https://github.com/bitnami-labs/sealed-secrets
 KUBESEAL_VERSION = 0.16.0
-LOGCLI_VERSION = 2.2.1
-YQ_VERSION = 4.9.3
+LOGCLI_VERSION = 2.3.0
+YQ_VERSION = 4.13.0
 KUBECTL_NEAT_VERSION = 2.0.3
 ACCURATE_VERSION = 0.1.0
-ALERTMANAGER_VERSION = 0.21.0
+ALERTMANAGER_VERSION = 0.23.0
 
 SUDO = sudo
 
