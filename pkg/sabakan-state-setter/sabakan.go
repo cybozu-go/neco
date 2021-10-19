@@ -13,7 +13,7 @@ import (
 	"github.com/cybozu-go/sabakan/v2"
 	sabac "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/cybozu-go/sabakan/v2/gql/graph/model"
-	"github.com/vektah/gqlparser/gqlerror"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 const machineTypeLabelName = "machine-type"
