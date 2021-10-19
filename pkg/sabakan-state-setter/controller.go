@@ -14,7 +14,7 @@ import (
 	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
 	"github.com/cybozu-go/well"
 	"github.com/robfig/cron/v3"
-	"github.com/vektah/gqlparser/gqlerror"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/clientv3/concurrency"
 )

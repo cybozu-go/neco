@@ -61,7 +61,7 @@ options:
             - system:kube-scheduler
         - level: RequestResponse
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
+      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
       - "--audit-log-maxbackup=10"
@@ -71,7 +71,7 @@ options:
         read_only: false
   kube-controller-manager:
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
+      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -84,9 +84,6 @@ options:
         strictARP: true
       featureGates:
         EphemeralContainers: true
-        GenericEphemeralVolume: true
-        TTLAfterFinished: true
-        CronJobControllerV2: true
         MixedProtocolLBService: true
         ServiceLBNodePortControl: true
   kube-scheduler:
@@ -121,7 +118,7 @@ options:
               topologyKey: topology.kubernetes.io/zone
               whenUnsatisfiable: ScheduleAnyway
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,GenericEphemeralVolume=true,TTLAfterFinished=true,CronJobControllerV2=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
+      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -133,9 +130,6 @@ options:
       containerLogMaxFiles: 10
       featureGates:
         EphemeralContainers: true
-        GenericEphemeralVolume: true
-        TTLAfterFinished: true
-        CronJobControllerV2: true
         MixedProtocolLBService: true
         ServiceLBNodePortControl: true
     cri_endpoint: unix:///var/run/k8s-containerd.sock
