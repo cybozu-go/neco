@@ -21,9 +21,9 @@ spec:
   cluster-id: dev0
   spine: 2
   rack:
-    - cs: 1
+    - cs: 2
       ss: 1
-    - cs: 1
+    - cs: 2
       ss: 1
     - cs: 2
       ss: 1
@@ -44,7 +44,7 @@ kind: Node
 type: cs
 spec:
   cpu: 12
-  memory: 28G
+  memory: 20G
   disk-count: 6
   tpm: true
 ---
