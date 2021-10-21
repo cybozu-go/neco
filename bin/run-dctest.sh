@@ -51,7 +51,7 @@ cat >run.sh <<EOF
 
 # mkfs and mount local SSD on /var/scratch
 NUM_DEVICES=\$(ls /dev/nvme0n*|wc -l)
-mdadm --create /dev/md0 -l 0 --raid-devices=\${NUM_DEVICES} /dev/nvme0n*
+mdadm --create /dev/md0 -l stripe --raid-devices=\${NUM_DEVICES} /dev/nvme0n*
 mkfs -t ext4 -F /dev/md0
 mkdir -p /var/scratch
 mount -t ext4 /dev/md0 /var/scratch
