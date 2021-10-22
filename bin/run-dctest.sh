@@ -24,6 +24,10 @@ for CANCELED in ${CANCELED_LIST}; do
 done
 
 # Create GCE instance
+LOCAL_SSD=
+for i in $(seq 1 ${LOCAL_SSD_COUNT}); do
+  LOCAL_SSD="--local-ssd interface=nvme ${LOCAL_SSD}"
+done
 $GCLOUD compute instances delete ${INSTANCE_NAME} --zone=${ZONE} --quiet || true
 $GCLOUD compute instances create ${INSTANCE_NAME} \
   --zone ${ZONE} \
@@ -31,10 +35,7 @@ $GCLOUD compute instances create ${INSTANCE_NAME} \
   --image vmx-enabled \
   --boot-disk-type ${DISK_TYPE} \
   --boot-disk-size ${BOOT_DISK_SIZE} \
-  --local-ssd interface=nvme \
-  --local-ssd interface=nvme \
-  --local-ssd interface=nvme \
-  --local-ssd interface=nvme \
+  ${LOCAL_SSD} \
   --labels=${LABEL_REPO},${LABEL_REF},${LABEL_JOB}
 
 # Wait for boot of GCE instance
