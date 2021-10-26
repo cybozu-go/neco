@@ -21,8 +21,6 @@ ExecStart=/usr/bin/docker run \
   --cap-add=NET_RAW \
   --ulimit memlock=-1 \
   --oom-kill-disable \
-  --cpu-rt-runtime=475000 \
-  --ulimit rtprio=99 \
   --read-only \
   -v /etc/bird:/etc/bird:ro \
   --mount type=tmpfs,destination=/run/bird,tmpfs-mode=0700 \
