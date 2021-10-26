@@ -24,7 +24,7 @@ Environment="HTTPS_PROXY=http://{{ index .Spec.IPv4 0 }}:30128"
 Environment="HTTP_PROXY={{ Metadata "proxy_url" }}"
 Environment="HTTPS_PROXY={{ Metadata "proxy_url" }}"
 {{ end }}
-Environment=DOCKER_OPTS="--bridge=none --iptables=false --ip-masq=false --dns=127.0.0.1 --cpu-rt-runtime=950000"
+Environment=DOCKER_OPTS="--bridge=none --iptables=false --ip-masq=false --dns=127.0.0.1"
 LimitMEMLOCK=infinity
 
 # the default is not to use systemd for cgroups because the delegate issues still
