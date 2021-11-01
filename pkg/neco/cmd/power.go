@@ -112,9 +112,9 @@ func power(ctx context.Context, action, bmcAddr string) error {
 	var resetType redfish.ResetType
 	switch action {
 	case "start":
-		resetType = redfish.OnResetType
+		resetType = redfish.ForceOnResetType
 	case "stop":
-		resetType = redfish.GracefulShutdownResetType
+		resetType = redfish.ForceOffResetType
 	case "restart":
 		// Use 'ForceRestart' because some machines don't support 'GracefulRestart'.
 		resetType = redfish.ForceRestartResetType
