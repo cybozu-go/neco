@@ -414,9 +414,10 @@ func (c *Controller) machineRetire(ctx context.Context, machines []*machine) map
 			continue
 		}
 
-		log.Info("retirement; encryption keys have been deleted successfully", map[string]interface{}{
+		log.Info("retirement; deleting encryption keys has been executed successfully", map[string]interface{}{
 			"serial": m.Serial,
 			"ipv4":   m.IPv4Addr,
+			"cmdlog": string(cmdOutput),
 		})
 		newStateMap[m.Serial] = sabakan.StateRetired
 	}
@@ -473,9 +474,10 @@ func (c *Controller) machineShutdown(ctx context.Context) {
 			continue
 		}
 
-		log.Info("shutdown successfully", map[string]interface{}{
+		log.Info("shutdown has been executed successfully", map[string]interface{}{
 			"serial": m.Serial,
 			"ipv4":   m.IPv4Addr,
+			"cmdlog": string(cmdOutput),
 		})
 	}
 	if len(errorMachines) != 0 {
