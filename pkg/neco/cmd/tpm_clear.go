@@ -17,20 +17,19 @@ import (
 const machineTypeLabelName = "machine-type"
 
 const (
-	tpmClearLogicTypeNotImplemented = iota
-	tpmClearLogicTypeNothing
+	tpmClearLogicTypePowerOff = iota // If clearing TPM is not supported, shutdown the machine.
 	tpmClearLogicTypeDellRedfish
 )
 
 var tpmClearForce bool
 
 var supportedMachineTypes = map[string]int{
-	"qemu":        tpmClearLogicTypeNothing,     // Placemat VM. Clear logic is not implemented on placemat.
-	"r640-boot-1": tpmClearLogicTypeNothing,     // Dell, TPM 1.2
+	"qemu":        tpmClearLogicTypePowerOff,    // Placemat VM. Clear logic is not implemented on placemat.
+	"r640-boot-1": tpmClearLogicTypePowerOff,    // Dell, TPM 1.2
 	"r640-boot-2": tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
-	"r640-cs-1":   tpmClearLogicTypeNothing,     // Dell, TPM 1.2
+	"r640-cs-1":   tpmClearLogicTypePowerOff,    // Dell, TPM 1.2
 	"r640-cs-2":   tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
-	"r740xd-ss-1": tpmClearLogicTypeNothing,     // Dell, TPM 1.2
+	"r740xd-ss-1": tpmClearLogicTypePowerOff,    // Dell, TPM 1.2
 	"r740xd-ss-2": tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
 }
 
@@ -165,19 +164,23 @@ IP is one of the IP addresses owned by the machine.`,
 			machineType := machine.Spec.Labels[machineTypeLabelName]
 			logicType, ok := supportedMachineTypes[machineType]
 			if !ok {
-				return fmt.Errorf("unknown machine type: machine-type=%s", machineType)
+				err := power(ctx, "stop", machine.Spec.BMC.IPv4)
+				log.Warn("unknown machine type; shutdown", map[string]interface{}{
+					"serial":       "machine.Spec.Serial",
+					"node":         "machine.Spec.IPv4[0]",
+					"machine_type": "machineType",
+					"result":       err,
+				})
+				return errors.New("unknown machine type")
 			}
 
 			switch logicType {
-			case tpmClearLogicTypeNotImplemented:
-				return fmt.Errorf("clear logic is not implemented: machine-type=%s", machineType)
-			case tpmClearLogicTypeNothing:
-				log.Info("nothing to do", nil)
-				return nil
+			case tpmClearLogicTypePowerOff:
+				return power(ctx, "stop", machine.Spec.BMC.IPv4)
 			case tpmClearLogicTypeDellRedfish:
 				return dellRedfishClearTpm(ctx, machine.Spec.BMC.IPv4)
 			default:
-				return fmt.Errorf("unknown logic type: %d", logicType)
+				panic(fmt.Sprintf("unreachable; unknown logic type: %d", logicType))
 			}
 		})
 		well.Stop()
