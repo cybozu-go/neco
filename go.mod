@@ -38,8 +38,8 @@ require (
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20211004023027-19e2e70e4f50
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
-	k8s.io/api v0.21.5
-	k8s.io/apimachinery v0.21.5
+	k8s.io/api v0.21.6
+	k8s.io/apimachinery v0.21.6
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -136,6 +136,6 @@ require (
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/klog/v2 v2.8.0 // indirect
+	k8s.io/klog/v2 v2.9.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
 )
