@@ -164,12 +164,14 @@ IP is one of the IP addresses owned by the machine.`,
 			machineType := machine.Spec.Labels[machineTypeLabelName]
 			logicType, ok := supportedMachineTypes[machineType]
 			if !ok {
+				err := power(ctx, "stop", machine.Spec.BMC.IPv4)
 				log.Warn("unknown machine type; shutdown", map[string]interface{}{
-					"serial":       machine.Spec.Serial,
-					"node":         machine.Spec.IPv4[0],
-					"machine_type": machineType,
+					"serial":       "machine.Spec.Serial",
+					"node":         "machine.Spec.IPv4[0]",
+					"machine_type": "machineType",
+					"result":       err,
 				})
-				return power(ctx, "stop", machine.Spec.BMC.IPv4)
+				return errors.New("unknown machine type")
 			}
 
 			switch logicType {
@@ -178,7 +180,7 @@ IP is one of the IP addresses owned by the machine.`,
 			case tpmClearLogicTypeDellRedfish:
 				return dellRedfishClearTpm(ctx, machine.Spec.BMC.IPv4)
 			default:
-				panic(fmt.Sprintf("unknown logic type: %d", logicType))
+				panic(fmt.Sprintf("unreachable; unknown logic type: %d", logicType))
 			}
 		})
 		well.Stop()
