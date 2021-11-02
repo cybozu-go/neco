@@ -266,26 +266,24 @@ cke: $(CKE_DOWNLOAD)
 
 $(MOCO_DOWNLOAD):
 	mkdir -p $(MOCO_DLDIR)
-	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco-linux-amd64 https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-linux-amd64
-	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco.exe https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-windows-amd64.exe
-	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco-darwin-amd64 https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco-darwin-amd64
-	$(WGET) -O $(MOCO_DLDIR)/LICENSE          https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/LICENSE
-	$(WGET) -O $(MOCO_DLDIR)/README.md        https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/README.md
+	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco_linux_amd64.tar.gz   https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco_v$(MOCO_VERSION)_linux_amd64.tar.gz
+	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco_windows_amd64.tar.gz https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco_v$(MOCO_VERSION)_windows_amd64.tar.gz
+	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco_darwin_amd64.tar.gz  https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco_v$(MOCO_VERSION)_darwin_amd64.tar.gz
+	$(WGET) -O $(MOCO_DLDIR)/LICENSE   https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/LICENSE
+	$(WGET) -O $(MOCO_DLDIR)/README.md https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/README.md
 	touch $@
 
 .PHONY: moco
 moco: $(MOCO_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(MOCO_DLDIR)/kubectl-moco-linux-amd64 $(BINDIR)/kubectl-moco
-	chmod +x $(BINDIR)/kubectl-moco
+	tar xzf $(MOCO_DLDIR)/kubectl-moco_linux_amd64.tar.gz   -C $(BINDIR)         kubectl-moco
+	tar xzf $(MOCO_DLDIR)/kubectl-moco_windows_amd64.tar.gz -C $(WINDOWS_BINDIR) kubectl-moco.exe
+	tar xzf $(MOCO_DLDIR)/kubectl-moco_darwin_amd64.tar.gz  -C $(MAC_BINDIR)     kubectl-moco
 	cp $(MOCO_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(MOCO_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(MOCO_DLDIR)/kubectl-moco.exe $(WINDOWS_BINDIR)
 	cp $(MOCO_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(MOCO_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(MOCO_DLDIR)/kubectl-moco-darwin-amd64 $(MAC_BINDIR)/kubectl-moco
-	chmod +x $(MAC_BINDIR)/kubectl-moco
 	cp $(MOCO_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(MOCO_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(MOCO_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 	cp $(MOCO_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(LOGCLI_DOWNLOAD):
