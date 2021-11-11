@@ -341,19 +341,25 @@ kubectl-neat: $(KUBECTL_NEAT_DOWNLOAD)
 
 $(ACCURATE_DOWNLOAD):
 	mkdir -p $(ACCURATE_DLDIR)
-	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate-linux-amd64 https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate-linux-amd64
-	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate-windows-amd64.exe https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate-windows-amd64.exe
-	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate-darwin-amd64 https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate-darwin-amd64
+	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate_linux_amd64.tar.gz https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate_v$(ACCURATE_VERSION)_linux_amd64.tar.gz
+	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate_windows_amd64.tar.gz https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate_v$(ACCURATE_VERSION)_windows_amd64.tar.gz
+	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate_darwin_amd64.tar.gz https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate_v$(ACCURATE_VERSION)_darwin_amd64.tar.gz
+	$(WGET) -O $(ACCURATE_DLDIR)/LICENSE   https://raw.githubusercontent.com/cybozu-go/accurate/v$(ACCURATE_VERSION)/LICENSE
+	$(WGET) -O $(ACCURATE_DLDIR)/README.md https://raw.githubusercontent.com/cybozu-go/accurate/v$(ACCURATE_VERSION)/README.md
 	touch $@
 
 .PHONY: accurate
 accurate: $(ACCURATE_DOWNLOAD)
-	mkdir -p $(BINDIR) $(WINDOWS_BINDIR) $(MAC_BINDIR)
-	cp $(ACCURATE_DLDIR)/kubectl-accurate-linux-amd64 $(BINDIR)/kubectl-accurate
-	chmod +x $(BINDIR)/kubectl-accurate
-	cp $(ACCURATE_DLDIR)/kubectl-accurate-windows-amd64.exe $(WINDOWS_BINDIR)/kubectl-accurate.exe
-	cp $(ACCURATE_DLDIR)/kubectl-accurate-darwin-amd64 $(MAC_BINDIR)/kubectl-accurate
-	chmod +x $(MAC_BINDIR)/kubectl-accurate
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	tar xzf $(ACCURATE_DLDIR)/kubectl-accurate_linux_amd64.tar.gz   -C $(BINDIR)         kubectl-accurate
+	tar xzf $(ACCURATE_DLDIR)/kubectl-accurate_windows_amd64.tar.gz -C $(WINDOWS_BINDIR) kubectl-accurate.exe
+	tar xzf $(ACCURATE_DLDIR)/kubectl-accurate_darwin_amd64.tar.gz  -C $(MAC_BINDIR)     kubectl-accurate
+	cp $(ACCURATE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(ACCURATE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(ACCURATE_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(ACCURATE_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(ACCURATE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(ACCURATE_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(ALERTMANAGER_DOWNLOAD):
 	mkdir -p $(ALERTMANAGER_DLDIR)
