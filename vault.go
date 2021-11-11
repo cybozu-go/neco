@@ -10,8 +10,22 @@ import (
 	"time"
 
 	"github.com/hashicorp/vault/api"
-	"github.com/howeyc/gopass"
+	"golang.org/x/term"
 )
+
+func readPasswordFromStdTerminal(prompt string) (string, error) {
+	if !term.IsTerminal(int(os.Stdin.Fd())) || !term.IsTerminal(int(os.Stdout.Fd())) {
+		return "", fmt.Errorf("stdin and stdout are not terminals")
+	}
+
+	fmt.Print(prompt)
+	p, err := term.ReadPassword(int(os.Stdin.Fd()))
+	fmt.Println()
+	if err != nil {
+		return "", err
+	}
+	return string(p), nil
+}
 
 // WaitVaultLeader waits for Vault to elect a new leader after restart.
 //
@@ -73,11 +87,11 @@ func VaultClient(lrn int) (*api.Client, error) {
 		return nil, err
 	}
 	username = username[0 : len(username)-1]
-	pass, err := gopass.GetPasswdPrompt("Vault password: ", false, os.Stdin, os.Stdout)
+
+	password, err := readPasswordFromStdTerminal("Vault password: ")
 	if err != nil {
 		return nil, err
 	}
-	password := string(pass)
 
 	secret, err := vc.Logical().Write("/auth/userpass/login/"+username,
 		map[string]interface{}{"password": password})
