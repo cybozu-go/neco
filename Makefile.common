@@ -14,7 +14,7 @@ ARGOCD_VERSION = 2.1.2
 # Follow Argo CD installed kustomize version
 # https://github.com/cybozu/neco-containers/blob/main/argocd/Dockerfile#L11
 KUSTOMIZE_VERSION = 4.2.0
-MOCO_VERSION = 0.10.7
+MOCO_VERSION = 0.10.8
 NODE_EXPORTER_VERSION = 1.2.2
 TELEPORT_VERSION = 6.2.11
 # kubeseal is a CLI tool for Sealed Secrets
