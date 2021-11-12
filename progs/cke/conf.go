@@ -49,12 +49,12 @@ func GenerateCKETemplate(ctx context.Context, st storage.Storage, name string, c
 		return nil, err
 	}
 
-	if name == "stage0" {
+	if name == "gcp0" || name == "stage0" {
 		if r, ok := tmpl["reboot"].(map[string]interface{}); ok {
 			r["protected_namespaces"] = map[string]interface{}{
 				"matchExpressions": []interface{}{
 					map[string]interface{}{
-						"key":      "development",
+						"key":      "ignore-pdb",
 						"operator": "NotIn",
 						"values":   []string{"true"},
 					},

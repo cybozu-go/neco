@@ -274,7 +274,7 @@ reboot:
   command: ["test"]
   protected_namespaces:
     matchExpressions:
-      - key: development
+      - key: ignore-pdb
         operator: NotIn
         values: ["true"]
 `
