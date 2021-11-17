@@ -29,6 +29,9 @@ ExecStart=/usr/bin/docker run \
   --mount type=tmpfs,destination=/run/chrony,tmpfs-mode=0700 \
   --mount type=tmpfs,destination=/var/lib/chrony,tmpfs-mode=0755 \
    {{ Metadata "chrony.ref" }}
+ExecStartPost=/bin/sh -c 'while ! docker container inspect chrony; do sleep 1; done'
+ExecStartPost=/bin/sh -c 'echo $(docker inspect chrony | jq ".[0].State.Pid") > /sys/fs/cgroup/cgroup.procs'
+ExecStartPost=/bin/sh -c 'chrt --pid --fifo 99 $(docker inspect chrony | jq ".[0].State.Pid")'
 
 [Install]
 WantedBy=multi-user.target
