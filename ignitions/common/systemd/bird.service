@@ -25,7 +25,7 @@ ExecStart=/usr/bin/docker run \
   -v /etc/bird:/etc/bird:ro \
   --mount type=tmpfs,destination=/run/bird,tmpfs-mode=0700 \
   {{ Metadata "bird.ref" }}
-ExecStartPost=/bin/sh -c 'while ! docker container inspect bird; do sleep 1; done'
+ExecStartPost=/bin/sh -c 'while ! docker container inspect bird >/dev/null; do sleep 1; done'
 ExecStartPost=/bin/sh -c 'echo $(docker inspect bird | jq ".[0].State.Pid") > /sys/fs/cgroup/cgroup.procs'
 ExecStartPost=/bin/sh -c 'chrt --pid --rr 50 $(docker inspect bird | jq ".[0].State.Pid")'
 
