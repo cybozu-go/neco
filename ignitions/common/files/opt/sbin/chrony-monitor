@@ -1,4 +1,6 @@
-#!/bin/sh -e
+#!/bin/bash -e
+
+set -o pipefail
 
 mkdir -p /var/lib/textfile-collector
 SYSTEM_TIME=$(docker exec chrony chronyc -c tracking | awk -F',' '{print $5}')
