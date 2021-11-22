@@ -1,0 +1,8 @@
+[Unit]
+Description=export chrony metrics
+Requires=chronyd.service chrony-wait.service
+After=chronyd.service chrony-wait.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/chrony-monitor

@@ -24,6 +24,7 @@ files:
   - /opt/bin/load-docker-image
   - /opt/bin/wait-k8s-containerd-socket
   - /opt/sbin/bird-wait
+  - /opt/sbin/chrony-monitor
   - /opt/sbin/chrony-wait
   - /opt/sbin/neco-wait-dhcp-online
   - /opt/sbin/setup-bmc-user
@@ -114,6 +115,9 @@ systemd:
     enabled: true
   - name: udev-trigger.service
   - name: udev-trigger.timer
+    enabled: true
+  - name: chrony-monitor.service
+  - name: chrony-monitor.timer
     enabled: true
 networkd:
   - 01-eth0.network
