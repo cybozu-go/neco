@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+mkdir -p /var/lib/textfile-collector
+SYSTEM_TIME=$(docker exec chrony chronyc -c tracking | awk -F',' '{print $5}')
+
+echo '# TYPE chrony_monitor_tracking_system_time gauge' > /var/lib/textfile-collector/chrony-monitor.prom.$$
+echo "chrony_monitor_tracking_system_time ${SYSTEM_TIME}" > /var/lib/textfile-collector/chrony-monitor.prom.$$
+mv /var/lib/textfile-collector/chrony-monitor.prom.$$ /var/lib/textfile-collector/chrony-monitor.prom
