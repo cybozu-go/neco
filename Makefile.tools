@@ -2,7 +2,7 @@ include Makefile.common
 
 MAKEFLAGS += -j$(shell nproc)
 CURL=curl -Lsf
-WGET=wget --retry-connrefused --no-verbose
+WGET=wget --retry-on-http-error=503 --retry-connrefused --no-verbose
 
 ## Cache
 NODE_EXPORTER_DLDIR := $(DOWNLOADDIR)/node_exporter-v$(NODE_EXPORTER_VERSION)
