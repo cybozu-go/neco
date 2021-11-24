@@ -4,6 +4,7 @@ set -o pipefail
 
 mkdir -p /var/lib/textfile-collector
 SYSTEM_TIME=$(docker exec chrony chronyc -c tracking | awk -F',' '{print $5}')
+METRIC=chrony_monitor_tracking_system_time_seconds
 
-printf '# TYPE chrony_monitor_tracking_system_time gauge\nchrony_monitor_tracking_system_time %s\n' ${SYSTEM_TIME} > /var/lib/textfile-collector/chrony-monitor.prom.$$
+printf '# TYPE %s gauge\n%s %s\n' ${METRIC} ${METRIC} ${SYSTEM_TIME} > /var/lib/textfile-collector/chrony-monitor.prom.$$
 mv /var/lib/textfile-collector/chrony-monitor.prom.$$ /var/lib/textfile-collector/chrony-monitor.prom
