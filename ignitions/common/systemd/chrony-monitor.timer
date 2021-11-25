@@ -1,5 +1,7 @@
 [Unit]
 Description=monitor chrony periodically
+Wants=chronyd.service chrony-wait.service
+After=chronyd.service chrony-wait.service
 
 [Timer]
 OnActiveSec=30
