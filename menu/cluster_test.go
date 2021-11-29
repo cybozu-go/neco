@@ -110,7 +110,7 @@ func assertTargets(t *testing.T, testdataDir, resultDir string) {
 		"bird_rack1-tor2.conf",
 		"bird_spine1.conf",
 		"bird_spine2.conf",
-		"chrony.conf",
+		"chrony-ign.yml",
 		"machines.yml",
 		"network.yml",
 		"seed_boot-0.yml",

@@ -8,7 +8,7 @@ spec:
   core-external: 10.0.3.0/24
   core-operation: 10.0.4.0/24
   proxy: 10.0.49.3
-  ntp: ["172.16.4.65", "172.16.4.66"]
+  ntp: 172.16.4.64/29
   pod: 10.64.0.0/14
   exposed:
     loadbalancer: 10.72.32.0/20
@@ -33,6 +33,10 @@ url: https://cloud-images.ubuntu.com/releases/16.04/release/ubuntu-16.04-server-
 kind: Image
 name: docker-image
 file: ./docker.img
+---
+kind: Image
+name: flatcar
+file: flatcar_production_qemu_image.img
 ---
 kind: Node
 type: boot

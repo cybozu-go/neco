@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/sabakan/v2"
 )
 
@@ -79,6 +80,17 @@ type ToRArgs struct {
 	SpineAddresses []string
 }
 
+type SetupIPTablesArgs struct {
+	Internet string
+	NTP      string
+}
+
+type ChronyIgnitionArgs struct {
+	NTPServers []string
+	Gateway    string
+	ChronyTag  string
+}
+
 func (c *Cluster) generateConfFiles(inputDir, outputDir string) error {
 	if err := c.generateBirdCoreConf(outputDir); err != nil {
 		return err
@@ -104,7 +116,7 @@ func (c *Cluster) generateConfFiles(inputDir, outputDir string) error {
 		return err
 	}
 
-	if err := generateChronyConf(outputDir); err != nil {
+	if err := c.generateChronyIgnition(outputDir); err != nil {
 		return err
 	}
 
@@ -261,8 +273,12 @@ func (c *Cluster) generateNetworkYaml(outputDir string) error {
 }
 
 func (c *Cluster) generateSetupScripts(outputDir string) error {
+	args := &SetupIPTablesArgs{
+		Internet: c.network.global.String(),
+		NTP:      c.network.ntp.String(),
+	}
 	if err := exportExecutableFile("/setup-iptables.sh",
-		filepath.Join(outputDir, "setup-iptables"), c.network.global.String()); err != nil {
+		filepath.Join(outputDir, "setup-iptables"), args); err != nil {
 		return err
 	}
 
@@ -279,9 +295,25 @@ func (c *Cluster) generateSetupScripts(outputDir string) error {
 	return nil
 }
 
-func generateChronyConf(outputDir string) error {
-	confFile := "/chrony.conf"
-	return copyFile(confFile, filepath.Join(outputDir, confFile))
+func (c *Cluster) generateChronyIgnition(outputDir string) error {
+	img, err := neco.CurrentArtifacts.FindContainerImage("chrony")
+	if err != nil {
+		return err
+	}
+
+	args := &ChronyIgnitionArgs{
+		Gateway:   c.core.coreNTPAddress.IP.String(),
+		ChronyTag: img.Tag,
+	}
+	for _, ntpServer := range c.core.ntpServers {
+		args.NTPServers = append(args.NTPServers, ntpServer.String())
+	}
+	if err := export("/chrony-ign.yml",
+		filepath.Join(outputDir, "chrony-ign.yml"), args); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func generateSquidConf(outputDir string) error {

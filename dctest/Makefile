@@ -15,10 +15,14 @@ else
 endif
 MACHINES_FILE ?= $(abspath $(OUTPUT)/machines.yml)
 ADDRESS_POOLS_FILE = $(abspath ./address_pools.yaml)
+CURL = curl -fsL
+CT_VERSION = 0.9.0
+CT := $(shell pwd)/bin/ct
 
 export PLACEMAT GINKGO SUITE MACHINES_FILE ADDRESS_POOLS_FILE SUDO
 
 CUSTOM_UBUNTU = cybozu-ubuntu-20.04-server-cloudimg-amd64.img
+FLATCAR_IMAGE := flatcar_production_qemu_image.img
 
 # non-configuration variables
 SABAKAN_DIR = $(OUTPUT)/sabakan
@@ -34,7 +38,7 @@ else ifdef DATACENTER
 else
   DEB = $(GENERATED_DEB)
 endif
-PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(BMC_USER)
+PLACEMAT_DEPS = $(OUTPUT)/$(CUSTOM_UBUNTU) $(OUTPUT)/$(FLATCAR_IMAGE) $(BMC_USER) $(OUTPUT)/chrony.ign
 TEST_DEPS = $(DEB)
 SSH_PRIVKEY = $(realpath ./dctest_key)
 BOB_PRIVKEY = $(realpath ./bob_key)
@@ -59,10 +63,19 @@ $(OUTPUT)/$(CUSTOM_UBUNTU):
 	mkdir -p $(OUTPUT)
 	mv ../installer/build/$(CUSTOM_UBUNTU) $@
 
+$(OUTPUT)/$(FLATCAR_IMAGE):
+	mkdir -p $(OUTPUT)
+	$(CURL) -o $@.bz2 https://stable.release.flatcar-linux.net/amd64-usr/current/$(FLATCAR_IMAGE).bz2
+	bunzip2 -q $@.bz2
+
 # SABAKAN_CONTENTS
 $(DHCP_JSON):
 	cd ..; go install ./pkg/placemat-menu
 	$(GOPATH)/bin/placemat-menu -f $(MENU) -o $(OUTPUT)
+
+$(OUTPUT)/chrony.ign: $(DHCP_JSON) $(CT)
+	mkdir -p $(OUTPUT)
+	$(CT) -in-file=$(OUTPUT)/chrony-ign.yml -pretty -out-file=$@
 
 $(BMC_USER): bmc-user.json $(DHCP_JSON)
 	cp $< $@
@@ -87,7 +100,6 @@ run-placemat-inside-container: $(PLACEMAT_DEPS)
 	$(SUDO) rm -rf $(PLACEMAT_DATADIR)
 	$(SUDO) rm -rf $(VM_SHARED_DIR)
 	$(SUDO) cp $(OUTPUT)/bird*.conf /etc/bird
-	$(SUDO) cp $(OUTPUT)/chrony.conf /etc/chrony
 	$(SUDO) cp $(OUTPUT)/squid.conf /etc/squid
 	$(SUDO) sh -c "$(PLACEMAT) $(abspath $(OUTPUT)/cluster.yml) > /var/log/placemat.log  2>&1" &
 	@echo 'Placemat is running.  To kill it, do "make stop-placemat-inside-container".'
@@ -101,7 +113,6 @@ placemat: $(PLACEMAT_DEPS)
 	$(SUDO) rm -rf $(PLACEMAT_DATADIR)
 	$(SUDO) rm -rf $(VM_SHARED_DIR)
 	$(SUDO) cp $(OUTPUT)/bird*.conf /etc/bird
-	$(SUDO) cp $(OUTPUT)/chrony.conf /etc/chrony
 	$(SUDO) cp $(OUTPUT)/squid.conf /etc/squid
 	$(SUDO) systemd-run --unit=placemat.service $(PLACEMAT) $(abspath output/cluster.yml)
 	@echo 'Placemat is running.  To kill it, do "make stop".'
@@ -117,6 +128,7 @@ stop:
 .PHONY: clean
 clean:
 	rm -rf $(OUTPUT)
+	rm -rf ./bin
 	cd ../ && $(MAKE) clean
 
 .PHONY: setup
@@ -124,3 +136,9 @@ setup:
 	cd ../ && time -p $(MAKE) setup
 	cd ../installer && time -p $(MAKE) setup
 	go install github.com/onsi/ginkgo/ginkgo
+
+$(CT):
+	mkdir -p bin
+	$(CURL) -o ct https://github.com/coreos/container-linux-config-transpiler/releases/download/v$(CT_VERSION)/ct-v$(CT_VERSION)-x86_64-unknown-linux-gnu
+	chmod +x ct
+	$(SUDO) mv ct $@
