@@ -16,7 +16,7 @@ ARGOCD_VERSION = 2.1.2
 KUSTOMIZE_VERSION = 4.2.0
 MOCO_VERSION = 0.10.9
 NODE_EXPORTER_VERSION = 1.2.2
-TELEPORT_VERSION = 6.2.11
+TELEPORT_VERSION = 7.3.3
 # kubeseal is a CLI tool for Sealed Secrets
 # https://github.com/bitnami-labs/sealed-secrets
 KUBESEAL_VERSION = 0.16.0
