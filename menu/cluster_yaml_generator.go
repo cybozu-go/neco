@@ -104,16 +104,12 @@ func (c *Cluster) appendNetworks(spec *types.ClusterSpec) {
 			},
 		)
 	}
-	if c.core.ntpAddresses != nil {
-		for i := range c.core.ntpAddresses {
-			spec.Networks = append(spec.Networks,
-				&types.NetworkSpec{
-					Kind: "Network",
-					Name: fmt.Sprintf("core-ntp%d", i),
-					Type: "internal",
-				},
-			)
-		}
+	if c.core.coreNTPAddress != nil {
+		spec.Networks = append(spec.Networks, &types.NetworkSpec{
+			Kind: "Network",
+			Name: "core-ntp",
+			Type: "internal",
+		})
 	}
 
 	// BMC Network
@@ -210,6 +206,8 @@ func (c *Cluster) appendNodes(spec *types.ClusterSpec, sabakanDir string) {
 			spec.Nodes = append(spec.Nodes, createWorkerNode(rack, ss, ss.spec))
 		}
 	}
+
+	spec.Nodes = append(spec.Nodes, createChronyNode())
 }
 
 func createWorkerNode(rack *rack, node *node, spec *nodeSpec) *types.NodeSpec {
@@ -249,6 +247,27 @@ func createWorkerNode(rack *rack, node *node, spec *nodeSpec) *types.NodeSpec {
 	}
 
 	return nodeSpec
+}
+
+func createChronyNode() *types.NodeSpec {
+	return &types.NodeSpec{
+		Kind:         "Node",
+		Name:         "chrony",
+		Interfaces:   []string{"core-ntp"},
+		CPU:          2,
+		Memory:       "4G",
+		TPM:          false,
+		IgnitionFile: "chrony.ign",
+		Volumes: []types.NodeVolumeSpec{
+			{
+				Kind:        "image",
+				Name:        "root",
+				Image:       "flatcar",
+				CopyOnWrite: true,
+				Cache:       "writeback",
+			},
+		},
+	}
 }
 
 func (c *Cluster) appendNetworkNamespaces(spec *types.ClusterSpec) {
@@ -293,13 +312,6 @@ func (c *Cluster) appendNetworkNamespaces(spec *types.ClusterSpec) {
 					"-N",
 				},
 			},
-			{
-				Name: "chrony",
-				Command: []string{
-					"/usr/sbin/chronyd",
-					"-d",
-				},
-			},
 		},
 		InitScripts: []string{"setup-iptables"},
 	}
@@ -309,13 +321,11 @@ func (c *Cluster) appendNetworkNamespaces(spec *types.ClusterSpec) {
 			Addresses: []string{fmt.Sprintf("%s/32", c.core.proxyAddress.String())},
 		})
 	}
-	if c.core.ntpAddresses != nil {
-		for i, ntp := range c.core.ntpAddresses {
-			core.Interfaces = append(core.Interfaces, &types.NetNSInterfaceSpec{
-				Network:   fmt.Sprintf("core-ntp%d", i),
-				Addresses: []string{fmt.Sprintf("%s/32", ntp.String())},
-			})
-		}
+	if c.core.coreNTPAddress != nil {
+		core.Interfaces = append(core.Interfaces, &types.NetNSInterfaceSpec{
+			Network:   "core-ntp",
+			Addresses: []string{c.core.coreNTPAddress.String()},
+		})
 	}
 	for i, spine := range c.core.spineAddresses {
 		core.Interfaces = append(core.Interfaces, &types.NetNSInterfaceSpec{
