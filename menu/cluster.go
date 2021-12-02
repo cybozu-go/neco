@@ -31,6 +31,10 @@ const (
 
 	offsetBMCHost = 1
 	offsetBMCCore = 2
+
+	offsetNTP1    = 1
+	offsetNTP2    = 2
+	offsetNTPCore = 3
 )
 
 // Cluster is the config file generator for Placemat
@@ -62,7 +66,7 @@ type network struct {
 	coreOperation  *net.IPNet
 	spineTor       net.IP
 	proxy          net.IP
-	ntp            []net.IP
+	ntp            *net.IPNet
 	pod            *net.IPNet
 	bastion        *net.IPNet
 	loadBalancer   *net.IPNet
@@ -110,7 +114,8 @@ type core struct {
 	operationAddress *net.IPNet
 	externalAddress  *net.IPNet
 	proxyAddress     net.IP
-	ntpAddresses     []net.IP
+	coreNTPAddress   *net.IPNet
+	ntpServers       []*net.IPNet
 }
 
 type spine struct {
@@ -214,7 +219,11 @@ func NewCluster(menu *menu) (*Cluster, error) {
 			operationAddress: addToIPNet(network.coreOperation, offsetOperationCore),
 			externalAddress:  addToIPNet(network.coreExternal, offsetExternalCore),
 			proxyAddress:     network.proxy,
-			ntpAddresses:     network.ntp,
+			coreNTPAddress:   addToIPNet(network.ntp, offsetNTPCore),
+			ntpServers: []*net.IPNet{
+				addToIPNet(network.ntp, offsetNTP1),
+				addToIPNet(network.ntp, offsetNTP2),
+			},
 		},
 		operation: &operation{coreAddress: addToIPNet(network.coreOperation, offsetOperation)},
 		external:  &external{coreAddress: addToIPNet(network.coreExternal, offsetExternal)},

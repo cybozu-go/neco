@@ -74,6 +74,7 @@ spec:
   core-external: 10.0.3.0/24
   core-operation: 10.0.4.0/24
   proxy: 10.0.49.3
+  ntp: 172.16.4.64/29
   pod: 10.64.0.0/14
   exposed:
     bastion: 10.72.48.0/26
@@ -162,7 +163,9 @@ example is assigned addresses when `10.0.1.0` is specified:
 - `proxy`: The IP address of the HTTP/HTTPS proxy server to
     the Internet running on the core switch.
 
-- `ntp`: The IP addresses of the NTP servers running on the core switch.
+- `ntp`: This is the network address assigned to the ntp network. Placemat-menu connects an ntp VM where a chrony process runs 
+         and the core switch with this ntp network. It picks the first two hosts, attaches them to the ntp VM and picks the third host,
+         attaches it to the core switch.
 
 - `pod`: The network address advertised to outside of the cluster. Different from `exposed`, `pod` network will not accept connections from outside.
 

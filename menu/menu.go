@@ -108,12 +108,9 @@ func (n *networkMenu) newNetworkMenu(menuFileDir string) (*network, error) {
 	}
 
 	if len(n.Spec.Ntp) != 0 {
-		for _, address := range n.Spec.Ntp {
-			ntp := net.ParseIP(address)
-			if ntp == nil {
-				return nil, errors.New("Invalid IP address of ntp: " + address)
-			}
-			network.ntp = append(network.ntp, ntp)
+		_, network.ntp, err = parseNetworkCIDR(n.Spec.Ntp)
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -142,17 +139,17 @@ func (n *networkMenu) newNetworkMenu(menuFileDir string) (*network, error) {
 }
 
 type networkSpec struct {
-	IpamConfig    string   `json:"ipam-config"`
-	AsnBase       int      `json:"asn-base"`
-	Internet      string   `json:"internet"`
-	SpineTor      string   `json:"spine-tor"`
-	CoreSpine     string   `json:"core-spine"`
-	CoreExternal  string   `json:"core-external"`
-	CoreOperation string   `json:"core-operation"`
-	Proxy         string   `json:"proxy"`
-	Ntp           []string `json:"ntp"`
-	Pod           string   `json:"pod"`
-	Exposed       exposed  `json:"exposed"`
+	IpamConfig    string  `json:"ipam-config"`
+	AsnBase       int     `json:"asn-base"`
+	Internet      string  `json:"internet"`
+	SpineTor      string  `json:"spine-tor"`
+	CoreSpine     string  `json:"core-spine"`
+	CoreExternal  string  `json:"core-external"`
+	CoreOperation string  `json:"core-operation"`
+	Proxy         string  `json:"proxy"`
+	Ntp           string  `json:"ntp"`
+	Pod           string  `json:"pod"`
+	Exposed       exposed `json:"exposed"`
 }
 
 type exposed struct {
