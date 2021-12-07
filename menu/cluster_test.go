@@ -41,7 +41,10 @@ func TestGenerate(t *testing.T) {
 		t.Errorf("failed to NewCluster: %v", err)
 	}
 
-	if err := cluster.Generate(inputDir, outputDir); err != nil {
+	opt := &GenerateOption{
+		ChronyTag: "999.999.999",
+	}
+	if err := cluster.Generate(inputDir, outputDir, opt); err != nil {
 		t.Errorf("failed to Generate: %v", err)
 	}
 

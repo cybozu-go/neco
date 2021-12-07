@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/menu"
 )
 
@@ -47,12 +48,19 @@ func run() error {
 		return err
 	}
 
+	img, err := neco.CurrentArtifacts.FindContainerImage("chrony")
+	if err != nil {
+		return err
+	}
+	opt := &menu.GenerateOption{
+		ChronyTag: img.Tag,
+	}
+
 	cluster, err := menu.NewCluster(m)
 	if err != nil {
 		return err
 	}
-
-	if err := cluster.Generate(inputDir, outputDir); err != nil {
+	if err := cluster.Generate(inputDir, outputDir, opt); err != nil {
 		return err
 	}
 
