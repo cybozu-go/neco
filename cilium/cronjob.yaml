@@ -1,0 +1,13 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: hubble-generate-certs
+  namespace: kube-system
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - image: quay.io/cybozu/cilium-certgen
+            name: certgen

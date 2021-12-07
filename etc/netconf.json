@@ -1,6 +1,6 @@
 {
-  "cniVersion": "0.4.0",
-  "name": "k8s-pod-network",
+  "cniVersion": "0.3.1",
+  "name": "generic-veth",
   "plugins": [
     {
       "type": "coil",
@@ -11,6 +11,9 @@
       "capabilities": {
         "portMappings": true
       }
+    },
+    {
+      "type": "cilium-cni"
     }
   ]
 }

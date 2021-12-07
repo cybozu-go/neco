@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cilium-operator
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+      - image: quay.io/cybozu/cilium-operator-generic
+        name: cilium-operator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hubble-relay
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+      - image: quay.io/cybozu/hubble-relay
+        name: hubble-relay

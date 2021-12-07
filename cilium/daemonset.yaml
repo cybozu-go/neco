@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cilium
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+      - image: quay.io/cybozu/cilium
+        name: cilium-agent
+      initContainers:
+      - image: quay.io/cybozu/cilium
+        name: mount-cgroup
+      - image: quay.io/cybozu/cilium
+        name: clean-cilium-state

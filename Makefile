@@ -4,6 +4,12 @@
 include Makefile.common
 
 COIL_VERSION := $(shell awk '/"coil"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
+CILIUM_TAG := $(shell awk '/"cilium"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
+CILIUM_OPERATOR_TAG := $(shell awk '/"cilium-operator-generic"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
+HUBBLE_RELAY_TAG := $(shell awk '/"hubble-relay"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
+CILIUM_CERTGEN_TAG := $(shell awk '/"cilium-certgen"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
+HELM_VERSION = 3.7.1
+BIN_DIR := $(shell pwd)/bin
 LSB_DISTRIB_RELEASE := $(shell . /etc/lsb-release ; echo $$DISTRIB_RELEASE)
 
 FAKEROOT = fakeroot
@@ -31,13 +37,14 @@ OPDEB_DOCNAMES = argocd kubectl kubeseal logcli stern teleport moco alertmanager
 all:
 	@echo "Specify one of these targets:"
 	@echo
-	@echo "    update-coil - update Coil manifests under etc/."
-	@echo "    start-etcd  - run etcd on localhost."
-	@echo "    stop-etcd   - stop etcd."
-	@echo "    test        - run single host tests."
-	@echo "    deb         - build Debian package."
-	@echo "    tools       - build neco-operation-cli packages."
-	@echo "    setup       - install dependencies."
+	@echo "    update-coil   - update Coil manifests under etc/."
+	@echo "    update-cilium - update Cilium manifests under etc/."
+	@echo "    start-etcd    - run etcd on localhost."
+	@echo "    stop-etcd     - stop etcd."
+	@echo "    test          - run single host tests."
+	@echo "    deb           - build Debian package."
+	@echo "    tools         - build neco-operation-cli packages."
+	@echo "    setup         - install dependencies."
 
 .PHONY: update-coil
 update-coil:
@@ -49,6 +56,42 @@ update-coil:
 	cp coil/* /tmp/work-coil/cke-patch
 	bin/kustomize build /tmp/work-coil/cke-patch > etc/coil.yaml
 	rm -rf /tmp/work-coil
+
+.PHONY: update-cilium
+update-cilium: helm
+	$(HELM) repo add cilium https://helm.cilium.io/ > /dev/null
+	$(HELM) repo update
+	$(HELM) template cilium cilium/cilium --version $(shell echo $(CILIUM_TAG) | cut -d \. -f 1,2,3) \
+		--namespace=kube-system \
+		--set devices="{eth+,eno1+,eno2+}" \
+		--set cni.chainingMode=generic-veth \
+		--set cni.customConf=true \
+		--set datapathMode=veth \
+		--set tunnel=disabled \
+		--set enableIPv4Masquerade=false \
+		--set policyEnforcementMode=default \
+		--set policyAuditMode=true \
+		--set kubeProxyReplacement=disabled \
+		--set hubble.relay.enabled=true \
+		--set hubble.tls.auto.method=cronJob \
+		--set prometheus.enabled=true \
+		--set operator.prometheus.enabled=true \
+		--set hubble.metrics.enabled="{dns,drop:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip,tcp,flow:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip,icmp,http}" \
+		--set rollOutCiliumPods=true > cilium/upstream.yaml
+	sed -i -E '/name:.*cilium$$/!b;n;s/newTag:.*$$/newTag: $(CILIUM_TAG)/' cilium/kustomization.yaml
+	sed -i -E '/name:.*cilium-operator-generic$$/!b;n;s/newTag:.*$$/newTag: $(CILIUM_OPERATOR_TAG)/' cilium/kustomization.yaml
+	sed -i -E '/name:.*hubble-relay$$/!b;n;s/newTag:.*$$/newTag: $(HUBBLE_RELAY_TAG)/' cilium/kustomization.yaml
+	sed -i -E '/name:.*cilium-certgen$$/!b;n;s/newTag:.*$$/newTag: $(CILIUM_CERTGEN_TAG)/' cilium/kustomization.yaml
+	bin/kustomize build cilium > etc/cilium.yaml
+
+HELM := $(shell pwd)/bin/helm
+.PHONY: helm
+helm: $(HELM) ## Download helm locally if necessary.
+
+$(HELM):
+	mkdir -p $(BIN_DIR)
+	curl -L -sS https://get.helm.sh/helm-v$(HELM_VERSION)-linux-amd64.tar.gz \
+	  | tar xz -C $(BIN_DIR) --strip-components 1 linux-amd64/helm
 
 .PHONY: start-etcd
 start-etcd:

@@ -15,6 +15,10 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.9.2", Private: true},
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "5.2.2", Private: false},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.8.2.1", Private: false},
+		{Name: "cilium", Repository: "quay.io/cybozu/cilium", Tag: "1.11.0.1", Private: false},
+		{Name: "cilium-operator-generic", Repository: "quay.io/cybozu/cilium-operator-generic", Tag: "1.11.0.1", Private: false},
+		{Name: "hubble-relay", Repository: "quay.io/cybozu/hubble-relay", Tag: "1.11.0.3", Private: false},
+		{Name: "cilium-certgen", Repository: "quay.io/cybozu/cilium-certgen", Tag: "0.1.5.1", Private: false},
 	},
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.3.0"},

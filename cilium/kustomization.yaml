@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - upstream.yaml
+  - aggregate_cluster_role.yaml
+patchesStrategicMerge:
+  - deployment.yaml
+  - daemonset.yaml
+  - cronjob.yaml
+  - job.yaml
+images:
+  - name: quay.io/cybozu/cilium
+    newTag: 1.11.0.1
+  - name: quay.io/cybozu/cilium-operator-generic
+    newTag: 1.11.0.1
+  - name: quay.io/cybozu/hubble-relay
+    newTag: 1.11.0.3
+  - name: quay.io/cybozu/cilium-certgen
+    newTag: 0.1.5.1
