@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/sabakan/v2"
 )
 
@@ -91,7 +90,7 @@ type ChronyIgnitionArgs struct {
 	ChronyTag  string
 }
 
-func (c *Cluster) generateConfFiles(inputDir, outputDir string) error {
+func (c *Cluster) generateConfFiles(inputDir, outputDir string, opt *GenerateOption) error {
 	if err := c.generateBirdCoreConf(outputDir); err != nil {
 		return err
 	}
@@ -116,7 +115,7 @@ func (c *Cluster) generateConfFiles(inputDir, outputDir string) error {
 		return err
 	}
 
-	if err := c.generateChronyIgnition(outputDir); err != nil {
+	if err := c.generateChronyIgnition(outputDir, opt.ChronyTag); err != nil {
 		return err
 	}
 
@@ -295,15 +294,10 @@ func (c *Cluster) generateSetupScripts(outputDir string) error {
 	return nil
 }
 
-func (c *Cluster) generateChronyIgnition(outputDir string) error {
-	img, err := neco.CurrentArtifacts.FindContainerImage("chrony")
-	if err != nil {
-		return err
-	}
-
+func (c *Cluster) generateChronyIgnition(outputDir, chronyTag string) error {
 	args := &ChronyIgnitionArgs{
 		Gateway:   c.core.coreNTPAddress.IP.String(),
-		ChronyTag: img.Tag,
+		ChronyTag: chronyTag,
 	}
 	for _, ntpServer := range c.core.ntpServers {
 		args.NTPServers = append(args.NTPServers, ntpServer.String())

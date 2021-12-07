@@ -50,6 +50,11 @@ type Cluster struct {
 	image     []*types.ImageSpec
 }
 
+// GenerateOption is a option for Cluster.Generate().
+type GenerateOption struct {
+	ChronyTag string
+}
+
 type network struct {
 	ipamConfigFile string
 	nodeBase       net.IP
@@ -347,7 +352,7 @@ func NewCluster(menu *menu) (*Cluster, error) {
 }
 
 // Generate generates config files for Placemat
-func (c *Cluster) Generate(inputDir, outputDir string) error {
+func (c *Cluster) Generate(inputDir, outputDir string, opt *GenerateOption) error {
 	f, err := os.Create(filepath.Join(outputDir, "cluster.yml"))
 	if err != nil {
 		return err
@@ -361,7 +366,7 @@ func (c *Cluster) Generate(inputDir, outputDir string) error {
 		return err
 	}
 
-	return c.generateConfFiles(inputDir, outputDir)
+	return c.generateConfFiles(inputDir, outputDir, opt)
 }
 
 func parseNetworkCIDR(s string) (net.IP, *net.IPNet, error) {
