@@ -41,7 +41,7 @@ func testRetireServer() {
 		Expect(targetSerial).NotTo(BeEmpty())
 
 		By("retiring the target node")
-		execSafeAt(bootServers[0], "kubectl", "drain", targetNodename, "--delete-local-data=true", "--ignore-daemonsets=true")
+		execSafeAt(bootServers[0], "kubectl", "drain", targetNodename, "--delete-emptydir-data=true", "--ignore-daemonsets=true")
 		execSafeAt(bootServers[0], "sabactl", "machines", "set-state", targetSerial, "retiring")
 
 		By("waiting until the node's state becomes retired")
