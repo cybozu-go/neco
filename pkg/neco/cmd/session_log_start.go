@@ -103,14 +103,17 @@ func sessionLogStartRun(cmd *cobra.Command, args []string) {
 			duration := time.Since(startTime)
 			durationStr := duration.Truncate(time.Second).String()
 			user, err := osuser.Current()
-			if err != nil {
-				user.Username = "unknown"
+			var username string
+			if err == nil {
+				username = user.Username
+			} else {
+				username = "unknown"
 			}
 			hostname, err := os.Hostname()
 			if err != nil {
 				hostname = "unknown"
 			}
-			filename := fmt.Sprintf("session-log-%s-%s-%d-%s-%s.tar.gz", startTimeStr, hostname, os.Getpid(), durationStr, user.Username)
+			filename := fmt.Sprintf("session-log-%s-%s-%d-%s-%s.tar.gz", startTimeStr, hostname, os.Getpid(), durationStr, username)
 			cmdline := []string{"/bin/tar", "zcf", filename}
 			cmdline = append(cmdline, tarMemberFiles...)
 			err = exec.CommandContext(ctx, cmdline[0], cmdline[1:]...).Run()
