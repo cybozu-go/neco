@@ -50,7 +50,7 @@ func testUnbound() {
 		By("executing getent hosts www.cybozu.com in test pod")
 		Eventually(func() error {
 			_, _, err := execAt(bootServers[0], "kubectl", "exec", "test",
-				"getent", "hosts", "www.cybozu.com")
+				"--", "getent", "hosts", "www.cybozu.com")
 			return err
 		}).Should(Succeed())
 
