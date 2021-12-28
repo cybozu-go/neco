@@ -23,7 +23,6 @@ Features include:
   - [`env`](#env)
   - [`slack`](#slack)
   - [`proxy`](#proxy)
-  - [`dns`](#dns)
   - [`quay-username`](#quay-username)
   - [`quay-password`](#quay-password)
   - [`check-update-interval`](#check-update-interval)
@@ -294,10 +293,6 @@ Specify [Slack WebHook](https://api.slack.com/incoming-webhooks) URL.
 
 Specify HTTP proxy server to access Internet.
 It will be used by `neco-updater` and `neco-worker`.
-
-### `dns`
-
-Specify DNS server address for boot servers.
 
 ### `quay-username`
 
