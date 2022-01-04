@@ -9,7 +9,10 @@ import (
 	"time"
 
 	"github.com/cybozu-go/log"
+	"github.com/cybozu-go/neco"
+	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/sabakan/v2"
+	sabaclient "github.com/cybozu-go/sabakan/v2/client"
 	"github.com/spf13/cobra"
 )
 
@@ -93,6 +96,25 @@ func rebootAndWaitMain(target string) error {
 	log.Info("rebooting a machine", map[string]interface{}{
 		"serial_or_ip": target,
 	})
+
+	saba, err := sabaclient.NewClient(neco.SabakanLocalEndpoint, ext.LocalHTTPClient())
+	if err != nil {
+		log.Error("failed to create sabakan client", map[string]interface{}{
+			"serial_or_ip": target,
+			log.FnError:    err,
+		})
+		return err
+	}
+
+	err = saba.MachinesSetState(context.Background(), machine.Spec.Serial, sabakan.StateUpdating.String())
+	if err != nil {
+		log.Error("failed to set sabakan state to updating", map[string]interface{}{
+			"serial_or_ip": target,
+			log.FnError:    err,
+		})
+		return err
+	}
+
 	err = power(context.Background(), "restart", machine.Spec.BMC.IPv4)
 	if err != nil {
 		log.Error("failed to reboot via IPMI", map[string]interface{}{
