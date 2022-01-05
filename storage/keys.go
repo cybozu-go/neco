@@ -26,7 +26,6 @@ const (
 	KeyConfigPrefix             = "config/"
 	KeyNotificationSlack        = "config/notification/slack"
 	KeyProxy                    = "config/proxy"
-	KeyDNS                      = "config/dns"
 	KeyQuayUsername             = "config/quay-username"
 	KeyQuayPassword             = "config/quay-password"
 	KeyEnv                      = "config/env"

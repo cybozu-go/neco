@@ -22,7 +22,6 @@ Possible keys are:
     env                       - "staging" or "prod".  Default is "staging".
     slack                     - Slack WebHook URL.
     proxy                     - HTTP proxy server URL to access Internet for boot servers.
-    dns                       - DNS server address for boot servers.
     quay-username             - Username to authenticate to quay.io.
     check-update-interval     - Polling interval for checking new neco release.
     worker-timeout            - Timeout value to wait for workers.
@@ -35,7 +34,6 @@ Possible keys are:
 		"env",
 		"slack",
 		"proxy",
-		"dns",
 		"quay-username",
 		"check-update-interval",
 		"worker-timeout",
@@ -71,12 +69,6 @@ Possible keys are:
 					return err
 				}
 				fmt.Println(proxy)
-			case "dns":
-				dns, err := st.GetDNSConfig(ctx)
-				if err != nil {
-					return err
-				}
-				fmt.Println(dns)
 			case "quay-username":
 				username, err := st.GetQuayUsername(ctx)
 				if err != nil {
