@@ -15,8 +15,8 @@ import (
 	"github.com/cybozu-go/well"
 	"github.com/robfig/cron/v3"
 	"github.com/vektah/gqlparser/v2/gqlerror"
-	"go.etcd.io/etcd/clientv3"
-	"go.etcd.io/etcd/clientv3/concurrency"
+	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
 // Controller is sabakan-state-setter controller

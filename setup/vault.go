@@ -14,7 +14,7 @@ import (
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
 	"github.com/hashicorp/vault/api"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 const vaultPath = "/usr/local/bin/vault"
