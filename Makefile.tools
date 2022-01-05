@@ -181,25 +181,25 @@ kubeseal: $(KUBESEAL_DOWNLOAD)
 	cp $(KUBESEAL_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(STERN_DOWNLOAD):
-	mkdir -p $(STERN_DLDIR)
-	$(WGET) -O - https://github.com/stern/stern/releases/download/v$(STERN_VERSION)/stern_$(STERN_VERSION)_linux_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)
-	$(WGET) -O - https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_$(STERN_VERSION)_windows_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)
-	$(WGET) -O - https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_$(STERN_VERSION)_darwin_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)
+	mkdir -p $(STERN_DLDIR)/linux_amd64 $(STERN_DLDIR)/windows_amd64 $(STERN_DLDIR)/darwin_amd64
+	$(WGET) -O - https://github.com/stern/stern/releases/download/v$(STERN_VERSION)/stern_$(STERN_VERSION)_linux_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)/linux_amd64
+	$(WGET) -O - https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_$(STERN_VERSION)_windows_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)/windows_amd64
+	$(WGET) -O - https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_$(STERN_VERSION)_darwin_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)/darwin_amd64
 	$(WGET) -O $(STERN_DLDIR)/README.md https://raw.githubusercontent.com/stern/stern/v$(STERN_VERSION)/README.md
 	touch $@
 
 .PHONY: stern
 stern: $(STERN_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_linux_amd64/stern $(BINDIR)/stern
+	cp $(STERN_DLDIR)/linux_amd64/stern $(BINDIR)/stern
 	chmod +x $(BINDIR)/stern
-	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(STERN_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(STERN_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_windows_amd64/stern.exe $(WINDOWS_BINDIR)/stern.exe
-	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(STERN_DLDIR)/windows_amd64/stern.exe $(WINDOWS_BINDIR)/stern.exe
+	cp $(STERN_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(STERN_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_darwin_amd64/stern $(MAC_BINDIR)/stern
-	cp $(STERN_DLDIR)/stern_$(STERN_VERSION)_darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(STERN_DLDIR)/darwin_amd64/stern $(MAC_BINDIR)/stern
+	cp $(STERN_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
 	cp $(STERN_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUSTOMIZE_DOWNLOAD):
