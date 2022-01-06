@@ -49,16 +49,6 @@ func (s Storage) GetProxyConfig(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyProxy)
 }
 
-// PutDNSConfig stores dns config to storage.
-func (s Storage) PutDNSConfig(ctx context.Context, dns string) error {
-	return s.put(ctx, KeyDNS, dns)
-}
-
-// GetDNSConfig returns dns config from storage.
-func (s Storage) GetDNSConfig(ctx context.Context) (string, error) {
-	return s.get(ctx, KeyDNS)
-}
-
 // PutQuayUsername stores proxy config to storage.
 func (s Storage) PutQuayUsername(ctx context.Context, username string) error {
 	return s.put(ctx, KeyQuayUsername, username)
