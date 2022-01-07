@@ -61,7 +61,7 @@ options:
             - system:kube-scheduler
         - level: RequestResponse
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
+      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true"
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
       - "--audit-log-maxbackup=10"
@@ -71,7 +71,7 @@ options:
         read_only: false
   kube-controller-manager:
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
+      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -85,7 +85,6 @@ options:
       featureGates:
         EphemeralContainers: true
         MixedProtocolLBService: true
-        ServiceLBNodePortControl: true
   kube-scheduler:
     config:
       apiVersion: kubescheduler.config.k8s.io/v1beta1
@@ -118,7 +117,7 @@ options:
               topologyKey: topology.kubernetes.io/zone
               whenUnsatisfiable: ScheduleAnyway
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true,ServiceLBNodePortControl=true"
+      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -132,7 +131,6 @@ options:
       featureGates:
         EphemeralContainers: true
         MixedProtocolLBService: true
-        ServiceLBNodePortControl: true
     cri_endpoint: unix:///var/run/k8s-containerd.sock
     extra_args:
       - "--containerd=/var/run/k8s-containerd.sock"
