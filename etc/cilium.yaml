@@ -586,6 +586,7 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      annotations: null
       labels:
         k8s-app: hubble-relay
     spec:
@@ -627,6 +628,7 @@ spec:
         - mountPath: /var/lib/hubble-relay/tls
           name: tls
           readOnly: true
+      priorityClassName: null
       restartPolicy: Always
       serviceAccount: hubble-relay
       serviceAccountName: hubble-relay
@@ -986,7 +988,7 @@ kind: Job
 metadata:
   labels:
     k8s-app: hubble-generate-certs
-  name: hubble-generate-certs-4a617efdba
+  name: hubble-generate-certs-af8ec3c1b5
   namespace: kube-system
 spec:
   template:

@@ -629,7 +629,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-agent
-        image: "quay.io/cilium/cilium:v1.11.0@sha256:ea677508010800214b0b5497055f38ed3bff57963fa2399bcb1c69cf9476453a"
+        image: "quay.io/cybozu/cilium:1.11.0.1"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
@@ -754,7 +754,7 @@ spec:
       # Required to mount cgroup2 filesystem on the underlying Kubernetes node.
       # We use nsenter command with host's cgroup and mount namespaces enabled.
       - name: mount-cgroup
-        image: "quay.io/cilium/cilium:v1.11.0@sha256:ea677508010800214b0b5497055f38ed3bff57963fa2399bcb1c69cf9476453a"
+        image: "quay.io/cybozu/cilium:1.11.0.1"
         imagePullPolicy: IfNotPresent
         env:
         - name: CGROUP_ROOT
@@ -781,7 +781,7 @@ spec:
         securityContext:
           privileged: true
       - name: clean-cilium-state
-        image: "quay.io/cilium/cilium:v1.11.0@sha256:ea677508010800214b0b5497055f38ed3bff57963fa2399bcb1c69cf9476453a"
+        image: "quay.io/cybozu/cilium:1.11.0.1"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
@@ -932,7 +932,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-operator
-        image: quay.io/cilium/operator-generic:v1.11.0@sha256:b522279577d0d5f1ad7cadaacb7321d1b172d8ae8c8bc816e503c897b420cfe3
+        image: quay.io/cybozu/cilium-operator-generic:1.11.0.1
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
@@ -1022,7 +1022,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
-          image: "quay.io/cilium/hubble-relay:v1.11.0@sha256:306ce38354a0a892b0c175ae7013cf178a46b79f51c52adb5465d87f14df0838"
+          image: "quay.io/cybozu/hubble-relay:1.11.0.3"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
@@ -1083,7 +1083,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hubble-generate-certs-4a617efdba
+  name: hubble-generate-certs-af8ec3c1b5
   namespace: kube-system
   labels:
     k8s-app: hubble-generate-certs
@@ -1095,7 +1095,7 @@ spec:
     spec:
       containers:
         - name: certgen
-          image: "quay.io/cilium/certgen:v0.1.5"
+          image: "quay.io/cybozu/cilium-certgen:0.1.5.1"
           imagePullPolicy: IfNotPresent
           command:
             - "/usr/bin/cilium-certgen"
@@ -1137,7 +1137,7 @@ spec:
         spec:
           containers:
             - name: certgen
-              image: "quay.io/cilium/certgen:v0.1.5"
+              image: "quay.io/cybozu/cilium-certgen:0.1.5.1"
               imagePullPolicy: IfNotPresent
               command:
                 - "/usr/bin/cilium-certgen"

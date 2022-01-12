@@ -1,0 +1,30 @@
+devices: "eth+ eno1+ eno2+"
+cni:
+  chainingMode: "generic-veth"
+  customConf: true
+datapathMode: "veth"
+tunnel: "disabled"
+enableIPv4Masquerade: false
+policyEnforcementMode: "default"
+policyAuditMode: true
+kubeProxyReplacement: "disabled"
+hubble:
+  relay:
+    enabled: true
+  tls:
+    auto:
+      method: "cronJob"
+  metrics:
+    enabled:
+      - "dns"
+      - "drop:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip"
+      - "tcp"
+      - "flow:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip"
+      - "icmp"
+      - "http" 
+prometheus:
+  enabled: true
+operator:
+  prometheus:
+    enabled: true
+rollOutCiliumPods: true

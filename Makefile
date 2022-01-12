@@ -63,25 +63,19 @@ update-cilium: helm
 	$(HELM) repo update
 	$(HELM) template cilium cilium/cilium --version $(shell echo $(CILIUM_TAG) | cut -d \. -f 1,2,3) \
 		--namespace=kube-system \
-		--set devices="{eth+,eno1+,eno2+}" \
-		--set cni.chainingMode=generic-veth \
-		--set cni.customConf=true \
-		--set datapathMode=veth \
-		--set tunnel=disabled \
-		--set enableIPv4Masquerade=false \
-		--set policyEnforcementMode=default \
-		--set policyAuditMode=true \
-		--set kubeProxyReplacement=disabled \
-		--set hubble.relay.enabled=true \
-		--set hubble.tls.auto.method=cronJob \
-		--set prometheus.enabled=true \
-		--set operator.prometheus.enabled=true \
-		--set hubble.metrics.enabled="{dns,drop:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip,tcp,flow:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip,icmp,http}" \
-		--set rollOutCiliumPods=true > cilium/upstream.yaml
-	sed -i -E '/name:.*cilium$$/!b;n;s/newTag:.*$$/newTag: $(CILIUM_TAG)/' cilium/kustomization.yaml
-	sed -i -E '/name:.*cilium-operator-generic$$/!b;n;s/newTag:.*$$/newTag: $(CILIUM_OPERATOR_TAG)/' cilium/kustomization.yaml
-	sed -i -E '/name:.*hubble-relay$$/!b;n;s/newTag:.*$$/newTag: $(HUBBLE_RELAY_TAG)/' cilium/kustomization.yaml
-	sed -i -E '/name:.*cilium-certgen$$/!b;n;s/newTag:.*$$/newTag: $(CILIUM_CERTGEN_TAG)/' cilium/kustomization.yaml
+		--values cilium/values.yaml \
+		--set image.repository=quay.io/cybozu/cilium \
+		--set image.tag=$(CILIUM_TAG) \
+		--set image.useDigest=false \
+		--set operator.image.repository=quay.io/cybozu/cilium-operator \
+		--set operator.image.tag=$(CILIUM_OPERATOR_TAG) \
+		--set operator.image.useDigest=false \
+		--set hubble.relay.image.repository=quay.io/cybozu/hubble-relay \
+		--set hubble.relay.image.tag=$(HUBBLE_RELAY_TAG) \
+		--set hubble.relay.image.useDigest=false \
+		--set certgen.image.repository=quay.io/cybozu/cilium-certgen \
+		--set certgen.image.tag=$(CILIUM_CERTGEN_TAG) \
+		--set certgen.image.useDigest=false > cilium/upstream.yaml
 	bin/kustomize build cilium > etc/cilium.yaml
 
 HELM := $(shell pwd)/bin/helm
