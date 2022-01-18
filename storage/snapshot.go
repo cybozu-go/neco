@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/cybozu-go/neco"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // Snapshot is the up-to-date snapshot of etcd database.

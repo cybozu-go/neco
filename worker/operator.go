@@ -11,7 +11,7 @@ import (
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/google/go-containerregistry/pkg/authn"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // Operator installs or updates programs

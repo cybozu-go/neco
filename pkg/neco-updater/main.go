@@ -11,7 +11,7 @@ import (
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/neco/updater"
 	"github.com/cybozu-go/well"
-	"go.etcd.io/etcd/clientv3/concurrency"
+	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
 var (

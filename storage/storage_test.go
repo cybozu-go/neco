@@ -7,7 +7,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage/test"
 	"github.com/google/go-cmp/cmp"
-	"go.etcd.io/etcd/clientv3/concurrency"
+	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
 func testContainerTag(t *testing.T) {
