@@ -12,7 +12,7 @@ import (
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/neco/storage/test"
 	"github.com/cybozu-go/well"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 func TestEtcdCompaction(t *testing.T) {

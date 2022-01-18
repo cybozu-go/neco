@@ -6,7 +6,7 @@ import (
 	"errors"
 
 	"github.com/cybozu-go/neco"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // WaitRequest waits for a UpdateRequest to be written to etcd and returns it.

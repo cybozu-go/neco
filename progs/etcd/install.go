@@ -10,7 +10,7 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	version "github.com/hashicorp/go-version"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var leastClusterVersion = version.Must(version.NewVersion("3.1.0"))

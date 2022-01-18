@@ -13,7 +13,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/progs/cke"
 	"github.com/cybozu-go/neco/storage"
-	"go.etcd.io/etcd/clientv3/concurrency"
+	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
 func (o *operator) StopCKE(ctx context.Context, req *neco.UpdateRequest) error {
