@@ -2,7 +2,7 @@
 Description=Serf container on docker
 Wants=network-online.target exec-setup-hw.service
 Requires=setup-serf.service docker.service time-sync.target
-After=setup-serf.service docker.service coil-image.service squid-image.service network-online.target exec-setup-hw.service time-sync.target
+After=setup-serf.service docker.service coil-image.service cilium-image.service cilium-operator-generic-image.service hubble-relay-image.service cilium-certgen-image.service squid-image.service network-online.target exec-setup-hw.service time-sync.target
 # cke images
 After=cke-image-cke-tools.service cke-image-coredns.service cke-image-etcd.service cke-image-kubernetes.service cke-image-pause.service cke-image-unbound.service
 

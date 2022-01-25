@@ -17,6 +17,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 )
@@ -242,6 +244,17 @@ func testUpgrade() {
 					return checkVersionInDeployment("kube-system", "coil-controller", newImage)
 				case "squid":
 					return checkVersionInDeployment("internet-egress", "squid", newImage)
+				case "cilium":
+					return checkVersionInDaemonSet("kube-system", "cilium", newImage)
+				case "cilium-operator-generic":
+					return checkVersionInDeployment("kube-system", "cilium-operator", newImage)
+				case "hubble-relay":
+					return checkVersionInDeployment("kube-system", "hubble-relay", newImage)
+				case "cilium-certgen":
+					if err := checkVersionInCronJob("kube-system", "hubble-generate-certs", newImage); err != nil {
+						return err
+					}
+					return checkVersionInJob("kube-system", "hubble-generate-certs", newImage)
 				default:
 					for _, h := range bootServers {
 						if _, _, err := execAt(h, "neco", "is-running", img.Name); err != nil {
@@ -431,6 +444,64 @@ func checkVersionInDeployment(namespace, deploymentName, image string) error {
 	if actual := deploy.Status.UpdatedReplicas; actual != desired {
 		return fmt.Errorf("%s's %s is not updated completely. desired replicas is %d, but actual updated is %d",
 			deploymentName, image, desired, actual)
+	}
+	return nil
+}
+
+func checkVersionInCronJob(namespace, cjName, image string) error {
+	stdout, _, err := execAt(bootServers[0], "kubectl", "get", "cj", "-n", namespace, cjName, "-o", "json")
+	if err != nil {
+		return err
+	}
+
+	cj := new(batchv1beta1.CronJob)
+	err = json.Unmarshal(stdout, cj)
+	if err != nil {
+		return err
+	}
+	found := false
+	for _, c := range cj.Spec.JobTemplate.Spec.Template.Spec.Containers {
+		if c.Image == image {
+			found = true
+		}
+	}
+	if !found {
+		return fmt.Errorf("%s not found in %s", image, cjName)
+	}
+	return nil
+}
+
+func checkVersionInJob(namespace, jobPrefix, image string) error {
+	stdout, _, err := execAt(bootServers[0], "kubectl", "get", "job", "-n", namespace, "-o", "json")
+	if err != nil {
+		return err
+	}
+
+	jobList := new(batchv1.JobList)
+	if err := json.Unmarshal(stdout, jobList); err != nil {
+		return err
+	}
+
+	found := false
+	var job batchv1.Job
+	for _, j := range jobList.Items {
+		if strings.HasPrefix(j.Name, jobPrefix) {
+			found = true
+			job = j
+		}
+	}
+	if !found {
+		return fmt.Errorf("%s not found", jobPrefix)
+	}
+
+	found = false
+	for _, c := range job.Spec.Template.Spec.Containers {
+		if c.Image == image {
+			found = true
+		}
+	}
+	if !found {
+		return fmt.Errorf("%s not found in %s", image, job.Name)
 	}
 	return nil
 }

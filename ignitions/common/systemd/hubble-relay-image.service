@@ -1,0 +1,16 @@
+[Unit]
+Description=Load hubble-relay container image
+Wants=network-online.target
+Requires=docker.service
+After=network-online.target wait-k8s-containerd-socket.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/bin/load-containerd-image {{ MyURL }}/api/v1/assets/{{ Metadata "hubble-relay.img" }} {{ Metadata "hubble-relay.ref" }}
+StandardOutput=journal+console
+StandardError=journal+console
+
+
+[Install]
+WantedBy=multi-user.target

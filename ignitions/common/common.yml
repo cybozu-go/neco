@@ -98,6 +98,14 @@ systemd:
     enabled: true
   - name: coil-image.service
     enabled: true
+  - name: cilium-image.service
+    enabled: true
+  - name: cilium-operator-generic-image.service
+    enabled: true
+  - name: hubble-relay-image.service
+    enabled: true
+  - name: cilium-certgen-image.service
+    enabled: true
   - name: setup-serf.service
   - name: serf.service
     enabled: true

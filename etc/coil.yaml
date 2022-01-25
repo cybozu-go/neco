@@ -7905,8 +7905,8 @@ apiVersion: v1
 data:
   cni_netconf: |
     {
-      "cniVersion": "0.4.0",
-      "name": "k8s-pod-network",
+      "cniVersion": "0.3.1",
+      "name": "generic-veth",
       "plugins": [
         {
           "type": "coil",
@@ -7917,6 +7917,9 @@ data:
           "capabilities": {
             "portMappings": true
           }
+        },
+        {
+          "type": "cilium-cni"
         }
       ]
     }
@@ -7924,7 +7927,7 @@ kind: ConfigMap
 metadata:
   labels:
     app.kubernetes.io/name: coil
-  name: coil-config-4665ktg7gc
+  name: coil-config-tc2gh94mfh
   namespace: kube-system
 ---
 apiVersion: v1
@@ -8120,7 +8123,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: cni_netconf
-              name: coil-config-4665ktg7gc
+              name: coil-config-tc2gh94mfh
         image: ghcr.io/cybozu-go/coil:2.0.14
         name: coil-installer
         securityContext:
