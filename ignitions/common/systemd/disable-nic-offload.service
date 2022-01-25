@@ -6,8 +6,7 @@ ConditionVirtualization=!kvm
 
 [Service]
 Type=oneshot
-ExecStart=/usr/sbin/ethtool -K eno1 tx off rx off
-ExecStart=/usr/sbin/ethtool -K eno2 tx off rx off
+ExecStart=/opt/sbin/disable-nic-offload
 RemainAfterExit=yes
 StandardOutput=journal+console
 StandardError=journal+console
