@@ -39,9 +39,13 @@ ACCURATE_DLDIR := $(DOWNLOADDIR)/accurate-v$(ACCURATE_VERSION)
 ACCURATE_DOWNLOAD := $(ACCURATE_DLDIR)/downloaded
 ALERTMANAGER_DLDIR := $(DOWNLOADDIR)/alertmanager-v$(ALERTMANAGER_VERSION)
 ALERTMANAGER_DOWNLOAD := $(ALERTMANAGER_DLDIR)/downloaded
+CILIUM_CLI_DLDIR := $(DOWNLOADDIR)/cilium-cli-v$(HUBBLE_VERSION)
+CILIUM_CLI_DOWNLOAD := $(CILIUM_CLI_DLDIR)/downloaded
+HUBBLE_DLDIR := $(DOWNLOADDIR)/hubble-v$(HUBBLE_VERSION)
+HUBBLE_DOWNLOAD := $(HUBBLE_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat accurate alertmanager
+all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -377,6 +381,50 @@ alertmanager: $(ALERTMANAGER_DOWNLOAD)
 	mv $(WINDOWS_BINDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	tar xzf $(ALERTMANAGER_DLDIR)/alertmanager-darwin-amd64.tar.gz --strip-components=1 -C $(MAC_BINDIR) alertmanager-$(ALERTMANAGER_VERSION).darwin-amd64/amtool alertmanager-$(ALERTMANAGER_VERSION).darwin-amd64/LICENSE
 	mv $(MAC_BINDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+
+$(CILIUM_CLI_DOWNLOAD):
+	mkdir -p $(CILIUM_CLI_DLDIR)
+	$(WGET) -O $(CILIUM_CLI_DLDIR)/cilium-linux-amd64.tar.gz https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_CLI_VERSION)/cilium-linux-amd64.tar.gz
+	$(WGET) -O $(CILIUM_CLI_DLDIR)/cilium-windows-amd64.tar.gz https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_CLI_VERSION)/cilium-windows-amd64.tar.gz
+	$(WGET) -O $(CILIUM_CLI_DLDIR)/cilium-darwin-amd64.tar.gz https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_CLI_VERSION)/cilium-darwin-amd64.tar.gz
+	$(WGET) -O $(CILIUM_CLI_DLDIR)/LICENSE   https://raw.githubusercontent.com/cilium/cilium-cli/v$(CILIUM_CLI_VERSION)/LICENSE
+	$(WGET) -O $(CILIUM_CLI_DLDIR)/README.md https://raw.githubusercontent.com/cilium/cilium-cli/v$(CILIUM_CLI_VERSION)/README.md
+	touch $@
+
+.PHONY: cilium-cli
+cilium-cli: $(CILIUM_CLI_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	tar xzf $(CILIUM_CLI_DLDIR)/cilium-linux-amd64.tar.gz -C $(BINDIR) cilium
+	tar xzf $(CILIUM_CLI_DLDIR)/cilium-windows-amd64.tar.gz -C $(WINDOWS_BINDIR) cilium.exe
+	tar xzf $(CILIUM_CLI_DLDIR)/cilium-darwin-amd64.tar.gz  -C $(MAC_BINDIR) cilium
+	cp $(CILIUM_CLI_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(CILIUM_CLI_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(CILIUM_CLI_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(CILIUM_CLI_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(CILIUM_CLI_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(CILIUM_CLI_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+
+$(HUBBLE_DOWNLOAD):
+	mkdir -p $(HUBBLE_DLDIR)
+	$(WGET) -O $(HUBBLE_DLDIR)/hubble-linux-amd64.tar.gz https://github.com/cilium/hubble/releases/download/v$(HUBBLE_VERSION)/hubble-linux-amd64.tar.gz
+	$(WGET) -O $(HUBBLE_DLDIR)/hubble-windows-amd64.tar.gz https://github.com/cilium/hubble/releases/download/v$(HUBBLE_VERSION)/hubble-windows-amd64.tar.gz
+	$(WGET) -O $(HUBBLE_DLDIR)/hubble-darwin-amd64.tar.gz https://github.com/cilium/hubble/releases/download/v$(HUBBLE_VERSION)/hubble-darwin-amd64.tar.gz
+	$(WGET) -O $(HUBBLE_DLDIR)/LICENSE   https://raw.githubusercontent.com/cilium/hubble/v$(HUBBLE_VERSION)/LICENSE
+	$(WGET) -O $(HUBBLE_DLDIR)/README.md https://raw.githubusercontent.com/cilium/hubble/v$(HUBBLE_VERSION)/README.md
+	touch $@
+
+.PHONY: hubble
+hubble: $(HUBBLE_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	tar xzf $(HUBBLE_DLDIR)/hubble-linux-amd64.tar.gz -C $(BINDIR) hubble
+	tar xzf $(HUBBLE_DLDIR)/hubble-windows-amd64.tar.gz -C $(WINDOWS_BINDIR) hubble.exe
+	tar xzf $(HUBBLE_DLDIR)/hubble-darwin-amd64.tar.gz  -C $(MAC_BINDIR) hubble
+	cp $(HUBBLE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(HUBBLE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(HUBBLE_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(HUBBLE_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(HUBBLE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(HUBBLE_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 .PHONY: clean
 clean:

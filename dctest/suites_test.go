@@ -71,6 +71,7 @@ var bootstrapSuite = func() {
 		testCoilSetup()
 		testCoil()
 	})
+	Context("cilium", testCilium)
 	Context("unbound", testUnbound)
 	Context("squid", testSquid)
 	Context("node DNS", testNodeDNS)
@@ -94,6 +95,7 @@ var upgradeSuite = func() {
 	Context("upgrade sabakan-state-setter", testSabakanStateSetter)
 	Context("upgraded cke", testCKE)
 	Context("upgraded coil", testCoil)
+	Context("upgraded cilium", testCilium)
 	Context("upgraded unbound", testUnbound)
 	Context("upgraded squid", testSquid)
 }
