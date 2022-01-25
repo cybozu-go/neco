@@ -1,0 +1,8 @@
+#!/bin/bash -e
+
+set -o pipefail
+
+INTERFACES=$(ip -j a show | jq '.[]|select(.operstate=="UP")|.ifname' -r)
+for i in ${INTERFACES}; do \
+    /usr/sbin/ethtool -K $i tx off rx off; \
+done

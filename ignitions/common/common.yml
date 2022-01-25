@@ -26,6 +26,7 @@ files:
   - /opt/sbin/bird-wait
   - /opt/sbin/chrony-monitor
   - /opt/sbin/chrony-wait
+  - /opt/sbin/disable-nic-offload
   - /opt/sbin/neco-wait-dhcp-online
   - /opt/sbin/setup-bmc-user
   - /opt/sbin/setup-containerd
