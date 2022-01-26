@@ -93,6 +93,5 @@ machine-types:
       - name: hw_systems_storage_drives_status_health
         selector:
           label-prefix:
-            storage: CPU.
-            device: Disk.Bay.
-        minimum-healthy-count: 1
+            device: Disk.Direct.
+        minimum-healthy-count: 2
