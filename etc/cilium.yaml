@@ -409,8 +409,8 @@ data:
   config.yaml: "peer-service: unix:///var/run/cilium/hubble.sock\nlisten-address:
     :4245\ndial-timeout: \nretry-timeout: \nsort-buffer-len-max: \nsort-buffer-drain-timeout:
     \ntls-client-cert-file: /var/lib/hubble-relay/tls/client.crt\ntls-client-key-file:
-    /var/lib/hubble-relay/tls/client.key\ntls-hubble-server-ca-files: /var/lib/hubble-relay/tls/hubble-server-ca.crt\ndisable-server-tls:
-    true\n"
+    /var/lib/hubble-relay/tls/client.key\ntls-hubble-server-ca-files: /var/lib/hubble-relay/tls/hubble-server-ca.crt\ntls-server-cert-file:
+    /var/lib/hubble-relay/tls/server.crt\ntls-server-key-file: /var/lib/hubble-relay/tls/server.key\n"
 kind: ConfigMap
 metadata:
   name: hubble-relay-config
@@ -467,7 +467,7 @@ metadata:
   namespace: kube-system
 spec:
   ports:
-  - port: 80
+  - port: 443
     protocol: TCP
     targetPort: 4245
   selector:
@@ -657,6 +657,13 @@ spec:
               - key: tls.key
                 path: client.key
               name: hubble-relay-client-certs
+          - secret:
+              items:
+              - key: tls.crt
+                path: server.crt
+              - key: tls.key
+                path: server.key
+              name: hubble-relay-server-certs
 ---
 apiVersion: batch/v1beta1
 kind: CronJob
@@ -684,6 +691,8 @@ spec:
             - --hubble-server-cert-validity-duration=94608000s
             - --hubble-relay-client-cert-generate
             - --hubble-relay-client-cert-validity-duration=94608000s
+            - --hubble-relay-server-cert-generate
+            - --hubble-relay-server-cert-validity-duration=94608000s
             command:
             - /usr/bin/cilium-certgen
             image: quay.io/cybozu/cilium-certgen:0.1.5.1
@@ -988,7 +997,7 @@ kind: Job
 metadata:
   labels:
     k8s-app: hubble-generate-certs
-  name: hubble-generate-certs-af8ec3c1b5
+  name: hubble-generate-certs-affc2980ae
   namespace: kube-system
 spec:
   template:
@@ -1006,6 +1015,8 @@ spec:
         - --hubble-server-cert-validity-duration=94608000s
         - --hubble-relay-client-cert-generate
         - --hubble-relay-client-cert-validity-duration=94608000s
+        - --hubble-relay-server-cert-generate
+        - --hubble-relay-server-cert-validity-duration=94608000s
         command:
         - /usr/bin/cilium-certgen
         image: quay.io/cybozu/cilium-certgen:0.1.5.1

@@ -93,7 +93,7 @@ func checkHubbleRelayDeployment() {
 		}
 
 		stdout, _, err = execAt(bootServers[0], "hubble", "status", "-o", "json", "--server",
-			"hubble-relay.kube-system.svc:80")
+			"hubble-relay.kube-system.svc:443", "--tls", "--tls-allow-insecure")
 		if err != nil {
 			return err
 		}

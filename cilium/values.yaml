@@ -11,6 +11,9 @@ kubeProxyReplacement: "disabled"
 hubble:
   relay:
     enabled: true
+    tls:
+      server:
+        enabled: true
   tls:
     auto:
       method: "cronJob"
