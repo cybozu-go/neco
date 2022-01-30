@@ -235,7 +235,8 @@ data:
     tls-client-cert-file: /var/lib/hubble-relay/tls/client.crt
     tls-client-key-file: /var/lib/hubble-relay/tls/client.key
     tls-hubble-server-ca-files: /var/lib/hubble-relay/tls/hubble-server-ca.crt
-    disable-server-tls: true
+    tls-server-cert-file: /var/lib/hubble-relay/tls/server.crt
+    tls-server-key-file: /var/lib/hubble-relay/tls/server.key
 ---
 # Source: cilium/templates/cilium-agent/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -548,7 +549,7 @@ spec:
     k8s-app: hubble-relay
   ports:
   - protocol: TCP
-    port: 80
+    port: 443
     targetPort: 4245
 ---
 # Source: cilium/templates/hubble/metrics-service.yaml
@@ -1078,12 +1079,19 @@ spec:
                   path: client.crt
                 - key: tls.key
                   path: client.key
+          - secret:
+              name: hubble-relay-server-certs
+              items:
+                - key: tls.crt
+                  path: server.crt
+                - key: tls.key
+                  path: server.key
 ---
 # Source: cilium/templates/hubble/tls-cronjob/job.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hubble-generate-certs-af8ec3c1b5
+  name: hubble-generate-certs-affc2980ae
   namespace: kube-system
   labels:
     k8s-app: hubble-generate-certs
@@ -1111,6 +1119,8 @@ spec:
             - "--hubble-server-cert-validity-duration=94608000s"
             - "--hubble-relay-client-cert-generate"
             - "--hubble-relay-client-cert-validity-duration=94608000s"
+            - "--hubble-relay-server-cert-generate"
+            - "--hubble-relay-server-cert-validity-duration=94608000s"
       hostNetwork: true
       serviceAccount: "hubble-generate-certs"
       serviceAccountName: "hubble-generate-certs"
@@ -1153,6 +1163,8 @@ spec:
                 - "--hubble-server-cert-validity-duration=94608000s"
                 - "--hubble-relay-client-cert-generate"
                 - "--hubble-relay-client-cert-validity-duration=94608000s"
+                - "--hubble-relay-server-cert-generate"
+                - "--hubble-relay-server-cert-validity-duration=94608000s"
           hostNetwork: true
           serviceAccount: "hubble-generate-certs"
           serviceAccountName: "hubble-generate-certs"
