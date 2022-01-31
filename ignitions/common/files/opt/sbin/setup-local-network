@@ -24,7 +24,7 @@ fi
 
 cat >/etc/systemd/network/01-eth0.network <<EOF
 [Match]
-Name=eth0 eno1
+Name=eth0 eno1 eno12399
 
 [Network]
 LLDP=true
@@ -40,7 +40,7 @@ EOF
 
 cat >/etc/systemd/network/01-eth1.network <<EOF
 [Match]
-Name=eth1 eno2
+Name=eth1 eno2 eno12409
 
 [Network]
 LLDP=true
