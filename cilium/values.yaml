@@ -8,12 +8,32 @@ enableIPv4Masquerade: false
 policyEnforcementMode: "default"
 policyAuditMode: true
 kubeProxyReplacement: "disabled"
+prometheus:
+  enabled: true
+rollOutCiliumPods: true
+resources:
+  requests:
+    cpu: 100m
+    memory: 400Mi
+operator:
+  rollOutPods: true
+  prometheus:
+    enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 200Mi
 hubble:
   relay:
     enabled: true
     tls:
       server:
         enabled: true
+    rollOutPods: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200Mi
   tls:
     auto:
       method: "cronJob"
@@ -25,9 +45,3 @@ hubble:
       - "flow:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip"
       - "icmp"
       - "http" 
-prometheus:
-  enabled: true
-operator:
-  prometheus:
-    enabled: true
-rollOutCiliumPods: true
