@@ -710,6 +710,10 @@ spec:
             exec:
               command:
               - /cni-uninstall.sh
+        resources:
+          requests:
+            cpu: 100m
+            memory: 400Mi
         ports:
         - name: prometheus
           containerPort: 9090
@@ -913,6 +917,8 @@ spec:
   template:
     metadata:
       annotations:
+        # ensure pods roll when configmap updates
+        cilium.io/cilium-configmap-checksum: "aa37a3a353d9b7e9eed525a7c306e57416cabf31ac1305a845af0fec346ee6e5"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -975,6 +981,10 @@ spec:
         - name: cilium-config-path
           mountPath: /tmp/cilium/config-map
           readOnly: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
       hostNetwork: true
       restartPolicy: Always
       priorityClassName: system-cluster-critical
@@ -1008,6 +1018,8 @@ spec:
   template:
     metadata:
       annotations:
+        # ensure pods roll when configmap updates
+        cilium.io/hubble-relay-configmap-checksum: "3923847b536fd40cdab5b8178c51a0210733dc7e36ac6d05c0996aecd37aa8d5"
       labels:
         k8s-app: hubble-relay
     spec:
@@ -1038,6 +1050,10 @@ spec:
           livenessProbe:
             tcpSocket:
               port: grpc
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
           volumeMounts:
           - name: hubble-sock-dir
             mountPath: /var/run/cilium

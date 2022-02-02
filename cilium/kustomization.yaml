@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - upstream.yaml
   - aggregate_cluster_role.yaml
+  - pdb.yaml
