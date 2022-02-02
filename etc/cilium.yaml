@@ -496,6 +496,7 @@ spec:
   template:
     metadata:
       annotations:
+        cilium.io/cilium-configmap-checksum: aa37a3a353d9b7e9eed525a7c306e57416cabf31ac1305a845af0fec346ee6e5
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -552,6 +553,10 @@ spec:
           hostPort: 6942
           name: prometheus
           protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
         volumeMounts:
         - mountPath: /tmp/cilium/config-map
           name: cilium-config-path
@@ -586,7 +591,8 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      annotations: null
+      annotations:
+        cilium.io/hubble-relay-configmap-checksum: 3923847b536fd40cdab5b8178c51a0210733dc7e36ac6d05c0996aecd37aa8d5
       labels:
         k8s-app: hubble-relay
     spec:
@@ -618,6 +624,10 @@ spec:
         readinessProbe:
           tcpSocket:
             port: grpc
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
         volumeMounts:
         - mountPath: /var/run/cilium
           name: hubble-sock-dir
@@ -704,6 +714,21 @@ spec:
           serviceAccountName: hubble-generate-certs
       ttlSecondsAfterFinished: 1800
   schedule: 0 0 1 */4 *
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    io.cilium/app: operator
+    name: cilium-operator
+  name: cilium-operator
+  namespace: kube-system
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      io.cilium/app: operator
+      name: cilium-operator
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -832,6 +857,10 @@ spec:
           periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 5
+        resources:
+          requests:
+            cpu: 100m
+            memory: 400Mi
         securityContext:
           privileged: true
         startupProbe:
