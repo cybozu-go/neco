@@ -156,6 +156,7 @@ data:
   #  - flannel
   #  - portmap (Enables HostPort support for Cilium)
   cni-chaining-mode: generic-veth
+  enable-identity-mark: "false"
   # Disable the PodCIDR route to the cilium_host interface as it is not
   # required. While chaining, it is the responsibility of the underlying plugin
   # to enable routing.
@@ -596,7 +597,7 @@ spec:
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "aa37a3a353d9b7e9eed525a7c306e57416cabf31ac1305a845af0fec346ee6e5"
+        cilium.io/cilium-configmap-checksum: "a65df20fd48e52f6cdb115f9551d890f7c829e1003a463956c95349f11ac74d4"
         # This annotation plus the CriticalAddonsOnly toleration makes
         # cilium to be a critical pod in the cluster, which ensures cilium
         # gets priority scheduling.
@@ -918,7 +919,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "aa37a3a353d9b7e9eed525a7c306e57416cabf31ac1305a845af0fec346ee6e5"
+        cilium.io/cilium-configmap-checksum: "a65df20fd48e52f6cdb115f9551d890f7c829e1003a463956c95349f11ac74d4"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
