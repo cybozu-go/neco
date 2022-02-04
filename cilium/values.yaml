@@ -5,6 +5,7 @@ cni:
 datapathMode: "veth"
 tunnel: "disabled"
 enableIPv4Masquerade: false
+enableIdentityMark: false
 policyEnforcementMode: "default"
 policyAuditMode: true
 kubeProxyReplacement: "disabled"

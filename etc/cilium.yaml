@@ -358,6 +358,7 @@ data:
   enable-health-check-nodeport: "true"
   enable-health-checking: "true"
   enable-hubble: "true"
+  enable-identity-mark: "false"
   enable-ipv4: "true"
   enable-ipv4-masquerade: "false"
   enable-ipv6: "false"
@@ -496,7 +497,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: aa37a3a353d9b7e9eed525a7c306e57416cabf31ac1305a845af0fec346ee6e5
+        cilium.io/cilium-configmap-checksum: a65df20fd48e52f6cdb115f9551d890f7c829e1003a463956c95349f11ac74d4
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -744,7 +745,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: aa37a3a353d9b7e9eed525a7c306e57416cabf31ac1305a845af0fec346ee6e5
+        cilium.io/cilium-configmap-checksum: a65df20fd48e52f6cdb115f9551d890f7c829e1003a463956c95349f11ac74d4
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         scheduler.alpha.kubernetes.io/critical-pod: ""
