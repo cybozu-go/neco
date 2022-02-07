@@ -10,7 +10,7 @@ STERN_VERSION = 1.21.0
 
 
 ## These should be updated regularly
-ARGOCD_VERSION = 2.2.2
+ARGOCD_VERSION = 2.2.5
 # Follow Argo CD installed kustomize version
 # https://github.com/cybozu/neco-containers/blob/main/argocd/Dockerfile#L11
 KUSTOMIZE_VERSION = 4.2.0
