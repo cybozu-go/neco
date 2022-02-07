@@ -26,14 +26,14 @@ func main() {
 	var machineTypeBoot, machineTypeCS, machineTypeSS, bmcType string
 	switch os.Args[1] {
 	case "stage0":
-		machineTypeBoot = "r640-boot-1"
-		machineTypeCS = "r640-cs-1"
-		machineTypeSS = "r740xd-ss-2"
+		machineTypeBoot = "r6525-boot-1"
+		machineTypeCS = "r6525-cs-1"
+		machineTypeSS = "r7525-ss-1"
 		bmcType = "iDRAC"
 	case "tokyo0", "osaka0":
-		machineTypeBoot = "r640-boot-2"
-		machineTypeCS = "r640-cs-2"
-		machineTypeSS = "r740xd-ss-2"
+		machineTypeBoot = "r6525-boot-1"
+		machineTypeCS = "r6525-cs-1"
+		machineTypeSS = "r7525-ss-1"
 		bmcType = "iDRAC"
 	default:
 		log.ErrorExit(errors.New("specify valid datacenter"))
