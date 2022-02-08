@@ -19,7 +19,7 @@ var rootCmd = &cobra.Command{
 	Short:        "generate machines.json",
 	Long: `Generate machines.json from the CSV file for use with the 'sabactl create' command.
 Example:
-  generate-sabakan-machines CSV --machine-type-boot=r6525-boot-1 --machine-type-cs=r6525-cs-1 --machine-type-ss=r7525-ss-1
+  generate-sabakan-machines input.csv --machine-type-boot=r6525-boot-1 --machine-type-cs=r6525-cs-1 --machine-type-ss=r7525-ss-1
 	`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
