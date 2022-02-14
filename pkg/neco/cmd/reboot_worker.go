@@ -32,14 +32,22 @@ type sabakanMachinesGetOpts struct {
 // addSabapanMachinesGetOpts adds flags for `sabactl machines get`-like options to cobra.Command
 func addSabakanMachinesGetOpts(cmd *cobra.Command, opts *sabakanMachinesGetOpts) {
 	getOpts := map[string]string{
-		"serial":   "Serial name",
-		"rack":     "Rack name",
-		"role":     "Role name",
-		"labels":   "Label name and value (--labels key=val,...)",
-		"ipv4":     "IPv4 address",
-		"ipv6":     "IPv6 address",
-		"bmc-type": "BMC type",
-		"state":    "State",
+		"serial":           "Serial name",
+		"rack":             "Rack name",
+		"role":             "Role name",
+		"labels":           "Label name and value (--labels key=val,...)",
+		"ipv4":             "IPv4 address",
+		"ipv6":             "IPv6 address",
+		"bmc-type":         "BMC type",
+		"state":            "State",
+		"without-serial":   "without Serial name",
+		"without-rack":     "without Rack name",
+		"without-role":     "without Role name",
+		"without-labels":   "without Label name and value (--labels key=val,...)",
+		"without-ipv4":     "without IPv4 address",
+		"without-ipv6":     "without IPv6 address",
+		"without-bmc-type": "without BMC type",
+		"without-state":    "without State",
 	}
 	opts.params = make(map[string]*string)
 	for k, v := range getOpts {
