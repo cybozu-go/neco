@@ -147,6 +147,15 @@ func rebootAndWaitMain(target string) error {
 		}
 	}
 
+	err = saba.MachinesSetState(context.Background(), machine.Spec.Serial, sabakan.StateUninitialized.String())
+	if err != nil {
+		log.Error("failed to set sabakan state to uninitialized", map[string]interface{}{
+			"serial_or_ip": target,
+			log.FnError:    err,
+		})
+		return err
+	}
+
 	for {
 		time.Sleep(1 * time.Second)
 
