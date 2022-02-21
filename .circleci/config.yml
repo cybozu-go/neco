@@ -382,11 +382,6 @@ jobs:
             printf "%s\n" "$diffs"
       # Skip the following steps if there is no difference.
       - run:
-          name: Store github-token
-          command: |
-            if [ -f .skip ]; then exit 0; fi
-            echo "$NECO_GITHUB_TOKEN" > github-token
-      - run:
           name: Commit and push to GitHub
           command: |
             if [ -f .skip ]; then exit 0; fi

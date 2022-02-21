@@ -1,0 +1,12 @@
+#!/bin/sh -e
+TOKEN_FILE=$(dirname $0)/../github-token
+SAFE_SITES="(api.github.com|github.com|raw.githubusercontent.com)"
+if [ -e ${TOKEN_FILE} ]; then
+    if ! echo $@ | grep -q -E "https://${SAFE_SITES}/"; then
+        echo "Do not use curl-github for non-GitHub sites" 1>&2
+        exit 1
+    fi
+    exec curl --header "Authorization: token $(cat ${TOKEN_FILE})" "$@"
+else
+    exec curl "$@"
+fi
