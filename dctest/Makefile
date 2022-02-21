@@ -15,7 +15,9 @@ else
 endif
 MACHINES_FILE ?= $(abspath $(OUTPUT)/machines.yml)
 ADDRESS_POOLS_FILE = $(abspath ./address_pools.yaml)
-CURL = curl -fsL
+CURL_OPTIONS = -fsL
+CURL = curl $(CURL_OPTIONS)
+CURL_GITHUB = ../bin/curl-github $(CURL_OPTIONS)
 CT_VERSION = 0.9.0
 CT := $(shell pwd)/bin/ct
 
@@ -139,6 +141,6 @@ setup:
 
 $(CT):
 	mkdir -p bin
-	$(CURL) -o ct https://github.com/coreos/container-linux-config-transpiler/releases/download/v$(CT_VERSION)/ct-v$(CT_VERSION)-x86_64-unknown-linux-gnu
+	$(CURL_GITHUB) -o ct https://github.com/coreos/container-linux-config-transpiler/releases/download/v$(CT_VERSION)/ct-v$(CT_VERSION)-x86_64-unknown-linux-gnu
 	chmod +x ct
 	$(SUDO) mv ct $@

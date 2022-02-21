@@ -1,8 +1,9 @@
 include Makefile.common
 
 MAKEFLAGS += -j$(shell nproc)
-CURL=curl -Lsf
-WGET=wget --retry-on-http-error=503 --retry-connrefused --no-verbose
+WGET_OPTIONS=--retry-on-http-error=503 --retry-connrefused --no-verbose
+WGET=wget $(WGET_OPTIONS)
+WGET_GITHUB=bin/wget-github $(WGET_OPTIONS)
 
 ## Cache
 NODE_EXPORTER_DLDIR := $(DOWNLOADDIR)/node_exporter-v$(NODE_EXPORTER_VERSION)
@@ -51,7 +52,7 @@ all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomiz
 
 $(NODE_EXPORTER_DOWNLOAD):
 	mkdir -p $(NODE_EXPORTER_DLDIR)
-	$(WGET) -O $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v$(NODE_EXPORTER_VERSION)/node_exporter-$(NODE_EXPORTER_VERSION).linux-amd64.tar.gz
+	$(WGET_GITHUB) -O $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v$(NODE_EXPORTER_VERSION)/node_exporter-$(NODE_EXPORTER_VERSION).linux-amd64.tar.gz
 	touch $@
 
 .PHONY: node_exporter
@@ -67,10 +68,10 @@ node_exporter: $(NODE_EXPORTER_DOWNLOAD)
 
 $(CONTAINERD_DOWNLOAD):
 	mkdir -p $(CONTAINERD_DLDIR)
-	$(WGET) -O $(CONTAINERD_DLDIR)/containerd.tar.gz https://github.com/containerd/containerd/releases/download/v$(CONTAINERD_VERSION)/containerd-$(CONTAINERD_VERSION)-linux-amd64.tar.gz
-	$(WGET) -O $(CONTAINERD_DLDIR)/LICENSE   https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/LICENSE
-	$(WGET) -O $(CONTAINERD_DLDIR)/NOTICE    https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/NOTICE
-	$(WGET) -O $(CONTAINERD_DLDIR)/README.md https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/README.md
+	$(WGET_GITHUB) -O $(CONTAINERD_DLDIR)/containerd.tar.gz https://github.com/containerd/containerd/releases/download/v$(CONTAINERD_VERSION)/containerd-$(CONTAINERD_VERSION)-linux-amd64.tar.gz
+	$(WGET_GITHUB) -O $(CONTAINERD_DLDIR)/LICENSE   https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(CONTAINERD_DLDIR)/NOTICE    https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/NOTICE
+	$(WGET_GITHUB) -O $(CONTAINERD_DLDIR)/README.md https://raw.githubusercontent.com/containerd/containerd/v$(CONTAINERD_VERSION)/README.md
 	touch $@
 
 .PHONY: containerd
@@ -83,9 +84,9 @@ containerd: $(CONTAINERD_DOWNLOAD)
 
 $(CRICTL_DOWNLOAD):
 	mkdir -p $(CRICTL_DLDIR)
-	$(WGET) -O $(CRICTL_DLDIR)/crictl.tar.gz https://github.com/kubernetes-sigs/cri-tools/releases/download/v$(CRITOOLS_VERSION)/crictl-v$(CRITOOLS_VERSION)-linux-amd64.tar.gz
-	$(WGET) -O $(CRICTL_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/LICENSE
-	$(WGET) -O $(CRICTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/README.md
+	$(WGET_GITHUB) -O $(CRICTL_DLDIR)/crictl.tar.gz https://github.com/kubernetes-sigs/cri-tools/releases/download/v$(CRITOOLS_VERSION)/crictl-v$(CRITOOLS_VERSION)-linux-amd64.tar.gz
+	$(WGET_GITHUB) -O $(CRICTL_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(CRICTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v$(CRITOOLS_VERSION)/README.md
 	touch $@
 
 .PHONY: crictl
@@ -97,10 +98,10 @@ crictl: $(CRICTL_DOWNLOAD)
 
 $(RUNC_DOWNLOAD):
 	mkdir -p $(RUNC_DLDIR)
-	$(WGET) -O $(RUNC_DLDIR)/runc.amd64 https://github.com/opencontainers/runc/releases/download/v$(RUNC_VERSION)/runc.amd64
-	$(WGET) -O $(RUNC_DLDIR)/LICENSE    https://raw.githubusercontent.com/opencontainers/runc/v$(RUNC_VERSION)/LICENSE
-	$(WGET) -O $(RUNC_DLDIR)/NOTICE     https://raw.githubusercontent.com/opencontainers/runc/v$(RUNC_VERSION)/NOTICE
-	$(WGET) -O $(RUNC_DLDIR)/README.md  https://raw.githubusercontent.com/opencontainers/runc/v$(RUNC_VERSION)/README.md
+	$(WGET_GITHUB) -O $(RUNC_DLDIR)/runc.amd64 https://github.com/opencontainers/runc/releases/download/v$(RUNC_VERSION)/runc.amd64
+	$(WGET_GITHUB) -O $(RUNC_DLDIR)/LICENSE    https://raw.githubusercontent.com/opencontainers/runc/v$(RUNC_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(RUNC_DLDIR)/NOTICE     https://raw.githubusercontent.com/opencontainers/runc/v$(RUNC_VERSION)/NOTICE
+	$(WGET_GITHUB) -O $(RUNC_DLDIR)/README.md  https://raw.githubusercontent.com/opencontainers/runc/v$(RUNC_VERSION)/README.md
 	touch $@
 
 .PHONY: runc
@@ -114,11 +115,11 @@ runc: $(RUNC_DOWNLOAD)
 
 $(ARGOCD_DOWNLOAD):
 	mkdir -p $(ARGOCD_DLDIR)
-	$(WGET) -O $(ARGOCD_DLDIR)/argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
-	$(WGET) -O $(ARGOCD_DLDIR)/argocd.exe https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-windows-amd64.exe
-	$(WGET) -O $(ARGOCD_DLDIR)/argocd-darwin-amd64 https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-darwin-amd64
-	$(WGET) -O $(ARGOCD_DLDIR)/LICENSE   https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/LICENSE
-	$(WGET) -O $(ARGOCD_DLDIR)/README.md https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/README.md
+	$(WGET_GITHUB) -O $(ARGOCD_DLDIR)/argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
+	$(WGET_GITHUB) -O $(ARGOCD_DLDIR)/argocd.exe https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-windows-amd64.exe
+	$(WGET_GITHUB) -O $(ARGOCD_DLDIR)/argocd-darwin-amd64 https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-darwin-amd64
+	$(WGET_GITHUB) -O $(ARGOCD_DLDIR)/LICENSE   https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(ARGOCD_DLDIR)/README.md https://raw.githubusercontent.com/argoproj/argo-cd/v$(ARGOCD_VERSION)/README.md
 	touch $@
 
 .PHONY: argocd
@@ -141,8 +142,8 @@ $(KUBECTL_DOWNLOAD):
 	$(WGET) -O $(KUBECTL_DLDIR)/kubectl-linux-amd64 https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
 	$(WGET) -O $(KUBECTL_DLDIR)/kubectl.exe https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/windows/amd64/kubectl.exe
 	$(WGET) -O $(KUBECTL_DLDIR)/kubect-darwin-amd64 https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/darwin/amd64/kubectl
-	$(WGET) -O $(KUBECTL_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/LICENSE
-	$(WGET) -O $(KUBECTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
+	$(WGET_GITHUB) -O $(KUBECTL_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(KUBECTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
 	touch $@
 
 .PHONY: kubectl
@@ -162,11 +163,11 @@ kubectl: $(KUBECTL_DOWNLOAD)
 
 $(KUBESEAL_DOWNLOAD):
 	mkdir -p $(KUBESEAL_DLDIR)
-	$(WGET) -O $(KUBESEAL_DLDIR)/kubeseal-linux-amd64 https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-linux-amd64
-	$(WGET) -O $(KUBESEAL_DLDIR)/kubeseal.exe https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal.exe
-	$(WGET) -O $(KUBESEAL_DLDIR)/kubeseal-darwin-amd64 https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-darwin-amd64
-	$(WGET) -O $(KUBESEAL_DLDIR)/LICENSE      https://github.com/bitnami-labs/sealed-secrets/blob/v$(KUBESEAL_VERSION)/LICENSE
-	$(WGET) -O $(KUBESEAL_DLDIR)/README.md    https://github.com/bitnami-labs/sealed-secrets/blob/v$(KUBESEAL_VERSION)/README.md
+	$(WGET_GITHUB) -O $(KUBESEAL_DLDIR)/kubeseal-linux-amd64 https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-linux-amd64
+	$(WGET_GITHUB) -O $(KUBESEAL_DLDIR)/kubeseal.exe https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal.exe
+	$(WGET_GITHUB) -O $(KUBESEAL_DLDIR)/kubeseal-darwin-amd64 https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-darwin-amd64
+	$(WGET_GITHUB) -O $(KUBESEAL_DLDIR)/LICENSE      https://github.com/bitnami-labs/sealed-secrets/blob/v$(KUBESEAL_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(KUBESEAL_DLDIR)/README.md    https://github.com/bitnami-labs/sealed-secrets/blob/v$(KUBESEAL_VERSION)/README.md
 	touch $@
 
 .PHONY: kubeseal
@@ -186,10 +187,10 @@ kubeseal: $(KUBESEAL_DOWNLOAD)
 
 $(STERN_DOWNLOAD):
 	mkdir -p $(STERN_DLDIR)/linux_amd64 $(STERN_DLDIR)/windows_amd64 $(STERN_DLDIR)/darwin_amd64
-	$(WGET) -O - https://github.com/stern/stern/releases/download/v$(STERN_VERSION)/stern_$(STERN_VERSION)_linux_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)/linux_amd64
-	$(WGET) -O - https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_$(STERN_VERSION)_windows_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)/windows_amd64
-	$(WGET) -O - https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_$(STERN_VERSION)_darwin_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)/darwin_amd64
-	$(WGET) -O $(STERN_DLDIR)/README.md https://raw.githubusercontent.com/stern/stern/v$(STERN_VERSION)/README.md
+	$(WGET_GITHUB) -O - https://github.com/stern/stern/releases/download/v$(STERN_VERSION)/stern_$(STERN_VERSION)_linux_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)/linux_amd64
+	$(WGET_GITHUB) -O - https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_$(STERN_VERSION)_windows_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)/windows_amd64
+	$(WGET_GITHUB) -O - https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_$(STERN_VERSION)_darwin_amd64.tar.gz | tar xvzf - -C $(STERN_DLDIR)/darwin_amd64
+	$(WGET_GITHUB) -O $(STERN_DLDIR)/README.md https://raw.githubusercontent.com/stern/stern/v$(STERN_VERSION)/README.md
 	touch $@
 
 .PHONY: stern
@@ -208,9 +209,9 @@ stern: $(STERN_DOWNLOAD)
 
 $(KUSTOMIZE_DOWNLOAD):
 	mkdir -p $(KUSTOMIZE_DLDIR)
-	$(WGET) -O $(KUSTOMIZE_DLDIR)/kustomize-linux-amd64.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz
-	$(WGET) -O $(KUSTOMIZE_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
-	$(WGET) -O $(KUSTOMIZE_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
+	$(WGET_GITHUB) -O $(KUSTOMIZE_DLDIR)/kustomize-linux-amd64.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz
+	$(WGET_GITHUB) -O $(KUSTOMIZE_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
+	$(WGET_GITHUB) -O $(KUSTOMIZE_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
 	touch $@
 
 .PHONY: kustomize
@@ -234,8 +235,8 @@ $(TELEPORT_DOWNLOAD):
 	unzip -j $(TELEPORT_DLDIR)/teleport.zip teleport/tsh.exe -d $(TELEPORT_DLDIR)/teleport-windows-amd64
 	tar -C $(TELEPORT_DLDIR)/teleport-linux-amd64 --strip-components=1 -xzf $(TELEPORT_DLDIR)/teleport-linux-amd64.tar.gz teleport/tsh teleport/tctl teleport/teleport
 	tar -C $(TELEPORT_DLDIR)/teleport-darwin-amd64 --strip-components=1 -xzf $(TELEPORT_DLDIR)/teleport-darwin-amd64.tar.gz teleport/tsh
-	$(WGET) -O $(TELEPORT_DLDIR)/common/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
-	$(WGET) -O $(TELEPORT_DLDIR)/common/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
+	$(WGET_GITHUB) -O $(TELEPORT_DLDIR)/common/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(TELEPORT_DLDIR)/common/README.md https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/README.md
 	touch $@
 
 .PHONY: teleport
@@ -270,11 +271,11 @@ cke: $(CKE_DOWNLOAD)
 
 $(MOCO_DOWNLOAD):
 	mkdir -p $(MOCO_DLDIR)
-	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco_linux_amd64.tar.gz   https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco_v$(MOCO_VERSION)_linux_amd64.tar.gz
-	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco_windows_amd64.tar.gz https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco_v$(MOCO_VERSION)_windows_amd64.tar.gz
-	$(WGET) -O $(MOCO_DLDIR)/kubectl-moco_darwin_amd64.tar.gz  https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco_v$(MOCO_VERSION)_darwin_amd64.tar.gz
-	$(WGET) -O $(MOCO_DLDIR)/LICENSE   https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/LICENSE
-	$(WGET) -O $(MOCO_DLDIR)/README.md https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/README.md
+	$(WGET_GITHUB) -O $(MOCO_DLDIR)/kubectl-moco_linux_amd64.tar.gz   https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco_v$(MOCO_VERSION)_linux_amd64.tar.gz
+	$(WGET_GITHUB) -O $(MOCO_DLDIR)/kubectl-moco_windows_amd64.tar.gz https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco_v$(MOCO_VERSION)_windows_amd64.tar.gz
+	$(WGET_GITHUB) -O $(MOCO_DLDIR)/kubectl-moco_darwin_amd64.tar.gz  https://github.com/cybozu-go/moco/releases/download/v$(MOCO_VERSION)/kubectl-moco_v$(MOCO_VERSION)_darwin_amd64.tar.gz
+	$(WGET_GITHUB) -O $(MOCO_DLDIR)/LICENSE   https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(MOCO_DLDIR)/README.md https://raw.githubusercontent.com/cybozu-go/moco/v$(MOCO_VERSION)/README.md
 	touch $@
 
 .PHONY: moco
@@ -292,11 +293,11 @@ moco: $(MOCO_DOWNLOAD)
 
 $(LOGCLI_DOWNLOAD):
 	mkdir -p $(LOGCLI_DLDIR)
-	$(WGET) -O $(LOGCLI_DLDIR)/logcli-linux-amd64.zip       https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-linux-amd64.zip
-	$(WGET) -O $(LOGCLI_DLDIR)/logcli-windows-amd64.exe.zip https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-windows-amd64.exe.zip
-	$(WGET) -O $(LOGCLI_DLDIR)/logcli-darwin-amd64.zip      https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-darwin-amd64.zip
-	$(WGET) -O $(LOGCLI_DLDIR)/LICENSE   https://raw.githubusercontent.com/grafana/loki/v$(LOGCLI_VERSION)/LICENSE
-	$(WGET) -O $(LOGCLI_DLDIR)/README.md https://raw.githubusercontent.com/grafana/loki/v$(LOGCLI_VERSION)/README.md
+	$(WGET_GITHUB) -O $(LOGCLI_DLDIR)/logcli-linux-amd64.zip       https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-linux-amd64.zip
+	$(WGET_GITHUB) -O $(LOGCLI_DLDIR)/logcli-windows-amd64.exe.zip https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-windows-amd64.exe.zip
+	$(WGET_GITHUB) -O $(LOGCLI_DLDIR)/logcli-darwin-amd64.zip      https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-darwin-amd64.zip
+	$(WGET_GITHUB) -O $(LOGCLI_DLDIR)/LICENSE   https://raw.githubusercontent.com/grafana/loki/v$(LOGCLI_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(LOGCLI_DLDIR)/README.md https://raw.githubusercontent.com/grafana/loki/v$(LOGCLI_VERSION)/README.md
 	touch $@
 
 .PHONY: logcli
@@ -316,9 +317,9 @@ logcli: $(LOGCLI_DOWNLOAD)
 
 $(YQ_DOWNLOAD):
 	mkdir -p $(YQ_DLDIR)
-	$(WGET) -O $(YQ_DLDIR)/yq.tar.gz https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64.tar.gz
-	$(WGET) -O $(YQ_DLDIR)/LICENSE   https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/LICENSE
-	$(WGET) -O $(YQ_DLDIR)/README.md https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/README.md
+	$(WGET_GITHUB) -O $(YQ_DLDIR)/yq.tar.gz https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64.tar.gz
+	$(WGET_GITHUB) -O $(YQ_DLDIR)/LICENSE   https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/LICENSE
+	$(WGET_GITHUB) -O $(YQ_DLDIR)/README.md https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/README.md
 	touch $@
 
 .PHONY: yq
@@ -331,9 +332,9 @@ yq: $(YQ_DOWNLOAD)
 
 $(KUBECTL_NEAT_DOWNLOAD):
 	mkdir -p $(KUBECTL_NEAT_DLDIR)
-	$(WGET) -O $(KUBECTL_NEAT_DLDIR)/kubectl-neat.tar.gz https://github.com/itaysk/kubectl-neat/releases/download/v$(KUBECTL_NEAT_VERSION)/kubectl-neat_linux_amd64.tar.gz
-	$(WGET) -O $(KUBECTL_NEAT_DLDIR)/LICENSE   https://raw.githubusercontent.com/itaysk/kubectl-neat/v${KUBECTL_NEAT_VERSION}/LICENSE
-	$(WGET) -O $(KUBECTL_NEAT_DLDIR)/Readme.md https://raw.githubusercontent.com/itaysk/kubectl-neat/v${KUBECTL_NEAT_VERSION}/Readme.md
+	$(WGET_GITHUB) -O $(KUBECTL_NEAT_DLDIR)/kubectl-neat.tar.gz https://github.com/itaysk/kubectl-neat/releases/download/v$(KUBECTL_NEAT_VERSION)/kubectl-neat_linux_amd64.tar.gz
+	$(WGET_GITHUB) -O $(KUBECTL_NEAT_DLDIR)/LICENSE   https://raw.githubusercontent.com/itaysk/kubectl-neat/v${KUBECTL_NEAT_VERSION}/LICENSE
+	$(WGET_GITHUB) -O $(KUBECTL_NEAT_DLDIR)/Readme.md https://raw.githubusercontent.com/itaysk/kubectl-neat/v${KUBECTL_NEAT_VERSION}/Readme.md
 	touch $@
 
 .PHONY: kubectl-neat
@@ -345,11 +346,11 @@ kubectl-neat: $(KUBECTL_NEAT_DOWNLOAD)
 
 $(ACCURATE_DOWNLOAD):
 	mkdir -p $(ACCURATE_DLDIR)
-	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate_linux_amd64.tar.gz https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate_v$(ACCURATE_VERSION)_linux_amd64.tar.gz
-	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate_windows_amd64.tar.gz https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate_v$(ACCURATE_VERSION)_windows_amd64.tar.gz
-	$(WGET) -O $(ACCURATE_DLDIR)/kubectl-accurate_darwin_amd64.tar.gz https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate_v$(ACCURATE_VERSION)_darwin_amd64.tar.gz
-	$(WGET) -O $(ACCURATE_DLDIR)/LICENSE   https://raw.githubusercontent.com/cybozu-go/accurate/v$(ACCURATE_VERSION)/LICENSE
-	$(WGET) -O $(ACCURATE_DLDIR)/README.md https://raw.githubusercontent.com/cybozu-go/accurate/v$(ACCURATE_VERSION)/README.md
+	$(WGET_GITHUB) -O $(ACCURATE_DLDIR)/kubectl-accurate_linux_amd64.tar.gz https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate_v$(ACCURATE_VERSION)_linux_amd64.tar.gz
+	$(WGET_GITHUB) -O $(ACCURATE_DLDIR)/kubectl-accurate_windows_amd64.tar.gz https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate_v$(ACCURATE_VERSION)_windows_amd64.tar.gz
+	$(WGET_GITHUB) -O $(ACCURATE_DLDIR)/kubectl-accurate_darwin_amd64.tar.gz https://github.com/cybozu-go/accurate/releases/download/v$(ACCURATE_VERSION)/kubectl-accurate_v$(ACCURATE_VERSION)_darwin_amd64.tar.gz
+	$(WGET_GITHUB) -O $(ACCURATE_DLDIR)/LICENSE   https://raw.githubusercontent.com/cybozu-go/accurate/v$(ACCURATE_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(ACCURATE_DLDIR)/README.md https://raw.githubusercontent.com/cybozu-go/accurate/v$(ACCURATE_VERSION)/README.md
 	touch $@
 
 .PHONY: accurate
@@ -367,9 +368,9 @@ accurate: $(ACCURATE_DOWNLOAD)
 
 $(ALERTMANAGER_DOWNLOAD):
 	mkdir -p $(ALERTMANAGER_DLDIR)
-	$(WGET) -O $(ALERTMANAGER_DLDIR)/alertmanager-linux-amd64.tar.gz https://github.com/prometheus/alertmanager/releases/download/v$(ALERTMANAGER_VERSION)/alertmanager-$(ALERTMANAGER_VERSION).linux-amd64.tar.gz
-	$(WGET) -O $(ALERTMANAGER_DLDIR)/alertmanager-windows-amd64.tar.gz https://github.com/prometheus/alertmanager/releases/download/v$(ALERTMANAGER_VERSION)/alertmanager-$(ALERTMANAGER_VERSION).windows-amd64.tar.gz
-	$(WGET) -O $(ALERTMANAGER_DLDIR)/alertmanager-darwin-amd64.tar.gz https://github.com/prometheus/alertmanager/releases/download/v$(ALERTMANAGER_VERSION)/alertmanager-$(ALERTMANAGER_VERSION).darwin-amd64.tar.gz
+	$(WGET_GITHUB) -O $(ALERTMANAGER_DLDIR)/alertmanager-linux-amd64.tar.gz https://github.com/prometheus/alertmanager/releases/download/v$(ALERTMANAGER_VERSION)/alertmanager-$(ALERTMANAGER_VERSION).linux-amd64.tar.gz
+	$(WGET_GITHUB) -O $(ALERTMANAGER_DLDIR)/alertmanager-windows-amd64.tar.gz https://github.com/prometheus/alertmanager/releases/download/v$(ALERTMANAGER_VERSION)/alertmanager-$(ALERTMANAGER_VERSION).windows-amd64.tar.gz
+	$(WGET_GITHUB) -O $(ALERTMANAGER_DLDIR)/alertmanager-darwin-amd64.tar.gz https://github.com/prometheus/alertmanager/releases/download/v$(ALERTMANAGER_VERSION)/alertmanager-$(ALERTMANAGER_VERSION).darwin-amd64.tar.gz
 	touch $@
 
 .PHONY: alertmanager
@@ -384,11 +385,11 @@ alertmanager: $(ALERTMANAGER_DOWNLOAD)
 
 $(CILIUM_CLI_DOWNLOAD):
 	mkdir -p $(CILIUM_CLI_DLDIR)
-	$(WGET) -O $(CILIUM_CLI_DLDIR)/cilium-linux-amd64.tar.gz https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_CLI_VERSION)/cilium-linux-amd64.tar.gz
-	$(WGET) -O $(CILIUM_CLI_DLDIR)/cilium-windows-amd64.tar.gz https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_CLI_VERSION)/cilium-windows-amd64.tar.gz
-	$(WGET) -O $(CILIUM_CLI_DLDIR)/cilium-darwin-amd64.tar.gz https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_CLI_VERSION)/cilium-darwin-amd64.tar.gz
-	$(WGET) -O $(CILIUM_CLI_DLDIR)/LICENSE   https://raw.githubusercontent.com/cilium/cilium-cli/v$(CILIUM_CLI_VERSION)/LICENSE
-	$(WGET) -O $(CILIUM_CLI_DLDIR)/README.md https://raw.githubusercontent.com/cilium/cilium-cli/v$(CILIUM_CLI_VERSION)/README.md
+	$(WGET_GITHUB) -O $(CILIUM_CLI_DLDIR)/cilium-linux-amd64.tar.gz https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_CLI_VERSION)/cilium-linux-amd64.tar.gz
+	$(WGET_GITHUB) -O $(CILIUM_CLI_DLDIR)/cilium-windows-amd64.tar.gz https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_CLI_VERSION)/cilium-windows-amd64.tar.gz
+	$(WGET_GITHUB) -O $(CILIUM_CLI_DLDIR)/cilium-darwin-amd64.tar.gz https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_CLI_VERSION)/cilium-darwin-amd64.tar.gz
+	$(WGET_GITHUB) -O $(CILIUM_CLI_DLDIR)/LICENSE   https://raw.githubusercontent.com/cilium/cilium-cli/v$(CILIUM_CLI_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(CILIUM_CLI_DLDIR)/README.md https://raw.githubusercontent.com/cilium/cilium-cli/v$(CILIUM_CLI_VERSION)/README.md
 	touch $@
 
 .PHONY: cilium-cli
@@ -406,11 +407,11 @@ cilium-cli: $(CILIUM_CLI_DOWNLOAD)
 
 $(HUBBLE_DOWNLOAD):
 	mkdir -p $(HUBBLE_DLDIR)
-	$(WGET) -O $(HUBBLE_DLDIR)/hubble-linux-amd64.tar.gz https://github.com/cilium/hubble/releases/download/v$(HUBBLE_VERSION)/hubble-linux-amd64.tar.gz
-	$(WGET) -O $(HUBBLE_DLDIR)/hubble-windows-amd64.tar.gz https://github.com/cilium/hubble/releases/download/v$(HUBBLE_VERSION)/hubble-windows-amd64.tar.gz
-	$(WGET) -O $(HUBBLE_DLDIR)/hubble-darwin-amd64.tar.gz https://github.com/cilium/hubble/releases/download/v$(HUBBLE_VERSION)/hubble-darwin-amd64.tar.gz
-	$(WGET) -O $(HUBBLE_DLDIR)/LICENSE   https://raw.githubusercontent.com/cilium/hubble/v$(HUBBLE_VERSION)/LICENSE
-	$(WGET) -O $(HUBBLE_DLDIR)/README.md https://raw.githubusercontent.com/cilium/hubble/v$(HUBBLE_VERSION)/README.md
+	$(WGET_GITHUB) -O $(HUBBLE_DLDIR)/hubble-linux-amd64.tar.gz https://github.com/cilium/hubble/releases/download/v$(HUBBLE_VERSION)/hubble-linux-amd64.tar.gz
+	$(WGET_GITHUB) -O $(HUBBLE_DLDIR)/hubble-windows-amd64.tar.gz https://github.com/cilium/hubble/releases/download/v$(HUBBLE_VERSION)/hubble-windows-amd64.tar.gz
+	$(WGET_GITHUB) -O $(HUBBLE_DLDIR)/hubble-darwin-amd64.tar.gz https://github.com/cilium/hubble/releases/download/v$(HUBBLE_VERSION)/hubble-darwin-amd64.tar.gz
+	$(WGET_GITHUB) -O $(HUBBLE_DLDIR)/LICENSE   https://raw.githubusercontent.com/cilium/hubble/v$(HUBBLE_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(HUBBLE_DLDIR)/README.md https://raw.githubusercontent.com/cilium/hubble/v$(HUBBLE_VERSION)/README.md
 	touch $@
 
 .PHONY: hubble
