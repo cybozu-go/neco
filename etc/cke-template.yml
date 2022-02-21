@@ -122,6 +122,10 @@ options:
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
   kubelet:
+    boot_taints:
+      - key: node.cilium.io/agent-not-ready
+        value: "true"
+        effect: NoExecute
     config:
       apiVersion: kubelet.config.k8s.io/v1beta1
       kind: KubeletConfiguration
