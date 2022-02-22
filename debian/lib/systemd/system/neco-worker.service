@@ -3,11 +3,14 @@ Description=neco worker
 After=network-online.target
 Wants=network-online.target
 ConditionPathExists=/etc/neco/config.yml
+StartLimitIntervalSec=600s
+StartLimitBurst=10
 
 [Service]
 Type=simple
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
+RestartSec=30s
 ExecStart=/usr/sbin/neco-worker
 
 [Install]
