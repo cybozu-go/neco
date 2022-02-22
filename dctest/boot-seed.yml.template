@@ -18,4 +18,5 @@ mounts:
 runcmd:
   - "env http_proxy=http://10.0.49.3:3128 /extras/setup {{.Rack.Index}}"
   - "touch /etc/neco/dctest"
+  - printf '\nsource <(kubectl completion bash)\nalias k=kubectl\ncomplete -o default -F __start_kubectl k\nckecli kubernetes issue --ttl 10h > ~/.kube/config\n' >> /etc/bash.bashrc
   - "touch /tmp/auto-config-done"
