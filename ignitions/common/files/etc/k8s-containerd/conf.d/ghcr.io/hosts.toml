@@ -1,7 +1,7 @@
 server = "https://ghcr.io"
 
 [host."http://registry-ghcr.registry.svc:5000"]
-  capabilities = ["pull"]
+  capabilities = ["pull", "resolve"]
 
 [host."https://ghcr.io"]
   capabilities = ["pull", "resolve"]
