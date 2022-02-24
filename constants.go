@@ -173,6 +173,7 @@ var (
 		filepath.Join(NecoDataDir, "coil.yaml"),
 		filepath.Join(NecoDataDir, "unbound.yml"),
 		filepath.Join(NecoDataDir, "squid.yml"),
+		filepath.Join(NecoDataDir, "teleport.yaml"),
 	}
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")

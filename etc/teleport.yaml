@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teleport-node
+  namespace: teleport
+data:
+  # In dctest, neco_cli_version differs from the tested Neco version
+  # because the specified CLI archive should be downloadable from GitHub.
+  neco_cli_version: |
+    @NECO_CLI_VERSION@

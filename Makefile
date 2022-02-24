@@ -1,4 +1,3 @@
-
 # Makefile for neco
 
 include Makefile.common
@@ -134,6 +133,7 @@ setup-files-for-deb: setup-tools
 	chmod -R g-w $(WORKDIR)
 
 $(DEB): setup-files-for-deb
+	sed -i -e 's/@NECO_CLI_VERSION@/$(VERSION)/' $(SHAREDIR)/teleport.yaml
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(WORKDIR) $(DEST)
 
 $(OP_DEB): setup-files-for-deb
@@ -160,6 +160,7 @@ $(OP_MAC_ZIP): setup-tools
 
 .PHONY: gcp-deb
 gcp-deb: setup-files-for-deb
+	bin/set-neco-cli-version.sh $(SHAREDIR)/teleport.yaml
 	cp dctest/passwd.yml $(SHAREDIR)/ignitions/common/passwd.yml
 	sed -i -e "s/TimeoutStartSec=infinity/TimeoutStartSec=1200/g" $(SHAREDIR)/ignitions/common/systemd/setup-var.service
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(WORKDIR) $(DEST)

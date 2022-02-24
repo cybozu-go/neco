@@ -4,3 +4,8 @@ metadata:
   name: internet-egress
   annotations:
     coil.cybozu.com/pool: internet-egress
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: teleport
