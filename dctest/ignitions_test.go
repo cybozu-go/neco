@@ -2,6 +2,7 @@ package dctest
 
 import (
 	"bufio"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -87,5 +88,24 @@ func testIgnitions() {
 			cryptDev := parentDev(string(stdout))
 			Expect(cryptDev).To(Equal(i.diskDev))
 		}
+	})
+
+	It("should download Neco operation CLI commands on CS Node", func() {
+		By("getting CS Node IP address")
+		machines, err := getMachinesSpecifiedRole("cs")
+		Expect(err).NotTo(HaveOccurred())
+		csNodeIP := machines[0].Spec.IPv4[0]
+
+		By("checking /opt/neco-operation-cli/bin")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(bootServers[0], "ckecli", "ssh", "cybozu@"+csNodeIP, "--", "ls", "/opt/neco-operation-cli/bin")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			if len(stdout) == 0 {
+				return fmt.Errorf("/opt/neco-operation-cli/bin is empty on %s", csNodeIP)
+			}
+			return nil
+		}).Should(Succeed())
 	})
 }

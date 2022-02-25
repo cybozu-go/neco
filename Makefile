@@ -128,6 +128,7 @@ setup-files-for-deb: setup-tools
 	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
 	go build -o $(BINDIR)/sabakan-state-setter -tags='$(GOTAGS)' ./pkg/sabakan-state-setter/cmd
 	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
+	tar -c -f $(LIBEXECDIR)/neco-operation-cli.tgz -z -C $(BINDIR) $(OPDEB_BINNAMES)
 	cp etc/* $(SHAREDIR)
 	cp -a ignitions $(SHAREDIR)
 	cp README.md LICENSE $(DOCDIR)/neco
