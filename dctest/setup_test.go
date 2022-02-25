@@ -2,6 +2,8 @@ package dctest
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -107,14 +109,25 @@ WantedBy=multi-user.target`
 	})
 
 	It("should run services", func() {
-		for _, h := range bootServers {
-			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
-			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
-			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
-			execSafeAt(h, "systemctl", "-q", "is-active", "etcd-backup.timer")
-			execSafeAt(h, "systemctl", "-q", "is-active", neco.EtcdService+".service")
-			execSafeAt(h, "systemctl", "-q", "is-active", neco.VaultService+".service")
+		services := []string{
+			"neco-updater.service",
+			"neco-worker.service",
+			"node-exporter.service",
+			"etcd-backup.timer",
+			neco.EtcdService + ".service",
+			neco.VaultService + ".service",
 		}
+		Eventually(func() error {
+			for _, h := range bootServers {
+				for _, svc := range services {
+					_, stderr, err := execAt(h, "systemctl", "-q", "is-active", svc)
+					if err != nil {
+						return fmt.Errorf("err: %v, stderr: %s", err, stderr)
+					}
+				}
+			}
+			return nil
+		}, 1*time.Minute).Should(Succeed())
 	})
 
 	It("should complete updates", func() {
