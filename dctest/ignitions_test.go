@@ -61,14 +61,12 @@ func parentDev(str string) string {
 
 // testIgnitions tests for ignitions functions.
 func testIgnitions() {
-	var ssNodeIP string
-	It("should get SS Node IP address", func() {
+	It("should create by-path based symlinks for encrypted devices on SS Node", func() {
+		By("getting SS Node IP address")
 		machines, err := getMachinesSpecifiedRole("ss")
 		Expect(err).NotTo(HaveOccurred())
-		ssNodeIP = machines[0].Spec.IPv4[0]
-	})
+		ssNodeIP := machines[0].Spec.IPv4[0]
 
-	It("should create by-path based symlinks for encrypted devices", func() {
 		By("checking the number of symlinks")
 		stdout, stderr, err := execAt(bootServers[0], "ckecli", "ssh", "cybozu@"+ssNodeIP, "--", "ls", "-l", "/sys/block/")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
