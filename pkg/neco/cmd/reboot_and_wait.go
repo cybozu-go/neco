@@ -13,6 +13,7 @@ import (
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/sabakan/v2"
 	sabaclient "github.com/cybozu-go/sabakan/v2/client"
+	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 )
 
@@ -70,33 +71,7 @@ var rebootAndWaitCmd = &cobra.Command{
 	},
 }
 
-func rebootAndWaitMain(target string) error {
-	machine, err := lookupMachine(context.Background(), target)
-	if err != nil {
-		log.Error("failed to lookup serial or IP address", map[string]interface{}{
-			"serial_or_ip": target,
-			log.FnError:    err,
-		})
-		return err
-	}
-
-	var oldUptime string
-	member, err := getSerfMemberBySerial(machine.Spec.Serial)
-	if err != nil {
-		log.Error("failed to get serf member", map[string]interface{}{
-			"serial_or_ip": target,
-			log.FnError:    err,
-		})
-		return err
-	}
-	if member != nil {
-		oldUptime = member.Tags[serfTagUptime]
-	}
-
-	log.Info("rebooting a machine", map[string]interface{}{
-		"serial_or_ip": target,
-	})
-
+func rebootAndWaitMain(target string) (err error) {
 	saba, err := sabaclient.NewClient(neco.SabakanLocalEndpoint, ext.LocalHTTPClient())
 	if err != nil {
 		log.Error("failed to create sabakan client", map[string]interface{}{
@@ -106,60 +81,8 @@ func rebootAndWaitMain(target string) error {
 		return err
 	}
 
-	err = saba.MachinesSetState(context.Background(), machine.Spec.Serial, sabakan.StateUpdating.String())
-	if err != nil {
-		log.Error("failed to set sabakan state to updating", map[string]interface{}{
-			"serial_or_ip": target,
-			log.FnError:    err,
-		})
-		return err
-	}
-
-	err = power(context.Background(), "restart", machine.Spec.BMC.IPv4)
-	if err != nil {
-		log.Error("failed to reboot via IPMI", map[string]interface{}{
-			"serial_or_ip": target,
-			log.FnError:    err,
-		})
-		return err
-	}
-
-	// sleep for a while to ignore a delayed change of uptime occurred before my reboot, if any
-	time.Sleep(60 * time.Second)
-
-	for {
-		time.Sleep(1 * time.Second)
-
-		member, err := getSerfMemberBySerial(machine.Spec.Serial)
-		if err != nil {
-			log.Error("failed to get serf member", map[string]interface{}{
-				"serial_or_ip": target,
-				log.FnError:    err,
-			})
-			return err
-		}
-
-		if member == nil || member.Tags[serfTagUptime] == "" {
-			continue
-		}
-		if member.Tags[serfTagUptime] != oldUptime {
-			break
-		}
-	}
-
-	err = saba.MachinesSetState(context.Background(), machine.Spec.Serial, sabakan.StateUninitialized.String())
-	if err != nil {
-		log.Error("failed to set sabakan state to uninitialized", map[string]interface{}{
-			"serial_or_ip": target,
-			log.FnError:    err,
-		})
-		return err
-	}
-
-	for {
-		time.Sleep(1 * time.Second)
-
-		machine, err := lookupMachine(context.Background(), target)
+	well.Go(func(ctx context.Context) error {
+		machine, err := lookupMachine(ctx, target)
 		if err != nil {
 			log.Error("failed to lookup serial or IP address", map[string]interface{}{
 				"serial_or_ip": target,
@@ -168,10 +91,109 @@ func rebootAndWaitMain(target string) error {
 			return err
 		}
 
-		if machine.Status.State == sabakan.StateHealthy {
-			return nil
+		var oldUptime string
+		member, err := getSerfMemberBySerial(machine.Spec.Serial)
+		if err != nil {
+			log.Error("failed to get serf member", map[string]interface{}{
+				"serial_or_ip": target,
+				log.FnError:    err,
+			})
+			return err
 		}
-	}
+		if member != nil {
+			oldUptime = member.Tags[serfTagUptime]
+		}
+
+		log.Info("rebooting a machine", map[string]interface{}{
+			"serial_or_ip": target,
+		})
+
+		err = power(ctx, "restart", machine.Spec.BMC.IPv4)
+		if err != nil {
+			log.Error("failed to reboot via IPMI", map[string]interface{}{
+				"serial_or_ip": target,
+				log.FnError:    err,
+			})
+			return err
+		}
+
+		err = saba.MachinesSetState(ctx, machine.Spec.Serial, sabakan.StateUpdating.String())
+		if err != nil {
+			log.Error("failed to set sabakan state to updating", map[string]interface{}{
+				"serial_or_ip": target,
+				log.FnError:    err,
+			})
+			return err
+		}
+		defer func() {
+			// If for some reason the state is stuck in "updating", set "uninitialized".
+			ctx2 := context.Background()
+			machineState, err2 := saba.MachinesGetState(ctx2, machine.Spec.Serial)
+			if err2 != nil && err == nil {
+				err = err2
+				return
+			}
+			if machineState != sabakan.StateUpdating {
+				return
+			}
+			err2 = saba.MachinesSetState(ctx2, machine.Spec.Serial, sabakan.StateUninitialized.String())
+			if err != nil && err == nil {
+				err = err2
+				return
+			}
+		}()
+
+		// sleep for a while to ignore a delayed change of uptime occurred before my reboot, if any
+		time.Sleep(60 * time.Second)
+
+		for {
+			time.Sleep(1 * time.Second)
+
+			member, err := getSerfMemberBySerial(machine.Spec.Serial)
+			if err != nil {
+				log.Error("failed to get serf member", map[string]interface{}{
+					"serial_or_ip": target,
+					log.FnError:    err,
+				})
+				return err
+			}
+
+			if member == nil || member.Tags[serfTagUptime] == "" {
+				continue
+			}
+			if member.Tags[serfTagUptime] != oldUptime {
+				break
+			}
+		}
+
+		err = saba.MachinesSetState(ctx, machine.Spec.Serial, sabakan.StateUninitialized.String())
+		if err != nil {
+			log.Error("failed to set sabakan state to uninitialized", map[string]interface{}{
+				"serial_or_ip": target,
+				log.FnError:    err,
+			})
+			return err
+		}
+
+		for {
+			time.Sleep(1 * time.Second)
+
+			machine, err := lookupMachine(ctx, target)
+			if err != nil {
+				log.Error("failed to lookup serial or IP address", map[string]interface{}{
+					"serial_or_ip": target,
+					log.FnError:    err,
+				})
+				return err
+			}
+
+			if machine.Status.State == sabakan.StateHealthy {
+				return nil
+			}
+		}
+	})
+	well.Stop()
+	return well.Wait()
 }
 
 func getSerfMemberBySerial(serial string) (*serfMember, error) {
