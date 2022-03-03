@@ -1,0 +1,27 @@
+#!/bin/sh
+
+TOPDIR=/opt/neco-operation-cli
+ARCHIVE=neco-operation-cli.tgz
+
+mkdir -p ${TOPDIR}/bin
+
+for i in $(seq 20); do
+    if curl -sfSL --remote-time --time-cond ${TOPDIR}/${ARCHIVE} -o ${TOPDIR}/${ARCHIVE}.new {{ MyURL }}/api/v1/assets/${ARCHIVE}; then
+        break
+    fi
+    sleep 5
+done
+
+if [ ! -e ${TOPDIR}/${ARCHIVE}.new ]; then
+    exit
+fi
+
+mv ${TOPDIR}/${ARCHIVE}.new ${TOPDIR}/${ARCHIVE}
+
+rm -rf ${TOPDIR}/work
+mkdir -p ${TOPDIR}/work
+tar -x -f ${TOPDIR}/${ARCHIVE} -z -C ${TOPDIR}/work
+chown -R root:root ${TOPDIR}/work
+for f in $(ls ${TOPDIR}/work); do
+    mv ${TOPDIR}/work/$f ${TOPDIR}/bin/
+done

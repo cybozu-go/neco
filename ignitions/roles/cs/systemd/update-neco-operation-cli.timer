@@ -1,0 +1,11 @@
+[Unit]
+Description=Update Neco operation CLI commands periodically
+Wants=network-online.target
+After=network-online.target
+
+[Timer]
+OnActiveSec=0
+OnUnitActiveSec=1 day
+
+[Install]
+WantedBy=multi-user.target

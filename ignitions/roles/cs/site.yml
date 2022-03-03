@@ -1,1 +1,7 @@
 include: ../../common/common.yml
+files:
+  - /opt/sbin/update-neco-operation-cli
+systemd:
+  - name: update-neco-operation-cli.service
+  - name: update-neco-operation-cli.timer
+    enabled: true

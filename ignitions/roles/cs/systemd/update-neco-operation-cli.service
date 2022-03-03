@@ -1,0 +1,6 @@
+[Unit]
+Description=Update Neco operation CLI commands
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/update-neco-operation-cli
