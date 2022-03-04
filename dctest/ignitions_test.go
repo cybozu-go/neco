@@ -2,6 +2,7 @@ package dctest
 
 import (
 	"bufio"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -60,14 +61,12 @@ func parentDev(str string) string {
 
 // testIgnitions tests for ignitions functions.
 func testIgnitions() {
-	var ssNodeIP string
-	It("should get SS Node IP address", func() {
+	It("should create by-path based symlinks for encrypted devices on SS Node", func() {
+		By("getting SS Node IP address")
 		machines, err := getMachinesSpecifiedRole("ss")
 		Expect(err).NotTo(HaveOccurred())
-		ssNodeIP = machines[0].Spec.IPv4[0]
-	})
+		ssNodeIP := machines[0].Spec.IPv4[0]
 
-	It("should create by-path based symlinks for encrypted devices", func() {
 		By("checking the number of symlinks")
 		stdout, stderr, err := execAt(bootServers[0], "ckecli", "ssh", "cybozu@"+ssNodeIP, "--", "ls", "-l", "/sys/block/")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
@@ -87,5 +86,24 @@ func testIgnitions() {
 			cryptDev := parentDev(string(stdout))
 			Expect(cryptDev).To(Equal(i.diskDev))
 		}
+	})
+
+	It("should download Neco operation CLI commands on CS Node", func() {
+		By("getting CS Node IP address")
+		machines, err := getMachinesSpecifiedRole("cs")
+		Expect(err).NotTo(HaveOccurred())
+		csNodeIP := machines[0].Spec.IPv4[0]
+
+		By("checking /opt/neco-operation-cli/bin")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(bootServers[0], "ckecli", "ssh", "cybozu@"+csNodeIP, "--", "ls", "/opt/neco-operation-cli/bin")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			if len(stdout) == 0 {
+				return fmt.Errorf("/opt/neco-operation-cli/bin is empty on %s", csNodeIP)
+			}
+			return nil
+		}).Should(Succeed())
 	})
 }
