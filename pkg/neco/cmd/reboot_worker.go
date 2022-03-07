@@ -32,14 +32,22 @@ type sabakanMachinesGetOpts struct {
 // addSabapanMachinesGetOpts adds flags for `sabactl machines get`-like options to cobra.Command
 func addSabakanMachinesGetOpts(cmd *cobra.Command, opts *sabakanMachinesGetOpts) {
 	getOpts := map[string]string{
-		"serial":   "Serial name",
-		"rack":     "Rack name",
-		"role":     "Role name",
-		"labels":   "Label name and value (--labels key=val,...)",
-		"ipv4":     "IPv4 address",
-		"ipv6":     "IPv6 address",
-		"bmc-type": "BMC type",
-		"state":    "State",
+		"serial":           "Serial name(s) (--serial 001,002,003...)",
+		"rack":             "Rack name(s) (--rack 1,2,3...)",
+		"role":             "Role name(s) (--role boot,worker...)",
+		"labels":           "Label name and value (--labels key=val,...)",
+		"ipv4":             "IPv4 address(s) (--ipv4 10.0.0.1,10.0.0.2,10.0.0.3...)",
+		"ipv6":             "IPv6 address(s) (--ipv6 aa::ff,bb::ff,cc::ff...)",
+		"bmc-type":         "BMC type(s) (--bmc-type iDRAC-9,IPMI-2.0...)",
+		"state":            "State(s) (--state retiring,uninitialized...)",
+		"without-serial":   "without Serial name",
+		"without-rack":     "without Rack name",
+		"without-role":     "without Role name",
+		"without-labels":   "without Label name and value (--labels key=val,...)",
+		"without-ipv4":     "without IPv4 address",
+		"without-ipv6":     "without IPv6 address",
+		"without-bmc-type": "without BMC type",
+		"without-state":    "without State",
 	}
 	opts.params = make(map[string]*string)
 	for k, v := range getOpts {
