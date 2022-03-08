@@ -1,7 +1,0 @@
-server = "https://docker.elastic.co"
-
-[host."http://registry-elastic.registry.svc:5000"]
-  capabilities = ["pull", "resolve"]
-
-[host."https://docker.elastic.co"]
-  capabilities = ["pull", "resolve"]
