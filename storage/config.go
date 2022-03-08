@@ -144,3 +144,33 @@ func (s Storage) PutExternalIPAddressBlock(ctx context.Context, ipBlock string) 
 func (s Storage) GetExternalIPAddressBlock(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyExternalIPAddressBlock)
 }
+
+// PutLBAddressBlockDefault stores LB address block for default to storage.
+func (s Storage) PutLBAddressBlockDefault(ctx context.Context, ipBlock string) error {
+	return s.put(ctx, KeyLBAddressBlockDefault, ipBlock)
+}
+
+// GetLBAddressBlockDefault returns LB address block for default from storage
+func (s Storage) GetLBAddressBlockDefault(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyLBAddressBlockDefault)
+}
+
+// PutLBAddressBlockBastion stores LB address block for bastion to storage.
+func (s Storage) PutLBAddressBlockBastion(ctx context.Context, ipBlock string) error {
+	return s.put(ctx, KeyLBAddressBlockBastion, ipBlock)
+}
+
+// GetLBAddressBlockBastion returns LB address block for bastion from storage
+func (s Storage) GetLBAddressBlockBastion(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyLBAddressBlockBastion)
+}
+
+// PutLBAddressBlockInternet stores LB address block for internet to storage.
+func (s Storage) PutLBAddressBlockInternet(ctx context.Context, ipBlock string) error {
+	return s.put(ctx, KeyLBAddressBlockInternet, ipBlock)
+}
+
+// GetLBAddressBlockInternet returns LB address block for internet from storage
+func (s Storage) GetLBAddressBlockInternet(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyLBAddressBlockInternet)
+}

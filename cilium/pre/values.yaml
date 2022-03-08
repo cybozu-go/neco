@@ -1,0 +1,73 @@
+bgp:
+  announce:
+    loadbalancerIP: true
+  enabled: true
+bpf:
+  hostRouting: true
+cni:
+  chainingMode: "generic-veth"
+  customConf: true
+datapathMode: "veth"
+devices: "eth+ eno1+ eno2+"
+enableIdentityMark: false
+enableIPv4Masquerade: false
+externalIPs:
+  enabled: true
+hostPort:
+  enabled: false
+hostServices:
+  enabled: true
+  hostNamespaceOnly: true
+hubble:
+  relay:
+    enabled: true
+    tls:
+      server:
+        enabled: true
+    rollOutPods: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200Mi
+  tls:
+    auto:
+      method: "cronJob"
+  metrics:
+    enabled:
+      - "dns"
+      - "drop:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip"
+      - "tcp"
+      - "flow:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip"
+      - "icmp"
+      - "http"
+k8sServiceHost: 127.0.0.1
+k8sServicePort: 16443
+kubeProxyReplacement: "partial"
+loadBalancer:
+  # We can't enable XDP Acceleration because of the issue https://github.com/cilium/cilium/issues/19453
+  acceleration: disabled
+  algorithm: maglev
+  mode: dsr
+maglev:
+  hashSeed: 3HCx6JennjWtot2U
+nodePort:
+  directRoutingDevice: "e+"
+  enabled: true
+operator:
+  rollOutPods: true
+  prometheus:
+    enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 200Mi
+policyAuditMode: false
+policyEnforcementMode: "default"
+prometheus:
+  enabled: true
+rollOutCiliumPods: true
+resources:
+  requests:
+    cpu: 100m
+    memory: 400Mi
+tunnel: "disabled"

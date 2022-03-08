@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ubuntu-l4lb-client
+  namespace: testl4lb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ubuntu-l4lb-client
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ubuntu-l4lb-client
+    spec:
+      containers:
+        - args:
+            - pause
+          image: quay.io/cybozu/ubuntu-debug:20.04
+          name: ubuntu
+      nodeSelector:
+        kubernetes.io/hostname: {{.Node}}
