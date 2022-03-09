@@ -45,19 +45,19 @@ iso: $(CUSTOM_ISO_PATH)
 
 $(ORIGINAL_ISO_PATH):
 	mkdir -p build
-	curl -o $@ -fsL https://releases.ubuntu.com/$(UBUNTU_VERSION)/$(ORIGINAL_ISO_NAME)
+	curl -o $@ -fsSL https://releases.ubuntu.com/$(UBUNTU_VERSION)/$(ORIGINAL_ISO_NAME)
 
 $(CHRONY_DEB):
 	mkdir -p build
-	cd build; curl -O -fsL $(CHRONY_URL)
+	cd build; curl -O -fsSL $(CHRONY_URL)
 
 $(BIRD2_DEB):
 	mkdir -p build
-	cd build; curl -O -fsL $(BIRD2_URL)
+	cd build; curl -O -fsSL $(BIRD2_URL)
 
 $(LIBSSH_DEB):
 	mkdir -p build
-	cd build; curl -O -fsL $(LIBSSH_URL)
+	cd build; curl -O -fsSL $(LIBSSH_URL)
 
 $(CUSTOM_ISO_PATH): $(ORIGINAL_ISO_PATH) $(DEBS) cluster.json
 	rm -rf $(SRC_DIR_PATH)
@@ -106,7 +106,7 @@ cloud: $(CUSTOM_CLOUD_PATH)
 
 $(ORIGINAL_CLOUD_PATH):
 	mkdir -p build
-	curl -o $@ -fsL https://cloud-images.ubuntu.com/releases/20.04/release/$(ORIGINAL_CLOUD_IMAGE)
+	curl -o $@ -fsSL https://cloud-images.ubuntu.com/releases/20.04/release/$(ORIGINAL_CLOUD_IMAGE)
 
 $(CUSTOM_CLOUD_PATH): $(ORIGINAL_CLOUD_PATH) $(DEBS) cluster.json
 	cp $< $@

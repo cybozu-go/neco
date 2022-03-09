@@ -50,7 +50,7 @@ all:
 update-coil:
 	rm -rf /tmp/work-coil
 	mkdir -p /tmp/work-coil/cke-patch
-	curl -sfL https://github.com/cybozu-go/coil/archive/v$(COIL_VERSION).tar.gz | tar -C /tmp/work-coil -xzf - --strip-components=1
+	curl -sSfL https://github.com/cybozu-go/coil/archive/v$(COIL_VERSION).tar.gz | tar -C /tmp/work-coil -xzf - --strip-components=1
 	cd /tmp/work-coil/v2; sed -i -E 's,^(- config/default),#\1, ; s,^#(- config/cke),\1, ; s,^#(- config/default/pod_security_policy.yaml),\1, ; s,^#(- config/pod/compat_calico.yaml),\1,' kustomization.yaml
 	cp etc/netconf.json /tmp/work-coil/v2/netconf.json
 	cp coil/* /tmp/work-coil/cke-patch
@@ -84,7 +84,7 @@ helm: $(HELM) ## Download helm locally if necessary.
 
 $(HELM):
 	mkdir -p $(BIN_DIR)
-	curl -L -sS https://get.helm.sh/helm-v$(HELM_VERSION)-linux-amd64.tar.gz \
+	curl -sSfL https://get.helm.sh/helm-v$(HELM_VERSION)-linux-amd64.tar.gz \
 	  | tar xz -C $(BIN_DIR) --strip-components 1 linux-amd64/helm
 
 .PHONY: start-etcd
@@ -174,7 +174,7 @@ setup:
 	$(SUDO) apt-get update
 	$(SUDO) apt-get -y install --no-install-recommends $(PACKAGES)
 	mkdir -p bin
-	bin/curl-github -sfL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz | tar -xz -C bin
+	bin/curl-github -sSfL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz | tar -xz -C bin
 	chmod a+x bin/kustomize
 
 .PHONY: clean
