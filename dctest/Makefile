@@ -15,7 +15,7 @@ else
 endif
 MACHINES_FILE ?= $(abspath $(OUTPUT)/machines.yml)
 ADDRESS_POOLS_FILE = $(abspath ./address_pools.yaml)
-CURL_OPTIONS = -fsL
+CURL_OPTIONS = -fsSL
 CURL = curl $(CURL_OPTIONS)
 CURL_GITHUB = ../bin/curl-github $(CURL_OPTIONS)
 CT_VERSION = 0.9.0
