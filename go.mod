@@ -10,7 +10,7 @@ require (
 	github.com/cybozu-go/etcdutil v1.5.0
 	github.com/cybozu-go/log v1.6.1
 	github.com/cybozu-go/netutil v1.4.2
-	github.com/cybozu-go/placemat/v2 v2.0.5
+	github.com/cybozu-go/placemat/v2 v2.1.0
 	github.com/cybozu-go/sabakan/v2 v2.8.0
 	github.com/cybozu-go/well v1.11.0
 	github.com/google/go-cmp v0.5.6

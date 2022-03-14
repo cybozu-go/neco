@@ -215,6 +215,10 @@ The available properties are as following:
 
 Image resource is the same as [Image resource of placemat](https://github.com/cybozu-go/placemat/blob/main/docs/resource.md#image-resource).
 
+### DeviceClass resource
+
+DeviceClass resource is the same as [DeviceClass resource of placemat](https://github.com/cybozu-go/placemat/blob/main/docs/resource.md#deviceclass-resource).
+
 ### Node resource
 
 Node resource specify the resources of the machines.
@@ -226,12 +230,34 @@ spec:
   cpu: 2
   memory: 2G
   disk-count: 4
+  disk-size: 30G
   image: ubuntu-cloud-image
   data:
     - docker-lib-image
   uefi: true
   cloud-init-template: boot-seed.yml.template
   tpm: true
+```
+
+```yaml
+kind: Node
+type: ss
+spec:
+  cpu: 2
+  memory: 2G
+  image: ubuntu-cloud-image
+  data:
+    - docker-lib-image
+  uefi: true
+  cloud-init-template: boot-seed.yml.template
+  tpm: true
+  disks:
+    - device-class: ssd
+      count: 1
+      size: 50G
+    - device-class: hdd
+      count: 3
+      size: 100G
 ```
 
 The available properties are as following:
@@ -243,6 +269,11 @@ The available properties are as following:
 - `cpu`: The number of the virtual CPU cores
 - `memory`: The size of the memory.
 - `disk-count`: The count of disk storages. This property is used for cs and ss (Ignored for boot machine).
+- `disk-size`: The size of disk storage. This property is used for cs and ss (Ignored for boot machine).
+- `disks`: Following properties are available. These properties are exclusive for `disk-count`.
+    - `device-class`: The name of DeviceClass.
+    - `count`: The count of disk storage for specified DeviceClass.
+    - `size`: The size of disk storage for specified DeviceClass. If both of `disk-size` and `disks.size` are specified, `disks.size` is used as the actual size.
 - `image`: The name of an image resource for boot (optional)
 - `data`: The name of image resources for additional data (optional)
 - `smbios`: The name of BIOS mode (optional. See [Node resource of placemat](https://github.com/cybozu-go/placemat/blob/main/docs/resource.md#node-resource))
