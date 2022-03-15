@@ -8,6 +8,7 @@ if [ "$SUDO" = "" ]; then
     SUDO_OPTION=""
 fi
 
+PLACEMAT_PID="$(echo $(pgrep --exact placemat2) | tr " " ",")"
 while true; do
     if [ "$(ip netns | grep operation)" != "" ]; then
         break
