@@ -38,6 +38,14 @@ kind: Image
 name: flatcar
 file: flatcar_production_qemu_image.img
 ---
+kind: DeviceClass
+name: ssd
+path: /var/scratch/placemat/ssd
+---
+kind: DeviceClass
+name: hdd
+path: /var/scratch/placemat/hdd
+---
 kind: Node
 type: boot
 spec:
@@ -52,6 +60,7 @@ spec:
   cpu: 2
   memory: 2G
   disk-count: 2
+  disk-size: 30G
   data:
     - docker-image
   uefi: true
@@ -62,7 +71,13 @@ type: ss
 spec:
   cpu: 1
   memory: 1G
-  disk-count: 4
   data:
     - docker-image
   tpm: true
+  disks:
+    - device-class: ssd
+      count: 1
+      size: 50G
+    - device-class: hdd
+      count: 3
+      size: 100G

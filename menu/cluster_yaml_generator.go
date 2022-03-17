@@ -36,6 +36,17 @@ func (c *Cluster) generateClusterYaml(w io.Writer, sabakanDir string) error {
 		}
 	}
 
+	for _, d := range spec.DeviceClasses {
+		data, err := yaml.Marshal(d)
+		if err != nil {
+			return err
+		}
+		_, err = f.Write(data)
+		if err != nil {
+			return err
+		}
+	}
+
 	for _, n := range spec.Nodes {
 		data, err := yaml.Marshal(n)
 		if err != nil {
@@ -63,7 +74,8 @@ func (c *Cluster) generateClusterYaml(w io.Writer, sabakanDir string) error {
 
 func (c *Cluster) generateClusterSpec(sabakanDir string) *types.ClusterSpec {
 	spec := &types.ClusterSpec{
-		Images: c.image,
+		Images:        c.image,
+		DeviceClasses: c.deviceclasses,
 	}
 	c.appendNetworks(spec)
 	c.appendNodes(spec, sabakanDir)
@@ -227,14 +239,35 @@ func createWorkerNode(rack *rack, node *node, spec *nodeSpec) *types.NodeSpec {
 		},
 	}
 
+	diskSize := "50G"
+	if spec.DiskSize != "" {
+		diskSize = spec.DiskSize
+	}
 	for i := 0; i < spec.DiskCount; i++ {
 		nodeSpec.Volumes = append(nodeSpec.Volumes, types.NodeVolumeSpec{
 			Kind:   "raw",
 			Name:   fmt.Sprintf("data%d", i+1),
-			Size:   "50G",
+			Size:   diskSize,
 			Cache:  "none",
 			Format: "raw",
 		})
+	}
+
+	for i, v := range spec.Disks {
+		diskSizeDC := diskSize
+		if v.Size != "" {
+			diskSizeDC = v.Size
+		}
+		for j := 0; j < v.Count; j++ {
+			nodeSpec.Volumes = append(nodeSpec.Volumes, types.NodeVolumeSpec{
+				Kind:        "raw",
+				Name:        fmt.Sprintf("data%d-%d", i+1, j+1),
+				Size:        diskSizeDC,
+				Cache:       "none",
+				Format:      "raw",
+				DeviceClass: v.DeviceClass,
+			})
+		}
 	}
 
 	for i, dataImg := range spec.Data {

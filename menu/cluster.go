@@ -39,15 +39,16 @@ const (
 
 // Cluster is the config file generator for Placemat
 type Cluster struct {
-	network   *network
-	operation *operation
-	external  *external
-	internet  *internet
-	bmc       *bmc
-	core      *core
-	spines    []*spine
-	racks     []*rack
-	image     []*types.ImageSpec
+	network       *network
+	operation     *operation
+	external      *external
+	internet      *internet
+	bmc           *bmc
+	core          *core
+	spines        []*spine
+	racks         []*rack
+	image         []*types.ImageSpec
+	deviceclasses []*types.DeviceClassSpec
 }
 
 // GenerateOption is a option for Cluster.Generate().
@@ -230,9 +231,10 @@ func NewCluster(menu *menu) (*Cluster, error) {
 				addToIPNet(network.ntp, offsetNTP2),
 			},
 		},
-		operation: &operation{coreAddress: addToIPNet(network.coreOperation, offsetOperation)},
-		external:  &external{coreAddress: addToIPNet(network.coreExternal, offsetExternal)},
-		image:     menu.images,
+		operation:     &operation{coreAddress: addToIPNet(network.coreOperation, offsetOperation)},
+		external:      &external{coreAddress: addToIPNet(network.coreExternal, offsetExternal)},
+		image:         menu.images,
+		deviceclasses: menu.deviceclasses,
 	}
 
 	// Set racks
