@@ -112,6 +112,14 @@ file: flatcar_production_qemu_image.img
 kind: Image
 name: flatcar
 ---
+kind: DeviceClass
+name: ssd
+path: /var/scratch/placemat/ssd
+---
+kind: DeviceClass
+name: hdd
+path: /var/scratch/placemat/hdd
+---
 cpu: 2
 interfaces:
 - r0-node1
@@ -144,19 +152,19 @@ memory: 2G
 name: rack0-cs1
 smbios:
   serial: ba49d9a971c5a0344edfda5c8116745ea16fa4dd
-uefi: true
 tpm: true
+uefi: true
 volumes:
 - cache: none
+  format: raw
   kind: raw
   name: data1
-  size: 50G
-  format: raw
+  size: 30G
 - cache: none
+  format: raw
   kind: raw
   name: data2
-  size: 50G
-  format: raw
+  size: 30G
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -171,19 +179,19 @@ memory: 2G
 name: rack0-cs2
 smbios:
   serial: e6abb04b4645a765faf91f97536ec64f9cecfb61
-uefi: true
 tpm: true
+uefi: true
 volumes:
 - cache: none
+  format: raw
   kind: raw
   name: data1
-  size: 50G
-  format: raw
+  size: 30G
 - cache: none
+  format: raw
   kind: raw
   name: data2
-  size: 50G
-  format: raw
+  size: 30G
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -221,19 +229,19 @@ memory: 2G
 name: rack1-cs1
 smbios:
   serial: 4ae0771764376e0184274e24e0b18abd8fa5f285
-uefi: true
 tpm: true
+uefi: true
 volumes:
 - cache: none
+  format: raw
   kind: raw
   name: data1
-  size: 50G
-  format: raw
+  size: 30G
 - cache: none
+  format: raw
   kind: raw
   name: data2
-  size: 50G
-  format: raw
+  size: 30G
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -248,19 +256,19 @@ memory: 2G
 name: rack1-cs2
 smbios:
   serial: aec899fb87747909c95a2decaa4f25899f07516e
-uefi: true
 tpm: true
+uefi: true
 volumes:
 - cache: none
+  format: raw
   kind: raw
   name: data1
-  size: 50G
-  format: raw
+  size: 30G
 - cache: none
+  format: raw
   kind: raw
   name: data2
-  size: 50G
-  format: raw
+  size: 30G
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -278,25 +286,29 @@ smbios:
 tpm: true
 volumes:
 - cache: none
-  kind: raw
-  name: data1
-  size: 50G
+  device-class: ssd
   format: raw
+  kind: raw
+  name: data1-1
+  size: 50G
 - cache: none
-  kind: raw
-  name: data2
-  size: 50G
+  device-class: hdd
   format: raw
+  kind: raw
+  name: data2-1
+  size: 100G
 - cache: none
-  kind: raw
-  name: data3
-  size: 50G
+  device-class: hdd
   format: raw
+  kind: raw
+  name: data2-2
+  size: 100G
 - cache: none
-  kind: raw
-  name: data4
-  size: 50G
+  device-class: hdd
   format: raw
+  kind: raw
+  name: data2-3
+  size: 100G
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -314,38 +326,42 @@ smbios:
 tpm: true
 volumes:
 - cache: none
-  kind: raw
-  name: data1
-  size: 50G
+  device-class: ssd
   format: raw
+  kind: raw
+  name: data1-1
+  size: 50G
 - cache: none
-  kind: raw
-  name: data2
-  size: 50G
+  device-class: hdd
   format: raw
+  kind: raw
+  name: data2-1
+  size: 100G
 - cache: none
-  kind: raw
-  name: data3
-  size: 50G
+  device-class: hdd
   format: raw
+  kind: raw
+  name: data2-2
+  size: 100G
 - cache: none
-  kind: raw
-  name: data4
-  size: 50G
+  device-class: hdd
   format: raw
+  kind: raw
+  name: data2-3
+  size: 100G
 - copy-on-write: true
   image: docker-image
   kind: image
   name: extra0
 ---
 cpu: 2
+ignition: chrony.ign
 interfaces:
   - core-ntp
 kind: Node
 memory: 4G
 name: chrony
 smbios: {}
-ignition: chrony.ign
 volumes:
   - cache: writeback
     copy-on-write: true

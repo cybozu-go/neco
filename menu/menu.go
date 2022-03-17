@@ -193,19 +193,38 @@ func (n *nodeMenu) validate() error {
 	if !(n.Spec.CPU > 0) {
 		return errors.New("cpu in Node must be more than 0")
 	}
+	if err := n.Spec.validate(); err != nil {
+		return err
+	}
 
 	return nil
 }
 
+type diskSpec struct {
+	DeviceClass string `json:"device-class"`
+	Count       int    `json:"count"`
+	Size        string `json:"size"`
+}
+
 type nodeSpec struct {
-	CPU               int      `json:"cpu"`
-	Memory            string   `json:"memory"`
-	DiskCount         int      `json:"disk-count"`
-	Image             string   `json:"image"`
-	Data              []string `json:"data"`
-	UEFI              bool     `json:"uefi"`
-	CloudInitTemplate string   `json:"cloud-init-template"`
-	TPM               bool     `json:"tpm"`
+	CPU               int        `json:"cpu"`
+	Memory            string     `json:"memory"`
+	DiskCount         int        `json:"disk-count"`
+	DiskSize          string     `json:"disk-size"`
+	Disks             []diskSpec `json:"disks"`
+	Image             string     `json:"image"`
+	Data              []string   `json:"data"`
+	UEFI              bool       `json:"uefi"`
+	CloudInitTemplate string     `json:"cloud-init-template"`
+	TPM               bool       `json:"tpm"`
+}
+
+func (n *nodeSpec) validate() error {
+	if n.DiskCount > 0 && len(n.Disks) > 0 {
+		return errors.New("DiskCount and Disks are exclusive")
+	}
+
+	return nil
 }
 
 type nodeType string
@@ -217,10 +236,11 @@ const (
 )
 
 type menu struct {
-	network   *network
-	inventory *inventory
-	images    []*types.ImageSpec
-	nodes     []*nodeMenu
+	network       *network
+	inventory     *inventory
+	images        []*types.ImageSpec
+	deviceclasses []*types.DeviceClassSpec
+	nodes         []*nodeMenu
 }
 
 type baseConfig struct {
@@ -276,6 +296,12 @@ func Parse(r io.Reader, menuFileDir string) (*menu, error) {
 				return nil, fmt.Errorf("failed to unmarshal the Image yaml document %s: %w", y, err)
 			}
 			menu.images = append(menu.images, i)
+		case "DeviceClass":
+			d := &types.DeviceClassSpec{}
+			if err := yaml.Unmarshal(y, d); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal the DeviceClass yaml document %s: %w", y, err)
+			}
+			menu.deviceclasses = append(menu.deviceclasses, d)
 		default:
 			return nil, errors.New("unknown resource: " + b.Kind)
 		}
