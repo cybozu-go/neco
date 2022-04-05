@@ -132,6 +132,9 @@ options:
       cgroupDriver: systemd
       containerLogMaxSize: 10Mi
       containerLogMaxFiles: 10
+      cpuManagerPolicy: static
+      systemReserved:
+        cpu: "1"
       featureGates:
         EphemeralContainers: true
         MixedProtocolLBService: true
