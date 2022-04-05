@@ -1,0 +1,13 @@
+[Unit]
+Description=Remove kubelet state files
+After=local-fs.target
+# Because kubelet run on docker, remove-kubelet-state.service starts before docker.service
+Before=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/rm -f /var/lib/kubelet/cpu_manager_state
+ExecStart=/bin/rm -f /var/lib/kubelet/memory_manager_state
+
+[Install]
+WantedBy=multi-user.target
