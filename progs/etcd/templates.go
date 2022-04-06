@@ -62,6 +62,11 @@ log-outputs: [stderr]
 # auto compaction
 auto-compaction-mode: periodic
 auto-compaction-retention: "24"
+
+# detect inconsistencies
+# etcd 3.5.[0-2] has data inconsistency issue.
+# https://groups.google.com/a/kubernetes.io/g/dev/c/B7gJs88XtQc/m/rSgNOzV2BwAJ
+experimental-initial-corrupt-check: true
 `))
 
 var serviceTmpl = template.Must(template.New("etcd-container.service").
