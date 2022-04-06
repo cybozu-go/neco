@@ -805,7 +805,7 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium:1.11.2.1
+        image: quay.io/cybozu/cilium:1.11.2.2
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -914,7 +914,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cybozu/cilium:1.11.2.1
+        image: quay.io/cybozu/cilium:1.11.2.2
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -939,7 +939,7 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium:1.11.2.1
+        image: quay.io/cybozu/cilium:1.11.2.2
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
