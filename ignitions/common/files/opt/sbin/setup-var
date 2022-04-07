@@ -4,7 +4,7 @@ VG=vg1
 LVLIST="k8s-containerd docker kubelet systemd coredump"
 
 # these values are for qemu (dctest env). see below for real machines.
-CONTAINERD_SIZE=20g
+CONTAINERD_SIZE=40g
 DOCKER_SIZE=10g
 KUBELET_SIZE=40g
 SYSTEMD_SIZE=1g
