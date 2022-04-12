@@ -1,3 +1,6 @@
 osImage:
 - channel: stable
   versions: ["2905.2.0", "2905.2.1"]
+images:
+  - repository: quay.io/cybozu/cilium-certgen
+    versions: ["0.1.8.1"]

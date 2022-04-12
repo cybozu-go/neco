@@ -7,7 +7,7 @@ tunnel: "disabled"
 enableIPv4Masquerade: false
 enableIdentityMark: false
 policyEnforcementMode: "default"
-policyAuditMode: true
+policyAuditMode: false
 kubeProxyReplacement: "disabled"
 prometheus:
   enabled: true
