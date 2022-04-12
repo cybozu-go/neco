@@ -114,18 +114,14 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - pods
   - pods/finalizers
   verbs:
-  - get
-  - list
-  - watch
   - update
-  - delete
 - apiGroups:
   - ""
   resources:
   - nodes
+  - pods
   verbs:
   - get
   - list
@@ -537,7 +533,7 @@ spec:
               key: debug
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium-operator-generic:1.11.2.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.3.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -613,7 +609,7 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: quay.io/cybozu/hubble-relay:1.11.2.1
+        image: quay.io/cybozu/hubble-relay:1.11.3.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
@@ -805,7 +801,7 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium:1.11.2.2
+        image: quay.io/cybozu/cilium:1.11.3.1
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -914,7 +910,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cybozu/cilium:1.11.2.2
+        image: quay.io/cybozu/cilium:1.11.3.1
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -939,7 +935,7 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium:1.11.2.2
+        image: quay.io/cybozu/cilium:1.11.3.1
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
