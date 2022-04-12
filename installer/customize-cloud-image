@@ -3,11 +3,26 @@
 IMAGE=$1
 shift
 
-NBD=/dev/nbd0
-NBDp1=/dev/mapper/nbd0p1
-
 modprobe nbd
-qemu-nbd -c $NBD $IMAGE
+
+for nbd_dev in /sys/devices/virtual/block/nbd*;
+do
+    if [ -e ${nbd_dev}/pid ]
+    then
+        continue
+    else
+        NBD="/dev/$(basename $nbd_dev)"
+        NBDp1="/dev/mapper/$(basename $nbd_dev)p1"
+    fi
+    if qemu-nbd -c $NBD $IMAGE; then break; fi
+    echo "$NBD is not available. Try to use the next released device."
+    NBD=""
+    NBDp1=""
+    sleep 1s
+done
+if [ -z "$NBD" ]; then
+    exit 1
+fi
 trap "kpartx -d $NBD 2>/dev/null; qemu-nbd -d $NBD" INT QUIT TERM 0
 
 # resize part1
