@@ -390,7 +390,7 @@ data:
   node-port-bind-protection: "true"
   operator-api-serve-addr: 127.0.0.1:9234
   operator-prometheus-serve-addr: :6942
-  policy-audit-mode: "true"
+  policy-audit-mode: "false"
   preallocate-bpf-maps: "false"
   prometheus-serve-addr: :9090
   proxy-prometheus-port: "9095"
@@ -493,7 +493,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: a65df20fd48e52f6cdb115f9551d890f7c829e1003a463956c95349f11ac74d4
+        cilium.io/cilium-configmap-checksum: bd8df9a51a7545c71869e89e2c8f3615ee5ae2aac6ad558d3099a95dce718e04
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -741,7 +741,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: a65df20fd48e52f6cdb115f9551d890f7c829e1003a463956c95349f11ac74d4
+        cilium.io/cilium-configmap-checksum: bd8df9a51a7545c71869e89e2c8f3615ee5ae2aac6ad558d3099a95dce718e04
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         scheduler.alpha.kubernetes.io/critical-pod: ""

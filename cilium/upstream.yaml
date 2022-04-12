@@ -187,7 +187,7 @@ data:
   enable-health-checking: "true"
   enable-well-known-identities: "false"
   enable-remote-node-identity: "true"
-  policy-audit-mode: "true"
+  policy-audit-mode: "false"
   operator-api-serve-addr: "127.0.0.1:9234"
   # Enable Hubble gRPC service.
   enable-hubble: "true"
@@ -593,7 +593,7 @@ spec:
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "a65df20fd48e52f6cdb115f9551d890f7c829e1003a463956c95349f11ac74d4"
+        cilium.io/cilium-configmap-checksum: "bd8df9a51a7545c71869e89e2c8f3615ee5ae2aac6ad558d3099a95dce718e04"
         # This annotation plus the CriticalAddonsOnly toleration makes
         # cilium to be a critical pod in the cluster, which ensures cilium
         # gets priority scheduling.
@@ -915,7 +915,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "a65df20fd48e52f6cdb115f9551d890f7c829e1003a463956c95349f11ac74d4"
+        cilium.io/cilium-configmap-checksum: "bd8df9a51a7545c71869e89e2c8f3615ee5ae2aac6ad558d3099a95dce718e04"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
