@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	systemDiskCount = 2
+	systemDiskCount = 3
 
 	cryptDiskDir = "/dev/crypt-disk/by-path/"
 )
