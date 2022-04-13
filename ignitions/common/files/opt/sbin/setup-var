@@ -79,7 +79,9 @@ find_boss() {
 
 if ls /dev/mapper/crypt-vd* >/dev/null 2>&1; then
     # for qemu
-    PVS=$(ls /dev/mapper/crypt-vd[abcd])
+    # Modify 99-neco.rules as well if you change this line
+    # See https://github.com/cybozu-go/neco/blob/cf1fbc99aeb62d37e37c5c2c69f12e319622b6cd/ignitions/roles/ss/files/etc/udev/rules.d/99-neco.rules#L4
+    PVS=$(ls /dev/mapper/crypt-vd[abc])
     prepare_lv
 elif ls /dev/mapper/crypt-nvme* >/dev/null 2>&1; then
     # for compute node
