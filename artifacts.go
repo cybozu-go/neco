@@ -12,7 +12,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "promtail", Repository: "quay.io/cybozu/promtail", Tag: "2.3.0.1", Private: false},
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.11.0", Private: false},
 		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.9.7.1", Private: false},
-		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.10.1", Private: true},
+		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.11.0", Private: true},
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "5.4.1.1", Private: false},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.8.2.1", Private: false},
 		{Name: "cilium", Repository: "quay.io/cybozu/cilium", Tag: "1.11.3.1", Private: false},
@@ -21,7 +21,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "cilium-certgen", Repository: "quay.io/cybozu/cilium-certgen", Tag: "0.1.5.1", Private: false},
 	},
 	Debs: []DebianPackage{
-		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.3.0"},
+		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.4.0"},
 	},
 	OSImage: OSImage{Channel: "stable", Version: "3139.2.0"},
 }
