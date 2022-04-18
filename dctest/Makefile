@@ -18,7 +18,7 @@ ADDRESS_POOLS_FILE = $(abspath ./address_pools.yaml)
 CURL_OPTIONS = -fsSL
 CURL = curl $(CURL_OPTIONS)
 CURL_GITHUB = ../bin/curl-github $(CURL_OPTIONS)
-CT_VERSION = 0.9.0
+CT_VERSION = 0.9.3
 CT := $(shell pwd)/bin/ct
 
 export PLACEMAT GINKGO SUITE MACHINES_FILE ADDRESS_POOLS_FILE SUDO
@@ -141,6 +141,6 @@ setup:
 
 $(CT):
 	mkdir -p bin
-	$(CURL_GITHUB) -o ct https://github.com/coreos/container-linux-config-transpiler/releases/download/v$(CT_VERSION)/ct-v$(CT_VERSION)-x86_64-unknown-linux-gnu
+	$(CURL_GITHUB) -o ct https://github.com/flatcar-linux/container-linux-config-transpiler/releases/download/v$(CT_VERSION)/ct-v$(CT_VERSION)-x86_64-unknown-linux-gnu
 	chmod +x ct
 	$(SUDO) mv ct $@
