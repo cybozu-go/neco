@@ -162,10 +162,10 @@ kubectl: $(KUBECTL_DOWNLOAD)
 	cp $(KUBECTL_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUBESEAL_DOWNLOAD):
-	mkdir -p $(KUBESEAL_DLDIR)
-	$(WGET_GITHUB) -O $(KUBESEAL_DLDIR)/kubeseal-linux-amd64 https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-linux-amd64
-	$(WGET_GITHUB) -O $(KUBESEAL_DLDIR)/kubeseal.exe https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal.exe
-	$(WGET_GITHUB) -O $(KUBESEAL_DLDIR)/kubeseal-darwin-amd64 https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-darwin-amd64
+	mkdir -p $(KUBESEAL_DLDIR)/linux_amd64 $(KUBESEAL_DLDIR)/windows_amd64 $(KUBESEAL_DLDIR)/darwin_amd64
+	$(WGET_GITHUB) -O - https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-$(KUBESEAL_VERSION)-linux-amd64.tar.gz | tar xzvf - -C $(KUBESEAL_DLDIR)/linux_amd64
+	$(WGET_GITHUB) -O - https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-$(KUBESEAL_VERSION)-windows-amd64.tar.gz | tar xzvf - -C $(KUBESEAL_DLDIR)/windows_amd64
+	$(WGET_GITHUB) -O - https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-$(KUBESEAL_VERSION)-darwin-amd64.tar.gz | tar xzvf - -C $(KUBESEAL_DLDIR)/darwin_amd64
 	$(WGET_GITHUB) -O $(KUBESEAL_DLDIR)/LICENSE      https://github.com/bitnami-labs/sealed-secrets/blob/v$(KUBESEAL_VERSION)/LICENSE
 	$(WGET_GITHUB) -O $(KUBESEAL_DLDIR)/README.md    https://github.com/bitnami-labs/sealed-secrets/blob/v$(KUBESEAL_VERSION)/README.md
 	touch $@
@@ -173,17 +173,15 @@ $(KUBESEAL_DOWNLOAD):
 .PHONY: kubeseal
 kubeseal: $(KUBESEAL_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(KUBESEAL_DLDIR)/kubeseal-linux-amd64 $(BINDIR)/kubeseal
-	chmod +x $(BINDIR)/kubeseal
-	cp $(KUBESEAL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(KUBESEAL_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(KUBESEAL_DLDIR)/kubeseal.exe $(WINDOWS_BINDIR)/kubeseal.exe
-	cp $(KUBESEAL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(KUBESEAL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(KUBESEAL_DLDIR)/kubeseal-darwin-amd64 $(MAC_BINDIR)/kubeseal
-	chmod +x $(MAC_BINDIR)/kubeseal
-	cp $(KUBESEAL_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(KUBESEAL_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	cp $(KUBESEAL_DLDIR)/linux_amd64/kubeseal $(BINDIR)/kubeseal
+	cp $(KUBESEAL_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(KUBESEAL_DLDIR)/linux_amd64/README.md $(DOCDIR)/$@/README.md
+	cp $(KUBESEAL_DLDIR)/windows_amd64/kubeseal.exe $(WINDOWS_BINDIR)/kubeseal.exe
+	cp $(KUBESEAL_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(KUBESEAL_DLDIR)/windows_amd64/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(KUBESEAL_DLDIR)/darwin_amd64/kubeseal $(MAC_BINDIR)/kubeseal
+	cp $(KUBESEAL_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(KUBESEAL_DLDIR)/darwin_amd64/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(STERN_DOWNLOAD):
 	mkdir -p $(STERN_DLDIR)/linux_amd64 $(STERN_DLDIR)/windows_amd64 $(STERN_DLDIR)/darwin_amd64

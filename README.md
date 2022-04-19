@@ -152,8 +152,8 @@ $ sudo apt install -y build-essential systemd-container lldpd qemu qemu-kvm soca
 $ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios.bin
 $ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios-256k.bin
 $ sudo install -m 0644 -b bios.bin bios-256k.bin /usr/share/seabios/
-$ wget https://github.com/cybozu-go/placemat/releases/download/v2.0.4/placemat2_2.0.4_amd64.deb
-$ sudo dpkg -i ./placemat2_2.0.4_amd64.deb
+$ wget https://github.com/cybozu-go/placemat/releases/download/v2.2.0/placemat2_2.2.0_amd64.deb
+$ sudo dpkg -i ./placemat2_2.2.0_amd64.deb
 $ git clone https://github.com/cybozu-go/neco
 $ cd neco/dctest
 $ make setup
