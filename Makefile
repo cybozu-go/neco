@@ -106,9 +106,12 @@ test:
 	RUN_COMPACTION_TEST=yes go test -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
 	go vet -tags='$(GOTAGS)' ./...
 
-.PHONY: check-coil-version
-check-coil-version:
-	grep -F $(COIL_VERSION) etc/coil.yaml
+.PHONY: check-generate
+check-generate:
+	$(MAKE) update-coil
+	$(MAKE) update-cilium
+	go mod tidy
+	git diff --exit-code --name-only
 
 .PHONY: deb
 deb: $(DEB)
