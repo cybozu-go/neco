@@ -182,6 +182,9 @@ spec:
           effect: NoSchedule
         - key: CriticalAddonsOnly
           operator: Exists
+        - key: node.cybozu.io/cluster-not-ready
+          effect: NoExecute
+          operator: Exists
       dnsPolicy: "None"
       dnsConfig:
         nameservers:
