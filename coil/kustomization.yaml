@@ -4,3 +4,16 @@ resources:
   - ../v2
 patchesStrategicMerge:
   - daemonset.yaml
+patchesJson6902:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: coil-controller
+    patch: |-
+      - op: add
+        path: /spec/template/spec/tolerations/-
+        value:
+          effect: NoExecute
+          key: node.cybozu.io/cluster-not-ready
+          operator: Exists

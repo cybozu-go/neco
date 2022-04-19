@@ -8046,8 +8046,8 @@ spec:
         key: node-role.kubernetes.io/control-plane
       - effect: NoSchedule
         key: node.kubernetes.io/not-ready
-      - key: node.cybozu.io/cluster-not-ready
-        effect: NoExecute
+      - effect: NoExecute
+        key: node.cybozu.io/cluster-not-ready
         operator: Exists
       volumes:
       - name: cert
