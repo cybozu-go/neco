@@ -672,7 +672,7 @@ spec:
                 path: server.key
               name: hubble-relay-server-certs
 ---
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   labels:
