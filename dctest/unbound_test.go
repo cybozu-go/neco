@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 )
 
 // testUnbound test installed unbound
@@ -33,7 +33,7 @@ func testUnbound() {
 			return nil
 		}).Should(Succeed())
 		By("checking PodDisruptionBudget for unbound Deployment")
-		pdb := policyv1beta1.PodDisruptionBudget{}
+		pdb := policyv1.PodDisruptionBudget{}
 		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "poddisruptionbudgets", "unbound-pdb", "-n", "internet-egress", "-o", "json")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		err = json.Unmarshal(stdout, &pdb)
