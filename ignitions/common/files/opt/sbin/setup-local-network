@@ -69,3 +69,25 @@ Address={{ index .Spec.IPv4 0 }}/32
 EOF
 
 systemctl restart systemd-networkd.service
+
+sleep 5
+
+wait_network() {
+    DESC=$1
+    EXP=$2
+    shift; shift
+    while true; do
+        for i in $@; do
+            ADDR=$(ip -j addr show $i 2>/dev/null | jq -r '.[].addr_info[]|select(.family=="inet")|.local+"/"+(.prefixlen|tostring)')
+            if [ "${ADDR}" = "${EXP}" ]; then
+                return
+            fi
+        done
+        echo waiting for network ${DESC}...
+        sleep 5
+    done
+}
+
+wait_network eth0 "{{ index .Spec.IPv4 1 }}/{{ (index .Info.Network.IPv4 1).MaskBits }}" eth0 eno1 eno12399
+wait_network eth1 "{{ index .Spec.IPv4 2 }}/{{ (index .Info.Network.IPv4 2).MaskBits }}" eth1 eno2 eno12409
+wait_network node0 "{{ index .Spec.IPv4 0 }}/32" node0
