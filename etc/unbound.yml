@@ -256,7 +256,7 @@ spec:
       targetPort: 1053
       protocol: TCP
 ---
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: unbound-pdb
