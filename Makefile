@@ -115,6 +115,7 @@ test:
 check-generate:
 	$(MAKE) update-coil
 	$(MAKE) update-cilium
+	$(MAKE) update-cilium CILIUM_PRE=true
 	go mod tidy
 	git diff --exit-code --name-only
 
