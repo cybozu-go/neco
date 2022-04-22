@@ -9,8 +9,8 @@ cni:
   customConf: true
 datapathMode: "veth"
 devices: "eth+ eno1+ eno2+"
-enableIdentityMark: false
 enableIPv4Masquerade: false
+enableIdentityMark: false
 externalIPs:
   enabled: true
 hostPort:
@@ -65,9 +65,9 @@ policyAuditMode: false
 policyEnforcementMode: "default"
 prometheus:
   enabled: true
-rollOutCiliumPods: true
 resources:
   requests:
     cpu: 100m
     memory: 400Mi
+rollOutCiliumPods: true
 tunnel: "disabled"
