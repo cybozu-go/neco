@@ -133,6 +133,7 @@ options:
       containerLogMaxSize: 10Mi
       containerLogMaxFiles: 10
       cpuManagerPolicy: static
+      topologyManagerPolicy: best-effort
       systemReserved:
         cpu: "1"
       featureGates:
