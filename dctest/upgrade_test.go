@@ -83,8 +83,19 @@ func testUpgrade() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
+		// Temporary fix. kube-proxy stops after upgrading neco and cke can't pull new etcd image because of it.
+		stdout, stderr, err := execAt(bootServers[0], "ckecli", "cluster", "get")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		cluster := new(ckeCluster)
+		err = yaml.Unmarshal(stdout, cluster)
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
+		for _, node := range cluster.Nodes {
+			stdout, stderr, err = execAt(bootServers[0], "ckecli", "ssh", node.Address, "--", "docker", "pull", "quay.io/cybozu/etcd:3.5.4.1")
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
+
 		By("Changing env for test")
-		stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
+		stdout, stderr, err = execAt(bootServers[0], "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("Waiting for request to complete")
@@ -112,7 +123,7 @@ func testUpgrade() {
 		By("Cleanup kube-proxy settings")
 		stdout, stderr, err = execAt(bootServers[0], "ckecli", "cluster", "get")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		cluster := new(ckeCluster)
+		cluster = new(ckeCluster)
 		err = yaml.Unmarshal(stdout, cluster)
 		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 		// Wait for kube-proxy shutdown
