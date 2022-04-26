@@ -255,7 +255,7 @@ func (o *operator) UpdateUserResources(ctx context.Context, req *neco.UpdateRequ
 		}
 	}
 
-	err = cke.UpdateResources(ctx)
+	err = cke.UpdateResources(ctx, o.storage)
 	ret := &neco.ContentsUpdateStatus{
 		Version: req.Version,
 		Success: err == nil,

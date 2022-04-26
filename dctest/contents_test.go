@@ -20,6 +20,15 @@ func testInitData() {
 		By("setting external IP address block")
 		execSafeAt(bootServers[0], "neco", "config", "set", "external-ip-address-block", externalIPBlock)
 
+		By("setting LB address block for default")
+		execSafeAt(bootServers[0], "neco", "config", "set", "lb-address-block-default", lbAddressBlockDefault)
+
+		By("setting LB address block for bastion")
+		execSafeAt(bootServers[0], "neco", "config", "set", "lb-address-block-bastion", lbAddressBlockBastion)
+
+		By("setting LB address block for internet")
+		execSafeAt(bootServers[0], "neco", "config", "set", "lb-address-block-internet", lbAddressBlockInternet)
+
 		By("initialize data for sabakan and CKE")
 		cs, err := getMachinesSpecifiedRole("cs")
 		Expect(err).NotTo(HaveOccurred())

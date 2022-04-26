@@ -1,0 +1,165 @@
+name: neco
+nodes:
+- user: cybozu
+  control_plane: true
+  labels:
+    cke.cybozu.com/role: "cs"
+- user: cybozu
+  control_plane: false
+  labels:
+    cke.cybozu.com/role: "cs"
+    cke.cybozu.com/weight: "18"
+- user: cybozu
+  control_plane: false
+  labels:
+    cke.cybozu.com/role: "ss"
+    cke.cybozu.com/weight: "10"
+  taints:
+  - key: cke.cybozu.com/role
+    value: storage
+    effect: NoSchedule
+service_subnet: 10.68.0.0/16
+dns_service: internet-egress/unbound
+reboot:
+  command: ["/usr/bin/neco", "reboot-and-wait", "-"]
+  eviction_timeout_seconds: 1800
+  command_timeout_seconds: 3600
+options:
+  kube-api:
+    audit_log_enabled: true
+    audit_log_path: /var/log/audit/audit.log
+    audit_log_policy: |
+      apiVersion: audit.k8s.io/v1
+      kind: Policy
+      omitStages:
+        - RequestReceived
+      rules:
+        # Avoid logging secret values
+        - level: Metadata
+          resources:
+            - group: ""
+              resources: ["secrets"]
+            - group: "bitnami.com"
+              resources: ["sealedsecrets"]
+        - level: None
+          verbs: ["get", "watch", "list"]
+        - level: Metadata
+          verbs: ["delete", "deletecollection"]
+        - level: RequestResponse
+          resources:
+            - group: ""
+              resources: ["events"]
+        - level: None
+          userGroups:
+            - system:nodes
+            - system:serviceaccounts
+        - level: None
+          users:
+            - system:apiserver
+            - system:kube-controller-manager
+            - system:kube-proxy
+            - system:kube-scheduler
+        - level: RequestResponse
+    extra_args:
+      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true"
+      - "--audit-log-maxage=1"
+      - "--audit-log-maxsize=10"
+      - "--audit-log-maxbackup=10"
+    extra_binds:
+      - source: /var/log/audit
+        destination: /var/log/audit
+        read_only: false
+  kube-controller-manager:
+    extra_args:
+      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true"
+      - "--leader-elect-retry-period=5s"
+      - "--leader-elect-renew-deadline=15s"
+      - "--leader-elect-lease-duration=20s"
+  kube-proxy:
+    disable: true
+    # For local-proxy running on boot servers
+    config:
+      apiVersion: kubeproxy.config.k8s.io/v1alpha1
+      kind: KubeProxyConfiguration
+      mode: ipvs
+  kube-scheduler:
+    config:
+      apiVersion: kubescheduler.config.k8s.io/v1beta1
+      kind: KubeSchedulerConfiguration
+      extenders:
+      - urlPrefix: "http://127.0.0.1:9251"
+        filterVerb: predicate
+        prioritizeVerb: prioritize
+        weight: 1
+        nodeCacheCapable: false
+        managedResources:
+        - name: topolvm.cybozu.com/capacity
+          ignoredByScheduler: true
+      profiles:
+      - schedulerName: default-scheduler
+        plugins:
+          score:
+            disabled:
+            - name: PodTopologySpread
+            - name: SelectorSpread
+            enabled:
+            - name: PodTopologySpread
+              weight: 500
+        pluginConfig:
+        - name: PodTopologySpread
+          args:
+            # https://pkg.go.dev/k8s.io/kube-scheduler/config/v1beta1#PodTopologySpreadArgs
+            defaultConstraints:
+            - maxSkew: 1
+              topologyKey: topology.kubernetes.io/zone
+              whenUnsatisfiable: ScheduleAnyway
+    extra_args:
+      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true"
+      - "--leader-elect-retry-period=5s"
+      - "--leader-elect-renew-deadline=15s"
+      - "--leader-elect-lease-duration=20s"
+  kubelet:
+    boot_taints:
+      - key: node.cilium.io/agent-not-ready
+        value: "true"
+        effect: NoExecute
+    config:
+      apiVersion: kubelet.config.k8s.io/v1beta1
+      kind: KubeletConfiguration
+      cgroupDriver: systemd
+      containerLogMaxSize: 10Mi
+      containerLogMaxFiles: 10
+      cpuManagerPolicy: static
+      topologyManagerPolicy: best-effort
+      systemReserved:
+        cpu: "1"
+      featureGates:
+        EphemeralContainers: true
+        MixedProtocolLBService: true
+    cri_endpoint: unix:///var/run/k8s-containerd.sock
+    extra_args:
+      - "--containerd=/var/run/k8s-containerd.sock"
+    extra_binds:
+      - source: /var/lib/k8s-containerd
+        destination: /var/lib/k8s-containerd
+        read_only: false
+      - source: /var/lib/rook
+        destination: /var/lib/rook
+        read_only: false
+  rivers:
+    extra_args:
+      - "--dial-timeout=4s"
+      - "--dial-keep-alive=6s"
+      - "--check-interval=5s"
+  etcd-rivers:
+    extra_args:
+      - "--dial-timeout=4s"
+      - "--dial-keep-alive=6s"
+      - "--check-interval=5s"
+  etcd:
+    extra_args:
+      - "--listen-metrics-urls=http://0.0.0.0:2381"
+      # 8 * 1024 * 1024 * 1024 = 8589934592 = 8GB
+      - "--quota-backend-bytes=8589934592"
+      #GCPONLY - "--heartbeat-interval=500"
+      #GCPONLY - "--election-timeout=2500"
