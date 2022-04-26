@@ -32,7 +32,10 @@ Possible keys are:
     worker-timeout            - Timeout value to wait for workers.
     github-token              - GitHub personal access token for checking GitHub release.
     node-proxy                - HTTP proxy server URL to access Internet for worker nodes.
-    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.`,
+    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.
+	lb-address-block-default  - LoadBalancer address block for default.
+	lb-address-block-bastion  - LoadBalancer address block for bastion.
+	lb-address-block-internet - LoadBalancer address block for internet.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -142,6 +145,36 @@ Possible keys are:
 					return errors.New("not IPv4 addr: " + value)
 				}
 				return st.PutExternalIPAddressBlock(ctx, block.String())
+			case "lb-address-block-default":
+				value = args[1]
+				ip, block, err := net.ParseCIDR(value)
+				if err != nil {
+					return err
+				}
+				if ip.To4() == nil {
+					return errors.New("not IPv4 addr: " + value)
+				}
+				return st.PutLBAddressBlockDefault(ctx, block.String())
+			case "lb-address-block-bastion":
+				value = args[1]
+				ip, block, err := net.ParseCIDR(value)
+				if err != nil {
+					return err
+				}
+				if ip.To4() == nil {
+					return errors.New("not IPv4 addr: " + value)
+				}
+				return st.PutLBAddressBlockBastion(ctx, block.String())
+			case "lb-address-block-internet":
+				value = args[1]
+				ip, block, err := net.ParseCIDR(value)
+				if err != nil {
+					return err
+				}
+				if ip.To4() == nil {
+					return errors.New("not IPv4 addr: " + value)
+				}
+				return st.PutLBAddressBlockInternet(ctx, block.String())
 			}
 			return errors.New("unknown key: " + key)
 		})

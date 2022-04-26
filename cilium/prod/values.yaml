@@ -1,29 +1,10 @@
-devices: "eth+ eno1+ eno2+"
 cni:
   chainingMode: "generic-veth"
   customConf: true
 datapathMode: "veth"
-tunnel: "disabled"
+devices: "eth+ eno1+ eno2+"
 enableIPv4Masquerade: false
 enableIdentityMark: false
-policyEnforcementMode: "default"
-policyAuditMode: false
-kubeProxyReplacement: "disabled"
-prometheus:
-  enabled: true
-rollOutCiliumPods: true
-resources:
-  requests:
-    cpu: 100m
-    memory: 400Mi
-operator:
-  rollOutPods: true
-  prometheus:
-    enabled: true
-  resources:
-    requests:
-      cpu: 100m
-      memory: 200Mi
 hubble:
   relay:
     enabled: true
@@ -45,4 +26,23 @@ hubble:
       - "tcp"
       - "flow:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip"
       - "icmp"
-      - "http" 
+      - "http"
+kubeProxyReplacement: "disabled"
+operator:
+  rollOutPods: true
+  prometheus:
+    enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 200Mi
+policyAuditMode: false
+policyEnforcementMode: "default"
+prometheus:
+  enabled: true
+resources:
+  requests:
+    cpu: 100m
+    memory: 400Mi
+rollOutCiliumPods: true
+tunnel: "disabled"
