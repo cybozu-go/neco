@@ -83,63 +83,12 @@ func testUpgrade() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
-		// Temporary fix. kube-proxy stops after upgrading neco and cke can't pull new etcd image because of it.
-		stdout, stderr, err := execAt(bootServers[0], "ckecli", "cluster", "get")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		cluster := new(ckeCluster)
-		err = yaml.Unmarshal(stdout, cluster)
-		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
-		for _, node := range cluster.Nodes {
-			stdout, stderr, err = execAt(bootServers[0], "ckecli", "ssh", node.Address, "--", "docker", "pull", "quay.io/cybozu/etcd:3.5.4.1")
-			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		}
-
 		By("Changing env for test")
-		stdout, stderr, err = execAt(bootServers[0], "neco", "config", "set", "env", "test")
+		stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("Waiting for request to complete")
 		waitRequestComplete("version: " + debVer)
-
-		// TODO: Remove this block after the following PR is released.
-		// https://github.com/cybozu-go/neco/pull/1943
-		By("Set lb-address-block config and restart cilium-agent")
-		execSafeAt(bootServers[0], "neco", "config", "set", "lb-address-block-default", lbAddressBlockDefault)
-		execSafeAt(bootServers[0], "neco", "config", "set", "lb-address-block-bastion", lbAddressBlockBastion)
-		execSafeAt(bootServers[0], "neco", "config", "set", "lb-address-block-internet", lbAddressBlockInternet)
-		Eventually(func() error {
-			stdout, stderr, err := execAt(bootServers[0], "neco", "init-data", "--update-resources-only")
-			if err != nil {
-				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-			}
-			return nil
-		}).Should(Succeed())
-		// Wait for bgp-config to be updated
-		time.Sleep(10 * time.Second)
-		stdout, stderr, err = execAt(bootServers[0], "kubectl", "-n", "kube-system", "rollout", "restart", "ds/cilium")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		stdout, stderr, err = execAt(bootServers[0], "kubectl", "-n", "kube-system", "rollout", "status", "ds/cilium")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		By("Cleanup kube-proxy settings")
-		stdout, stderr, err = execAt(bootServers[0], "ckecli", "cluster", "get")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		cluster = new(ckeCluster)
-		err = yaml.Unmarshal(stdout, cluster)
-		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
-		// Wait for kube-proxy shutdown
-		Eventually(func() error {
-			for _, node := range cluster.Nodes {
-				_, _, err := execAt(bootServers[0], "ckecli", "ssh", node.Address, "--", "docker", "inspect", "kube-proxy")
-				if err == nil {
-					return fmt.Errorf("kube-proxy is still running")
-				}
-			}
-			return nil
-		}).Should(Succeed())
-		for _, node := range cluster.Nodes {
-			execSafeAt(bootServers[0], "ckecli", "ssh", node.Address, "--", "sudo", "ip", "link", "del", "kube-ipvs0")
-			execSafeAt(bootServers[0], "ckecli", "ssh", node.Address, "--", "sudo", "ipvsadm", "-C")
-		}
 
 		By("Checking installed Neco version")
 		output := execSafeAt(bootServers[0], "dpkg-query", "--showformat=\\${Version}", "-W", neco.NecoPackageName)
