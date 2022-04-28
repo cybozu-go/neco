@@ -143,8 +143,13 @@ volumes:
   name: sabakan
   path: {{.}}
 ---
-cpu: 2
-network-device-queue: 4
+smp:
+  cpus: 12
+  cores: 6
+  sockets: 2
+numa:
+  nodes: 4
+network-device-queue: 24
 interfaces:
 - r0-node1
 - r0-node2
@@ -171,8 +176,13 @@ volumes:
   kind: image
   name: extra0
 ---
-cpu: 2
-network-device-queue: 4
+smp:
+  cpus: 12
+  cores: 6
+  sockets: 2
+numa:
+  nodes: 4
+network-device-queue: 24
 interfaces:
 - r0-node1
 - r0-node2
@@ -222,8 +232,13 @@ volumes:
   name: sabakan
   path: {{.}}
 ---
-cpu: 2
-network-device-queue: 4
+smp:
+  cpus: 12
+  cores: 6
+  sockets: 2
+numa:
+  nodes: 4
+network-device-queue: 24
 interfaces:
 - r1-node1
 - r1-node2
@@ -250,8 +265,13 @@ volumes:
   kind: image
   name: extra0
 ---
-cpu: 2
-network-device-queue: 4
+smp:
+  cpus: 12
+  cores: 6
+  sockets: 2
+numa:
+  nodes: 4
+network-device-queue: 24
 interfaces:
 - r1-node1
 - r1-node2

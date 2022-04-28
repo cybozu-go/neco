@@ -267,7 +267,15 @@ The available properties are as following:
     - `cs`: computation servers
     - `ss`: storage servers
 - `cpu`: The number of the virtual CPU cores
+- `smp`: The SMP configuration. `cpu` and `smp` are exclusive.
+    - `cpus`: The amount of virtual CPUs.
+    - `cores`: The amount of cores per die.
+    - `threads`: The amount of threads per core.
+    - `dies`: The amount of dies per socket.
+    - `sockets`: The amount of sockets.
 - `memory`: The size of the memory.
+- `numa`: The NUMA configuration. At present, only supports simple symmetric configuration: the amount of cpus and memory are same for all NUMA nodes and all the distances between NUMA nodes are same. If `numa` is omitted, no NUMA is configured.
+    - `nodes`: The number of NUMA nodes.
 - `disk-count`: The count of disk storages. This property is used for cs and ss (Ignored for boot machine).
 - `disk-size`: The size of disk storage. This property is used for cs and ss (Ignored for boot machine).
 - `disks`: Following properties are available. These properties are exclusive for `disk-count`.
