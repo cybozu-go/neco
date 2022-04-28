@@ -190,7 +190,7 @@ type nodeMenu struct {
 }
 
 func (n *nodeMenu) validate() error {
-	if !(n.Spec.CPU > 0) {
+	if n.Spec.CPU == 0 && n.Spec.SMP == nil {
 		return errors.New("cpu in Node must be more than 0")
 	}
 	if err := n.Spec.validate(); err != nil {
@@ -198,6 +198,18 @@ func (n *nodeMenu) validate() error {
 	}
 
 	return nil
+}
+
+type smpSpec struct {
+	CPUs    int `json:"cpus"`
+	Cores   int `json:"cores"`
+	Threads int `json:"threads"`
+	Dies    int `json:"dies"`
+	Sockets int `json:"sockets"`
+}
+
+type numaSpec struct {
+	Nodes int `json:"nodes"`
 }
 
 type diskSpec struct {
@@ -208,7 +220,9 @@ type diskSpec struct {
 
 type nodeSpec struct {
 	CPU               int        `json:"cpu"`
+	SMP               *smpSpec   `json:"smp"`
 	Memory            string     `json:"memory"`
+	NUMA              numaSpec   `json:"numa"`
 	DiskCount         int        `json:"disk-count"`
 	DiskSize          string     `json:"disk-size"`
 	Disks             []diskSpec `json:"disks"`
