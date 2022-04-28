@@ -174,11 +174,23 @@ func (c *Cluster) appendNodes(spec *types.ClusterSpec, sabakanDir string) {
 			},
 			CPU:    bootSpec.CPU,
 			Memory: bootSpec.Memory,
-			UEFI:   bootSpec.UEFI,
-			TPM:    bootSpec.TPM,
+			NUMA: types.NUMASpec{
+				Nodes: bootSpec.NUMA.Nodes,
+			},
+			UEFI: bootSpec.UEFI,
+			TPM:  bootSpec.TPM,
 			SMBIOS: types.SMBIOSConfigSpec{
 				Serial: rack.bootNode.serial,
 			},
+		}
+		if bootSpec.SMP != nil {
+			bootNode.SMP = &types.SMPSpec{
+				CPUs:    bootSpec.SMP.CPUs,
+				Cores:   bootSpec.SMP.Cores,
+				Threads: bootSpec.SMP.Threads,
+				Dies:    bootSpec.SMP.Dies,
+				Sockets: bootSpec.SMP.Sockets,
+			}
 		}
 		if bootSpec.Image != "" {
 			bootNode.Volumes = append(bootNode.Volumes, types.NodeVolumeSpec{
@@ -230,14 +242,28 @@ func createWorkerNode(rack *rack, node *node, spec *nodeSpec) *types.NodeSpec {
 			fmt.Sprintf("%s-node1", rack.shortName),
 			fmt.Sprintf("%s-node2", rack.shortName),
 		},
-		CPU:                spec.CPU,
-		NetworkDeviceQueue: spec.CPU * 2,
-		Memory:             spec.Memory,
-		UEFI:               spec.UEFI,
-		TPM:                spec.TPM,
+		CPU:    spec.CPU,
+		Memory: spec.Memory,
+		NUMA: types.NUMASpec{
+			Nodes: spec.NUMA.Nodes,
+		},
+		UEFI: spec.UEFI,
+		TPM:  spec.TPM,
 		SMBIOS: types.SMBIOSConfigSpec{
 			Serial: node.serial,
 		},
+	}
+	if spec.SMP != nil {
+		nodeSpec.SMP = &types.SMPSpec{
+			CPUs:    spec.SMP.CPUs,
+			Cores:   spec.SMP.Cores,
+			Threads: spec.SMP.Threads,
+			Dies:    spec.SMP.Dies,
+			Sockets: spec.SMP.Sockets,
+		}
+		nodeSpec.NetworkDeviceQueue = spec.SMP.CPUs * 2
+	} else {
+		nodeSpec.NetworkDeviceQueue = spec.CPU * 2
 	}
 
 	diskSize := "50G"

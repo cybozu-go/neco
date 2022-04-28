@@ -57,8 +57,13 @@ spec:
 kind: Node
 type: cs
 spec:
-  cpu: 2
+  smp:
+    cpus: 12
+    cores: 6
+    sockets: 2
   memory: 2G
+  numa:
+    nodes: 4
   disk-count: 2
   disk-size: 30G
   data:
