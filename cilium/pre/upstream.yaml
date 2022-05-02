@@ -194,6 +194,7 @@ data:
   bpf-lb-maglev-hash-seed: "3HCx6JennjWtot2U"
   enable-session-affinity: "true"
   enable-l2-neigh-discovery: "true"
+  arping-refresh-period: "30s"
   # Disable health checking, when chaining mode is not set to portmap or none
   enable-endpoint-health-checking: "false"
   enable-health-checking: "true"
@@ -606,7 +607,7 @@ spec:
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "42496793c038107f8ced82f9c063e7f879e52320a3d49ab058cc573f738168b7"
+        cilium.io/cilium-configmap-checksum: "1397358ecad473bff201c2d81a83c09e0b351bc2d05428ceb7d5c52704537d72"
         # This annotation plus the CriticalAddonsOnly toleration makes
         # cilium to be a critical pod in the cluster, which ensures cilium
         # gets priority scheduling.
@@ -640,7 +641,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-agent
-        image: "quay.io/cybozu/cilium:1.11.3.1"
+        image: "quay.io/cybozu/cilium:1.11.4.1"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
@@ -776,7 +777,7 @@ spec:
       # Required to mount cgroup2 filesystem on the underlying Kubernetes node.
       # We use nsenter command with host's cgroup and mount namespaces enabled.
       - name: mount-cgroup
-        image: "quay.io/cybozu/cilium:1.11.3.1"
+        image: "quay.io/cybozu/cilium:1.11.4.1"
         imagePullPolicy: IfNotPresent
         env:
         - name: CGROUP_ROOT
@@ -803,7 +804,7 @@ spec:
         securityContext:
           privileged: true
       - name: clean-cilium-state
-        image: "quay.io/cybozu/cilium:1.11.3.1"
+        image: "quay.io/cybozu/cilium:1.11.4.1"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
@@ -942,7 +943,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "42496793c038107f8ced82f9c063e7f879e52320a3d49ab058cc573f738168b7"
+        cilium.io/cilium-configmap-checksum: "1397358ecad473bff201c2d81a83c09e0b351bc2d05428ceb7d5c52704537d72"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -963,7 +964,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-operator
-        image: quay.io/cybozu/cilium-operator-generic:1.11.3.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.4.1
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
@@ -1069,7 +1070,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
-          image: "quay.io/cybozu/hubble-relay:1.11.3.1"
+          image: "quay.io/cybozu/hubble-relay:1.11.4.1"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay

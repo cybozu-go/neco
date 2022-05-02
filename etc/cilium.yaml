@@ -330,6 +330,7 @@ subjects:
 ---
 apiVersion: v1
 data:
+  arping-refresh-period: 30s
   auto-direct-node-routes: "false"
   bpf-lb-external-clusterip: "false"
   bpf-lb-map-max: "65536"
@@ -493,7 +494,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: bd8df9a51a7545c71869e89e2c8f3615ee5ae2aac6ad558d3099a95dce718e04
+        cilium.io/cilium-configmap-checksum: 0e5cfb1b63910159980b912d63f1f256b4d1efb25517b338c0cea531096569b1
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -533,7 +534,7 @@ spec:
               key: debug
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium-operator-generic:1.11.3.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.4.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -609,7 +610,7 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: quay.io/cybozu/hubble-relay:1.11.3.1
+        image: quay.io/cybozu/hubble-relay:1.11.4.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
@@ -741,7 +742,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: bd8df9a51a7545c71869e89e2c8f3615ee5ae2aac6ad558d3099a95dce718e04
+        cilium.io/cilium-configmap-checksum: 0e5cfb1b63910159980b912d63f1f256b4d1efb25517b338c0cea531096569b1
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         scheduler.alpha.kubernetes.io/critical-pod: ""
@@ -801,7 +802,7 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium:1.11.3.1
+        image: quay.io/cybozu/cilium:1.11.4.1
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -910,7 +911,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cybozu/cilium:1.11.3.1
+        image: quay.io/cybozu/cilium:1.11.4.1
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -935,7 +936,7 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium:1.11.3.1
+        image: quay.io/cybozu/cilium:1.11.4.1
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:

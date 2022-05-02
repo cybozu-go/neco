@@ -357,6 +357,7 @@ metadata:
 ---
 apiVersion: v1
 data:
+  arping-refresh-period: 30s
   auto-direct-node-routes: "false"
   bgp-announce-lb-ip: "true"
   bpf-lb-acceleration: disabled
@@ -533,7 +534,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 42496793c038107f8ced82f9c063e7f879e52320a3d49ab058cc573f738168b7
+        cilium.io/cilium-configmap-checksum: 1397358ecad473bff201c2d81a83c09e0b351bc2d05428ceb7d5c52704537d72
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -577,7 +578,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium-operator-generic:1.11.3.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.4.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -659,7 +660,7 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: quay.io/cybozu/hubble-relay:1.11.3.1
+        image: quay.io/cybozu/hubble-relay:1.11.4.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
@@ -791,7 +792,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 42496793c038107f8ced82f9c063e7f879e52320a3d49ab058cc573f738168b7
+        cilium.io/cilium-configmap-checksum: 1397358ecad473bff201c2d81a83c09e0b351bc2d05428ceb7d5c52704537d72
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         scheduler.alpha.kubernetes.io/critical-pod: ""
@@ -855,7 +856,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.11.3.1
+        image: quay.io/cybozu/cilium:1.11.4.1
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -967,7 +968,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cybozu/cilium:1.11.3.1
+        image: quay.io/cybozu/cilium:1.11.4.1
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -996,7 +997,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.11.3.1
+        image: quay.io/cybozu/cilium:1.11.4.1
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
