@@ -1,0 +1,6 @@
+[Unit]
+Description=Export statuses of systemd units
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/export-unit-status

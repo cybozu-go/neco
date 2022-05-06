@@ -1,0 +1,22 @@
+#!/bin/sh -e
+
+UNITS="neco-updater.service sabakan-state-setter.service"
+NAME=systemd_unit_active
+FILE=/var/lib/node_exporter/textfile/${NAME}.prom
+
+mkdir -p $(dirname ${FILE})
+echo "# TYPE ${NAME} gauge" > ${FILE}.$$
+
+for unit in ${UNITS}; do
+    if systemctl --quiet is-active ${unit}; then
+        value=1
+    else
+        value=0
+    fi
+    echo "${NAME}{unit=\"${unit}\"} ${value}" >> ${FILE}.$$
+done
+
+echo "# TYPE ${NAME}_timestamp gauge"
+echo "${NAME}_timestamp $(date +%s)" >> ${FILE}.$$
+
+mv ${FILE}.$$ ${FILE}
