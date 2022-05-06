@@ -1,0 +1,11 @@
+[Unit]
+Description=Export statuses of systemd units periodically
+Wants=network-online.target
+After=network-online.target
+
+[Timer]
+OnActiveSec=0
+OnUnitActiveSec=60
+
+[Install]
+WantedBy=multi-user.target
