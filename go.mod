@@ -11,9 +11,9 @@ require (
 	github.com/cybozu-go/log v1.6.1
 	github.com/cybozu-go/netutil v1.4.2
 	github.com/cybozu-go/placemat/v2 v2.3.0
-	github.com/cybozu-go/sabakan/v2 v2.12.0
+	github.com/cybozu-go/sabakan/v2 v2.13.0
 	github.com/cybozu-go/well v1.11.0
-	github.com/google/go-cmp v0.5.7
+	github.com/google/go-cmp v0.5.8
 	github.com/google/go-containerregistry v0.8.0
 	github.com/google/go-github/v41 v41.0.0
 	github.com/hashicorp/go-version v1.4.0
@@ -21,21 +21,21 @@ require (
 	github.com/hashicorp/vault/api v1.5.0
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/mapstructure v1.4.3
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.19.0
 	github.com/prometheus/client_model v0.2.0
-	github.com/prometheus/common v0.33.0
+	github.com/prometheus/common v0.34.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.11.0
 	github.com/stmcginnis/gofish v0.13.0
 	github.com/tcnksm/go-input v0.0.0-20180404061846-548a7d7a8ee8
-	github.com/vektah/gqlparser/v2 v2.4.1
+	github.com/vektah/gqlparser/v2 v2.4.2
 	github.com/vishvananda/netlink v1.2.0-beta
-	go.etcd.io/etcd/api/v3 v3.5.3
-	go.etcd.io/etcd/client/v3 v3.5.3
-	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
+	go.etcd.io/etcd/api/v3 v3.5.4
+	go.etcd.io/etcd/client/v3 v3.5.4
+	golang.org/x/crypto v0.0.0-20220507011949-2cf3adece122
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
 	k8s.io/api v0.23.5
@@ -52,12 +52,12 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
-	github.com/coreos/ignition v0.35.0 // indirect
 	github.com/docker/cli v20.10.12+incompatible // indirect
 	github.com/docker/distribution v2.8.0+incompatible // indirect
 	github.com/docker/docker v20.10.12+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/flatcar-linux/ignition v0.36.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-logr/logr v1.2.2 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
@@ -118,7 +118,7 @@ require (
 	github.com/vbatts/tar-split v0.11.2 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
 	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74 // indirect
-	go.etcd.io/etcd/client/pkg/v3 v3.5.3 // indirect
+	go.etcd.io/etcd/client/pkg/v3 v3.5.4 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.20.0 // indirect
