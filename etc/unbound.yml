@@ -227,7 +227,7 @@ spec:
             initialDelaySeconds: 1
             failureThreshold: 6
         - name: exporter
-          image: quay.io/umezawatakeshi/unbound_exporter:v0.4.1-test.1
+          image: quay.io/umezawatakeshi/unbound_exporter:v0.4.1.2-test.2
           #{{ index . "cke-unbound_exporter" }}
           imagePullPolicy: IfNotPresent
           args:
