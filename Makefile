@@ -35,8 +35,8 @@ OP_MAC_ZIP = neco-operation-cli-mac_$(VERSION)_amd64.zip
 DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
-OPDEB_BINNAMES = argocd kubectl kubeseal logcli stern tsh kubectl-moco kubectl-accurate amtool
-OPDEB_DOCNAMES = argocd kubectl kubeseal logcli stern teleport moco alertmanager
+OPDEB_BINNAMES = argocd kubectl kubeseal logcli stern tsh kubectl-moco kubectl-accurate amtool yq
+OPDEB_DOCNAMES = argocd kubectl kubeseal logcli stern teleport moco alertmanager yq
 
 .PHONY: all
 all:
