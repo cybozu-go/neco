@@ -15,9 +15,9 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.12.0", Private: true},
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "5.4.1.1", Private: false},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.10.2.1", Private: false},
-		{Name: "cilium", Repository: "quay.io/cybozu/cilium", Tag: "1.11.4.1", Private: false},
-		{Name: "cilium-operator-generic", Repository: "quay.io/cybozu/cilium-operator-generic", Tag: "1.11.4.1", Private: false},
-		{Name: "hubble-relay", Repository: "quay.io/cybozu/hubble-relay", Tag: "1.11.4.1", Private: false},
+		{Name: "cilium", Repository: "quay.io/cybozu/cilium", Tag: "1.11.5.1", Private: false},
+		{Name: "cilium-operator-generic", Repository: "quay.io/cybozu/cilium-operator-generic", Tag: "1.11.5.1", Private: false},
+		{Name: "hubble-relay", Repository: "quay.io/cybozu/hubble-relay", Tag: "1.11.5.1", Private: false},
 		{Name: "cilium-certgen", Repository: "quay.io/cybozu/cilium-certgen", Tag: "0.1.5.1", Private: false},
 	},
 	Debs: []DebianPackage{

@@ -47,6 +47,7 @@ data:
   #   setting it to "kvstore".
   identity-allocation-mode: crd
   cilium-endpoint-gc-interval: "5m0s"
+  nodes-gc-interval: "5m0s"
   # Disable the usage of CiliumEndpoint CRD
   disable-endpoint-crd: "false"
 
@@ -232,6 +233,10 @@ data:
   bgp-announce-lb-ip: "true"
   cgroup-root: "/run/cilium/cgroupv2"
   enable-k8s-terminating-endpoint: "true"
+  annotate-k8s-node: "true"
+  remove-cilium-node-taints: "true"
+  set-cilium-is-up-condition: "true"
+  unmanaged-pod-watcher-interval: "15"
 ---
 # Source: cilium/templates/hubble-relay/configmap.yaml
 apiVersion: v1
@@ -241,7 +246,8 @@ metadata:
   namespace: kube-system
 data:
   config.yaml: |
-    peer-service: unix:///var/run/cilium/hubble.sock
+    cluster-name: default
+    peer-service: "hubble-peer.kube-system.svc.cluster.local:4254"
     listen-address: :4245
     dial-timeout: 
     retry-timeout: 
@@ -280,34 +286,19 @@ rules:
   resources:
   - namespaces
   - services
-  - nodes
-  - endpoints
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - pods/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - ""
-  resources:
-  - nodes
   - pods
+  - endpoints
+  - nodes
   verbs:
   - get
   - list
   - watch
-  - update
 - apiGroups:
   - ""
   resources:
-  - nodes
   - nodes/status
   verbs:
+  # To annotate the k8s node with Cilium's metadata
   - patch
 - apiGroups:
   - apiextensions.k8s.io
@@ -329,21 +320,15 @@ rules:
   resources:
   - ciliumnetworkpolicies
   - ciliumnetworkpolicies/status
-  - ciliumnetworkpolicies/finalizers
   - ciliumclusterwidenetworkpolicies
   - ciliumclusterwidenetworkpolicies/status
-  - ciliumclusterwidenetworkpolicies/finalizers
   - ciliumendpoints
   - ciliumendpoints/status
-  - ciliumendpoints/finalizers
   - ciliumnodes
   - ciliumnodes/status
-  - ciliumnodes/finalizers
   - ciliumidentities
-  - ciliumidentities/finalizers
   - ciliumlocalredirectpolicies
   - ciliumlocalredirectpolicies/status
-  - ciliumlocalredirectpolicies/finalizers
   - ciliumegressnatpolicies
   - ciliumendpointslices
   verbs:
@@ -358,14 +343,30 @@ rules:
 - apiGroups:
   - ""
   resources:
-  # to automatically delete [core|kube]dns pods so that are starting to being
-  # managed by Cilium
   - pods
   verbs:
   - get
   - list
   - watch
+  # to automatically delete [core|kube]dns pods so that are starting to being
+  # managed by Cilium
   - delete
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  # To remove node taints
+  - nodes
+  # To set NetworkUnavailable false on startup
+  - nodes/status
+  verbs:
+  - patch
 - apiGroups:
   - discovery.k8s.io
   resources:
@@ -585,6 +586,24 @@ spec:
   selector:
     k8s-app: cilium
 ---
+# Source: cilium/templates/hubble/peer-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: hubble-peer
+  namespace: kube-system
+  labels:
+    k8s-app: cilium
+spec:
+  selector:
+    k8s-app: cilium
+  ports:
+  - name: peer-service
+    port: 4254
+    protocol: TCP
+    targetPort: 4244
+  internalTrafficPolicy: Local
+---
 # Source: cilium/templates/cilium-agent/daemonset.yaml
 apiVersion: apps/v1
 kind: DaemonSet
@@ -607,7 +626,7 @@ spec:
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "1397358ecad473bff201c2d81a83c09e0b351bc2d05428ceb7d5c52704537d72"
+        cilium.io/cilium-configmap-checksum: "83f339ae7ff940310ece255c985f92fec8a7f83fbf4cef836e9b401d8b0526bd"
         # This annotation plus the CriticalAddonsOnly toleration makes
         # cilium to be a critical pod in the cluster, which ensures cilium
         # gets priority scheduling.
@@ -641,7 +660,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-agent
-        image: "quay.io/cybozu/cilium:1.11.4.1"
+        image: "quay.io/cybozu/cilium:1.11.5.1"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
@@ -777,7 +796,7 @@ spec:
       # Required to mount cgroup2 filesystem on the underlying Kubernetes node.
       # We use nsenter command with host's cgroup and mount namespaces enabled.
       - name: mount-cgroup
-        image: "quay.io/cybozu/cilium:1.11.4.1"
+        image: "quay.io/cybozu/cilium:1.11.5.1"
         imagePullPolicy: IfNotPresent
         env:
         - name: CGROUP_ROOT
@@ -804,7 +823,7 @@ spec:
         securityContext:
           privileged: true
       - name: clean-cilium-state
-        image: "quay.io/cybozu/cilium:1.11.4.1"
+        image: "quay.io/cybozu/cilium:1.11.5.1"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
@@ -943,7 +962,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "1397358ecad473bff201c2d81a83c09e0b351bc2d05428ceb7d5c52704537d72"
+        cilium.io/cilium-configmap-checksum: "83f339ae7ff940310ece255c985f92fec8a7f83fbf4cef836e9b401d8b0526bd"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -964,7 +983,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-operator
-        image: quay.io/cybozu/cilium-operator-generic:1.11.4.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.5.1
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
@@ -1054,7 +1073,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/hubble-relay-configmap-checksum: "3923847b536fd40cdab5b8178c51a0210733dc7e36ac6d05c0996aecd37aa8d5"
+        cilium.io/hubble-relay-configmap-checksum: "0df7cb6843573956c01f9ed2532783197cc37953b47175e06710e4fba8790daa"
       labels:
         k8s-app: hubble-relay
     spec:
@@ -1070,7 +1089,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
-          image: "quay.io/cybozu/hubble-relay:1.11.4.1"
+          image: "quay.io/cybozu/hubble-relay:1.11.5.1"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
@@ -1090,9 +1109,6 @@ spec:
               cpu: 100m
               memory: 200Mi
           volumeMounts:
-          - name: hubble-sock-dir
-            mountPath: /var/run/cilium
-            readOnly: true
           - name: config
             mountPath: /etc/hubble-relay
             readOnly: true
@@ -1112,10 +1128,6 @@ spec:
           items:
           - key: config.yaml
             path: config.yaml
-      - name: hubble-sock-dir
-        hostPath:
-          path: /var/run/cilium
-          type: Directory
       - name: tls
         projected:
           # note: the leading zero means this number is in octal representation: do not remove it

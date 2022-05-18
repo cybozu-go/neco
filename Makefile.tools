@@ -315,18 +315,25 @@ logcli: $(LOGCLI_DOWNLOAD)
 
 $(YQ_DOWNLOAD):
 	mkdir -p $(YQ_DLDIR)
-	$(WGET_GITHUB) -O $(YQ_DLDIR)/yq.tar.gz https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64.tar.gz
-	$(WGET_GITHUB) -O $(YQ_DLDIR)/LICENSE   https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/LICENSE
-	$(WGET_GITHUB) -O $(YQ_DLDIR)/README.md https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/README.md
+	$(WGET_GITHUB) -O $(YQ_DLDIR)/yq_linux_amd64       https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64
+	$(WGET_GITHUB) -O $(YQ_DLDIR)/yq_windows_amd64.exe https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_windows_amd64.exe
+	$(WGET_GITHUB) -O $(YQ_DLDIR)/yq_darwin_amd64      https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_darwin_amd64
+	$(WGET_GITHUB) -O $(YQ_DLDIR)/LICENSE              https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/LICENSE
+	$(WGET_GITHUB) -O $(YQ_DLDIR)/README.md            https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/README.md
 	touch $@
 
 .PHONY: yq
 yq: $(YQ_DOWNLOAD)
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/
-	tar xzf $(YQ_DLDIR)/yq.tar.gz -C $(BINDIR)
-	mv $(BINDIR)/yq_linux_amd64 $(BINDIR)/yq
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	cp $(YQ_DLDIR)/yq_linux_amd64 $(BINDIR)/yq
+	cp $(YQ_DLDIR)/yq_windows_amd64.exe $(WINDOWS_BINDIR)/yq.exe
+	cp $(YQ_DLDIR)/yq_darwin_amd64 $(MAC_BINDIR)/yq
 	cp $(YQ_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(YQ_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(YQ_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
 	cp $(YQ_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(YQ_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(YQ_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUBECTL_NEAT_DOWNLOAD):
 	mkdir -p $(KUBECTL_NEAT_DLDIR)

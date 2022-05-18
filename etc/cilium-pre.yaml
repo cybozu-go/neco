@@ -105,32 +105,16 @@ rules:
   resources:
   - namespaces
   - services
-  - nodes
-  - endpoints
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - pods/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - ""
-  resources:
-  - nodes
   - pods
+  - endpoints
+  - nodes
   verbs:
   - get
   - list
   - watch
-  - update
 - apiGroups:
   - ""
   resources:
-  - nodes
   - nodes/status
   verbs:
   - patch
@@ -149,21 +133,15 @@ rules:
   resources:
   - ciliumnetworkpolicies
   - ciliumnetworkpolicies/status
-  - ciliumnetworkpolicies/finalizers
   - ciliumclusterwidenetworkpolicies
   - ciliumclusterwidenetworkpolicies/status
-  - ciliumclusterwidenetworkpolicies/finalizers
   - ciliumendpoints
   - ciliumendpoints/status
-  - ciliumendpoints/finalizers
   - ciliumnodes
   - ciliumnodes/status
-  - ciliumnodes/finalizers
   - ciliumidentities
-  - ciliumidentities/finalizers
   - ciliumlocalredirectpolicies
   - ciliumlocalredirectpolicies/status
-  - ciliumlocalredirectpolicies/finalizers
   - ciliumegressnatpolicies
   - ciliumendpointslices
   verbs:
@@ -183,6 +161,20 @@ rules:
   - list
   - watch
   - delete
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  - nodes/status
+  verbs:
+  - patch
 - apiGroups:
   - discovery.k8s.io
   resources:
@@ -357,6 +349,7 @@ metadata:
 ---
 apiVersion: v1
 data:
+  annotate-k8s-node: "true"
   arping-refresh-period: 30s
   auto-direct-node-routes: "false"
   bgp-announce-lb-ip: "true"
@@ -429,14 +422,18 @@ data:
   monitor-aggregation-flags: all
   monitor-aggregation-interval: 5s
   node-port-bind-protection: "true"
+  nodes-gc-interval: 5m0s
   operator-api-serve-addr: 127.0.0.1:9234
   operator-prometheus-serve-addr: :6942
   policy-audit-mode: "false"
   preallocate-bpf-maps: "false"
   prometheus-serve-addr: :9090
   proxy-prometheus-port: "9095"
+  remove-cilium-node-taints: "true"
+  set-cilium-is-up-condition: "true"
   sidecar-istio-proxy-image: cilium/istio_proxy
   tunnel: disabled
+  unmanaged-pod-watcher-interval: "15"
 kind: ConfigMap
 metadata:
   name: cilium-config
@@ -444,7 +441,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  config.yaml: "peer-service: unix:///var/run/cilium/hubble.sock\nlisten-address:
+  config.yaml: "cluster-name: default\npeer-service: \"hubble-peer.kube-system.svc.cluster.local:4254\"\nlisten-address:
     :4245\ndial-timeout: \nretry-timeout: \nsort-buffer-len-max: \nsort-buffer-drain-timeout:
     \ntls-client-cert-file: /var/lib/hubble-relay/tls/client.crt\ntls-client-key-file:
     /var/lib/hubble-relay/tls/client.key\ntls-hubble-server-ca-files: /var/lib/hubble-relay/tls/hubble-server-ca.crt\ntls-server-cert-file:
@@ -500,6 +497,23 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    k8s-app: cilium
+  name: hubble-peer
+  namespace: kube-system
+spec:
+  internalTrafficPolicy: Local
+  ports:
+  - name: peer-service
+    port: 4254
+    protocol: TCP
+    targetPort: 4244
+  selector:
+    k8s-app: cilium
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
     k8s-app: hubble-relay
   name: hubble-relay
   namespace: kube-system
@@ -534,7 +548,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 1397358ecad473bff201c2d81a83c09e0b351bc2d05428ceb7d5c52704537d72
+        cilium.io/cilium-configmap-checksum: 83f339ae7ff940310ece255c985f92fec8a7f83fbf4cef836e9b401d8b0526bd
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -578,7 +592,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium-operator-generic:1.11.4.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.5.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -640,7 +654,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/hubble-relay-configmap-checksum: 3923847b536fd40cdab5b8178c51a0210733dc7e36ac6d05c0996aecd37aa8d5
+        cilium.io/hubble-relay-configmap-checksum: 0df7cb6843573956c01f9ed2532783197cc37953b47175e06710e4fba8790daa
       labels:
         k8s-app: hubble-relay
     spec:
@@ -660,7 +674,7 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: quay.io/cybozu/hubble-relay:1.11.4.1
+        image: quay.io/cybozu/hubble-relay:1.11.5.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
@@ -677,9 +691,6 @@ spec:
             cpu: 100m
             memory: 200Mi
         volumeMounts:
-        - mountPath: /var/run/cilium
-          name: hubble-sock-dir
-          readOnly: true
         - mountPath: /etc/hubble-relay
           name: config
           readOnly: true
@@ -698,10 +709,6 @@ spec:
             path: config.yaml
           name: hubble-relay-config
         name: config
-      - hostPath:
-          path: /var/run/cilium
-          type: Directory
-        name: hubble-sock-dir
       - name: tls
         projected:
           defaultMode: 256
@@ -792,7 +799,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 1397358ecad473bff201c2d81a83c09e0b351bc2d05428ceb7d5c52704537d72
+        cilium.io/cilium-configmap-checksum: 83f339ae7ff940310ece255c985f92fec8a7f83fbf4cef836e9b401d8b0526bd
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         scheduler.alpha.kubernetes.io/critical-pod: ""
@@ -856,7 +863,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.11.4.1
+        image: quay.io/cybozu/cilium:1.11.5.1
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -968,7 +975,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cybozu/cilium:1.11.4.1
+        image: quay.io/cybozu/cilium:1.11.5.1
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -997,7 +1004,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.11.4.1
+        image: quay.io/cybozu/cilium:1.11.5.1
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
