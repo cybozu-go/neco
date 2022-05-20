@@ -2,8 +2,8 @@ server:
   log_level: info
   http_listen_port: 3101
 
-client:
-  url: http://distributor.logging.svc:3100/loki/api/v1/push
+clients:
+  - url: http://distributor.logging.svc:3100/loki/api/v1/push
 
 positions:
   filename: /run/promtail/positions.yaml
