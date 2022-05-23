@@ -133,6 +133,8 @@ options:
       topologyManagerPolicy: best-effort
       systemReserved:
         cpu: "1"
+      imageGCHighThresholdPercent: 65
+      imageGCLowThresholdPercent: 60
       featureGates:
         EphemeralContainers: true
         MixedProtocolLBService: true
