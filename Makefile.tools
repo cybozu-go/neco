@@ -47,6 +47,8 @@ HUBBLE_DOWNLOAD := $(HUBBLE_DLDIR)/downloaded
 
 .PHONY: all
 all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble
+	# all binaries in BINDIR and SBINDIR must have executable bits
+	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
 	touch $(DOWNLOADDIR)/.downloaded
 
@@ -316,8 +318,11 @@ logcli: $(LOGCLI_DOWNLOAD)
 $(YQ_DOWNLOAD):
 	mkdir -p $(YQ_DLDIR)
 	$(WGET_GITHUB) -O $(YQ_DLDIR)/yq_linux_amd64       https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64
+	chmod a+x $(YQ_DLDIR)/yq_linux_amd64
 	$(WGET_GITHUB) -O $(YQ_DLDIR)/yq_windows_amd64.exe https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_windows_amd64.exe
+	chmod a+x $(YQ_DLDIR)/yq_windows_amd64.exe
 	$(WGET_GITHUB) -O $(YQ_DLDIR)/yq_darwin_amd64      https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_darwin_amd64
+	chmod a+x $(YQ_DLDIR)/yq_darwin_amd64
 	$(WGET_GITHUB) -O $(YQ_DLDIR)/LICENSE              https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/LICENSE
 	$(WGET_GITHUB) -O $(YQ_DLDIR)/README.md            https://raw.githubusercontent.com/mikefarah/yq/v${YQ_VERSION}/README.md
 	touch $@
