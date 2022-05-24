@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 )
 
@@ -39,12 +40,14 @@ func testUnbound() {
 		err = json.Unmarshal(stdout, &pdb)
 		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
+
+		checkUnboundExporter("app.kubernetes.io/name=unbound")
 	})
 
 	It("should resolve www.cybozu.com", func() {
 		By("running a test pod")
 		execSafeAt(bootServers[0], "kubectl", "run", "test",
-			"--image=$(ckecli images | grep quay.io/cybozu/unbound)",
+			"--image=$(ckecli images | grep -F quay.io/cybozu/unbound:)",
 			"--command", "--", "pause")
 
 		By("executing getent hosts www.cybozu.com in test pod")
@@ -57,4 +60,18 @@ func testUnbound() {
 		By("deleting a test pod")
 		execSafeAt(bootServers[0], "kubectl", "delete", "pod", "test")
 	})
+}
+
+func checkUnboundExporter(podLabelSelector string) {
+	// should be called in It
+	By("checking unbound_exporter")
+	stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod", "-n", "internet-egress", "-l", podLabelSelector, "-o", "json")
+	Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+	podList := new(corev1.PodList)
+	err = json.Unmarshal(stdout, &podList)
+	Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
+	stdout, stderr, err = execAt(bootServers[0], "curl", "-sSf", "http://"+podList.Items[0].Status.PodIP+":9167/metrics")
+	Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+	Expect(stdout).Should(ContainSubstring("unbound_up 1"))
+	Expect(stdout).Should(ContainSubstring(`unbound_memory_caches_bytes{cache="message"}`))
 }

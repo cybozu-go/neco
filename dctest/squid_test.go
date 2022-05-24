@@ -42,6 +42,8 @@ func testSquid() {
 		err = json.Unmarshal(stdout, &pdb)
 		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
+
+		checkUnboundExporter("app.kubernetes.io/name=squid")
 	})
 
 	It("should serve for docker daemon", func() {

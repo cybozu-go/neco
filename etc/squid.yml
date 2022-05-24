@@ -282,6 +282,27 @@ spec:
             periodSeconds: 1
             initialDelaySeconds: 1
             failureThreshold: 6
+        - name: exporter
+          image: {{ index . "cke-unbound_exporter" }}
+          imagePullPolicy: IfNotPresent
+          args:
+            # empty string = don't use cert
+            - --unbound.ca=
+            - --unbound.cert=
+          ports:
+            - containerPort: 9167
+              name: metrics
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - all
+            readOnlyRootFilesystem: true
+            runAsUser: 10000
+            runAsGroup: 10000
+          resources:
+            requests:
+              cpu: 100m
       volumes:
         - name: cache
           emptyDir: {}
