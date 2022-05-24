@@ -3,7 +3,6 @@ package dctest
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -73,6 +72,6 @@ func checkUnboundExporter(podLabelSelector string) {
 	Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 	stdout, stderr, err = execAt(bootServers[0], "curl", "-sSf", "http://"+podList.Items[0].Status.PodIP+":9167/metrics")
 	Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-	Expect(strings.Contains(string(stdout), "unbound_up 1")).Should(Equal(true), "exporter does not return unbound_up=1")
-	Expect(strings.Contains(string(stdout), `unbound_memory_caches_bytes{cache="message"}`)).Should(Equal(true), "exporter does not return unbound_memory_caches_bytes")
+	Expect(stdout).Should(ContainSubstring("unbound_up 1"))
+	Expect(stdout).Should(ContainSubstring(`unbound_memory_caches_bytes{cache="message"}`))
 }
