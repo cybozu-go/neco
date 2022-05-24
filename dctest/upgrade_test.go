@@ -180,11 +180,14 @@ func testUpgrade() {
 			By("checking " + img + " is running")
 			Eventually(func() error {
 				switch strings.Split(img, ":")[0] {
-				case "quay.io/cybozu/unbound":
+				case "quay.io/cybozu/unbound", "quay.io/cybozu/unbound_exporter":
 					if err := checkVersionInDaemonSet("kube-system", "node-dns", img); err != nil {
 						return err
 					}
-					return checkVersionInDeployment("internet-egress", "unbound", img)
+					if err := checkVersionInDeployment("internet-egress", "unbound", img); err != nil {
+						return err
+					}
+					return checkVersionInDeployment("internet-egress", "squid", img)
 				case "quay.io/cybozu/coredns":
 					return checkVersionInDeployment("kube-system", "cluster-dns", img)
 				case "quay.io/cybozu/kubernetes":
@@ -217,6 +220,9 @@ func testUpgrade() {
 				case "quay.io/cybozu/pause":
 					// Skip to check version because newer pause image is loaded after reboot
 					break
+				default:
+					// probably this test code does not follow cke
+					return errors.New("cke uses unknown container image")
 				}
 				return nil
 			}, 20*time.Minute).Should(Succeed())

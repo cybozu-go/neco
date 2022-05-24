@@ -1,0 +1,16 @@
+[Unit]
+Description=Load unbound_exporter image for CKE
+Wants=network-online.target
+Requires=docker.service
+After=network-online.target docker.service wait-k8s-containerd-socket.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/bin/load-containerd-image \
+  {{ MyURL }}/api/v1/assets/{{ Metadata "cke:unbound_exporter.img" }}   {{ Metadata "cke:unbound_exporter.ref" }}
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target
