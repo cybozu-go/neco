@@ -1,0 +1,24 @@
+#!/bin/sh -e
+
+tail_once() {
+    host="$1"
+    sudo ip netns exec operation ssh -F ssh_config \
+        ${host} "test -f .kube/config" || return
+    sudo ip netns exec operation ssh -F ssh_config \
+        ${host} -- stern --all-namespaces '.*'
+}
+
+tail_forever() {
+    host="$1"
+
+    while true; do
+        tail_once $host || continue
+        sleep 3
+    done
+}
+
+chmod 600 ./dctest/dctest_key
+cp ./dctest/dctest_key .
+cp ./dctest/ssh_config .
+
+tail_forever boot-0
