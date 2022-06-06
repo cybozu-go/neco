@@ -10,6 +10,8 @@ NODE_EXPORTER_DLDIR := $(DOWNLOADDIR)/node_exporter-v$(NODE_EXPORTER_VERSION)
 NODE_EXPORTER_DOWNLOAD := $(NODE_EXPORTER_DLDIR)/downloaded
 CONTAINERD_DLDIR := $(DOWNLOADDIR)/containerd-v$(CONTAINERD_VERSION)
 CONTAINERD_DOWNLOAD := $(CONTAINERD_DLDIR)/downloaded
+NERDCTL_DLDIR := $(DOWNLOADDIR)/nerdctl-v$(NERDCTL_VERSION)
+NERDCTL_DOWNLOAD := $(NERDCTL_DLDIR)/downloaded
 CRICTL_DLDIR := $(DOWNLOADDIR)/crictl-v$(CRITOOLS_VERSION)
 CRICTL_DOWNLOAD := $(CRICTL_DLDIR)/downloaded
 RUNC_DLDIR := $(DOWNLOADDIR)/runc-v$(RUNC_VERSION)
@@ -46,7 +48,7 @@ HUBBLE_DLDIR := $(DOWNLOADDIR)/hubble-v$(HUBBLE_VERSION)
 HUBBLE_DOWNLOAD := $(HUBBLE_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble
+all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble
 	# all binaries in BINDIR and SBINDIR must have executable bits
 	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
@@ -83,6 +85,23 @@ containerd: $(CONTAINERD_DOWNLOAD)
 	cp $(CONTAINERD_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
 	cp $(CONTAINERD_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
 	cp $(CONTAINERD_DLDIR)/README.md $(DOCDIR)/$@/README.md
+
+$(NERDCTL_DOWNLOAD):
+	mkdir -p $(NERDCTL_DLDIR)
+	$(WGET_GITHUB) -O $(NERDCTL_DLDIR)/nerdctl.tgz https://github.com/containerd/nerdctl/releases/download/v$(NERDCTL_VERSION)/nerdctl-$(NERDCTL_VERSION)-linux-amd64.tar.gz
+	$(WGET_GITHUB) -O $(NERDCTL_DLDIR)/LICENSE     https://raw.githubusercontent.com/containerd/nerdctl/v$(NERDCTL_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(NERDCTL_DLDIR)/NOTICE      https://raw.githubusercontent.com/containerd/nerdctl/v$(NERDCTL_VERSION)/NOTICE
+	$(WGET_GITHUB) -O $(NERDCTL_DLDIR)/README.md   https://raw.githubusercontent.com/containerd/nerdctl/v$(NERDCTL_VERSION)/README.md
+	touch $@
+
+.PHONY: nerdctl
+nerdctl: $(NERDCTL_DOWNLOAD)
+	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
+	tar xzf $(NERDCTL_DLDIR)/nerdctl.tgz -C $(LIBEXECDIR) nerdctl
+	cp $(NERDCTL_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
+	cp $(NERDCTL_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
+	cp $(NERDCTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
+
 
 $(CRICTL_DOWNLOAD):
 	mkdir -p $(CRICTL_DLDIR)
