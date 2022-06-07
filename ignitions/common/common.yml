@@ -13,6 +13,7 @@ files:
   - /etc/neco/bmc-address.json
   - /etc/neco/rack
   - /etc/neco/version
+  - /etc/nerdctl/nerdctl.toml
   - /etc/resolv.conf
   - /etc/sysctl.d/70-cybozu.conf
   - /etc/systemd/coredump.conf
