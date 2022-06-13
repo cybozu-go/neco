@@ -1,3 +1,0 @@
-server = "http://localhost:5050"
-[host."http://localhost:5050"]
-  skip_verify = true
