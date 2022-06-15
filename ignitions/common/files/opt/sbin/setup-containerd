@@ -56,6 +56,14 @@ for i in $(seq 20); do
     sleep 5
 done
 
+for i in $(seq 20); do
+    rm -f /opt/bin/nerdctl
+    if curl -sfSL -o /opt/bin/nerdctl {{ MyURL }}/api/v1/assets/nerdctl; then
+        break
+    fi
+    sleep 5
+done
+
 chmod a+x /opt/sbin/containerd
 chmod a+x /opt/sbin/containerd-shim
 chmod a+x /opt/sbin/containerd-shim-runc-v1
@@ -63,3 +71,4 @@ chmod a+x /opt/sbin/containerd-shim-runc-v2
 chmod a+x /opt/sbin/k8s-runc
 chmod a+x /opt/bin/ctr
 chmod a+x /opt/bin/crictl
+chmod a+x /opt/bin/nerdctl
