@@ -7,11 +7,13 @@ files:
   - /etc/hostname
   - /etc/k8s-containerd/config.toml
   - /etc/k8s-containerd/conf.d/docker.io/hosts.toml
+  - /etc/k8s-containerd/conf.d/localhost:5050/hosts.toml
   - /etc/modprobe.d/conntrack-hashsize.conf
   - /etc/modules-load.d/cybozu.conf
   - /etc/neco/bmc-address.json
   - /etc/neco/rack
   - /etc/neco/version
+  - /etc/nerdctl/nerdctl.toml
   - /etc/resolv.conf
   - /etc/sysctl.d/70-cybozu.conf
   - /etc/systemd/coredump.conf
