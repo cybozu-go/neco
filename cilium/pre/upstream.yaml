@@ -237,6 +237,7 @@ data:
   remove-cilium-node-taints: "true"
   set-cilium-is-up-condition: "true"
   unmanaged-pod-watcher-interval: "15"
+  agent-not-ready-taint-key: "node.cilium.io/agent-not-ready"
 ---
 # Source: cilium/templates/hubble-relay/configmap.yaml
 apiVersion: v1
@@ -247,7 +248,7 @@ metadata:
 data:
   config.yaml: |
     cluster-name: default
-    peer-service: "hubble-peer.kube-system.svc.cluster.local:4254"
+    peer-service: "hubble-peer.kube-system.svc.cluster.local:443"
     listen-address: :4245
     dial-timeout: 
     retry-timeout: 
@@ -599,7 +600,7 @@ spec:
     k8s-app: cilium
   ports:
   - name: peer-service
-    port: 4254
+    port: 443
     protocol: TCP
     targetPort: 4244
   internalTrafficPolicy: Local
@@ -626,12 +627,7 @@ spec:
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "83f339ae7ff940310ece255c985f92fec8a7f83fbf4cef836e9b401d8b0526bd"
-        # This annotation plus the CriticalAddonsOnly toleration makes
-        # cilium to be a critical pod in the cluster, which ensures cilium
-        # gets priority scheduling.
-        # https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
-        scheduler.alpha.kubernetes.io/critical-pod: ""
+        cilium.io/cilium-configmap-checksum: "27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de"
       labels:
         k8s-app: cilium
     spec:
@@ -660,7 +656,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-agent
-        image: "quay.io/cybozu/cilium:1.11.5.1"
+        image: "quay.io/cybozu/cilium:1.11.6.1"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
@@ -670,7 +666,7 @@ spec:
           httpGet:
             host: "127.0.0.1"
             path: /healthz
-            port: 9876
+            port: 9879
             scheme: HTTP
             httpHeaders:
             - name: "brief"
@@ -682,7 +678,7 @@ spec:
           httpGet:
             host: "127.0.0.1"
             path: /healthz
-            port: 9876
+            port: 9879
             scheme: HTTP
             httpHeaders:
             - name: "brief"
@@ -695,7 +691,7 @@ spec:
           httpGet:
             host: "127.0.0.1"
             path: /healthz
-            port: 9876
+            port: 9879
             scheme: HTTP
             httpHeaders:
             - name: "brief"
@@ -796,7 +792,7 @@ spec:
       # Required to mount cgroup2 filesystem on the underlying Kubernetes node.
       # We use nsenter command with host's cgroup and mount namespaces enabled.
       - name: mount-cgroup
-        image: "quay.io/cybozu/cilium:1.11.5.1"
+        image: "quay.io/cybozu/cilium:1.11.6.1"
         imagePullPolicy: IfNotPresent
         env:
         - name: CGROUP_ROOT
@@ -823,7 +819,7 @@ spec:
         securityContext:
           privileged: true
       - name: clean-cilium-state
-        image: "quay.io/cybozu/cilium:1.11.5.1"
+        image: "quay.io/cybozu/cilium:1.11.6.1"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
@@ -962,7 +958,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "83f339ae7ff940310ece255c985f92fec8a7f83fbf4cef836e9b401d8b0526bd"
+        cilium.io/cilium-configmap-checksum: "27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -983,7 +979,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-operator
-        image: quay.io/cybozu/cilium-operator-generic:1.11.5.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.6.1
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
@@ -1073,7 +1069,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/hubble-relay-configmap-checksum: "0df7cb6843573956c01f9ed2532783197cc37953b47175e06710e4fba8790daa"
+        cilium.io/hubble-relay-configmap-checksum: "121d3ca340f3623a68297728e72f60908cf197df412eb4bb266f449c1794a5a7"
       labels:
         k8s-app: hubble-relay
     spec:
@@ -1089,7 +1085,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
-          image: "quay.io/cybozu/hubble-relay:1.11.5.1"
+          image: "quay.io/cybozu/hubble-relay:1.11.6.1"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
