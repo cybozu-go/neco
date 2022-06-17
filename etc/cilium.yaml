@@ -322,6 +322,7 @@ subjects:
 ---
 apiVersion: v1
 data:
+  agent-not-ready-taint-key: node.cilium.io/agent-not-ready
   annotate-k8s-node: "true"
   arping-refresh-period: 30s
   auto-direct-node-routes: "false"
@@ -401,7 +402,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  config.yaml: "cluster-name: default\npeer-service: \"hubble-peer.kube-system.svc.cluster.local:4254\"\nlisten-address:
+  config.yaml: "cluster-name: default\npeer-service: \"hubble-peer.kube-system.svc.cluster.local:443\"\nlisten-address:
     :4245\ndial-timeout: \nretry-timeout: \nsort-buffer-len-max: \nsort-buffer-drain-timeout:
     \ntls-client-cert-file: /var/lib/hubble-relay/tls/client.crt\ntls-client-key-file:
     /var/lib/hubble-relay/tls/client.key\ntls-hubble-server-ca-files: /var/lib/hubble-relay/tls/hubble-server-ca.crt\ntls-server-cert-file:
@@ -464,7 +465,7 @@ spec:
   internalTrafficPolicy: Local
   ports:
   - name: peer-service
-    port: 4254
+    port: 443
     protocol: TCP
     targetPort: 4244
   selector:
@@ -508,7 +509,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 0dbe610ffa3c2c5688e16f7df8668c56cddb56e56aba6de435d53676654546b1
+        cilium.io/cilium-configmap-checksum: 31b347a67277e80a7c19349a86db7ebc2edffb39a58175dad27d049feabb3d4f
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -548,7 +549,7 @@ spec:
               key: debug
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium-operator-generic:1.11.5.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.6.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -604,7 +605,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/hubble-relay-configmap-checksum: 0df7cb6843573956c01f9ed2532783197cc37953b47175e06710e4fba8790daa
+        cilium.io/hubble-relay-configmap-checksum: 121d3ca340f3623a68297728e72f60908cf197df412eb4bb266f449c1794a5a7
       labels:
         k8s-app: hubble-relay
     spec:
@@ -624,7 +625,7 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: quay.io/cybozu/hubble-relay:1.11.5.1
+        image: quay.io/cybozu/hubble-relay:1.11.6.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
@@ -749,10 +750,9 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 0dbe610ffa3c2c5688e16f7df8668c56cddb56e56aba6de435d53676654546b1
+        cilium.io/cilium-configmap-checksum: 31b347a67277e80a7c19349a86db7ebc2edffb39a58175dad27d049feabb3d4f
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
-        scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
         k8s-app: cilium
     spec:
@@ -809,7 +809,7 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium:1.11.5.1
+        image: quay.io/cybozu/cilium:1.11.6.1
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -830,7 +830,7 @@ spec:
             - name: brief
               value: "true"
             path: /healthz
-            port: 9876
+            port: 9879
             scheme: HTTP
           periodSeconds: 30
           successThreshold: 1
@@ -857,7 +857,7 @@ spec:
             - name: brief
               value: "true"
             path: /healthz
-            port: 9876
+            port: 9879
             scheme: HTTP
           periodSeconds: 30
           successThreshold: 1
@@ -876,7 +876,7 @@ spec:
             - name: brief
               value: "true"
             path: /healthz
-            port: 9876
+            port: 9879
             scheme: HTTP
           periodSeconds: 2
           successThreshold: 1
@@ -918,7 +918,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cybozu/cilium:1.11.5.1
+        image: quay.io/cybozu/cilium:1.11.6.1
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -943,7 +943,7 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cybozu/cilium:1.11.5.1
+        image: quay.io/cybozu/cilium:1.11.6.1
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
