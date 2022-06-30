@@ -157,47 +157,63 @@ func rebootMachines(machines []sabakan.Machine) error {
 		return err
 	}
 
-	var ss, nonss []string
+	// group nodes by rack and role
+	racks := map[string]bool{}
+	ss := map[string][]string{}
+	nonss := map[string][]string{}
+	roles := map[string]string{}
 	for _, node := range cluster.Nodes {
 		if !machineAddrs[node.Address] {
 			continue
 		}
 
-		if node.Labels["cke.cybozu.com/role"] == "ss" {
-			ss = append(ss, node.Address)
-			continue
-		}
+		rack := node.Labels["cke.cybozu.com/rack"]
+		role := node.Labels["cke.cybozu.com/role"]
 
-		nonss = append(nonss, node.Address)
-	}
-
-	for {
-		addresses := make([]string, 0, 2)
-		if len(ss) > 0 {
-			addresses = append(addresses, ss[0])
-			ss = ss[1:]
-		}
-		if len(nonss) > 0 {
-			addresses = append(addresses, nonss[0])
-			nonss = nonss[1:]
-		}
-		if len(addresses) == 0 {
-			break
-		}
-
-		log.Info("adding node to CKE reboot queue", map[string]interface{}{
-			"nodes": addresses,
-		})
-		comm := exec.Command(neco.CKECLIBin, "reboot-queue", "add", "-")
-		comm.Stdin = strings.NewReader(strings.Join(addresses, "\n"))
-		comm.Stdout = os.Stdout
-		comm.Stderr = os.Stderr
-		err := comm.Run()
-		if err != nil {
-			return err
+		racks[rack] = true
+		roles[node.Address] = role
+		if role == "ss" {
+			ss[rack] = append(ss[rack], node.Address)
+		} else {
+			nonss[rack] = append(nonss[rack], node.Address)
 		}
 	}
 
+	// enqueue in-cluster nodes per rack
+	for rack := range racks {
+		nonss := nonss[rack]
+		ss := ss[rack]
+
+		nonssIndex := 0
+		ssIndex := 0
+
+		// enqueue nodes so that SSs and non-SSs alternate as much as possible
+		for i := 0; i < len(ss)+len(nonss); i++ {
+			var address string
+			if nonssIndex*len(ss) <= ssIndex*len(nonss) {
+				address = nonss[nonssIndex]
+				nonssIndex++
+			} else {
+				address = ss[ssIndex]
+				ssIndex++
+			}
+			log.Info("adding a node to CKE reboot queue", map[string]interface{}{
+				"node": address,
+				"rack": rack,
+				"role": roles[address],
+			})
+			comm := exec.Command(neco.CKECLIBin, "reboot-queue", "add", "-")
+			comm.Stdin = strings.NewReader(address + "\n")
+			comm.Stdout = os.Stdout
+			comm.Stderr = os.Stderr
+			err := comm.Run()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// reboot out-of-cluster nodes immediately
 	var errorNodes []string
 	ckeNodeAddrs := make(map[string]bool, len(cluster.Nodes))
 	for _, node := range cluster.Nodes {
