@@ -18,6 +18,7 @@ OOMScoreAdjust=-1000
 ExecStartPre=/bin/mkdir -p /var/lib/setup-hw
 ExecStartPre=-/usr/bin/docker kill setup-hw
 ExecStartPre=-/usr/bin/docker rm setup-hw
+ExecStartPre=/usr/sbin/setup-setup-hw
 ExecStart=/usr/bin/docker run --name=setup-hw --rm \
   --network=host --uts=host \
   --log-driver=journald \

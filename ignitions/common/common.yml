@@ -39,6 +39,7 @@ files:
   - /opt/sbin/setup-node-exporter
   - /opt/sbin/setup-serf-conf
   - /opt/sbin/setup-serf-tags
+  - /opt/sbin/setup-setup-hw
   - /opt/sbin/setup-var
 systemd:
   - name: update-engine.service
