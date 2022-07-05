@@ -164,7 +164,7 @@ $(KUBECTL_DOWNLOAD):
 	mkdir -p $(KUBECTL_DLDIR)
 	$(WGET) -O $(KUBECTL_DLDIR)/kubectl-linux-amd64 https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
 	$(WGET) -O $(KUBECTL_DLDIR)/kubectl.exe https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/windows/amd64/kubectl.exe
-	$(WGET) -O $(KUBECTL_DLDIR)/kubect-darwin-amd64 https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/darwin/amd64/kubectl
+	$(WGET) -O $(KUBECTL_DLDIR)/kubectl-darwin-amd64 https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/darwin/amd64/kubectl
 	$(WGET_GITHUB) -O $(KUBECTL_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/LICENSE
 	$(WGET_GITHUB) -O $(KUBECTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
 	touch $@
@@ -179,7 +179,7 @@ kubectl: $(KUBECTL_DOWNLOAD)
 	cp $(KUBECTL_DLDIR)/kubectl.exe $(WINDOWS_BINDIR)/kubectl.exe
 	cp $(KUBECTL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	cp $(KUBECTL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(KUBECTL_DLDIR)/kubect-darwin-amd64 $(MAC_BINDIR)/kubectl
+	cp $(KUBECTL_DLDIR)/kubectl-darwin-amd64 $(MAC_BINDIR)/kubectl
 	chmod +x $(MAC_BINDIR)/kubectl
 	cp $(KUBECTL_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
 	cp $(KUBECTL_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
@@ -254,8 +254,9 @@ $(JSONNET_DOWNLOAD):
 jsonnet: $(JSONNET_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
 	cp $(JSONNET_DLDIR)/linux_amd64/jsonnet $(BINDIR)/jsonnet
-	cp $(JSONNET_DLDIR)/linux_amd64/jsonnetfmt $(BINDIR)/jsonnet
+	cp $(JSONNET_DLDIR)/linux_amd64/jsonnetfmt $(BINDIR)/jsonnetfmt
 	chmod +x $(BINDIR)/jsonnet
+	chmod +x $(BINDIR)/jsonnetfmt
 	cp $(JSONNET_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(JSONNET_DLDIR)/README.md $(DOCDIR)/$@/README.md
 	cp $(JSONNET_DLDIR)/windows_amd64/jsonnet.exe $(WINDOWS_BINDIR)/jsonnet.exe
@@ -450,16 +451,10 @@ $(CILIUM_CLI_DOWNLOAD):
 
 .PHONY: cilium-cli
 cilium-cli: $(CILIUM_CLI_DOWNLOAD)
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
 	tar xzf $(CILIUM_CLI_DLDIR)/cilium-linux-amd64.tar.gz -C $(BINDIR) cilium
-	tar xzf $(CILIUM_CLI_DLDIR)/cilium-windows-amd64.tar.gz -C $(WINDOWS_BINDIR) cilium.exe
-	tar xzf $(CILIUM_CLI_DLDIR)/cilium-darwin-amd64.tar.gz  -C $(MAC_BINDIR) cilium
 	cp $(CILIUM_CLI_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(CILIUM_CLI_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(CILIUM_CLI_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
 	cp $(CILIUM_CLI_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(CILIUM_CLI_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(CILIUM_CLI_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(HUBBLE_DOWNLOAD):
 	mkdir -p $(HUBBLE_DLDIR)
