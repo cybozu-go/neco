@@ -26,6 +26,8 @@ STERN_DLDIR := $(DOWNLOADDIR)/stern-v$(STERN_VERSION)
 STERN_DOWNLOAD := $(STERN_DLDIR)/downloaded
 KUSTOMIZE_DLDIR := $(DOWNLOADDIR)/kustomize-v$(KUSTOMIZE_VERSION)
 KUSTOMIZE_DOWNLOAD := $(KUSTOMIZE_DLDIR)/downloaded
+JSONNET_DLDIR := $(DOWNLOADDIR)/jsonnet-v$(JSONNET_VERSION)
+JSONNET_DOWNLOAD := $(JSONNET_DLDIR)/downloaded
 TELEPORT_DLDIR := $(DOWNLOADDIR)/teleport-v$(TELEPORT_VERSION)
 TELEPORT_DOWNLOAD := $(TELEPORT_DLDIR)/downloaded
 CKE_DLDIR := $(DOWNLOADDIR)/cke-v$(CKE_VERSION)
@@ -48,7 +50,7 @@ HUBBLE_DLDIR := $(DOWNLOADDIR)/hubble-v$(HUBBLE_VERSION)
 HUBBLE_DOWNLOAD := $(HUBBLE_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble
+all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble
 	# all binaries in BINDIR and SBINDIR must have executable bits
 	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
@@ -239,6 +241,31 @@ kustomize: $(KUSTOMIZE_DOWNLOAD)
 	tar xzf $(KUSTOMIZE_DLDIR)/kustomize-linux-amd64.tar.gz -C $(BINDIR)
 	cp $(KUSTOMIZE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
+
+$(JSONNET_DOWNLOAD):
+	mkdir -p $(JSONNET_DLDIR)/linux_amd64 $(JSONNET_DLDIR)/windows_amd64 $(JSONNET_DLDIR)/darwin_amd64
+	$(WGET_GITHUB) -O - https://github.com/google/go-jsonnet/releases/download/v${JSONNET_VERSION}/go-jsonnet_${JSONNET_VERSION}_Linux_x86_64.tar.gz | tar xvzf - -C $(JSONNET_DLDIR)/linux_amd64
+	$(WGET_GITHUB) -O - https://github.com/google/go-jsonnet/releases/download/v${JSONNET_VERSION}/go-jsonnet_${JSONNET_VERSION}_Windows_x86_64.tar.gz | tar xvzf - -C $(JSONNET_DLDIR)/windows_amd64
+	$(WGET_GITHUB) -O - https://github.com/google/go-jsonnet/releases/download/v${JSONNET_VERSION}/go-jsonnet_${JSONNET_VERSION}_Darwin_x86_64.tar.gz | tar xvzf - -C $(JSONNET_DLDIR)/darwin_amd64
+	$(WGET_GITHUB) -O $(JSONNET_DLDIR)/README.md https://raw.githubusercontent.com/google/go-jsonnet/v${JSONNET_VERSION}/README.md
+	touch $@
+
+.PHONY: jsonnet
+jsonnet: $(JSONNET_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	cp $(JSONNET_DLDIR)/linux_amd64/jsonnet $(BINDIR)/jsonnet
+	cp $(JSONNET_DLDIR)/linux_amd64/jsonnetfmt $(BINDIR)/jsonnet
+	chmod +x $(BINDIR)/jsonnet
+	cp $(JSONNET_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
+	cp $(JSONNET_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(JSONNET_DLDIR)/windows_amd64/jsonnet.exe $(WINDOWS_BINDIR)/jsonnet.exe
+	cp $(JSONNET_DLDIR)/windows_amd64/jsonnetfmt.exe $(WINDOWS_BINDIR)/jsonnetfmt.exe
+	cp $(JSONNET_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(JSONNET_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(JSONNET_DLDIR)/darwin_amd64/jsonnet $(MAC_BINDIR)/jsonnet
+	cp $(JSONNET_DLDIR)/darwin_amd64/jsonnetfmt $(MAC_BINDIR)/jsonnetfmt
+	cp $(JSONNET_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(JSONNET_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(TELEPORT_DOWNLOAD):
 	mkdir -p $(TELEPORT_DLDIR)/common -p $(TELEPORT_DLDIR)/teleport-linux-amd64 -p $(TELEPORT_DLDIR)/teleport-darwin-amd64 -p $(TELEPORT_DLDIR)/teleport-windows-amd64
