@@ -229,18 +229,28 @@ stern: $(STERN_DOWNLOAD)
 	cp $(STERN_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUSTOMIZE_DOWNLOAD):
-	mkdir -p $(KUSTOMIZE_DLDIR)
-	$(WGET_GITHUB) -O $(KUSTOMIZE_DLDIR)/kustomize-linux-amd64.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz
+	mkdir -p $(KUSTOMIZE_DLDIR)/linux_amd64 $(KUSTOMIZE_DLDIR)/windows_amd64 $(KUSTOMIZE_DLDIR)/darwin_amd64
+	$(WGET_GITHUB) -O - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz | tar xvzf - -C $(KUSTOMIZE_DLDIR)/linux_amd64
+	$(WGET_GITHUB) -O - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_windows_amd64.tar.gz | tar xvzf - -C $(KUSTOMIZE_DLDIR)/windows_amd64
+	$(WGET_GITHUB) -O - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_darwin_amd64.tar.gz | tar xvzf - -C $(KUSTOMIZE_DLDIR)/darwin_amd64
 	$(WGET_GITHUB) -O $(KUSTOMIZE_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
 	$(WGET_GITHUB) -O $(KUSTOMIZE_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
 	touch $@
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE_DOWNLOAD)
-	mkdir -p $(BINDIR) $(DOCDIR)/$@/
-	tar xzf $(KUSTOMIZE_DLDIR)/kustomize-linux-amd64.tar.gz -C $(BINDIR)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	cp $(KUSTOMIZE_DLDIR)/linux_amd64/kustomize $(BINDIR)/kustomize
+	chmod +x $(BINDIR)/kustomize
 	cp $(KUSTOMIZE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	cp $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	cp $(KUSTOMIZE_DLDIR)/windows_amd64/kustomize.exe $(WINDOWS_BINDIR)/kustomize.exe
+	cp $(KUSTOMIZE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	cp $(KUSTOMIZE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	cp $(KUSTOMIZE_DLDIR)/darwin_amd64/kustomize $(MAC_BINDIR)/kustomize
+	chmod +x $(MAC_BINDIR)/kustomize
+	cp $(KUSTOMIZE_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	cp $(KUSTOMIZE_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(JSONNET_DOWNLOAD):
 	mkdir -p $(JSONNET_DLDIR)/linux_amd64 $(JSONNET_DLDIR)/windows_amd64 $(JSONNET_DLDIR)/darwin_amd64
