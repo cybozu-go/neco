@@ -72,7 +72,7 @@ func runBeforeSuiteInstall() {
 			}
 		}
 		return nil
-	}).Should(Succeed())
+	}, 20*time.Minute).Should(Succeed())
 
 	for _, host := range allBootServers {
 		// on VMs, netplan.io should be purged after cloud-init completed
