@@ -191,6 +191,14 @@ spec:
           - 127.0.0.1
       affinity:
         podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - squid
+            topologyKey: "kubernetes.io/hostname"
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 100
             podAffinityTerm:
