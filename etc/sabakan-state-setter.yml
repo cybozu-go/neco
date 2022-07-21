@@ -5,6 +5,7 @@ machine-types:
     metrics:
       - name: hw_processor_status_health
   - name: r640-boot-1
+    grace-period: 2h
     metrics:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
@@ -15,6 +16,7 @@ machine-types:
             device: PCIeSSD.Slot.
         minimum-healthy-count: 1
   - name: r640-boot-2
+    grace-period: 2h
     metrics:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
@@ -25,6 +27,7 @@ machine-types:
             device: Disk.Bay.
         minimum-healthy-count: 1
   - name: r640-cs-1
+    grace-period: 2h
     metrics:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
@@ -35,6 +38,7 @@ machine-types:
             device: PCIeSSD.Slot.
         minimum-healthy-count: 2
   - name: r640-cs-2
+    grace-period: 2h
     metrics:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
@@ -45,6 +49,7 @@ machine-types:
             device: Disk.Bay.
         minimum-healthy-count: 2
   - name: r740xd-ss-2
+    grace-period: 2h
     metrics:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
@@ -60,6 +65,7 @@ machine-types:
             device: Disk.Direct.
         minimum-healthy-count: 2
   - name: r6525-boot-1
+    grace-period: 2h
     metrics:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
@@ -70,6 +76,7 @@ machine-types:
             device: Disk.Bay.
         minimum-healthy-count: 1
   - name: r6525-cs-1
+    grace-period: 2h
     metrics:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
@@ -80,6 +87,7 @@ machine-types:
             device: Disk.Bay.
         minimum-healthy-count: 3
   - name: r7525-ss-1
+    grace-period: 2h
     metrics:
       - name: hw_systems_processors_status_health
       - name: hw_systems_memorysummary_status_health
