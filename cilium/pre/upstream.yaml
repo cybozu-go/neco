@@ -104,7 +104,6 @@ data:
   # Specifies the ratio (0.0-1.0) of total system memory to use for dynamic
   # sizing of the TCP CT, non-TCP CT, NAT and policy BPF maps.
   bpf-map-dynamic-size-ratio: "0.0025"
-  enable-host-legacy-routing: "true"
   # bpf-policy-map-max specifies the maximum number of entries in endpoint
   # policy map (per endpoint)
   bpf-policy-map-max: "16384"
@@ -178,21 +177,10 @@ data:
   # host-firewall and BPF masquerading)
   devices: "eth+ eno1+ eno2+"
 
-  kube-proxy-replacement:  "partial"
-  kube-proxy-replacement-healthz-bind-address: ""
-  enable-host-reachable-services: "true"
-  bpf-lb-sock-hostns-only: "true"
-  enable-host-port: "false"
-  enable-external-ips: "true"
-  enable-node-port: "true"
-  direct-routing-device: "e+"
+  kube-proxy-replacement:  "disabled"
   enable-health-check-nodeport: "true"
   node-port-bind-protection: "true"
   enable-auto-protect-node-port-range: "true"
-  bpf-lb-mode: "dsr"
-  bpf-lb-algorithm: "maglev"
-  bpf-lb-acceleration: "disabled"
-  bpf-lb-maglev-hash-seed: "3HCx6JennjWtot2U"
   enable-session-affinity: "true"
   enable-l2-neigh-discovery: "true"
   arping-refresh-period: "30s"
@@ -230,7 +218,6 @@ data:
   cluster-pool-ipv4-cidr: "10.0.0.0/8"
   cluster-pool-ipv4-mask-size: "24"
   disable-cnp-status-updates: "true"
-  bgp-announce-lb-ip: "true"
   cgroup-root: "/run/cilium/cgroupv2"
   enable-k8s-terminating-endpoint: "true"
   annotate-k8s-node: "true"
@@ -627,7 +614,7 @@ spec:
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de"
+        cilium.io/cilium-configmap-checksum: "31b347a67277e80a7c19349a86db7ebc2edffb39a58175dad27d049feabb3d4f"
       labels:
         k8s-app: cilium
     spec:
@@ -725,10 +712,6 @@ spec:
               name: cilium-config
               key: custom-cni-conf
               optional: true
-        - name: KUBERNETES_SERVICE_HOST
-          value: "127.0.0.1"
-        - name: KUBERNETES_SERVICE_PORT
-          value: "16443"
         lifecycle:
           postStart:
             exec:
@@ -781,9 +764,6 @@ spec:
           readOnly: true
         - name: xtables-lock
           mountPath: /run/xtables.lock
-        - name: bgp-config-path
-          mountPath: /var/lib/cilium/bgp
-          readOnly: true
         - name: hubble-tls
           mountPath: /var/lib/cilium/tls/hubble
           readOnly: true
@@ -836,10 +816,6 @@ spec:
               name: cilium-config
               key: clean-cilium-bpf-state
               optional: true
-        - name: KUBERNETES_SERVICE_HOST
-          value: "127.0.0.1"
-        - name: KUBERNETES_SERVICE_PORT
-          value: "16443"
         securityContext:
           privileged: true
         volumeMounts:
@@ -913,9 +889,6 @@ spec:
       - name: cilium-config-path
         configMap:
           name: cilium-config
-      - name: bgp-config-path
-        configMap:
-          name: bgp-config
       - name: hubble-tls
         projected:
           # note: the leading zero means this number is in octal representation: do not remove it
@@ -958,7 +931,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de"
+        cilium.io/cilium-configmap-checksum: "31b347a67277e80a7c19349a86db7ebc2edffb39a58175dad27d049feabb3d4f"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -1003,10 +976,6 @@ spec:
               key: debug
               name: cilium-config
               optional: true
-        - name: KUBERNETES_SERVICE_HOST
-          value: "127.0.0.1"
-        - name: KUBERNETES_SERVICE_PORT
-          value: "16443"
         ports:
         - name: prometheus
           containerPort: 6942
@@ -1025,9 +994,6 @@ spec:
         - name: cilium-config-path
           mountPath: /tmp/cilium/config-map
           readOnly: true
-        - name: bgp-config-path
-          mountPath: /var/lib/cilium/bgp
-          readOnly: true
         resources:
           requests:
             cpu: 100m
@@ -1044,9 +1010,6 @@ spec:
       - name: cilium-config-path
         configMap:
           name: cilium-config
-      - name: bgp-config-path
-        configMap:
-          name: bgp-config
 ---
 # Source: cilium/templates/hubble-relay/deployment.yaml
 apiVersion: apps/v1
