@@ -2,7 +2,9 @@ package dctest
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -65,13 +67,26 @@ func testUnbound() {
 func checkUnboundExporter(podLabelSelector string) {
 	// should be called in It
 	By("checking unbound_exporter")
-	stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod", "-n", "internet-egress", "-l", podLabelSelector, "-o", "json")
-	Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-	podList := new(corev1.PodList)
-	err = json.Unmarshal(stdout, &podList)
-	Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
-	stdout, stderr, err = execAt(bootServers[0], "curl", "-sSf", "http://"+podList.Items[0].Status.PodIP+":9167/metrics")
-	Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-	Expect(stdout).Should(ContainSubstring("unbound_up 1"))
-	Expect(stdout).Should(ContainSubstring(`unbound_memory_caches_bytes{cache="message"}`))
+	Eventually(func() error {
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod", "-n", "internet-egress", "-l", podLabelSelector, "-o", "json")
+		if err != nil {
+			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+		}
+		podList := new(corev1.PodList)
+		err = json.Unmarshal(stdout, &podList)
+		if err != nil {
+			return fmt.Errorf("data: %s, err: %v", stdout, err)
+		}
+		stdout, stderr, err = execAt(bootServers[0], "curl", "-sSf", "http://"+podList.Items[0].Status.PodIP+":9167/metrics")
+		if err != nil {
+			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+		}
+		if !strings.Contains(string(stdout), "unbound_up 1") {
+			return errors.New("should contain 'unbound_up 1' in the metrics")
+		}
+		if !strings.Contains(string(stdout), `unbound_memory_caches_bytes{cache="message"}`) {
+			return errors.New(`should contain 'unbound_memory_caches_bytes{cache="message"}' in the metrics`)
+		}
+		return nil
+	}).Should(Succeed())
 }
