@@ -1,0 +1,4 @@
+include: ../../common/common-stage0.yml
+files:
+  - /etc/udev/crypt-base-path
+  - /etc/udev/rules.d/99-neco.rules

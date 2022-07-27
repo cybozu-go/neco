@@ -1,0 +1,5 @@
+server = "https://registry-local.registry.gcp0.dev-ne.co"
+
+[host."http://registry-local.registry.svc:5000"]
+  skip_verify = true
+  capabilities = ["pull", "resolve"]
