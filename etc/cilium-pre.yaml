@@ -322,12 +322,45 @@ subjects:
 ---
 apiVersion: v1
 data:
+  config.yaml: |
+    peers:
+    - peer-address: 127.0.0.1
+      peer-asn: 64699
+      my-asn: 64698
+    address-pools:
+    - name: default
+      protocol: bgp
+      addresses:
+      - {{ .lbAddressDefault }}
+    - name: bastion
+      protocol: bgp
+      addresses:
+      - {{ .lbAddressBastion }}
+      auto-assign: false
+    - name: internet
+      protocol: bgp
+      addresses:
+      - {{ .lbAddressInternet }}
+      auto-assign: false
+kind: ConfigMap
+metadata:
+  name: bgp-config
+  namespace: kube-system
+---
+apiVersion: v1
+data:
   agent-not-ready-taint-key: node.cilium.io/agent-not-ready
   annotate-k8s-node: "true"
   arping-refresh-period: 30s
   auto-direct-node-routes: "false"
+  bgp-announce-lb-ip: "true"
+  bpf-lb-acceleration: disabled
+  bpf-lb-algorithm: maglev
   bpf-lb-external-clusterip: "false"
+  bpf-lb-maglev-hash-seed: 3HCx6JennjWtot2U
   bpf-lb-map-max: "65536"
+  bpf-lb-mode: dsr
+  bpf-lb-sock-hostns-only: "true"
   bpf-map-dynamic-size-ratio: "0.0025"
   bpf-policy-map-max: "16384"
   cgroup-root: /run/cilium/cgroupv2
@@ -340,14 +373,19 @@ data:
   custom-cni-conf: "true"
   debug: "false"
   devices: eth+ eno1+ eno2+
+  direct-routing-device: e+
   disable-cnp-status-updates: "true"
   disable-endpoint-crd: "false"
   enable-auto-protect-node-port-range: "true"
   enable-bandwidth-manager: "false"
   enable-bpf-clock-probe: "true"
   enable-endpoint-health-checking: "false"
+  enable-external-ips: "true"
   enable-health-check-nodeport: "true"
   enable-health-checking: "true"
+  enable-host-legacy-routing: "true"
+  enable-host-port: "false"
+  enable-host-reachable-services: "true"
   enable-hubble: "true"
   enable-identity-mark: "false"
   enable-ipv4: "true"
@@ -360,6 +398,7 @@ data:
   enable-local-node-route: "false"
   enable-local-redirect-policy: "false"
   enable-metrics: "true"
+  enable-node-port: "true"
   enable-policy: default
   enable-remote-node-identity: "true"
   enable-session-affinity: "true"
@@ -378,7 +417,8 @@ data:
   install-iptables-rules: "true"
   install-no-conntrack-iptables-rules: "false"
   ipam: cluster-pool
-  kube-proxy-replacement: disabled
+  kube-proxy-replacement: partial
+  kube-proxy-replacement-healthz-bind-address: ""
   monitor-aggregation: medium
   monitor-aggregation-flags: all
   monitor-aggregation-interval: 5s
@@ -509,7 +549,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 31b347a67277e80a7c19349a86db7ebc2edffb39a58175dad27d049feabb3d4f
+        cilium.io/cilium-configmap-checksum: 27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -549,6 +589,10 @@ spec:
               key: debug
               name: cilium-config
               optional: true
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
+        - name: KUBERNETES_SERVICE_PORT
+          value: "16443"
         image: quay.io/cybozu/cilium-operator-generic:1.11.6.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
@@ -574,6 +618,9 @@ spec:
         - mountPath: /tmp/cilium/config-map
           name: cilium-config-path
           readOnly: true
+        - mountPath: /var/lib/cilium/bgp
+          name: bgp-config-path
+          readOnly: true
       hostNetwork: true
       priorityClassName: system-cluster-critical
       restartPolicy: Always
@@ -585,6 +632,9 @@ spec:
       - configMap:
           name: cilium-config
         name: cilium-config-path
+      - configMap:
+          name: bgp-config
+        name: bgp-config-path
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -750,7 +800,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 31b347a67277e80a7c19349a86db7ebc2edffb39a58175dad27d049feabb3d4f
+        cilium.io/cilium-configmap-checksum: 27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
       labels:
@@ -809,6 +859,10 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
+        - name: KUBERNETES_SERVICE_PORT
+          value: "16443"
         image: quay.io/cybozu/cilium:1.11.6.2
         imagePullPolicy: IfNotPresent
         lifecycle:
@@ -901,6 +955,9 @@ spec:
           readOnly: true
         - mountPath: /run/xtables.lock
           name: xtables-lock
+        - mountPath: /var/lib/cilium/bgp
+          name: bgp-config-path
+          readOnly: true
         - mountPath: /var/lib/cilium/tls/hubble
           name: hubble-tls
           readOnly: true
@@ -943,6 +1000,10 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
+        - name: KUBERNETES_SERVICE_PORT
+          value: "16443"
         image: quay.io/cybozu/cilium:1.11.6.2
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
@@ -1007,6 +1068,9 @@ spec:
       - configMap:
           name: cilium-config
         name: cilium-config-path
+      - configMap:
+          name: bgp-config
+        name: bgp-config-path
       - name: hubble-tls
         projected:
           defaultMode: 256
