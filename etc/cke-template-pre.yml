@@ -76,15 +76,12 @@ options:
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
   kube-proxy:
+    disable: true
+    # For local-proxy running on boot servers
     config:
       apiVersion: kubeproxy.config.k8s.io/v1alpha1
       kind: KubeProxyConfiguration
       mode: ipvs
-      ipvs:
-        strictARP: true
-      featureGates:
-        EphemeralContainers: true
-        MixedProtocolLBService: true
   kube-scheduler:
     config:
       apiVersion: kubescheduler.config.k8s.io/v1beta1
