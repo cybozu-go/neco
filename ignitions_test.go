@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"sort"
 	"testing"
 
@@ -179,7 +180,7 @@ func TestNecoIgnitionTemplates(t *testing.T) {
 		if info.IsDir() {
 			return nil
 		}
-		if info.Name() == "site.yml" {
+		if s, _ := regexp.MatchString(`site(-.*|)\.yml`, info.Name()); s {
 			siteYAMLs = append(siteYAMLs, path)
 		}
 		return nil
