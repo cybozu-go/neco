@@ -15,6 +15,9 @@
 .vscode
 .DS_Store
 
+# Ignore downloaded files
+/ignition-template/bin
+
 # Debian package
 /work
 /neco_*_amd64.deb

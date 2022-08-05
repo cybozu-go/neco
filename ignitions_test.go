@@ -28,7 +28,7 @@ func checkForFlag(filestateInDir map[string]bool) error {
 	return nil
 }
 
-func testIgnitionTemplates(path string, filestateInDir map[string]bool, final bool) error {
+func testIgnitionTemplates(path string, filestateInDir map[string]bool) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func testIgnitionTemplates(path string, filestateInDir map[string]bool, final bo
 		if err != nil {
 			return err
 		}
-		err = testIgnitionTemplates(abs, filestateInDir, final)
+		err = testIgnitionTemplates(abs, filestateInDir)
 		if err != nil {
 			return err
 		}
@@ -103,12 +103,6 @@ func testIgnitionTemplates(path string, filestateInDir map[string]bool, final bo
 				filestateInDir[f] = true
 			} else {
 				return fmt.Errorf("file in %s and file tree differ\n", f)
-			}
-		}
-
-		if final {
-			if err := checkForFlag(filestateInDir); err != nil {
-				return err
 			}
 		}
 	}
@@ -188,13 +182,8 @@ func testIgnitionTemplates(path string, filestateInDir map[string]bool, final bo
 	return nil
 }
 
-func isMaxTrial(roleCount int, count int) bool {
-	return roleCount == count
-}
-
 func TestNecoIgnitionTemplates(t *testing.T) {
-	var siteYAMLs []string
-	roleCount := map[string]int{}
+	siteYAMLsByRole := make(map[string][]string)
 
 	t.Parallel()
 	err := filepath.Walk(testRoleDir, func(path string, info os.FileInfo, err error) error {
@@ -205,9 +194,8 @@ func TestNecoIgnitionTemplates(t *testing.T) {
 			return nil
 		}
 		if s, _ := regexp.MatchString(`site(-.*|)\.yml`, info.Name()); s {
-			siteYAMLs = append(siteYAMLs, path)
 			role := strings.Split(path, "/")[2]
-			roleCount[role]++
+			siteYAMLsByRole[role] = append(siteYAMLsByRole[role], path)
 		}
 		return nil
 	})
@@ -215,22 +203,16 @@ func TestNecoIgnitionTemplates(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var trialCount int
-	filestateInDir := map[string]bool{}
-	for _, sy := range siteYAMLs {
-		trialCount++
-		role := strings.Split(sy, "/")[2]
-
-		final := isMaxTrial(roleCount[role], trialCount)
-		err := testIgnitionTemplates(sy, filestateInDir, final)
-
-		if err != nil {
-			t.Fatal(err)
+	for _, siteYAMLs := range siteYAMLsByRole {
+		filestateInDir := make(map[string]bool)
+		for _, sy := range siteYAMLs {
+			err := testIgnitionTemplates(sy, filestateInDir)
+			if err != nil {
+				t.Fatal(err)
+			}
 		}
-
-		if final {
-			trialCount = 0
-			filestateInDir = map[string]bool{}
+		if err := checkForFlag(filestateInDir); err != nil {
+			t.Fatal(err)
 		}
 	}
 }
