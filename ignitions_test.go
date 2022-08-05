@@ -19,8 +19,6 @@ const (
 	testRoleDir = "ignitions/roles"
 )
 
-var filestateInDir map[string]bool
-
 func checkForFlag(filestateInDir map[string]bool) error {
 	for key, value := range filestateInDir {
 		if !value {
@@ -30,7 +28,7 @@ func checkForFlag(filestateInDir map[string]bool) error {
 	return nil
 }
 
-func testIgnitionTemplates(path string, final bool) error {
+func testIgnitionTemplates(path string, filestateInDir map[string]bool, final bool) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -52,7 +50,7 @@ func testIgnitionTemplates(path string, final bool) error {
 		if err != nil {
 			return err
 		}
-		err = testIgnitionTemplates(abs, final)
+		err = testIgnitionTemplates(abs, filestateInDir, final)
 		if err != nil {
 			return err
 		}
@@ -218,13 +216,13 @@ func TestNecoIgnitionTemplates(t *testing.T) {
 	}
 
 	var trialCount int
-	filestateInDir = map[string]bool{}
+	filestateInDir := map[string]bool{}
 	for _, sy := range siteYAMLs {
 		trialCount++
 		role := strings.Split(sy, "/")[2]
 
 		final := isMaxTrial(roleCount[role], trialCount)
-		err := testIgnitionTemplates(sy, final)
+		err := testIgnitionTemplates(sy, filestateInDir, final)
 
 		if err != nil {
 			t.Fatal(err)
