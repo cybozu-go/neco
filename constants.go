@@ -167,7 +167,6 @@ var (
 	CKEConfFile          = filepath.Join(CKEDir, "config.yml")
 	CKECLIBin            = "/usr/bin/ckecli"
 	CKETemplateFile      = filepath.Join(NecoDataDir, "cke-template.yml")
-	CKETemplateFilePre   = filepath.Join(NecoDataDir, "cke-template-pre.yml")
 	CKEUserResourceFiles = []string{
 		filepath.Join(NecoDataDir, "namespaces.yml"),
 		filepath.Join(NecoDataDir, "cilium.yaml"),
