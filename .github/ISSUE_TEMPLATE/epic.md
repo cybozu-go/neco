@@ -29,4 +29,4 @@ Define what is a must-have for launch and in-scope. Keep this section fluid and 
 - [ ] Initiatives and scopes are clearly stated.
 - [ ] Feasibility is proved by PoC or scrutiny.
 - [ ] All necessary issues that complete this epic are created.
-- [ ] At least three people agree on making this ready.
+- [ ] At least three people (the epic owner and two other people) agree on making this ready.
