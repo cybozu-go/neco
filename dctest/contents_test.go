@@ -60,7 +60,6 @@ func testInitData() {
 		Expect(string(bytes.TrimSpace(stdout))).To(Equal(strconv.Itoa(ssweight)))
 		for _, bootServer := range allBootServers {
 			execSafeAt(bootServer, "sudo", "sed", "-i", "'s/#GCPONLY //g'", "/usr/share/neco/cke-template.yml")
-			execSafeAt(bootServer, "sudo", "sed", "-i", "'s/#GCPONLY //g'", "/usr/share/neco/cke-template-pre.yml")
 		}
 		execSafeAt(bootServers[0], "neco", "cke", "update")
 		stdout, stderr, err = execAt(bootServers[0], "ckecli", "sabakan", "get-template")

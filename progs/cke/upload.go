@@ -68,17 +68,7 @@ func SetCKETemplate(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 
-	env, err := st.GetEnvConfig(ctx)
-	if err != nil {
-		return err
-	}
-	var ckeTemplateFile string
-	if env == neco.ProdEnv {
-		ckeTemplateFile = neco.CKETemplateFile
-	} else {
-		ckeTemplateFile = neco.CKETemplateFilePre
-	}
-	ckeTemplate, err := os.ReadFile(ckeTemplateFile)
+	ckeTemplate, err := os.ReadFile(neco.CKETemplateFile)
 	if err != nil {
 		return err
 	}

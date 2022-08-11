@@ -1,3 +1,9 @@
+bgp:
+  announce:
+    loadbalancerIP: true
+  enabled: true
+bpf:
+  hostRouting: true
 cni:
   chainingMode: "generic-veth"
   customConf: true
@@ -5,6 +11,13 @@ datapathMode: "veth"
 devices: "eth+ eno1+ eno2+"
 enableIPv4Masquerade: false
 enableIdentityMark: false
+externalIPs:
+  enabled: true
+hostPort:
+  enabled: false
+hostServices:
+  enabled: true
+  hostNamespaceOnly: true
 hubble:
   relay:
     enabled: true
@@ -27,7 +40,19 @@ hubble:
       - "flow:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip"
       - "icmp"
       - "http"
-kubeProxyReplacement: "disabled"
+k8sServiceHost: 127.0.0.1
+k8sServicePort: 16443
+kubeProxyReplacement: "partial"
+loadBalancer:
+  # We can't enable XDP Acceleration because of the issue https://github.com/cilium/cilium/issues/19453
+  acceleration: disabled
+  algorithm: maglev
+  mode: dsr
+maglev:
+  hashSeed: 3HCx6JennjWtot2U
+nodePort:
+  directRoutingDevice: "e+"
+  enabled: true
 operator:
   rollOutPods: true
   prometheus:
