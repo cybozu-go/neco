@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/exec"
@@ -258,6 +259,19 @@ func UploadIgnitions(ctx context.Context, c *http.Client, id string, st storage.
 	return uploadIgnitions(ctx, client, id, st)
 }
 
+func fileExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
+	}
+
+	return false, err
+}
+
 func uploadIgnitions(ctx context.Context, c *sabac.Client, id string, st storage.Storage) error {
 	roles, err := getInstalledRoles()
 	if err != nil {
@@ -337,7 +351,19 @@ func uploadIgnitions(ctx context.Context, c *sabac.Client, id string, st storage
 	metadata["version"] = req.Version
 
 	for _, role := range roles {
-		path := filepath.Join(neco.IgnitionDirectory, "roles", role, "site.yml")
+		clusterName, err := neco.MyCluster()
+		if err != nil {
+			return err
+		}
+		path := filepath.Join(neco.IgnitionDirectory, "roles", role, fmt.Sprintf("site-%s.yml", clusterName))
+
+		exist, err := fileExists(path)
+		if err != nil {
+			return err
+		}
+		if !exist {
+			path = filepath.Join(neco.IgnitionDirectory, "roles", role, "site.yml")
+		}
 
 		tmpl, err := sabac.BuildIgnitionTemplate(path, metadata)
 		if err != nil {

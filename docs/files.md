@@ -55,12 +55,15 @@ Manifest for [squid][].
 
 Manifest for [unbound][].
 
-`/usr/share/neco/ignitions/roles/ROLE/site.yml`
+`/usr/share/neco/ignitions/roles/ROLE/<site.yml|site-<cluster>.yml>`
 -----------------------------------------------
 
 Ignitions registered by neco-worker to sabakan are included in `/usr/share/neco/ignitions/roles` for each roles.
 neco-worker identify role and its ignitions by listing the directory.
-The directory must contain an entry point file `site.yml`, which defined in [sabakan ignition spec.][ignition.md].
+The directory must contain an entry point file `site.yml|site-<cluster>.yml`, which is defined in [sabakan ignition spec.][ignition.md].
+A file named `site-<cluster>.yml` is used to place configuration files for each environment.
+`<cluster>` is the name of the cluster and defined `/etc/neco/cluster`.
+If `site-<cluster>.yml` does not exist, `site.yml` is used.
 
 `/etc/udev` (only for ss)
 -------------------------
