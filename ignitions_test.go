@@ -5,7 +5,9 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"sort"
+	"strings"
 	"testing"
 
 	sabakan "github.com/cybozu-go/sabakan/v2/client"
@@ -17,7 +19,16 @@ const (
 	testRoleDir = "ignitions/roles"
 )
 
-func testIgnitionTemplates(path string) error {
+func checkForFlag(filestateInDir map[string]bool) error {
+	for key, value := range filestateInDir {
+		if !value {
+			return fmt.Errorf("%s file is not included in the configuration file\n", key)
+		}
+	}
+	return nil
+}
+
+func testIgnitionTemplates(path string, filestateInDir map[string]bool) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -39,8 +50,7 @@ func testIgnitionTemplates(path string) error {
 		if err != nil {
 			return err
 		}
-
-		err = testIgnitionTemplates(abs)
+		err = testIgnitionTemplates(abs, filestateInDir)
 		if err != nil {
 			return err
 		}
@@ -71,7 +81,6 @@ func testIgnitionTemplates(path string) error {
 		}
 		sort.Strings(filelistInYAML)
 
-		var filelistInDir []string
 		err = filepath.Walk(filesDir, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -79,17 +88,22 @@ func testIgnitionTemplates(path string) error {
 			if info.IsDir() {
 				return nil
 			}
-			filelistInDir = append(filelistInDir, path)
+			if _, ok := filestateInDir[path]; !ok {
+				filestateInDir[path] = false
+			}
 			return nil
 		})
+
 		if err != nil {
 			return err
 		}
 
-		sort.Strings(filelistInDir)
-
-		if !reflect.DeepEqual(filelistInYAML, filelistInDir) {
-			return fmt.Errorf("files in %s and file tree %s differ\n%v", path, filesDir, cmp.Diff(filelistInYAML, filelistInDir))
+		for _, f := range filelistInYAML {
+			if _, ok := filestateInDir[f]; ok {
+				filestateInDir[f] = true
+			} else {
+				return fmt.Errorf("file in %s and file tree differ\n", f)
+			}
 		}
 	}
 
@@ -169,7 +183,7 @@ func testIgnitionTemplates(path string) error {
 }
 
 func TestNecoIgnitionTemplates(t *testing.T) {
-	var siteYAMLs []string
+	siteYAMLsByRole := make(map[string][]string)
 
 	t.Parallel()
 	err := filepath.Walk(testRoleDir, func(path string, info os.FileInfo, err error) error {
@@ -179,8 +193,9 @@ func TestNecoIgnitionTemplates(t *testing.T) {
 		if info.IsDir() {
 			return nil
 		}
-		if info.Name() == "site.yml" {
-			siteYAMLs = append(siteYAMLs, path)
+		if s, _ := regexp.MatchString(`site(-.*|)\.yml`, info.Name()); s {
+			role := strings.Split(path, "/")[2]
+			siteYAMLsByRole[role] = append(siteYAMLsByRole[role], path)
 		}
 		return nil
 	})
@@ -188,10 +203,16 @@ func TestNecoIgnitionTemplates(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, sy := range siteYAMLs {
-		err := testIgnitionTemplates(sy)
-		if err != nil {
-			t.Error(err)
+	for _, siteYAMLs := range siteYAMLsByRole {
+		filestateInDir := make(map[string]bool)
+		for _, sy := range siteYAMLs {
+			err := testIgnitionTemplates(sy, filestateInDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err := checkForFlag(filestateInDir); err != nil {
+			t.Fatal(err)
 		}
 	}
 }

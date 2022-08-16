@@ -1,0 +1,342 @@
+{
+  "boot": {
+    "base": {
+      "include": "../../common/common.yml"
+    },
+    "gcp0": {
+      "include": "../../common/common-gcp0.yml"
+    },
+    "stage0": {
+      "include": "../../common/common-stage0.yml"
+    }
+  },
+  "cs": {
+    "base": {
+      "include": "../../common/common.yml",
+      "files": ["/opt/sbin/update-neco-operation-cli"],
+      "systemd": [
+        {
+          "name": "update-neco-operation-cli.service"
+        },
+        {
+          "name": "update-neco-operation-cli.timer",
+          "enabled": true
+        }
+      ]
+    },
+    "gcp0": {
+      "include": "../../common/common-gcp0.yml",
+      "files": ["/opt/sbin/update-neco-operation-cli"],
+      "systemd": [
+        {
+          "name": "update-neco-operation-cli.service"
+        },
+        {
+          "name": "update-neco-operation-cli.timer",
+          "enabled": true
+        }
+      ]
+    },
+    "stage0": {
+      "include": "../../common/common-stage0.yml",
+      "files": ["/opt/sbin/update-neco-operation-cli"],
+      "systemd": [
+        {
+          "name": "update-neco-operation-cli.service"
+        },
+        {
+          "name": "update-neco-operation-cli.timer",
+          "enabled": true
+        }
+      ]
+    }
+  },
+  "ss": {
+    "base": {
+      "include": "../../common/common.yml",
+      "files": [
+        "/etc/udev/crypt-base-path",
+        "/etc/udev/rules.d/99-neco.rules"
+      ]
+    },
+    "gcp0": {
+      "include": "../../common/common-gcp0.yml",
+      "files": [
+        "/etc/udev/crypt-base-path",
+        "/etc/udev/rules.d/99-neco.rules"
+      ]
+    },
+    "stage0": {
+      "include": "../../common/common-stage0.yml",
+      "files": [
+        "/etc/udev/crypt-base-path",
+        "/etc/udev/rules.d/99-neco.rules"
+      ]
+    }
+  },
+  "common": {
+    "common": {
+      "passwd": "passwd.yml",
+      "files": [
+        "/etc/bird/bird.conf",
+        "/etc/chrony.conf",
+        "/etc/crictl.yaml",
+        "/etc/fstab",
+        "/etc/hostname",
+        "/etc/modprobe.d/conntrack-hashsize.conf",
+        "/etc/modules-load.d/cybozu.conf",
+        "/etc/neco/bmc-address.json",
+        "/etc/neco/rack",
+        "/etc/neco/version",
+        "/etc/nerdctl/nerdctl.toml",
+        "/etc/resolv.conf",
+        "/etc/sysctl.d/70-cybozu.conf",
+        "/etc/systemd/coredump.conf",
+        "/etc/systemd/networkd.conf.d/01-cybozu.conf",
+        "/etc/systemd/system.conf.d/50-cybozu.conf",
+        "/etc/systemd/system/rngd.service.d/non_vm.conf",
+        "/etc/systemd/system/sys-kernel-tracing.mount.d/mode.conf",
+        "/etc/systemd/system/systemd-journald.service.d/oom_score_adj.conf",
+        "/etc/systemd/system/systemd-pstore.service.d/after-local-fs-mount.conf",
+        "/opt/bin/load-containerd-image",
+        "/opt/bin/load-docker-image",
+        "/opt/bin/wait-k8s-containerd-socket",
+        "/opt/sbin/bird-wait",
+        "/opt/sbin/chrony-monitor",
+        "/opt/sbin/chrony-wait",
+        "/opt/sbin/disable-nic-offload",
+        "/opt/sbin/neco-wait-dhcp-online",
+        "/opt/sbin/setup-bmc-user",
+        "/opt/sbin/setup-containerd",
+        "/opt/sbin/setup-hw",
+        "/opt/sbin/setup-iptables-rules",
+        "/opt/sbin/setup-local-network",
+        "/opt/sbin/setup-node-exporter",
+        "/opt/sbin/setup-serf-conf",
+        "/opt/sbin/setup-serf-tags",
+        "/opt/sbin/setup-setup-hw",
+        "/opt/sbin/setup-var"
+      ],
+      "systemd": [
+        {
+          "name": "update-engine.service",
+          "mask": true
+        },
+        {
+          "name": "locksmithd.service",
+          "mask": true
+        },
+        {
+          "name": "update-engine-stub.timer",
+          "mask": true
+        },
+        {
+          "name": "ntpd.service",
+          "mask": true
+        },
+        {
+          "name": "systemd-resolved.service",
+          "mask": true
+        },
+        {
+          "name": "systemd-timesyncd.service",
+          "mask": true
+        },
+        {
+          "name": "tcsd.service",
+          "mask": true
+        },
+        {
+          "name": "docker.service",
+          "enabled": true
+        },
+        {
+          "name": "disable-transparent-hugepage.service",
+          "enabled": true
+        },
+        {
+          "name": "neco-wait-dhcp-online.service",
+          "enabled": true
+        },
+        {
+          "name": "disable-nic-offload.service",
+          "enabled": true
+        },
+        {
+          "name": "sabakan-cryptsetup.service",
+          "enabled": true
+        },
+        {
+          "name": "setup-var.service",
+          "enabled": true
+        },
+        {
+          "name": "setup-network.service"
+        },
+        {
+          "name": "bird.service",
+          "enabled": true
+        },
+        {
+          "name": "bird-wait.service",
+          "enabled": true
+        },
+        {
+          "name": "setup-iptables-rules.service",
+          "enabled": true
+        },
+        {
+          "name": "setup-node-exporter.service"
+        },
+        {
+          "name": "node-exporter.service",
+          "enabled": true
+        },
+        {
+          "name": "chronyd.service",
+          "enabled": true
+        },
+        {
+          "name": "chrony-wait.service",
+          "enabled": true
+        },
+        {
+          "name": "setup-bmc-user.service"
+        },
+        {
+          "name": "setup-hw.service",
+          "enabled": true
+        },
+        {
+          "name": "exec-setup-hw.service",
+          "enabled": true
+        },
+        {
+          "name": "cke-image-cke-tools.service",
+          "enabled": true
+        },
+        {
+          "name": "cke-image-coredns.service",
+          "enabled": true
+        },
+        {
+          "name": "cke-image-etcd.service",
+          "enabled": true
+        },
+        {
+          "name": "cke-image-kubernetes.service",
+          "enabled": true
+        },
+        {
+          "name": "cke-image-pause.service",
+          "enabled": true
+        },
+        {
+          "name": "cke-image-unbound.service",
+          "enabled": true
+        },
+        {
+          "name": "cke-image-unbound_exporter.service",
+          "enabled": true
+        },
+        {
+          "name": "squid-image.service",
+          "enabled": true
+        },
+        {
+          "name": "coil-image.service",
+          "enabled": true
+        },
+        {
+          "name": "cilium-image.service",
+          "enabled": true
+        },
+        {
+          "name": "cilium-operator-generic-image.service",
+          "enabled": true
+        },
+        {
+          "name": "hubble-relay-image.service",
+          "enabled": true
+        },
+        {
+          "name": "cilium-certgen-image.service",
+          "enabled": true
+        },
+        {
+          "name": "setup-serf.service"
+        },
+        {
+          "name": "serf.service",
+          "enabled": true
+        },
+        {
+          "name": "setup-serf-tags.service"
+        },
+        {
+          "name": "setup-serf-tags.timer",
+          "enabled": true
+        },
+        {
+          "name": "setup-k8s-containerd.service",
+          "enabled": true
+        },
+        {
+          "name": "k8s-containerd.service",
+          "enabled": true
+        },
+        {
+          "name": "wait-k8s-containerd-socket.service",
+          "enabled": true
+        },
+        {
+          "name": "docker-prune.service"
+        },
+        {
+          "name": "docker-prune.timer",
+          "enabled": true
+        },
+        {
+          "name": "udev-trigger.service"
+        },
+        {
+          "name": "udev-trigger.timer",
+          "enabled": true
+        },
+        {
+          "name": "chrony-monitor.service"
+        },
+        {
+          "name": "chrony-monitor.timer",
+          "enabled": true
+        },
+        {
+          "name": "remove-kubelet-state.service",
+          "enabled": true
+        }
+      ],
+      "networkd": [
+        "01-eth0.network",
+        "01-eth1.network"
+      ]
+    },
+    "gcp0": {
+      "include": "common.yml",
+      "files": [
+        "/etc/k8s-containerd/config.toml",
+        "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
+        "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml",
+        "/etc/k8s-containerd/conf.d/registry-local.registry.gcp0.dev-ne.co/hosts.toml"
+      ]
+    },
+    "stage0": {
+      "include": "common.yml",
+      "files": [
+        "/etc/k8s-containerd/config.toml",
+        "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
+        "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml",
+        "/etc/k8s-containerd/conf.d/registry-local.registry.stage0.cybozu-ne.co/hosts.toml"
+      ]
+    }
+  }
+}
