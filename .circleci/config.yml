@@ -406,6 +406,19 @@ workflows:
                 - release
                 - main
 
+  manual-reboot:
+    jobs:
+      - hold:
+          type: approval
+          filters:
+            branches:
+              ignore:
+                - release
+                - main
+      - dctest-reboot-worker:
+          requires:
+            - hold
+
   # Update github release page.
   release:
     jobs:

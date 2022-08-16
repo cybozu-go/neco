@@ -184,6 +184,11 @@ Synopsis
 
     Reboot a machine having `SERIAL` or `IP` address, and wait for its boot-up.
 
+* `neco reboot-check SERIAL_OR_IP UNIXTIME`
+
+    Check (re)boot-up of a machine having `SERIAL` or `IP` address after the `UNIXTIME`.
+    If rebooted, prints `true`. If not rebooted, prints `false`.
+
 * `neco reboot-worker`
 
     Reboot all or specified worker nodes.
