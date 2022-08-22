@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os/exec"
+	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -97,6 +99,23 @@ func getComputerSystem(service *gofish.Service) (*redfish.ComputerSystem, error)
 	return systems[0], nil
 }
 
+func waitForStop(ctx context.Context, nodeAddr string) error {
+	// It might be better to use any golang library instead of executing ping command...
+	for {
+		err := exec.CommandContext(ctx, "ping", "-c1", "-w1", nodeAddr).Run()
+		exitError, ok := err.(*exec.ExitError)
+		if !ok {
+			return err
+		}
+		if exitError.ExitCode() != 0 {
+			return nil
+		}
+
+		// In case of exit status == 0, ping command return immediately. Must wait explicitly.
+		time.Sleep(time.Millisecond * 500)
+	}
+}
+
 func power(ctx context.Context, action, bmcAddr string) error {
 	client, err := getRedfishClient(ctx, bmcAddr)
 	if err != nil {
@@ -153,12 +172,26 @@ var powerCmd = &cobra.Command{
 	ValidArgs: []string{"start", "stop", "restart", "status"},
 	Run: func(cmd *cobra.Command, args []string) {
 		well.Go(func(ctx context.Context) error {
+			action := args[0]
+			if (action != "stop" && action != "restart") && waitForStopFlag {
+				return fmt.Errorf("invalid flag for %s action: --wait-for-stop", action)
+			}
+
 			machine, err := lookupMachine(ctx, args[1])
 			if err != nil {
 				return err
 			}
-
-			return power(ctx, args[0], machine.Spec.BMC.IPv4)
+			err = power(ctx, action, machine.Spec.BMC.IPv4)
+			if err != nil {
+				return err
+			}
+			if waitForStopFlag {
+				err := waitForStop(ctx, machine.Spec.IPv4[0])
+				if err != nil {
+					return err
+				}
+			}
+			return nil
 		})
 		well.Stop()
 		err := well.Wait()
@@ -168,6 +201,9 @@ var powerCmd = &cobra.Command{
 	},
 }
 
+var waitForStopFlag bool
+
 func init() {
 	rootCmd.AddCommand(powerCmd)
+	powerCmd.Flags().BoolVar(&waitForStopFlag, "wait-for-stop", false, "")
 }

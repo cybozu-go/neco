@@ -21,7 +21,7 @@ nodes:
 service_subnet: 10.68.0.0/16
 dns_service: internet-egress/unbound
 reboot:
-  reboot_command: ["/usr/bin/neco", "power", "restart"]
+  reboot_command: ["/usr/bin/neco", "power", "restart", "--wait-for-stop"]
   boot_check_command: ["/usr/bin/neco", "reboot-check"]
   max_concurrent_reboots: 2
   eviction_timeout_seconds: 1800
