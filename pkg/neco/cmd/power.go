@@ -100,8 +100,8 @@ func getComputerSystem(service *gofish.Service) (*redfish.ComputerSystem, error)
 }
 
 func waitForStop(ctx context.Context, nodeAddr string) error {
-	// It might be better to use any golang library instead of executing ping command...
 	for {
+		// Use ping command because sending raw packets requires privilege.
 		err := exec.CommandContext(ctx, "ping", "-c1", "-w1", nodeAddr).Run()
 		exitError, ok := err.(*exec.ExitError)
 		if !ok {
