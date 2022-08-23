@@ -324,6 +324,7 @@
       "include": "common.yml",
       "files": [
         "/etc/k8s-containerd/config.toml",
+        "/etc/k8s-containerd/conf.d/ghcr.io/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
         "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml",
         "/etc/k8s-containerd/conf.d/registry-local.registry.gcp0.dev-ne.co/hosts.toml"
@@ -333,6 +334,7 @@
       "include": "common.yml",
       "files": [
         "/etc/k8s-containerd/config.toml",
+        "/etc/k8s-containerd/conf.d/ghcr.io/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
         "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml",
         "/etc/k8s-containerd/conf.d/registry-local.registry.stage0.cybozu-ne.co/hosts.toml"
