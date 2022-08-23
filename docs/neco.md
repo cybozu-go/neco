@@ -176,9 +176,11 @@ Synopsis
 
     Invoke `setup-hw` command in setup-hw container. If needed, reboot the machine.
 
-* `neco ipmipower [start|stop|restart|status] SERIAL_OR_IP`
+* `neco power [start|stop|restart|status] [--wait-for-stop] SERIAL_OR_IP`
 
-    Control power of a machine having `SERIAL` or `IP` address.
+    Control power of a machine having `SERIAL` or `IP` address. It just request BMC to control power, not wait for its completion.
+
+    When `--wait-for-stop` option is specified for `stop` or `restart` action, it wait until the machine stops.
 
 * `neco reboot-and-wait SERIAL_OR_IP`
 
