@@ -35,6 +35,7 @@ options:
       kind: Policy
       omitStages:
         - RequestReceived
+      omitManagedFields: true
       rules:
         # Avoid logging secret values
         - level: Metadata
@@ -63,7 +64,7 @@ options:
             - system:kube-scheduler
         - level: RequestResponse
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true"
+      - "--feature-gates=GRPCContainerProbe=true,MixedProtocolLBService=true"
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
       - "--audit-log-maxbackup=10"
@@ -73,7 +74,7 @@ options:
         read_only: false
   kube-controller-manager:
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true"
+      - "--feature-gates=GRPCContainerProbe=true,MixedProtocolLBService=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -86,7 +87,7 @@ options:
       mode: ipvs
   kube-scheduler:
     config:
-      apiVersion: kubescheduler.config.k8s.io/v1beta1
+      apiVersion: kubescheduler.config.k8s.io/v1beta3
       kind: KubeSchedulerConfiguration
       extenders:
       - urlPrefix: "http://127.0.0.1:9251"
@@ -110,13 +111,14 @@ options:
         pluginConfig:
         - name: PodTopologySpread
           args:
-            # https://pkg.go.dev/k8s.io/kube-scheduler/config/v1beta1#PodTopologySpreadArgs
+            # https://pkg.go.dev/k8s.io/kube-scheduler/config/v1beta3#PodTopologySpreadArgs
             defaultConstraints:
             - maxSkew: 1
               topologyKey: topology.kubernetes.io/zone
               whenUnsatisfiable: ScheduleAnyway
+            defaultingType: List
     extra_args:
-      - "--feature-gates=EphemeralContainers=true,MixedProtocolLBService=true"
+      - "--feature-gates=GRPCContainerProbe=true,MixedProtocolLBService=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -138,7 +140,7 @@ options:
       imageGCHighThresholdPercent: 65
       imageGCLowThresholdPercent: 60
       featureGates:
-        EphemeralContainers: true
+        GRPCContainerProbe: true
         MixedProtocolLBService: true
     cri_endpoint: unix:///var/run/k8s-containerd.sock
     extra_args:
