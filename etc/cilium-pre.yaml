@@ -354,7 +354,7 @@ data:
   arping-refresh-period: 30s
   auto-direct-node-routes: "false"
   bgp-announce-lb-ip: "true"
-  bpf-lb-acceleration: native
+  bpf-lb-acceleration: disabled
   bpf-lb-algorithm: maglev
   bpf-lb-external-clusterip: "false"
   bpf-lb-maglev-hash-seed: 3HCx6JennjWtot2U
@@ -549,7 +549,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: cf4d09170c1d4fc1320468d792cf16975f351ebd24a2be9a450e626c63e319a9
+        cilium.io/cilium-configmap-checksum: 27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -800,7 +800,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: cf4d09170c1d4fc1320468d792cf16975f351ebd24a2be9a450e626c63e319a9
+        cilium.io/cilium-configmap-checksum: 27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
       labels:
