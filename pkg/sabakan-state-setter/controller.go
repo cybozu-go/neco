@@ -224,7 +224,6 @@ func (c *Controller) runOnce(ctx context.Context) error {
 		log.Warn("failed to get sabakan machines", map[string]interface{}{
 			log.FnError: err.Error(),
 		})
-		// lint:ignore nilerr  Run tries this again.
 		return nil
 	}
 	if len(machines) == 0 {
