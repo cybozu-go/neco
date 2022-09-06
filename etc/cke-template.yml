@@ -44,6 +44,8 @@ options:
               resources: ["secrets"]
             - group: "bitnami.com"
               resources: ["sealedsecrets"]
+        - level: RequestResponse
+          namespaces: ["app-elasticsearch"]
         - level: None
           verbs: ["get", "watch", "list"]
         - level: Metadata
