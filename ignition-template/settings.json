@@ -83,6 +83,7 @@
         "/etc/crictl.yaml",
         "/etc/fstab",
         "/etc/hostname",
+        "/etc/k8s-containerd/config.toml",
         "/etc/modprobe.d/conntrack-hashsize.conf",
         "/etc/modules-load.d/cybozu.conf",
         "/etc/neco/bmc-address.json",
@@ -323,7 +324,6 @@
     "gcp0": {
       "include": "common.yml",
       "files": [
-        "/etc/k8s-containerd/config.toml",
         "/etc/k8s-containerd/conf.d/ghcr.io/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.elastic.co/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
@@ -334,7 +334,6 @@
     "stage0": {
       "include": "common.yml",
       "files": [
-        "/etc/k8s-containerd/config.toml",
         "/etc/k8s-containerd/conf.d/ghcr.io/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.elastic.co/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
