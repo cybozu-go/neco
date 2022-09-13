@@ -61,7 +61,7 @@ log-outputs: [stderr]
 
 # auto compaction
 auto-compaction-mode: periodic
-auto-compaction-retention: "24"
+auto-compaction-retention: "1"
 
 # detect inconsistencies
 # etcd 3.5.[0-2] has data inconsistency issue.
