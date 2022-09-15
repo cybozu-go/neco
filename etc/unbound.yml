@@ -28,11 +28,21 @@ data:
       log-replies: yes
       log-local-actions: yes
       log-servfail: yes
+      num-threads: 4
+      incoming-num-tcp: 2240
+      outgoing-num-tcp: 1000
+      num-queries-per-thread: 4096
+      outgoing-range: 8192
       rrset-roundrobin: yes
       minimal-responses: yes
       extended-statistics: yes
       rrset-cache-size: 256m
+      rrset-cache-slabs: 2
       msg-cache-size: 256m
+      msg-cache-slabs: 2
+      infra-cache-slabs: 2
+      key-cache-slabs: 2
+      so-rcvbuf: 4m
       pidfile: "/tmp/unbound.pid"
       infra-host-ttl: 60
       prefetch: yes
