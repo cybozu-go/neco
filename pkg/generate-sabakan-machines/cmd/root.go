@@ -75,7 +75,7 @@ Example:
 					datacenter, rackString, serial, product, role)
 			}
 
-			rack, err := strconv.ParseInt(rackString, 30, 64)
+			rack, err := strconv.Atoi(rackString)
 			if err != nil {
 				return err
 			}
