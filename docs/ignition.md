@@ -22,7 +22,7 @@ Resources
     To place different files for each environment, create a new `common-<cluster>.yml` and specify it in `site-<cluster>.yml`.
 
 
-* [Ignition documentation](https://kinvolk.io/docs/flatcar-container-linux/latest/provisioning/ignition/)
+* [Ignition documentation](https://www.flatcar.org/docs/latest/provisioning/ignition/)
 
     The current template is written in [spec version 2.2](https://coreos.com/ignition/docs/latest/configuration-v2_2.html).
 
