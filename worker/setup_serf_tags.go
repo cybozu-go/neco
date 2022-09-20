@@ -33,7 +33,7 @@ Wants=serf.service
 After=serf.service
 
 [Timer]
-OnCalendar=*-*-* *:*:0/20
+OnCalendar=minutely
 
 [Install]
 WantedBy=multi-user.target

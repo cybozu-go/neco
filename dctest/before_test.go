@@ -68,7 +68,7 @@ func runBeforeSuiteInstall() {
 		for _, host := range allBootServers {
 			_, _, err := execAt(host, "test -f /tmp/auto-config-done")
 			if err != nil {
-				return err
+				return fmt.Errorf("auto-config has not been completed. host: %s, err: %v", host, err)
 			}
 		}
 		return nil

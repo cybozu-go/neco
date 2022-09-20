@@ -19,6 +19,7 @@ cat >/etc/serf/serf.json <<EOF
     "reconnect_interval": "30s",
     "reconnect_timeout": "24h",
     "tombstone_timeout": "24h",
+    "broadcast_timeout": "1m",
     "retry_join": [
       "${sabakan_addr}"
     ],
