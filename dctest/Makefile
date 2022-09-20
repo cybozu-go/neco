@@ -141,6 +141,6 @@ setup:
 
 $(CT):
 	mkdir -p bin
-	$(CURL_GITHUB) -o ct https://github.com/flatcar-linux/container-linux-config-transpiler/releases/download/v$(CT_VERSION)/ct-v$(CT_VERSION)-x86_64-unknown-linux-gnu
+	$(CURL_GITHUB) -o ct https://github.com/flatcar/container-linux-config-transpiler/releases/download/v$(CT_VERSION)/ct-v$(CT_VERSION)-x86_64-unknown-linux-gnu
 	chmod +x ct
 	$(SUDO) mv ct $@

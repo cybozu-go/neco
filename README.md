@@ -213,9 +213,9 @@ Other than Go packages, this repository has the following directories:
 [CSI]: https://github.com/container-storage-interface/spec
 [Cybozu]: https://cybozu-global.com
 [etcd]: https://etcd.io
-[Flatcar]: https://kinvolk.io/docs/flatcar-container-linux/latest/
+[Flatcar]: https://www.flatcar.org/docs/latest/
 [HTTPBoot]: https://github.com/tianocore/tianocore.github.io/wiki/HTTP-Boot
-[Ignition]: https://kinvolk.io/docs/flatcar-container-linux/latest/provisioning/ignition/
+[Ignition]: https://www.flatcar.org/docs/latest/provisioning/ignition/
 [Kintone]: https://www.kintone.com
 [Kubernetes]: https://kubernetes.io
 [MetalLB]: https://metallb.universe.tf
