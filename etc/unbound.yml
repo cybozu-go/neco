@@ -37,11 +37,11 @@ data:
       minimal-responses: yes
       extended-statistics: yes
       rrset-cache-size: 256m
-      rrset-cache-slabs: 2
+      rrset-cache-slabs: 4
       msg-cache-size: 256m
-      msg-cache-slabs: 2
-      infra-cache-slabs: 2
-      key-cache-slabs: 2
+      msg-cache-slabs: 4
+      infra-cache-slabs: 4
+      key-cache-slabs: 4
       so-rcvbuf: 4m
       pidfile: "/tmp/unbound.pid"
       infra-host-ttl: 60
