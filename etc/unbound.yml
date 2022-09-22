@@ -169,10 +169,6 @@ spec:
       # other than kube-system as of k8s 1.12.
       # see https://github.com/kubernetes/kubernetes/pull/65593
       #priorityClassName: system-cluster-critical
-      securityContext:
-        sysctls:
-        - name: net.core.rmem_default
-          value: "4194304"
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
