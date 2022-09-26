@@ -15,6 +15,7 @@ type serfConfig struct {
 	ReconnectInterval string   `json:"reconnect_interval"`
 	ReconnectTimeout  string   `json:"reconnect_timeout"`
 	TombstoneTimeout  string   `json:"tombstone_timeout"`
+	BroadcastTimeout  string   `json:"broadcast_timeout"`
 	RetryJoin         []string `json:"retry_join"`
 	RetryMaxAttempts  int      `json:"retry_max_attempts"`
 	RetryInterval     string   `json:"retry_interval"`

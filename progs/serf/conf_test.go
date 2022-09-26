@@ -30,6 +30,7 @@ func TestGenerateConf(t *testing.T) {
 		ReconnectInterval: "30s",
 		ReconnectTimeout:  "24h",
 		TombstoneTimeout:  "24h",
+		BroadcastTimeout:  "1m",
 		RetryJoin:         expectedRetryJoin,
 		RetryMaxAttempts:  0,
 		RetryInterval:     "30s",
