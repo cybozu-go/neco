@@ -91,6 +91,11 @@ $(YQ_DLPATH): $(WGET_PATH)
 $(WGET_PATH):
 	$(SUDO) apt-get update && $(SUDO) apt-get -y install wget
 
+.PHONY: build
+build: 
+	mkdir -p $(BINDIR)
+	@go build -o $(BINDIR)/configgenerator
+
 .PHONY: clean
 clean:
 	rm -rf $(BINDIR)
