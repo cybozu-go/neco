@@ -44,7 +44,7 @@ k8sServiceHost: 127.0.0.1
 k8sServicePort: 16443
 kubeProxyReplacement: "partial"
 loadBalancer:
-  # We can't enable XDP Acceleration because of the issue https://github.com/cilium/cilium/issues/19453
+  # We can't enable XDP Acceleration because rolling restart Cilium with XDP enabled disrupts in-cluster connectivity
   acceleration: disabled
   algorithm: maglev
   mode: dsr
