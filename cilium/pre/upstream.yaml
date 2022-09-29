@@ -191,7 +191,7 @@ data:
   enable-auto-protect-node-port-range: "true"
   bpf-lb-mode: "dsr"
   bpf-lb-algorithm: "maglev"
-  bpf-lb-acceleration: "native"
+  bpf-lb-acceleration: "disabled"
   bpf-lb-maglev-hash-seed: "3HCx6JennjWtot2U"
   enable-session-affinity: "true"
   enable-l2-neigh-discovery: "true"
@@ -627,7 +627,7 @@ spec:
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "cf4d09170c1d4fc1320468d792cf16975f351ebd24a2be9a450e626c63e319a9"
+        cilium.io/cilium-configmap-checksum: "27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de"
       labels:
         k8s-app: cilium
     spec:
@@ -958,7 +958,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "cf4d09170c1d4fc1320468d792cf16975f351ebd24a2be9a450e626c63e319a9"
+        cilium.io/cilium-configmap-checksum: "27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
