@@ -20,6 +20,7 @@ Resources
     This is the ignition template.  The template references files in
     [`ignitions/common/`](../ignitions/common/) directory.
     To place different files for each environment, create a new `common-<cluster>.yml` and specify it in `site-<cluster>.yml`.
+    For information on how to generate the file, please refer to the [ignition-template](./ignition-template.md) documentation.
 
 
 * [Ignition documentation](https://www.flatcar.org/docs/latest/provisioning/ignition/)
