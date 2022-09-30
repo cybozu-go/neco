@@ -35,38 +35,6 @@ site-env: write-site-env
 .PHONY: common-env
 common-env: write-common-env
 
-.PHONY: format-settings
-format-settings:
-	mkdir -p $(TEMP_DIR)
-	$(YQ) eval 'sortKeys(..)' settings.json -j > $(TEMP_DIR)/settings.json
-	mv $(TEMP_DIR)/settings.json settings.json
-	rm -rf $(TEMP_DIR)
-
-.PHONY: format
-format: format-settings
-	mkdir -p $(TEMP_DIR)
-	set -e; for i in $$(find . -name '*.json'); do \
-		echo $$i; \
-		jq . $$i > $(TEMP_DIR)/$$i; \
-		mv $(TEMP_DIR)/$$i $$i; \
-	done
-	rm -rf $(TEMP_DIR)
-	set -e; for i in $$(find . -name '*.jsonnet'); do \
-		echo $$i; \
-		$(JSONNETFMT) -i $$i; \
-	done
-	set -e; for i in $$(find . -name '*.libsonnet'); do \
-		echo $$i; \
-		$(JSONNETFMT) -i $$i; \
-	done
-
-.PHONY: validation
-validation: format all
-	if ! test -z "$$(git status -s)"; then \
-		git status; \
-		exit 1; \
-	fi
-
 .PHONY: setup
 setup: $(JSONNET) $(YQ)
 

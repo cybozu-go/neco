@@ -65,6 +65,9 @@ A file named `site-<cluster>.yml` is used to place configuration files for each 
 `<cluster>` is the name of the cluster and defined `/etc/neco/cluster`.
 If `site-<cluster>.yml` does not exist, `site.yml` is used.
 
+The entry point files are generated according to [`settings.json`](../ignition-template/settings.json).
+For information on how to generate the files, please refer to the [ignition-template](./ignition-template.md) documentation.
+
 `/etc/udev` (only for ss)
 -------------------------
 
