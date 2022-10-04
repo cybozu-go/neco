@@ -7,6 +7,7 @@ files:
   - /etc/fstab
   - /etc/hostname
   - /etc/k8s-containerd/config.toml
+  - /etc/k8s-containerd/conf.d/ghcr.io/hosts.toml
   - /etc/modprobe.d/conntrack-hashsize.conf
   - /etc/modules-load.d/cybozu.conf
   - /etc/neco/bmc-address.json
