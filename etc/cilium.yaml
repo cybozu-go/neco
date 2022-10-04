@@ -354,6 +354,8 @@ data:
   arping-refresh-period: 30s
   auto-direct-node-routes: "false"
   bgp-announce-lb-ip: "true"
+  bpf-ct-timeout-regular-any: 1h0m0s
+  bpf-ct-timeout-service-any: 1h0m0s
   bpf-lb-acceleration: disabled
   bpf-lb-algorithm: maglev
   bpf-lb-external-clusterip: "false"

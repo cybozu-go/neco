@@ -4,3 +4,5 @@ resources:
   - ../base
   - bgp_config.yaml
   - upstream.yaml
+patchesStrategicMerge:
+  - configmap.yaml
