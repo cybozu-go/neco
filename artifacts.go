@@ -11,7 +11,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.5.4.2", Private: false},
 		{Name: "promtail", Repository: "quay.io/cybozu/promtail", Tag: "2.6.1.1", Private: false},
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.13.0", Private: false},
-		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.9.7.1", Private: false},
+		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.10.0.1", Private: false},
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.12.0", Private: true},
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "5.4.1.1", Private: false},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.11.3.1", Private: false},
