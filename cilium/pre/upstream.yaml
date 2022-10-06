@@ -237,6 +237,9 @@ data:
   remove-cilium-node-taints: "true"
   set-cilium-is-up-condition: "true"
   unmanaged-pod-watcher-interval: "15"
+  
+  bpf-ct-timeout-regular-any: 1h0m0s
+  bpf-ct-timeout-service-any: 1h0m0s
   agent-not-ready-taint-key: "node.cilium.io/agent-not-ready"
 ---
 # Source: cilium/templates/hubble-relay/configmap.yaml
@@ -627,7 +630,7 @@ spec:
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de"
+        cilium.io/cilium-configmap-checksum: "0a98baa4b8a96e8f68f22bcc7b5c6f7d4196ad0ac0df0e1843257f756abd5ca8"
       labels:
         k8s-app: cilium
     spec:
@@ -958,7 +961,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "27e2fa4fbcb9b18d162c6531b4bc8160031da83e4e99c6eab77f4cfd89d443de"
+        cilium.io/cilium-configmap-checksum: "0a98baa4b8a96e8f68f22bcc7b5c6f7d4196ad0ac0df0e1843257f756abd5ca8"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
