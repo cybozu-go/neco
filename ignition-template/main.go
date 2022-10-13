@@ -95,30 +95,7 @@ func buildConfig() error {
 	if err != nil {
 		return err
 	}
-	err = saveConfig(role, filepath.Base(path), data)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+	_, err = os.Stdout.Write(data)
 
-func saveConfig(role string, filename string, data []byte) error {
-	path := filepath.Join("/tmp/roles", role)
-	if err := os.MkdirAll(path, 0766); err != nil {
-		return err
-	}
-	path = filepath.Join(path, filename)
-
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if _, err = f.Write(data); err != nil {
-		return err
-	}
-	fmt.Printf("Create a file in %s\n", path)
-
-	return f.Sync()
+	return err
 }
