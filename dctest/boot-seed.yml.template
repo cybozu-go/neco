@@ -1,5 +1,5 @@
 #cloud-config
-hostname: boot
+hostname: gcp-{{.Name}}
 users:
   - name: cybozu
     sudo: ALL=(ALL) NOPASSWD:ALL
