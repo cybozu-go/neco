@@ -868,7 +868,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.11.6.2
+        image: quay.io/cybozu/cilium:1.11.6.3
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -980,7 +980,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cybozu/cilium:1.11.6.2
+        image: quay.io/cybozu/cilium:1.11.6.3
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -1009,7 +1009,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.11.6.2
+        image: quay.io/cybozu/cilium:1.11.6.3
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
