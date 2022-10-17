@@ -9,6 +9,9 @@ data:
     - peer-address: 127.0.0.1
       peer-asn: 64699
       my-asn: 64698
+      node-selectors:
+      - match-labels:
+          cke.cybozu.com/role: cs
     address-pools:
     - name: default
       protocol: bgp

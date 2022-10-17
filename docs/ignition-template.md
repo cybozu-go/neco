@@ -23,8 +23,8 @@ Configgenerator command takes a cluster as an option and will work even if only 
 The generated pseudo-Ignition file can be checked for differences between environments with the `git diff` command.
 
 The following commands can be used to generate pseudo-Ignition files by specifying roles and clusters.
-The file will be generated under `/tmp/roles/<role>/`.
-The file name is `site.yml|site-<cluster>.yml`.
+The generated pseudo-Ignition file's contents are output to stdout.
+If you want to compare generated files, please redirect stdout and save to files.
 ```bash
 make build
 ./bin/configgenerator --cluster=<cluster name> <role>
