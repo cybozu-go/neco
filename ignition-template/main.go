@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	sabac "github.com/cybozu-go/sabakan/v2/client"
-	ign22 "github.com/flatcar-linux/ignition/config/v2_2/types"
+	ign22 "github.com/flatcar/ignition/config/v2_2/types"
 	"github.com/vincent-petithory/dataurl"
 	"sigs.k8s.io/yaml"
 )

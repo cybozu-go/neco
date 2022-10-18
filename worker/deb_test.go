@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/go-github/v41/github"
+	"github.com/google/go-github/v48/github"
 )
 
 func TestFindDebAsset(t *testing.T) {
