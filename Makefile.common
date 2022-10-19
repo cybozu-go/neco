@@ -7,29 +7,30 @@ NERDCTL_VERSION = 0.22.2
 CRITOOLS_VERSION = 1.24.2
 RUNC_VERSION = 1.1.4
 K8S_VERSION = 1.23.9
+HELM_VERSION = 3.8.0
 STERN_VERSION = 1.21.0
 
 
 ## These should be updated regularly
-ARGOCD_VERSION = 2.3.3
+ARGOCD_VERSION = 2.3.9
 # Follow Argo CD installed kustomize version
 # https://github.com/cybozu/neco-containers/blob/main/argocd/Dockerfile#L10
 KUSTOMIZE_VERSION = 4.4.1
 # Follow Argo CD installed google/go-jsonnet version
 # https://github.com/argoproj/argo-cd/blob/v${ARGOCD_VERSION}/go.mod
 JSONNET_VERSION = 0.18.0
-MOCO_VERSION = 0.11.1
-NODE_EXPORTER_VERSION = 1.3.1
-TELEPORT_VERSION = 8.3.6
+MOCO_VERSION = 0.13.0
+NODE_EXPORTER_VERSION = 1.4.0
+TELEPORT_VERSION = 9.3.20
 # kubeseal is a CLI tool for Sealed Secrets
 # https://github.com/bitnami-labs/sealed-secrets
-KUBESEAL_VERSION = 0.17.4
-LOGCLI_VERSION = 2.3.0
-YQ_VERSION = 4.24.5
+KUBESEAL_VERSION = 0.18.5
+LOGCLI_VERSION = 2.6.1
+YQ_VERSION = 4.28.2
 KUBECTL_NEAT_VERSION = 2.0.3
-ACCURATE_VERSION = 0.3.0
+ACCURATE_VERSION = 0.4.0
 ALERTMANAGER_VERSION = 0.24.0
-CILIUM_CLI_VERSION = 0.11.4
+CILIUM_CLI_VERSION = 0.11.6
 HUBBLE_VERSION = 0.9.0
 TEMPO_VERSION = 1.4.1
 

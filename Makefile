@@ -13,7 +13,6 @@ ifeq ($(CILIUM_PRE), true)
         CILIUM_CONFIG_SUFFIX = -pre
         CILIUM_OVERLAY = pre
 endif
-HELM_VERSION = 3.8.0
 BIN_DIR := $(shell pwd)/bin
 LSB_DISTRIB_RELEASE := $(shell . /etc/lsb-release ; echo $$DISTRIB_RELEASE)
 
