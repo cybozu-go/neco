@@ -201,7 +201,7 @@ func subMain() error {
 		return err
 	}
 
-	if err := runCmd("sed", "-i", "s/archive.ubuntu.com/jp.archive.ubuntu.com/g", "/etc/apt/sources.list"); err != nil {
+	if err := runCmd("sed", "-i", "s/archive.ubuntu.com/linux.yz.yamagata-u.ac.jp/g", "/etc/apt/sources.list"); err != nil {
 		return err
 	}
 
