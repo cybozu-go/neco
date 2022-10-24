@@ -142,18 +142,15 @@ The virtual data center implements the aforementioned leaf-spine networks with B
 To create the virtual data center, run the following commands on Ubuntu 20.04:
 
 ```console
-$ sudo add-apt-repository ppa:smoser/swtpm
-$ echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-$ curl -fsSL https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/devel_kubic_libcontainers_stable.gpg > /dev/null
 $ wget -O - https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable"
 $ sudo apt update
 $ sudo apt install -y build-essential systemd-container lldpd qemu qemu-kvm socat picocom swtpm cloud-utils bird2 squid chrony dnsmasq jq freeipmi-tools unzip skopeo fakeroot docker-ce docker-ce-cli containerd.io
 $ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios.bin
 $ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios-256k.bin
 $ sudo install -m 0644 -b bios.bin bios-256k.bin /usr/share/seabios/
-$ wget https://github.com/cybozu-go/placemat/releases/download/v2.2.0/placemat2_2.2.0_amd64.deb
-$ sudo dpkg -i ./placemat2_2.2.0_amd64.deb
+$ wget https://github.com/cybozu-go/placemat/releases/download/v2.3.1/placemat2_2.3.1_amd64.deb
+$ sudo dpkg -i ./placemat2_2.3.1_amd64.deb
 $ git clone https://github.com/cybozu-go/neco
 $ cd neco/dctest
 $ make setup

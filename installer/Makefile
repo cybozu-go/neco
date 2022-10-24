@@ -2,7 +2,7 @@
 
 SUDO = sudo
 
-UBUNTU_VERSION = 20.04.3
+UBUNTU_VERSION = 22.04.1
 BUILD_DEPS := xorriso qemu-utils qemu-kvm ovmf curl ca-certificates cloud-image-utils gdisk kpartx
 
 ORIGINAL_ISO_NAME = ubuntu-$(UBUNTU_VERSION)-live-server-amd64.iso
@@ -10,18 +10,18 @@ ORIGINAL_ISO_PATH = build/$(ORIGINAL_ISO_NAME)
 CUSTOM_ISO_PATH = build/cybozu-$(ORIGINAL_ISO_NAME)
 SRC_DIR_PATH = build/src
 
-ORIGINAL_CLOUD_IMAGE = ubuntu-20.04-server-cloudimg-amd64.img
+ORIGINAL_CLOUD_IMAGE = ubuntu-22.04-server-cloudimg-amd64.img
 ORIGINAL_CLOUD_PATH = build/$(ORIGINAL_CLOUD_IMAGE)
 CUSTOM_CLOUD_PATH = build/cybozu-$(ORIGINAL_CLOUD_IMAGE)
 
 PREVIEW_IMG = build/ubuntu.img
 LOCALDS_IMG = build/seed.img
 
-CHRONY_URL = http://archive.ubuntu.com/ubuntu/pool/main/c/chrony/chrony_3.5-6ubuntu6.2_amd64.deb
+CHRONY_URL = http://archive.ubuntu.com/ubuntu/pool/main/c/chrony/chrony_4.2-2ubuntu2_amd64.deb
 CHRONY_DEB = build/$(notdir $(CHRONY_URL))
-BIRD2_URL = http://archive.ubuntu.com/ubuntu/pool/universe/b/bird2/bird2_2.0.7-2_amd64.deb
+BIRD2_URL = http://archive.ubuntu.com/ubuntu/pool/universe/b/bird2/bird2_2.0.10-2_amd64.deb
 BIRD2_DEB = build/$(notdir $(BIRD2_URL))
-LIBSSH_URL = http://archive.ubuntu.com/ubuntu/pool/main/libs/libssh/libssh-gcrypt-4_0.9.3-2ubuntu2.2_amd64.deb
+LIBSSH_URL = http://archive.ubuntu.com/ubuntu/pool/main/libs/libssh/libssh-gcrypt-4_0.9.6-2build1_amd64.deb
 LIBSSH_DEB = build/$(notdir $(LIBSSH_URL))
 DEBS = $(CHRONY_DEB) $(BIRD2_DEB) $(LIBSSH_DEB)
 
@@ -83,9 +83,10 @@ $(CUSTOM_ISO_PATH): $(ORIGINAL_ISO_PATH) $(DEBS) cluster.json
 
 	# Build an ISO file
 	xorriso -as mkisofs -r -V "neco-ubuntu-$(UBUNTU_VERSION)" \
-		-R -l -b isolinux/isolinux.bin \
-		-c isolinux/boot.cat -no-emul-boot \
-		-e boot/grub/efi.img \
+		-R -l -b '/boot/grub/i386-pc/eltorito.img' \
+		-c /boot.catalog -no-emul-boot \
+		-append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b --interval:local_fs:2871452d-2879947d::'$(ORIGINAL_ISO_PATH)' \
+		-e '--interval:appended_partition_2_start_1782357s_size_8496d:all::'  \
 		-eltorito-alt-boot \
 		-boot-load-size 4 -boot-info-table \
 		-isohybrid-gpt-basdat \
@@ -106,7 +107,7 @@ cloud: $(CUSTOM_CLOUD_PATH)
 
 $(ORIGINAL_CLOUD_PATH):
 	mkdir -p build
-	curl -o $@ -fsSL https://cloud-images.ubuntu.com/releases/20.04/release/$(ORIGINAL_CLOUD_IMAGE)
+	curl -o $@ -fsSL https://cloud-images.ubuntu.com/releases/22.04/release/$(ORIGINAL_CLOUD_IMAGE)
 
 $(CUSTOM_CLOUD_PATH): $(ORIGINAL_CLOUD_PATH) $(DEBS) cluster.json
 	cp $< $@
