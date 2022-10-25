@@ -53,11 +53,13 @@ type PullRequest struct {
 // ExtractGitHubRepositoryName extracts repository owner and name from a string.
 // This function treats following syntax.
 // 1. GitHub URL
-//    - https://github.com/<owner>/<name>.git -> (owner, name)
+//   - https://github.com/<owner>/<name>.git -> (owner, name)
+//
 // 2. SCP-like address
-//    - git@github.com:<owner>/<name>.git -> (owner, name)
+//   - git@github.com:<owner>/<name>.git -> (owner, name)
+//
 // 3. Other
-//    - <owner>/<name> -> (owner, name)
+//   - <owner>/<name> -> (owner, name)
 func ExtractGitHubRepositoryName(repo string) (string, string, error) {
 	// For SCP-like address
 	// e.g. git@github.com:user/repo.git -> user/repo.git
@@ -292,9 +294,9 @@ type pullRequestInput struct {
 // CreatePullRequest creates a new pull request to merge head into base.
 // title must not be empty.
 // When succeeds, it returns this:
-//  - a global node ID of the new PR
-//  - a number of the new PR
-//  - a permalink to the new PR
+//   - a global node ID of the new PR
+//   - a number of the new PR
+//   - a permalink to the new PR
 func (gh GitHubClient) CreatePullRequest(ctx context.Context, repo, base, head, title, body string, draft bool) (*PullRequest, error) {
 	query := `mutation createPR($input: CreatePullRequestInput!) {
   createPullRequest(input: $input) {

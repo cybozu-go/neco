@@ -1,5 +1,6 @@
 include Makefile.common
 
+CP=ln -f
 MAKEFLAGS += -j$(shell nproc)
 WGET_OPTIONS=--retry-on-http-error=503 --retry-connrefused --no-verbose
 WGET=wget $(WGET_OPTIONS)
@@ -69,9 +70,9 @@ node_exporter: $(NODE_EXPORTER_DOWNLOAD)
 	rm -rf $(BUILDDIR)/node_exporter
 	mkdir -p $(SBINDIR) $(DOCDIR)/$@ $(LIBEXECDIR)
 	tar zxf $(NODE_EXPORTER_DLDIR)/node_exporter.tar.gz -C $(NODE_EXPORTER_DLDIR) --strip-components=1
-	cp $(NODE_EXPORTER_DLDIR)/node_exporter $(SBINDIR)/
-	cp $(NODE_EXPORTER_DLDIR)/LICENSE       $(DOCDIR)/$@/
-	cp $(NODE_EXPORTER_DLDIR)/NOTICE        $(DOCDIR)/$@/
+	$(CP) $(NODE_EXPORTER_DLDIR)/node_exporter $(SBINDIR)/
+	$(CP) $(NODE_EXPORTER_DLDIR)/LICENSE       $(DOCDIR)/$@/
+	$(CP) $(NODE_EXPORTER_DLDIR)/NOTICE        $(DOCDIR)/$@/
 	ln -s /usr/sbin/node_exporter $(LIBEXECDIR)/node_exporter
 
 $(CONTAINERD_DOWNLOAD):
@@ -86,9 +87,9 @@ $(CONTAINERD_DOWNLOAD):
 containerd: $(CONTAINERD_DOWNLOAD)
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
 	tar xzf $(CONTAINERD_DLDIR)/containerd.tar.gz --strip-components=1 -C $(LIBEXECDIR) bin/containerd bin/containerd-shim bin/containerd-shim-runc-v1 bin/containerd-shim-runc-v2 bin/ctr
-	cp $(CONTAINERD_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
-	cp $(CONTAINERD_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
-	cp $(CONTAINERD_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(CONTAINERD_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
+	$(CP) $(CONTAINERD_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
+	$(CP) $(CONTAINERD_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
 $(NERDCTL_DOWNLOAD):
 	mkdir -p $(NERDCTL_DLDIR)
@@ -102,9 +103,9 @@ $(NERDCTL_DOWNLOAD):
 nerdctl: $(NERDCTL_DOWNLOAD)
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
 	tar xzf $(NERDCTL_DLDIR)/nerdctl.tgz -C $(LIBEXECDIR) nerdctl
-	cp $(NERDCTL_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
-	cp $(NERDCTL_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
-	cp $(NERDCTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(NERDCTL_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
+	$(CP) $(NERDCTL_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
+	$(CP) $(NERDCTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
 
 $(CRICTL_DOWNLOAD):
@@ -118,8 +119,8 @@ $(CRICTL_DOWNLOAD):
 crictl: $(CRICTL_DOWNLOAD)
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
 	tar zxf $(CRICTL_DLDIR)/crictl.tar.gz --no-same-owner -C $(LIBEXECDIR)
-	cp $(CRICTL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(CRICTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(CRICTL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(CRICTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
 $(RUNC_DOWNLOAD):
 	mkdir -p $(RUNC_DLDIR)
@@ -132,11 +133,11 @@ $(RUNC_DOWNLOAD):
 .PHONY: runc
 runc: $(RUNC_DOWNLOAD)
 	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
-	cp $(RUNC_DLDIR)/runc.amd64 $(LIBEXECDIR)/k8s-runc
+	$(CP) $(RUNC_DLDIR)/runc.amd64 $(LIBEXECDIR)/k8s-runc
 	chmod +x $(LIBEXECDIR)/k8s-runc
-	cp $(RUNC_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
-	cp $(RUNC_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
-	cp $(RUNC_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(RUNC_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
+	$(CP) $(RUNC_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
+	$(CP) $(RUNC_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
 $(ARGOCD_DOWNLOAD):
 	mkdir -p $(ARGOCD_DLDIR)
@@ -150,17 +151,17 @@ $(ARGOCD_DOWNLOAD):
 .PHONY: argocd
 argocd: $(ARGOCD_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(ARGOCD_DLDIR)/argocd-linux-amd64 $(BINDIR)/argocd
+	$(CP) $(ARGOCD_DLDIR)/argocd-linux-amd64 $(BINDIR)/argocd
 	chmod +x $(BINDIR)/argocd
-	cp $(ARGOCD_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(ARGOCD_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(ARGOCD_DLDIR)/argocd.exe $(WINDOWS_BINDIR)/argocd.exe
-	cp $(ARGOCD_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(ARGOCD_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(ARGOCD_DLDIR)/argocd-darwin-amd64 $(MAC_BINDIR)/argocd
+	$(CP) $(ARGOCD_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(ARGOCD_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(ARGOCD_DLDIR)/argocd.exe $(WINDOWS_BINDIR)/argocd.exe
+	$(CP) $(ARGOCD_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(ARGOCD_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(ARGOCD_DLDIR)/argocd-darwin-amd64 $(MAC_BINDIR)/argocd
 	chmod +x $(MAC_BINDIR)/argocd
-	cp $(ARGOCD_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(ARGOCD_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(ARGOCD_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(ARGOCD_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUBECTL_DOWNLOAD):
 	mkdir -p $(KUBECTL_DLDIR)
@@ -174,17 +175,17 @@ $(KUBECTL_DOWNLOAD):
 .PHONY: kubectl
 kubectl: $(KUBECTL_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(KUBECTL_DLDIR)/kubectl-linux-amd64 $(BINDIR)/kubectl
+	$(CP) $(KUBECTL_DLDIR)/kubectl-linux-amd64 $(BINDIR)/kubectl
 	chmod +x $(BINDIR)/kubectl
-	cp $(KUBECTL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(KUBECTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(KUBECTL_DLDIR)/kubectl.exe $(WINDOWS_BINDIR)/kubectl.exe
-	cp $(KUBECTL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(KUBECTL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(KUBECTL_DLDIR)/kubectl-darwin-amd64 $(MAC_BINDIR)/kubectl
+	$(CP) $(KUBECTL_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(KUBECTL_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(KUBECTL_DLDIR)/kubectl.exe $(WINDOWS_BINDIR)/kubectl.exe
+	$(CP) $(KUBECTL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(KUBECTL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(KUBECTL_DLDIR)/kubectl-darwin-amd64 $(MAC_BINDIR)/kubectl
 	chmod +x $(MAC_BINDIR)/kubectl
-	cp $(KUBECTL_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(KUBECTL_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(KUBECTL_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(KUBECTL_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUBESEAL_DOWNLOAD):
 	mkdir -p $(KUBESEAL_DLDIR)/linux_amd64 $(KUBESEAL_DLDIR)/windows_amd64 $(KUBESEAL_DLDIR)/darwin_amd64
@@ -198,15 +199,15 @@ $(KUBESEAL_DOWNLOAD):
 .PHONY: kubeseal
 kubeseal: $(KUBESEAL_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(KUBESEAL_DLDIR)/linux_amd64/kubeseal $(BINDIR)/kubeseal
-	cp $(KUBESEAL_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(KUBESEAL_DLDIR)/linux_amd64/README.md $(DOCDIR)/$@/README.md
-	cp $(KUBESEAL_DLDIR)/windows_amd64/kubeseal.exe $(WINDOWS_BINDIR)/kubeseal.exe
-	cp $(KUBESEAL_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(KUBESEAL_DLDIR)/windows_amd64/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(KUBESEAL_DLDIR)/darwin_amd64/kubeseal $(MAC_BINDIR)/kubeseal
-	cp $(KUBESEAL_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(KUBESEAL_DLDIR)/darwin_amd64/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(KUBESEAL_DLDIR)/linux_amd64/kubeseal $(BINDIR)/kubeseal
+	$(CP) $(KUBESEAL_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(KUBESEAL_DLDIR)/linux_amd64/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(KUBESEAL_DLDIR)/windows_amd64/kubeseal.exe $(WINDOWS_BINDIR)/kubeseal.exe
+	$(CP) $(KUBESEAL_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(KUBESEAL_DLDIR)/windows_amd64/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(KUBESEAL_DLDIR)/darwin_amd64/kubeseal $(MAC_BINDIR)/kubeseal
+	$(CP) $(KUBESEAL_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(KUBESEAL_DLDIR)/darwin_amd64/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(STERN_DOWNLOAD):
 	mkdir -p $(STERN_DLDIR)/linux_amd64 $(STERN_DLDIR)/windows_amd64 $(STERN_DLDIR)/darwin_amd64
@@ -219,16 +220,16 @@ $(STERN_DOWNLOAD):
 .PHONY: stern
 stern: $(STERN_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(STERN_DLDIR)/linux_amd64/stern $(BINDIR)/stern
+	$(CP) $(STERN_DLDIR)/linux_amd64/stern $(BINDIR)/stern
 	chmod +x $(BINDIR)/stern
-	cp $(STERN_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(STERN_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(STERN_DLDIR)/windows_amd64/stern.exe $(WINDOWS_BINDIR)/stern.exe
-	cp $(STERN_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(STERN_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(STERN_DLDIR)/darwin_amd64/stern $(MAC_BINDIR)/stern
-	cp $(STERN_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(STERN_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(STERN_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(STERN_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(STERN_DLDIR)/windows_amd64/stern.exe $(WINDOWS_BINDIR)/stern.exe
+	$(CP) $(STERN_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(STERN_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(STERN_DLDIR)/darwin_amd64/stern $(MAC_BINDIR)/stern
+	$(CP) $(STERN_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(STERN_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUSTOMIZE_DOWNLOAD):
 	mkdir -p $(KUSTOMIZE_DLDIR)/linux_amd64 $(KUSTOMIZE_DLDIR)/windows_amd64 $(KUSTOMIZE_DLDIR)/darwin_amd64
@@ -242,17 +243,17 @@ $(KUSTOMIZE_DOWNLOAD):
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(KUSTOMIZE_DLDIR)/linux_amd64/kustomize $(BINDIR)/kustomize
+	$(CP) $(KUSTOMIZE_DLDIR)/linux_amd64/kustomize $(BINDIR)/kustomize
 	chmod +x $(BINDIR)/kustomize
-	cp $(KUSTOMIZE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(KUSTOMIZE_DLDIR)/windows_amd64/kustomize.exe $(WINDOWS_BINDIR)/kustomize.exe
-	cp $(KUSTOMIZE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(KUSTOMIZE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(KUSTOMIZE_DLDIR)/darwin_amd64/kustomize $(MAC_BINDIR)/kustomize
+	$(CP) $(KUSTOMIZE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(KUSTOMIZE_DLDIR)/windows_amd64/kustomize.exe $(WINDOWS_BINDIR)/kustomize.exe
+	$(CP) $(KUSTOMIZE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(KUSTOMIZE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(KUSTOMIZE_DLDIR)/darwin_amd64/kustomize $(MAC_BINDIR)/kustomize
 	chmod +x $(MAC_BINDIR)/kustomize
-	cp $(KUSTOMIZE_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(KUSTOMIZE_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(KUSTOMIZE_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(KUSTOMIZE_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(JSONNET_DOWNLOAD):
 	mkdir -p $(JSONNET_DLDIR)/linux_amd64 $(JSONNET_DLDIR)/windows_amd64 $(JSONNET_DLDIR)/darwin_amd64
@@ -265,20 +266,20 @@ $(JSONNET_DOWNLOAD):
 .PHONY: jsonnet
 jsonnet: $(JSONNET_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(JSONNET_DLDIR)/linux_amd64/jsonnet $(BINDIR)/jsonnet
-	cp $(JSONNET_DLDIR)/linux_amd64/jsonnetfmt $(BINDIR)/jsonnetfmt
+	$(CP) $(JSONNET_DLDIR)/linux_amd64/jsonnet $(BINDIR)/jsonnet
+	$(CP) $(JSONNET_DLDIR)/linux_amd64/jsonnetfmt $(BINDIR)/jsonnetfmt
 	chmod +x $(BINDIR)/jsonnet
 	chmod +x $(BINDIR)/jsonnetfmt
-	cp $(JSONNET_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(JSONNET_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(JSONNET_DLDIR)/windows_amd64/jsonnet.exe $(WINDOWS_BINDIR)/jsonnet.exe
-	cp $(JSONNET_DLDIR)/windows_amd64/jsonnetfmt.exe $(WINDOWS_BINDIR)/jsonnetfmt.exe
-	cp $(JSONNET_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(JSONNET_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(JSONNET_DLDIR)/darwin_amd64/jsonnet $(MAC_BINDIR)/jsonnet
-	cp $(JSONNET_DLDIR)/darwin_amd64/jsonnetfmt $(MAC_BINDIR)/jsonnetfmt
-	cp $(JSONNET_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(JSONNET_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(JSONNET_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(JSONNET_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(JSONNET_DLDIR)/windows_amd64/jsonnet.exe $(WINDOWS_BINDIR)/jsonnet.exe
+	$(CP) $(JSONNET_DLDIR)/windows_amd64/jsonnetfmt.exe $(WINDOWS_BINDIR)/jsonnetfmt.exe
+	$(CP) $(JSONNET_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(JSONNET_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(JSONNET_DLDIR)/darwin_amd64/jsonnet $(MAC_BINDIR)/jsonnet
+	$(CP) $(JSONNET_DLDIR)/darwin_amd64/jsonnetfmt $(MAC_BINDIR)/jsonnetfmt
+	$(CP) $(JSONNET_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(JSONNET_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(TELEPORT_DOWNLOAD):
 	mkdir -p $(TELEPORT_DLDIR)/common -p $(TELEPORT_DLDIR)/teleport-linux-amd64 -p $(TELEPORT_DLDIR)/teleport-darwin-amd64 -p $(TELEPORT_DLDIR)/teleport-windows-amd64
@@ -301,17 +302,17 @@ $(TELEPORT_DOWNLOAD):
 .PHONY: teleport
 teleport: $(TELEPORT_DOWNLOAD)
 	mkdir -p $(BINDIR) $(SBINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(TELEPORT_DLDIR)/teleport-linux-amd64/tctl $(BINDIR)
-	cp $(TELEPORT_DLDIR)/teleport-linux-amd64/teleport $(SBINDIR)
-	cp $(TELEPORT_DLDIR)/teleport-linux-amd64/tsh $(BINDIR)
-	cp $(TELEPORT_DLDIR)/common/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(TELEPORT_DLDIR)/common/README.md $(DOCDIR)/$@/README.md
-	cp $(TELEPORT_DLDIR)/teleport-windows-amd64/tsh.exe $(WINDOWS_BINDIR)
-	cp $(TELEPORT_DLDIR)/common/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(TELEPORT_DLDIR)/common/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(TELEPORT_DLDIR)/teleport-darwin-amd64/tsh $(MAC_BINDIR)
-	cp $(TELEPORT_DLDIR)/common/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(TELEPORT_DLDIR)/common/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(TELEPORT_DLDIR)/teleport-linux-amd64/tctl $(BINDIR)
+	$(CP) $(TELEPORT_DLDIR)/teleport-linux-amd64/teleport $(SBINDIR)
+	$(CP) $(TELEPORT_DLDIR)/teleport-linux-amd64/tsh $(BINDIR)
+	$(CP) $(TELEPORT_DLDIR)/common/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(TELEPORT_DLDIR)/common/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(TELEPORT_DLDIR)/teleport-windows-amd64/tsh.exe $(WINDOWS_BINDIR)
+	$(CP) $(TELEPORT_DLDIR)/common/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(TELEPORT_DLDIR)/common/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(TELEPORT_DLDIR)/teleport-darwin-amd64/tsh $(MAC_BINDIR)
+	$(CP) $(TELEPORT_DLDIR)/common/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(TELEPORT_DLDIR)/common/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(CKE_DOWNLOAD):
 	mkdir -p $(CKE_DLDIR)
@@ -324,9 +325,9 @@ $(CKE_DOWNLOAD):
 .PHONY: cke
 cke: $(CKE_DOWNLOAD)
 	mkdir -p $(BINDIR) $(SBINDIR)
-	cp $(CKE_DLDIR)/source/cke $(SBINDIR)/cke
-	cp $(CKE_DLDIR)/source/cke-localproxy $(SBINDIR)/cke-localproxy
-	cp $(CKE_DLDIR)/source/ckecli $(BINDIR)/ckecli
+	$(CP) $(CKE_DLDIR)/source/cke $(SBINDIR)/cke
+	$(CP) $(CKE_DLDIR)/source/cke-localproxy $(SBINDIR)/cke-localproxy
+	$(CP) $(CKE_DLDIR)/source/ckecli $(BINDIR)/ckecli
 
 $(MOCO_DOWNLOAD):
 	mkdir -p $(MOCO_DLDIR)
@@ -343,12 +344,12 @@ moco: $(MOCO_DOWNLOAD)
 	tar xzf $(MOCO_DLDIR)/kubectl-moco_linux_amd64.tar.gz   -C $(BINDIR)         kubectl-moco
 	tar xzf $(MOCO_DLDIR)/kubectl-moco_windows_amd64.tar.gz -C $(WINDOWS_BINDIR) kubectl-moco.exe
 	tar xzf $(MOCO_DLDIR)/kubectl-moco_darwin_amd64.tar.gz  -C $(MAC_BINDIR)     kubectl-moco
-	cp $(MOCO_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(MOCO_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(MOCO_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(MOCO_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(MOCO_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(MOCO_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(MOCO_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(MOCO_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(MOCO_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(MOCO_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(MOCO_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(MOCO_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(LOGCLI_DOWNLOAD):
 	mkdir -p $(LOGCLI_DLDIR)
@@ -367,12 +368,12 @@ logcli: $(LOGCLI_DOWNLOAD)
 	unzip -p $(LOGCLI_DLDIR)/logcli-windows-amd64.exe.zip > $(WINDOWS_BINDIR)/logcli.exe
 	unzip -p $(LOGCLI_DLDIR)/logcli-darwin-amd64.zip > $(MAC_BINDIR)/logcli 
 	chmod +x $(MAC_BINDIR)/logcli
-	cp $(LOGCLI_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(LOGCLI_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(LOGCLI_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(LOGCLI_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(LOGCLI_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(LOGCLI_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(LOGCLI_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(LOGCLI_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(LOGCLI_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(LOGCLI_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(LOGCLI_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(LOGCLI_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(YQ_DOWNLOAD):
 	mkdir -p $(YQ_DLDIR)
@@ -389,15 +390,15 @@ $(YQ_DOWNLOAD):
 .PHONY: yq
 yq: $(YQ_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	cp $(YQ_DLDIR)/yq_linux_amd64 $(BINDIR)/yq
-	cp $(YQ_DLDIR)/yq_windows_amd64.exe $(WINDOWS_BINDIR)/yq.exe
-	cp $(YQ_DLDIR)/yq_darwin_amd64 $(MAC_BINDIR)/yq
-	cp $(YQ_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(YQ_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(YQ_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(YQ_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(YQ_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(YQ_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(YQ_DLDIR)/yq_linux_amd64 $(BINDIR)/yq
+	$(CP) $(YQ_DLDIR)/yq_windows_amd64.exe $(WINDOWS_BINDIR)/yq.exe
+	$(CP) $(YQ_DLDIR)/yq_darwin_amd64 $(MAC_BINDIR)/yq
+	$(CP) $(YQ_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(YQ_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(YQ_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(YQ_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(YQ_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(YQ_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(KUBECTL_NEAT_DOWNLOAD):
 	mkdir -p $(KUBECTL_NEAT_DLDIR)
@@ -410,8 +411,8 @@ $(KUBECTL_NEAT_DOWNLOAD):
 kubectl-neat: $(KUBECTL_NEAT_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
 	tar xzf $(KUBECTL_NEAT_DLDIR)/kubectl-neat.tar.gz -C $(BINDIR)
-	cp $(KUBECTL_NEAT_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(KUBECTL_NEAT_DLDIR)/Readme.md $(DOCDIR)/$@/Readme.md
+	$(CP) $(KUBECTL_NEAT_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(KUBECTL_NEAT_DLDIR)/Readme.md $(DOCDIR)/$@/Readme.md
 
 $(ACCURATE_DOWNLOAD):
 	mkdir -p $(ACCURATE_DLDIR)
@@ -428,12 +429,12 @@ accurate: $(ACCURATE_DOWNLOAD)
 	tar xzf $(ACCURATE_DLDIR)/kubectl-accurate_linux_amd64.tar.gz   -C $(BINDIR)         kubectl-accurate
 	tar xzf $(ACCURATE_DLDIR)/kubectl-accurate_windows_amd64.tar.gz -C $(WINDOWS_BINDIR) kubectl-accurate.exe
 	tar xzf $(ACCURATE_DLDIR)/kubectl-accurate_darwin_amd64.tar.gz  -C $(MAC_BINDIR)     kubectl-accurate
-	cp $(ACCURATE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(ACCURATE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(ACCURATE_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(ACCURATE_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(ACCURATE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(ACCURATE_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(ACCURATE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(ACCURATE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(ACCURATE_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(ACCURATE_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(ACCURATE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(ACCURATE_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(ALERTMANAGER_DOWNLOAD):
 	mkdir -p $(ALERTMANAGER_DLDIR)
@@ -465,8 +466,8 @@ $(CILIUM_CLI_DOWNLOAD):
 cilium-cli: $(CILIUM_CLI_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
 	tar xzf $(CILIUM_CLI_DLDIR)/cilium-linux-amd64.tar.gz -C $(BINDIR) cilium
-	cp $(CILIUM_CLI_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(CILIUM_CLI_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(CILIUM_CLI_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(CILIUM_CLI_DLDIR)/README.md $(DOCDIR)/$@/README.md
 
 $(HUBBLE_DOWNLOAD):
 	mkdir -p $(HUBBLE_DLDIR)
@@ -483,12 +484,12 @@ hubble: $(HUBBLE_DOWNLOAD)
 	tar xzf $(HUBBLE_DLDIR)/hubble-linux-amd64.tar.gz -C $(BINDIR) hubble
 	tar xzf $(HUBBLE_DLDIR)/hubble-windows-amd64.tar.gz -C $(WINDOWS_BINDIR) hubble.exe
 	tar xzf $(HUBBLE_DLDIR)/hubble-darwin-amd64.tar.gz  -C $(MAC_BINDIR) hubble
-	cp $(HUBBLE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	cp $(HUBBLE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	cp $(HUBBLE_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	cp $(HUBBLE_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	cp $(HUBBLE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	cp $(HUBBLE_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(HUBBLE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(HUBBLE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(HUBBLE_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(HUBBLE_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(HUBBLE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(HUBBLE_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(TEMPO_DOWNLOAD):
 	mkdir -p $(TEMPO_DLDIR)
