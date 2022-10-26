@@ -1,6 +1,9 @@
 #!/bin/bash
 
 SUDO=$(which sudo)
-CURRENT_DIR=$(cd $(dirname $0);pwd)
-chmod 600 "$CURRENT_DIR"/dctest_key
-${SUDO} ip netns exec operation ssh -F ${CURRENT_DIR}/ssh_config $@
+SCRIPT_DIR=$(cd $(dirname $0);pwd)
+SSH_CONFIG=${SCRIPT_DIR}/ssh_config
+IDENTITY_FILE=${SCRIPT_DIR}/dctest_key
+
+chmod 600 ${IDENTITY_FILE}
+${SUDO} ip netns exec operation ssh -F ${SSH_CONFIG} -i ${IDENTITY_FILE} $@
