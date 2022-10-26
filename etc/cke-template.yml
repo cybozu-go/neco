@@ -20,6 +20,7 @@ nodes:
     effect: NoSchedule
 service_subnet: 10.68.0.0/16
 dns_service: internet-egress/unbound
+control_plane_tolerations: ["node.cilium.io/agent-not-ready"]
 reboot:
   reboot_command: ["/usr/bin/neco", "power", "restart", "--wait-for-stop"]
   boot_check_command: ["/usr/bin/neco", "reboot-check"]
