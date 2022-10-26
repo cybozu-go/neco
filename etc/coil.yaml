@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.9.2
+    controller-gen.kubebuilder.io/version: v0.10.0
   labels:
     app.kubernetes.io/name: coil
   name: addressblocks.coil.cybozu.com
@@ -69,7 +69,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.9.2
+    controller-gen.kubebuilder.io/version: v0.10.0
   labels:
     app.kubernetes.io/name: coil
   name: addresspools.coil.cybozu.com
@@ -146,7 +146,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.9.2
+    controller-gen.kubebuilder.io/version: v0.10.0
   labels:
     app.kubernetes.io/name: coil
   name: blockrequests.coil.cybozu.com
@@ -240,7 +240,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.9.2
+    controller-gen.kubebuilder.io/version: v0.10.0
   labels:
     app.kubernetes.io/name: coil
   name: egresses.coil.cybozu.com
@@ -8339,7 +8339,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        image: ghcr.io/cybozu-go/coil:2.1.2
+        image: ghcr.io/cybozu-go/coil:2.1.3
         livenessProbe:
           httpGet:
             host: localhost
@@ -8421,7 +8421,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: ghcr.io/cybozu-go/coil:2.1.2
+        image: ghcr.io/cybozu-go/coil:2.1.3
         livenessProbe:
           httpGet:
             host: localhost
@@ -8464,7 +8464,7 @@ spec:
             configMapKeyRef:
               key: cni_netconf
               name: coil-config-tc2gh94mfh
-        image: ghcr.io/cybozu-go/coil:2.1.2
+        image: ghcr.io/cybozu-go/coil:2.1.3
         name: coil-installer
         securityContext:
           privileged: true
