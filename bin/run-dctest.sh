@@ -73,8 +73,10 @@ TEMP_DIR=/tmp/release
 mkdir -p \${NECO_DIR}
 cd \${NECO_DIR}
 tar xzf /home/cybozu/neco.tgz
+rm -f /home/cybozu/neco.tgz
 if [ -f download.tgz ]; then
   tar xzf download.tgz
+  rm -f download.tgz
 fi
 
 # Prepare files

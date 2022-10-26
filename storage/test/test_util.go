@@ -15,8 +15,8 @@ var (
 )
 
 // NewEtcdClient creates new etcd client for test server:
-//     etcd := test.NewEtcdClient(t)
 //
+//	etcd := test.NewEtcdClient(t)
 func NewEtcdClient(t *testing.T) *clientv3.Client {
 	var clientURL string
 	if len(clientPort) == 0 {

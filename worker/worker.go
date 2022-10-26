@@ -46,18 +46,18 @@ func NewWorker(ec *clientv3.Client, op Operator, version string, mylrn int) *Wor
 //
 // Run works as follows:
 //
-// 1. Check the current request.  If the request is not found, go to 5.
+//  1. Check the current request.  If the request is not found, go to 5.
 //
-// 2. If locally installed neco package is older than the requested version,
-//    neco-worker updates the package, then exits to be restarted by systemd.
+//  2. If locally installed neco package is older than the requested version,
+//     neco-worker updates the package, then exits to be restarted by systemd.
 //
-// 3. Check the status of request and workers; if the update process was aborted,
-//    or if the update process has completed successfully, also go to 5.
+//  3. Check the status of request and workers; if the update process was aborted,
+//     or if the update process has completed successfully, also go to 5.
 //
-// 4. Update programs for the requested version.
+//  4. Update programs for the requested version.
 //
-// 5. Wait for the new request.    If there is a new one, neco-worker updates
-//    the package and exits to be restarted by systemd.
+//  5. Wait for the new request.  If there is a new one, neco-worker updates
+//     the package and exits to be restarted by systemd.
 func (w *Worker) Run(ctx context.Context) error {
 	if err := w.operator.StartServices(ctx); err != nil {
 		return err

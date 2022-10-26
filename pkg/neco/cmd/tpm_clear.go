@@ -40,17 +40,17 @@ var supportedMachineTypes = map[string]int{
 // These values will probably not be changed. So define as constants.
 // If you want to get these values dynamically, you can get them as follows.
 //
-// $ curl --insecure -sS -X GET -u $BMC_USER:$BMC_PASS \
-//        https://$BMC_ADDR/redfish/v1/Managers/iDRAC.Embedded.1 | jq .Links.Oem.Dell.Jobs
-// {
-//   "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Jobs"
-//  }
-
-// $ curl --insecure -sS -X GET -u $BMC_USER:$BMC_PASS \
-//        https://$BMC_ADDR/redfish/v1/Systems/System.Embedded.1/Bios | jq '."@Redfish.Settings".SettingsObject'
-// {
-//   "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Bios/Settings"
-// }
+//	$ curl --insecure -sS -X GET -u $BMC_USER:$BMC_PASS \
+//	       https://$BMC_ADDR/redfish/v1/Managers/iDRAC.Embedded.1 | jq .Links.Oem.Dell.Jobs
+//	{
+//	  "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Jobs"
+//	}
+//
+//	$ curl --insecure -sS -X GET -u $BMC_USER:$BMC_PASS \
+//	       https://$BMC_ADDR/redfish/v1/Systems/System.Embedded.1/Bios | jq '."@Redfish.Settings".SettingsObject'
+//	{
+//	  "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Bios/Settings"
+//	}
 const (
 	dellRedfishJobURI          = "/redfish/v1/Managers/iDRAC.Embedded.1/Jobs"
 	dellRedfishBiosSettingsURI = "/redfish/v1/Systems/System.Embedded.1/Bios/Settings"
