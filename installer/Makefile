@@ -19,7 +19,7 @@ LOCALDS_IMG = build/seed.img
 
 CHRONY_URL = http://archive.ubuntu.com/ubuntu/pool/main/c/chrony/chrony_4.2-2ubuntu2_amd64.deb
 CHRONY_DEB = build/$(notdir $(CHRONY_URL))
-BIRD2_URL = http://archive.ubuntu.com/ubuntu/pool/universe/b/bird2/bird2_2.0.10-2_amd64.deb
+BIRD2_URL = http://archive.ubuntu.com/ubuntu/pool/universe/b/bird2/bird2_2.0.8-2_amd64.deb
 BIRD2_DEB = build/$(notdir $(BIRD2_URL))
 LIBSSH_URL = http://archive.ubuntu.com/ubuntu/pool/main/libs/libssh/libssh-gcrypt-4_0.9.6-2build1_amd64.deb
 LIBSSH_DEB = build/$(notdir $(LIBSSH_URL))
