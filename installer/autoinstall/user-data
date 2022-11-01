@@ -31,7 +31,7 @@ autoinstall:
   - "curtin in-target --target=/target -- dpkg -r --force-depends systemd-timesyncd >> /var/log/installer/late-commands.log 2>&1"
   - "mkdir -p /target/etc/systemd/networkd.conf.d"
   - |
-    cat <<EOF | sudo tee /target/etc/systemd/networkd.conf.d/01-cybozu.conf
+    tee /target/etc/systemd/networkd.conf.d/01-cybozu.conf << EOF >/dev/null
     [Network]
     ManageForeignRoutingPolicyRules=no
     ManageForeignRoutes=no

@@ -39,7 +39,7 @@ rm -f /mnt/etc/resolv.conf
 chroot /mnt sed -i '/127.0.0.1 localhost/a 127.0.1.1 boot' /etc/hosts
 chroot /mnt dpkg -r --force-depends systemd-timesyncd
 chroot /mnt mkdir -p /etc/systemd/networkd.conf.d
-cat <<EOF | tee /mnt/etc/systemd/networkd.conf.d/01-cybozu.conf
+tee /mnt/etc/systemd/networkd.conf.d/01-cybozu.conf  << EOF >/dev/null
 [Network]
 ManageForeignRoutingPolicyRules=no
 ManageForeignRoutes=no
