@@ -139,7 +139,7 @@ Since Neco is the system to bootstrap and maintain an on-premise data center, th
 To simulate an on-premise data center, we have created [placemat][], a tool to construct a virtual data center using containers, virtual machines and Linux network stacks.
 
 The virtual data center implements the aforementioned leaf-spine networks with BGP routers.
-To create the virtual data center, run the following commands on Ubuntu 20.04:
+To create the virtual data center, run the following commands on Ubuntu 22.04:
 
 ```console
 $ wget -O - https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -161,7 +161,7 @@ $ make test
 - To login a boot server in the virtual data center, run `./dcssh boot-0`.
 - To stop and delete the virtual data center, run `make stop`.
 
-The setup commands above are examined on a GCP VM based on the Ubuntu 20.04 disk image.
+The setup commands above are examined on a GCP VM based on the Ubuntu 22.04 disk image.
 Some more setup steps are needed for the GCP environment.
 
 - [Enable nested virtualization by creating a custom image](https://cloud.google.com/compute/docs/instances/enable-nested-virtualization-vm-instances).
