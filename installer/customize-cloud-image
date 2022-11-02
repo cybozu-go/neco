@@ -38,13 +38,18 @@ chroot /mnt systemctl disable systemd-resolved.service
 rm -f /mnt/etc/resolv.conf
 chroot /mnt sed -i '/127.0.0.1 localhost/a 127.0.1.1 boot' /etc/hosts
 chroot /mnt dpkg -r --force-depends systemd-timesyncd
+# We should prevent foreign routing policy rules and routes from being dropped.
+# ref. https://github.com/cybozu-go/neco/issues/1918
 chroot /mnt mkdir -p /etc/systemd/networkd.conf.d
 tee /mnt/etc/systemd/networkd.conf.d/01-cybozu.conf  << EOF >/dev/null
 [Network]
 ManageForeignRoutingPolicyRules=no
 ManageForeignRoutes=no
 EOF
-chroot /mnt sh -c "dpkg -i /extras/*.deb"
+# There is a bug that fails to load kernel modules by 9pnet at starts up. 
+# So we should force to load kernel modules.
+# ref. https://bugzilla.redhat.com/show_bug.cgi?id=1499896
 chroot /mnt sh -c "echo 9pnet_virtio > /etc/modules-load.d/9pnet_virtio.conf"
+chroot /mnt sh -c "dpkg -i /extras/*.deb"
 sync
 umount /mnt

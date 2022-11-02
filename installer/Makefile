@@ -82,6 +82,8 @@ $(CUSTOM_ISO_PATH): $(ORIGINAL_ISO_PATH) $(DEBS) cluster.json
 	cp -a autoinstall $(SRC_DIR_PATH)
 
 	# Build an ISO file
+	# See below url for the meaning of the xorriso command option
+	# https://askubuntu.com/questions/1403546/ubuntu-22-04-build-iso-both-mbr-and-efi
 	xorriso -as mkisofs -r -V "neco-ubuntu-$(UBUNTU_VERSION)" \
 		-R -l -b '/boot/grub/i386-pc/eltorito.img' \
 		-c /boot.catalog -no-emul-boot \
