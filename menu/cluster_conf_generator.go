@@ -29,7 +29,8 @@ type BirdSpineArgs struct {
 	Bastion          string
 	Ingress          string
 	Global           string
-	Pod              string
+	Bmc              string
+	BmcAddress       string
 	CoreSpineAddress string
 	Racks            []*RackArgs
 }
@@ -157,7 +158,8 @@ func (c *Cluster) generateBirdSpineConf(outputDir string) error {
 			Bastion:          c.network.bastion.String(),
 			Ingress:          c.network.ingress.String(),
 			Global:           c.network.global.String(),
-			Pod:              c.network.pod.String(),
+			Bmc:              c.network.bmc.String(),
+			BmcAddress:       addToIP(c.network.bmc.IP, spineIdx+2, 20).IP.String(),
 			CoreSpineAddress: c.core.spineAddresses[spineIdx].IP.String(),
 		}
 

@@ -341,10 +341,6 @@ func (c *Cluster) appendNetworkNamespaces(spec *types.ClusterSpec) {
 				Addresses: []string{c.core.internetAddress.String()},
 			},
 			{
-				Network:   "bmc",
-				Addresses: []string{c.core.bmcAddress.String()},
-			},
-			{
 				Network:   "core-to-ext",
 				Addresses: []string{c.core.externalAddress.String()},
 			},
@@ -432,6 +428,11 @@ func (c *Cluster) appendNetworkNamespaces(spec *types.ClusterSpec) {
 				Addresses: []string{spine.tor2Address(i).String()},
 			})
 		}
+
+		spineNetNs.Interfaces = append(spineNetNs.Interfaces, &types.NetNSInterfaceSpec{
+			Network:   "bmc",
+			Addresses: []string{spine.bmcAddress.String()},
+		})
 
 		spec.NetNSs = append(spec.NetNSs, spineNetNs)
 	}

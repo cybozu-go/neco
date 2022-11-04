@@ -417,9 +417,6 @@ interfaces:
   - 10.0.0.2/24
   network: internet
 - addresses:
-  - 10.72.16.2/20
-  network: bmc
-- addresses:
     - 10.0.3.1/24
   network: core-to-ext
 - addresses:
@@ -465,6 +462,9 @@ interfaces:
 - addresses:
   - 10.0.1.6/31
   network: s1-to-r1-2
+- addresses:
+  - 10.72.16.2/20
+  network: bmc
 ---
 kind: NetworkNamespace
 name: spine2
@@ -493,6 +493,9 @@ interfaces:
 - addresses:
   - 10.0.1.14/31
   network: s2-to-r1-2
+- addresses:
+  - 10.72.16.3/20
+  network: bmc
 ---
 kind: NetworkNamespace
 name: rack0-tor1

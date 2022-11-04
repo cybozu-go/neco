@@ -114,8 +114,8 @@ type bootNode struct {
 }
 
 type core struct {
-	internetAddress  *net.IPNet
-	bmcAddress       *net.IPNet
+	internetAddress *net.IPNet
+	// bmcAddress       *net.IPNet
 	spineAddresses   []*net.IPNet
 	operationAddress *net.IPNet
 	externalAddress  *net.IPNet
@@ -129,6 +129,7 @@ type spine struct {
 	shortName    string
 	coreAddress  *net.IPNet
 	torAddresses []*net.IPNet
+	bmcAddress   *net.IPNet
 }
 
 func (s spine) tor1Address(rackIdx int) *net.IPNet {
@@ -221,7 +222,6 @@ func NewCluster(menu *menu) (*Cluster, error) {
 		bmc:      &bmc{address: addToIPNet(network.bmc, offsetBMCHost)},
 		core: &core{
 			internetAddress:  addToIPNet(network.internet, offsetInternetCore),
-			bmcAddress:       addToIPNet(network.bmc, offsetBMCCore),
 			operationAddress: addToIPNet(network.coreOperation, offsetOperationCore),
 			externalAddress:  addToIPNet(network.coreExternal, offsetExternalCore),
 			proxyAddress:     network.proxy,
@@ -336,6 +336,7 @@ func NewCluster(menu *menu) (*Cluster, error) {
 			shortName:    fmt.Sprintf("s%d", spineIdx+1),
 			coreAddress:  coreSpineBaseAddr,
 			torAddresses: nil,
+			bmcAddress:   addToIPNet(network.bmc, spineIdx+2),
 		}
 		coreSpineBaseAddr = addToIPNet(coreSpineBaseAddr, 1)
 
