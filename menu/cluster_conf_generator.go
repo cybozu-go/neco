@@ -85,6 +85,10 @@ type SetupIPTablesArgs struct {
 	NTP      string
 }
 
+type SetupIPTablesSpineArgs struct {
+	Bmc string
+}
+
 type ChronyIgnitionArgs struct {
 	NTPServers []string
 	Gateway    string
@@ -281,6 +285,15 @@ func (c *Cluster) generateSetupScripts(outputDir string) error {
 	if err := exportExecutableFile("/setup-iptables.sh",
 		filepath.Join(outputDir, "setup-iptables"), args); err != nil {
 		return err
+	}
+
+	for spineIdx := range c.spines {
+		spineArg := &SetupIPTablesSpineArgs{
+			Bmc: c.bmc.address.String(),
+		}
+		if err := exportExecutableFile("/setup-iptables-spine.sh", filepath.Join(outputDir, fmt.Sprintf("setup-iptables-spine%d", spineIdx+1)), spineArg); err != nil {
+			return err
+		}
 	}
 
 	if err := exportExecutableFile("/setup-default-gateway.sh",
