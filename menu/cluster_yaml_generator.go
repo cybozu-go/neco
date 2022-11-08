@@ -415,6 +415,7 @@ func (c *Cluster) appendNetworkNamespaces(spec *types.ClusterSpec) {
 					},
 				},
 			},
+			InitScripts: []string{fmt.Sprintf("setup-iptables-spine%d", i+1)},
 		}
 
 		for i, rack := range c.racks {

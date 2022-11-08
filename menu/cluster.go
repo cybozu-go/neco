@@ -114,8 +114,7 @@ type bootNode struct {
 }
 
 type core struct {
-	internetAddress *net.IPNet
-	// bmcAddress       *net.IPNet
+	internetAddress  *net.IPNet
 	spineAddresses   []*net.IPNet
 	operationAddress *net.IPNet
 	externalAddress  *net.IPNet
