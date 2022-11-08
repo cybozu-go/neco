@@ -554,7 +554,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 0a98baa4b8a96e8f68f22bcc7b5c6f7d4196ad0ac0df0e1843257f756abd5ca8
+        cilium.io/cilium-configmap-checksum: 524831b7166a9c65aa8784cd2a73b8a4d9c223461991487e4aacc68c046031b7
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -598,7 +598,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium-operator-generic:1.11.6.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.10.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -619,6 +619,7 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
+        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /tmp/cilium/config-map
           name: cilium-config-path
@@ -680,7 +681,7 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: quay.io/cybozu/hubble-relay:1.11.6.1
+        image: quay.io/cybozu/hubble-relay:1.11.10.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
@@ -696,6 +697,7 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
+        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /etc/hubble-relay
           name: config
@@ -805,7 +807,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 0a98baa4b8a96e8f68f22bcc7b5c6f7d4196ad0ac0df0e1843257f756abd5ca8
+        cilium.io/cilium-configmap-checksum: 524831b7166a9c65aa8784cd2a73b8a4d9c223461991487e4aacc68c046031b7
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
       labels:
@@ -868,7 +870,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.11.6.3
+        image: quay.io/cybozu/cilium:1.11.10.1
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -896,6 +898,10 @@ spec:
           timeoutSeconds: 5
         name: cilium-agent
         ports:
+        - containerPort: 4244
+          hostPort: 4244
+          name: peer-service
+          protocol: TCP
         - containerPort: 9090
           hostPort: 9090
           name: prometheus
@@ -939,6 +945,7 @@ spec:
             scheme: HTTP
           periodSeconds: 2
           successThreshold: 1
+        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /sys/fs/bpf
           mountPropagation: Bidirectional
@@ -980,11 +987,33 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cybozu/cilium:1.11.6.3
+        image: quay.io/cybozu/cilium:1.11.10.1
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
           privileged: true
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /hostproc
+          name: hostproc
+        - mountPath: /hostbin
+          name: cni-path
+      - command:
+        - sh
+        - -ec
+        - |
+          cp /usr/bin/cilium-sysctlfix /hostbin/cilium-sysctlfix;
+          nsenter --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-sysctlfix";
+          rm /hostbin/cilium-sysctlfix
+        env:
+        - name: BIN_PATH
+          value: /opt/cni/bin
+        image: quay.io/cybozu/cilium:1.11.10.1
+        imagePullPolicy: IfNotPresent
+        name: apply-sysctl-overwrites
+        securityContext:
+          privileged: true
+        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /hostproc
           name: hostproc
@@ -1009,7 +1038,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.11.6.3
+        image: quay.io/cybozu/cilium:1.11.10.1
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -1018,6 +1047,7 @@ spec:
             memory: 100Mi
         securityContext:
           privileged: true
+        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps

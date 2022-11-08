@@ -147,7 +147,7 @@ data:
   #   - disabled
   #   - vxlan (default)
   #   - geneve
-  tunnel: disabled
+  tunnel: "disabled"
   # Enables L7 proxy for L7 policy enforcement and visibility
   enable-l7-proxy: "true"
   # Enable chaining with another CNI plugin
@@ -630,7 +630,7 @@ spec:
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "0a98baa4b8a96e8f68f22bcc7b5c6f7d4196ad0ac0df0e1843257f756abd5ca8"
+        cilium.io/cilium-configmap-checksum: "524831b7166a9c65aa8784cd2a73b8a4d9c223461991487e4aacc68c046031b7"
       labels:
         k8s-app: cilium
     spec:
@@ -659,7 +659,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-agent
-        image: "quay.io/cybozu/cilium:1.11.6.3"
+        image: "quay.io/cybozu/cilium:1.11.10.1"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
@@ -748,6 +748,10 @@ spec:
             cpu: 100m
             memory: 400Mi
         ports:
+        - name: peer-service
+          containerPort: 4244
+          hostPort: 4244
+          protocol: TCP
         - name: prometheus
           containerPort: 9090
           hostPort: 9090
@@ -762,6 +766,7 @@ spec:
           protocol: TCP
         securityContext:
           privileged: true
+        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - name: bpf-maps
           mountPath: /sys/fs/bpf
@@ -795,7 +800,7 @@ spec:
       # Required to mount cgroup2 filesystem on the underlying Kubernetes node.
       # We use nsenter command with host's cgroup and mount namespaces enabled.
       - name: mount-cgroup
-        image: "quay.io/cybozu/cilium:1.11.6.3"
+        image: "quay.io/cybozu/cilium:1.11.10.1"
         imagePullPolicy: IfNotPresent
         env:
         - name: CGROUP_ROOT
@@ -819,10 +824,37 @@ spec:
           mountPath: /hostproc
         - name: cni-path
           mountPath: /hostbin
+        terminationMessagePolicy: FallbackToLogsOnError
+        securityContext:
+          privileged: true
+      - name: apply-sysctl-overwrites
+        image: "quay.io/cybozu/cilium:1.11.10.1"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: BIN_PATH
+          value: /opt/cni/bin
+        command:
+        - sh
+        - -ec
+        # The statically linked Go program binary is invoked to avoid any
+        # dependency on utilities like sh that can be missing on certain
+        # distros installed on the underlying host. Copy the binary to the
+        # same directory where we install cilium cni plugin so that exec permissions
+        # are available.
+        - |
+          cp /usr/bin/cilium-sysctlfix /hostbin/cilium-sysctlfix;
+          nsenter --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-sysctlfix";
+          rm /hostbin/cilium-sysctlfix
+        volumeMounts:
+        - name: hostproc
+          mountPath: /hostproc
+        - name: cni-path
+          mountPath: /hostbin
+        terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           privileged: true
       - name: clean-cilium-state
-        image: "quay.io/cybozu/cilium:1.11.6.3"
+        image: "quay.io/cybozu/cilium:1.11.10.1"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
@@ -843,6 +875,7 @@ spec:
           value: "127.0.0.1"
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
+        terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           privileged: true
         volumeMounts:
@@ -857,7 +890,7 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 100Mi
+            memory: 100Mi # wait-for-kube-proxy
       restartPolicy: Always
       priorityClassName: system-node-critical
       serviceAccount: "cilium"
@@ -961,7 +994,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "0a98baa4b8a96e8f68f22bcc7b5c6f7d4196ad0ac0df0e1843257f756abd5ca8"
+        cilium.io/cilium-configmap-checksum: "524831b7166a9c65aa8784cd2a73b8a4d9c223461991487e4aacc68c046031b7"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -982,7 +1015,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-operator
-        image: quay.io/cybozu/cilium-operator-generic:1.11.6.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.10.1
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
@@ -1035,6 +1068,7 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
+        terminationMessagePolicy: FallbackToLogsOnError
       hostNetwork: true
       restartPolicy: Always
       priorityClassName: system-cluster-critical
@@ -1088,7 +1122,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
-          image: "quay.io/cybozu/hubble-relay:1.11.6.1"
+          image: "quay.io/cybozu/hubble-relay:1.11.10.1"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
@@ -1114,6 +1148,7 @@ spec:
           - name: tls
             mountPath: /var/lib/hubble-relay/tls
             readOnly: true
+          terminationMessagePolicy: FallbackToLogsOnError
       restartPolicy: Always
       priorityClassName: 
       serviceAccount: "hubble-relay"
