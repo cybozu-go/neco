@@ -23,7 +23,11 @@ BIRD2_URL = http://archive.ubuntu.com/ubuntu/pool/universe/b/bird2/bird2_2.0.8-2
 BIRD2_DEB = build/$(notdir $(BIRD2_URL))
 LIBSSH_URL = http://archive.ubuntu.com/ubuntu/pool/main/libs/libssh/libssh-gcrypt-4_0.9.6-2build1_amd64.deb
 LIBSSH_DEB = build/$(notdir $(LIBSSH_URL))
-DEBS = $(CHRONY_DEB) $(BIRD2_DEB) $(LIBSSH_DEB)
+# A seucrity fix with high rate has been released for libssl3, but libssl3 in the iso image is a version without the security fix applied.
+# We download and install the version with the security fix applied.
+LIBSSL3_URL = http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl3_3.0.2-0ubuntu1.7_amd64.deb
+LIBSSL3_DEB = build/$(notdir $(LIBSSL3_URL))
+DEBS = $(CHRONY_DEB) $(BIRD2_DEB) $(LIBSSH_DEB) $(LIBSSL3_DEB)
 
 .PHONY: help
 help:
@@ -58,6 +62,10 @@ $(BIRD2_DEB):
 $(LIBSSH_DEB):
 	mkdir -p build
 	cd build; curl -O -fsSL $(LIBSSH_URL)
+
+$(LIBSSL3_DEB):
+	mkdir -p build
+	cd build; curl -O -fsSL $(LIBSSL3_URL)
 
 $(CUSTOM_ISO_PATH): $(ORIGINAL_ISO_PATH) $(DEBS) cluster.json
 	rm -rf $(SRC_DIR_PATH)
