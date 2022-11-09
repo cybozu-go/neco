@@ -7,7 +7,7 @@ go 1.19
 replace github.com/hashicorp/go-msgpack => github.com/hashicorp/go-msgpack v0.5.3
 
 require (
-	github.com/cybozu-go/etcdutil v1.6.1
+	github.com/cybozu-go/etcdutil v1.6.2
 	github.com/cybozu-go/log v1.6.1
 	github.com/cybozu-go/netutil v1.4.3
 	github.com/cybozu-go/placemat/v2 v2.3.0
