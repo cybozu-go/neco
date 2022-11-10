@@ -447,7 +447,7 @@ apps:
   - -s
   - /var/run/bird/bird_spine1.ctl
 init-scripts:
-- setup-iptables-spine1
+- setup-iptables-spine
 interfaces:
 - addresses:
   - 10.0.2.1/31
@@ -480,7 +480,7 @@ apps:
   - -s
   - /var/run/bird/bird_spine2.ctl
 init-scripts:
-- setup-iptables-spine2
+- setup-iptables-spine
 interfaces:
 - addresses:
   - 10.0.2.3/31
