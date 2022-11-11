@@ -1,11 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"strings"
+
+	"github.com/cybozu-go/neco"
 )
 
 var (
@@ -49,22 +51,24 @@ Environment="HTTPS_PROXY=%s"
 		return fmt.Errorf("failed to read Docker PGP key: %w", err)
 	}
 
-	cmd := exec.Command("apt-key", "add", "-")
-	cmd.Stdin = bytes.NewReader(data)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to add apt-key: %s: %w", string(out), err)
+	if os.WriteFile(neco.DockerKeyringFile, data, 0644); err != nil {
+		return fmt.Errorf("failed to create%s: %w", neco.DockerKeyringFile, err)
 	}
 
-	cmd = exec.Command("lsb_release", "-cs")
-	codename, err := cmd.Output()
+	cmd := exec.Command("lsb_release", "-cs")
+	out, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to invoke lsb_release -cs: %w", err)
 	}
 
-	repo := fmt.Sprintf("deb [arch=amd64] https://download.docker.com/linux/ubuntu %s stable", string(codename))
-	if err := runCmd("add-apt-repository", repo); err != nil {
-		return err
+	codename := strings.TrimSuffix(string(out), "\n")
+	repo := fmt.Sprintf("deb [arch=amd64 signed-by=%s] https://download.docker.com/linux/ubuntu %s stable\n", neco.DockerKeyringFile, codename)
+	if os.WriteFile(neco.DockerSourceListFile, []byte(repo), 0644); err != nil {
+		return fmt.Errorf("failed to create%s: %w", neco.DockerSourceListFile, err)
+	}
+
+	if err := runCmd("apt-get", "update"); err != nil {
+		return fmt.Errorf("failed to update packages: %w", err)
 	}
 
 	return installPackages(dockerPackages...)

@@ -142,8 +142,8 @@ The virtual data center implements the aforementioned leaf-spine networks with B
 To create the virtual data center, run the following commands on Ubuntu 22.04:
 
 ```console
-$ wget -O - https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable"
+$ curl -o /etc/apt/keyrings/docker-key.asc -fsSL https://download.docker.com/linux/ubuntu/gpg 
+$ echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker-key.asc] https://download.docker.com/linux/ubuntu jammy stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 $ sudo apt update
 $ sudo apt install -y build-essential systemd-container lldpd qemu qemu-kvm socat picocom swtpm cloud-utils bird2 squid chrony dnsmasq jq freeipmi-tools unzip skopeo fakeroot docker-ce docker-ce-cli containerd.io
 $ wget https://github.com/qemu/qemu/raw/master/pc-bios/bios.bin
