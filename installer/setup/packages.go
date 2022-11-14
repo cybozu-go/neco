@@ -60,6 +60,10 @@ func installChromium() error {
 		return fmt.Errorf("failed to set proxy for snap: %w", err)
 	}
 
+	if err := runCmd("snap", "refresh", "snapd"); err != nil {
+		return fmt.Errorf("failed to update snapd with snap: %w", err)
+	}
+
 	if err := runCmd("snap", "install", "chromium"); err != nil {
 		return fmt.Errorf("failed to install chromium with snap: %w", err)
 	}
