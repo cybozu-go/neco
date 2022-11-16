@@ -1,4 +1,4 @@
 #!/bin/sh
 
-# eth9 -> BMC
-iptables -t nat -A POSTROUTING -o eth9 -d {{.}} -j MASQUERADE
+# eth1 -> BMC
+iptables -t nat -A POSTROUTING -o eth1 -d {{.}} -j MASQUERADE

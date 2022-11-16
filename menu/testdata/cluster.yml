@@ -453,6 +453,9 @@ interfaces:
   - 10.0.2.1/31
   network: core-to-s1
 - addresses:
+  - 10.72.16.2/20
+  network: bmc
+- addresses:
   - 10.0.1.0/31
   network: s1-to-r0-1
 - addresses:
@@ -464,9 +467,6 @@ interfaces:
 - addresses:
   - 10.0.1.6/31
   network: s1-to-r1-2
-- addresses:
-  - 10.72.16.2/20
-  network: bmc
 ---
 kind: NetworkNamespace
 name: spine2
@@ -486,6 +486,9 @@ interfaces:
   - 10.0.2.3/31
   network: core-to-s2
 - addresses:
+  - 10.72.16.3/20
+  network: bmc
+- addresses:
   - 10.0.1.8/31
   network: s2-to-r0-1
 - addresses:
@@ -497,9 +500,6 @@ interfaces:
 - addresses:
   - 10.0.1.14/31
   network: s2-to-r1-2
-- addresses:
-  - 10.72.16.3/20
-  network: bmc
 ---
 kind: NetworkNamespace
 name: rack0-tor1

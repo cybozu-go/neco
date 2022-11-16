@@ -418,6 +418,11 @@ func (c *Cluster) appendNetworkNamespaces(spec *types.ClusterSpec) {
 			InitScripts: []string{"setup-iptables-spine"},
 		}
 
+		spineNetNs.Interfaces = append(spineNetNs.Interfaces, &types.NetNSInterfaceSpec{
+			Network:   "bmc",
+			Addresses: []string{spine.bmcAddress.String()},
+		})
+
 		for i, rack := range c.racks {
 			spineNetNs.Interfaces = append(spineNetNs.Interfaces, &types.NetNSInterfaceSpec{
 				Network:   fmt.Sprintf("%s-to-%s-1", spine.shortName, rack.shortName),
@@ -429,11 +434,6 @@ func (c *Cluster) appendNetworkNamespaces(spec *types.ClusterSpec) {
 				Addresses: []string{spine.tor2Address(i).String()},
 			})
 		}
-
-		spineNetNs.Interfaces = append(spineNetNs.Interfaces, &types.NetNSInterfaceSpec{
-			Network:   "bmc",
-			Addresses: []string{spine.bmcAddress.String()},
-		})
 
 		spec.NetNSs = append(spec.NetNSs, spineNetNs)
 	}
