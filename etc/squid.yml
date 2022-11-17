@@ -157,6 +157,8 @@ apiVersion: apps/v1
 metadata:
   name: squid
   namespace: internet-egress
+  labels:
+    neco.cybozu.io/isolated-network: "true"
 spec:
   replicas: 2
   strategy:
