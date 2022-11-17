@@ -51,8 +51,8 @@ Environment="HTTPS_PROXY=%s"
 		return fmt.Errorf("failed to read Docker PGP key: %w", err)
 	}
 
-	if os.WriteFile(neco.DockerKeyringFile, data, 0644); err != nil {
-		return fmt.Errorf("failed to create%s: %w", neco.DockerKeyringFile, err)
+	if err := os.WriteFile(neco.DockerKeyringFile, data, 0644); err != nil {
+		return fmt.Errorf("failed to create %s: %w", neco.DockerKeyringFile, err)
 	}
 
 	cmd := exec.Command("lsb_release", "-cs")
@@ -63,8 +63,8 @@ Environment="HTTPS_PROXY=%s"
 
 	codename := strings.TrimSuffix(string(out), "\n")
 	repo := fmt.Sprintf("deb [arch=amd64 signed-by=%s] https://download.docker.com/linux/ubuntu %s stable\n", neco.DockerKeyringFile, codename)
-	if os.WriteFile(neco.DockerSourceListFile, []byte(repo), 0644); err != nil {
-		return fmt.Errorf("failed to create%s: %w", neco.DockerSourceListFile, err)
+	if err := os.WriteFile(neco.DockerSourceListFile, []byte(repo), 0644); err != nil {
+		return fmt.Errorf("failed to create %s: %w", neco.DockerSourceListFile, err)
 	}
 
 	if err := runCmd("apt-get", "update"); err != nil {
