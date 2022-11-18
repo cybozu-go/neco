@@ -659,7 +659,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-agent
-        image: "quay.io/cybozu/cilium:1.11.10.1"
+        image: "quay.io/cybozu/cilium:1.11.11.1"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
@@ -800,7 +800,7 @@ spec:
       # Required to mount cgroup2 filesystem on the underlying Kubernetes node.
       # We use nsenter command with host's cgroup and mount namespaces enabled.
       - name: mount-cgroup
-        image: "quay.io/cybozu/cilium:1.11.10.1"
+        image: "quay.io/cybozu/cilium:1.11.11.1"
         imagePullPolicy: IfNotPresent
         env:
         - name: CGROUP_ROOT
@@ -828,7 +828,7 @@ spec:
         securityContext:
           privileged: true
       - name: apply-sysctl-overwrites
-        image: "quay.io/cybozu/cilium:1.11.10.1"
+        image: "quay.io/cybozu/cilium:1.11.11.1"
         imagePullPolicy: IfNotPresent
         env:
         - name: BIN_PATH
@@ -854,7 +854,7 @@ spec:
         securityContext:
           privileged: true
       - name: clean-cilium-state
-        image: "quay.io/cybozu/cilium:1.11.10.1"
+        image: "quay.io/cybozu/cilium:1.11.11.1"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
@@ -1015,7 +1015,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cilium-operator
-        image: quay.io/cybozu/cilium-operator-generic:1.11.10.1
+        image: quay.io/cybozu/cilium-operator-generic:1.11.11.1
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
@@ -1122,7 +1122,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
-          image: "quay.io/cybozu/hubble-relay:1.11.10.1"
+          image: "quay.io/cybozu/hubble-relay:1.11.11.1"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
