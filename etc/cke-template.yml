@@ -169,4 +169,4 @@ options:
       # 8 * 1024 * 1024 * 1024 = 8589934592 = 8GB
       - "--quota-backend-bytes=8589934592"
       #GCPONLY - "--heartbeat-interval=500"
-      #GCPONLY - "--election-timeout=2500"
+      #GCPONLY - "--election-timeout=5000"
