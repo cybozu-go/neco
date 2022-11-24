@@ -50,6 +50,7 @@ spec:
   cpu: 12
   memory: 20G
   disk-count: 6
+  disk-size: 80G
   tpm: true
 ---
 kind: Node
