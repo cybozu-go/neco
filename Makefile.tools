@@ -316,7 +316,8 @@ teleport: $(TELEPORT_DOWNLOAD)
 
 $(CKE_DOWNLOAD):
 	mkdir -p $(CKE_DLDIR)
-	git clone --depth 1 -b v$(CKE_VERSION) https://github.com/cybozu-go/cke $(CKE_DLDIR)/source
+	git clone https://github.com/cybozu-go/cke $(CKE_DLDIR)/source
+	cd $(CKE_DLDIR)/source; git checkout $(CKE_VERSION)
 	cd $(CKE_DLDIR)/source; go build -ldflags="-w -s" ./pkg/cke
 	cd $(CKE_DLDIR)/source; go build -ldflags="-w -s" ./pkg/cke-localproxy
 	cd $(CKE_DLDIR)/source; go build -ldflags="-w -s" ./pkg/ckecli
