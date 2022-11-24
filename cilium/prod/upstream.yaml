@@ -107,7 +107,7 @@ data:
   enable-host-legacy-routing: "true"
   # bpf-policy-map-max specifies the maximum number of entries in endpoint
   # policy map (per endpoint)
-  bpf-policy-map-max: "16384"
+  bpf-policy-map-max: "65536"
   # bpf-lb-map-max specifies the maximum number of entries in bpf lb service,
   # backend and affinity maps.
   bpf-lb-map-max: "65536"
@@ -630,7 +630,7 @@ spec:
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "524831b7166a9c65aa8784cd2a73b8a4d9c223461991487e4aacc68c046031b7"
+        cilium.io/cilium-configmap-checksum: "5c0a79a8faad6e6ae4efd0647a44e2ac39c3bb09942225b1f404480dd7f260a8"
       labels:
         k8s-app: cilium
     spec:
@@ -994,7 +994,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "524831b7166a9c65aa8784cd2a73b8a4d9c223461991487e4aacc68c046031b7"
+        cilium.io/cilium-configmap-checksum: "5c0a79a8faad6e6ae4efd0647a44e2ac39c3bb09942225b1f404480dd7f260a8"
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:

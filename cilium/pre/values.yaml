@@ -4,6 +4,7 @@ bgp:
   enabled: true
 bpf:
   hostRouting: true
+  policyMapMax: 65536
 cni:
   chainingMode: "generic-veth"
   customConf: true
