@@ -367,7 +367,7 @@ data:
   bpf-lb-mode: dsr
   bpf-lb-sock-hostns-only: "true"
   bpf-map-dynamic-size-ratio: "0.0025"
-  bpf-policy-map-max: "16384"
+  bpf-policy-map-max: "65536"
   cgroup-root: /run/cilium/cgroupv2
   cilium-endpoint-gc-interval: 5m0s
   cluster-id: ""
@@ -554,7 +554,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 524831b7166a9c65aa8784cd2a73b8a4d9c223461991487e4aacc68c046031b7
+        cilium.io/cilium-configmap-checksum: 5c0a79a8faad6e6ae4efd0647a44e2ac39c3bb09942225b1f404480dd7f260a8
         prometheus.io/port: "6942"
         prometheus.io/scrape: "true"
       labels:
@@ -807,7 +807,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 524831b7166a9c65aa8784cd2a73b8a4d9c223461991487e4aacc68c046031b7
+        cilium.io/cilium-configmap-checksum: 5c0a79a8faad6e6ae4efd0647a44e2ac39c3bb09942225b1f404480dd7f260a8
         prometheus.io/port: "9090"
         prometheus.io/scrape: "true"
       labels:
