@@ -1,3 +1,5 @@
 images:
   - repository: quay.io/cybozu/cilium-certgen
     versions: ["0.1.8.1"]
+  - repository: quay.io/cybozu/etcd
+    versions: ["3.5.6.1"]
