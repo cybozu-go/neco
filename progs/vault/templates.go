@@ -15,7 +15,10 @@ listener "tcp" {
 }
 
 telemetry {
-  prometheus_retention_time = "5m"
+  # Vault retains Prometheus-compatible metrics only for the following periods if the metrics do not change.
+  # Some metrics do not change for several tens of minutes or more and such metrics disappear after the period.
+  # We set VERY long period (about three years, enough longer than boot server OS upgrade interval) to keep the metrics.
+  prometheus_retention_time = "1000d"
   disable_hostname = true
 }
 
