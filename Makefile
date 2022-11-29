@@ -1,6 +1,6 @@
 
 # Makefile for neco
-
+ 
 include Makefile.common
 
 COIL_VERSION := $(shell awk '/"coil"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
