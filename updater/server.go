@@ -63,11 +63,12 @@ RETRY:
 		return s.runLoop(ctx, leaderKey)
 	})
 
-	ghc, err := ext.GitHubHTTPClient(ctx, s.storage)
+	ghHttpClient, err := ext.GitHubHTTPClient(ctx, s.storage)
 	if err != nil {
 		return err
 	}
-	checker := NewReleaseChecker(s.storage, leaderKey, ghc)
+	ghClient := neco.NewGitHubClient(ghHttpClient)
+	checker := NewReleaseChecker(s.storage, leaderKey, ghClient)
 	env.Go(checker.Run)
 	env.Stop()
 	err = env.Wait()

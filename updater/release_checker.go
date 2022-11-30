@@ -3,30 +3,30 @@ package updater
 import (
 	"context"
 	"errors"
-	"net/http"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
+	"github.com/google/go-github/v48/github"
 )
 
 // ReleaseChecker checks newer GitHub releases by polling
 type ReleaseChecker struct {
 	storage   storage.Storage
 	leaderKey string
-	ghClient  *http.Client
+	ghClient  *github.Client
 
 	check   func(context.Context) (string, error)
 	current string
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
-func NewReleaseChecker(st storage.Storage, leaderKey string, ghc *http.Client) ReleaseChecker {
+func NewReleaseChecker(st storage.Storage, leaderKey string, ghClient *github.Client) ReleaseChecker {
 	return ReleaseChecker{
 		storage:   st,
 		leaderKey: leaderKey,
-		ghClient:  ghc,
+		ghClient:  ghClient,
 	}
 }
 

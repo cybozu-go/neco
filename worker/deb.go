@@ -18,10 +18,8 @@ import (
 // InstallDebianPackage installs a debian package
 // client uses for downloading a debian package.
 // ghClient uses for getting download URL by GitHub API.
-func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *http.Client, pkg *neco.DebianPackage, background bool) error {
-	gh := neco.NewGitHubClient(ghClient)
-
-	downloadURL, err := GetGitHubDownloadURL(ctx, gh, pkg)
+func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *github.Client, pkg *neco.DebianPackage, background bool) error {
+	downloadURL, err := GetGitHubDownloadURL(ctx, ghClient, pkg)
 	if err != nil {
 		return err
 	}

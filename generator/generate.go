@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"sort"
 	"strings"
 	"text/template"
@@ -17,7 +16,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/hashicorp/go-version"
-	"golang.org/x/oauth2"
 )
 
 var imageRepos = []string{
@@ -221,14 +219,7 @@ OUTER:
 }
 
 func getLatestDeb(ctx context.Context, name string, ignoreVersions []string) (*neco.DebianPackage, error) {
-	var hc *http.Client
-	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: token},
-		)
-		hc = oauth2.NewClient(ctx, ts)
-	}
-	client := neco.NewGitHubClient(hc)
+	client := neco.NewDefaultGitHubClient()
 	releases, resp, err := client.Repositories.ListReleases(ctx, "cybozu-go", name, nil)
 	if err != nil {
 		if resp.StatusCode == http.StatusNotFound {

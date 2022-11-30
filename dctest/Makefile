@@ -26,6 +26,12 @@ export PLACEMAT GINKGO SUITE MACHINES_FILE ADDRESS_POOLS_FILE SUDO
 CUSTOM_UBUNTU = cybozu-ubuntu-20.04-server-cloudimg-amd64.img
 FLATCAR_IMAGE := flatcar_production_qemu_image.img
 
+GITHUB_TOKEN_FILE = $(CURDIR)/../github-token
+ifneq ("$(wildcard $(GITHUB_TOKEN_FILE))","")
+  GITHUB_TOKEN := $(shell cat $(GITHUB_TOKEN_FILE))
+  export GITHUB_TOKEN
+endif
+
 # non-configuration variables
 SABAKAN_DIR = $(OUTPUT)/sabakan
 DHCP_JSON = $(SABAKAN_DIR)/dhcp.json
