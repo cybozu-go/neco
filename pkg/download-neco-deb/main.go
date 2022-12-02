@@ -24,7 +24,8 @@ func main() {
 	}
 	datacenter := os.Args[1]
 
-	client := updater.NewReleaseClient(neco.GitHubRepoOwner, neco.GitHubRepoName, http.DefaultClient)
+	ghClient := neco.NewDefaultGitHubClient()
+	client := updater.NewReleaseClient(neco.GitHubRepoOwner, neco.GitHubRepoName, ghClient)
 
 	var getTag func(context.Context) (string, error)
 	switch datacenter {
@@ -42,14 +43,13 @@ func main() {
 			return err
 		}
 
-		github := neco.NewGitHubClient(http.DefaultClient)
 		deb := &neco.DebianPackage{
 			Name:       neco.NecoPackageName,
 			Repository: neco.GitHubRepoName,
 			Owner:      neco.GitHubRepoOwner,
 			Release:    "release-" + tag,
 		}
-		downloadURL, err := worker.GetGitHubDownloadURL(ctx, github, deb)
+		downloadURL, err := worker.GetGitHubDownloadURL(ctx, ghClient, deb)
 		if err != nil {
 			return err
 		}

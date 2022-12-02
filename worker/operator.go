@@ -11,6 +11,7 @@ import (
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-github/v48/github"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -36,7 +37,7 @@ type operator struct {
 	mylrn            int
 	ec               *clientv3.Client
 	storage          storage.Storage
-	ghClient         *http.Client
+	ghClient         *github.Client
 	proxyClient      *http.Client
 	localClient      *http.Client
 	fetcher          neco.ImageFetcher
@@ -51,10 +52,11 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 	if err != nil {
 		return nil, err
 	}
-	ghClient, err := ext.GitHubHTTPClient(ctx, st)
+	ghHttpClient, err := ext.GitHubHTTPClient(ctx, st)
 	if err != nil {
 		return nil, err
 	}
+	ghClient := neco.NewGitHubClient(ghHttpClient)
 	proxy, err := st.GetProxyConfig(ctx)
 	if err != nil {
 		return nil, err
