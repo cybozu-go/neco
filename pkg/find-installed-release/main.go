@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 
 	"github.com/cybozu-go/neco"
@@ -22,7 +21,8 @@ func main() {
 	}
 	datacenter := os.Args[1]
 
-	client := updater.NewReleaseClient(neco.GitHubRepoOwner, neco.GitHubRepoName, http.DefaultClient)
+	ghClient := neco.NewDefaultGitHubClient()
+	client := updater.NewReleaseClient(neco.GitHubRepoOwner, neco.GitHubRepoName, ghClient)
 
 	var getTag func(context.Context) (string, error)
 	switch datacenter {

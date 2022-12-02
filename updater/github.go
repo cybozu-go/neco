@@ -3,12 +3,10 @@ package updater
 import (
 	"context"
 	"errors"
-	"net/http"
 	"sort"
 	"strings"
 
 	"github.com/cybozu-go/log"
-	"github.com/cybozu-go/neco"
 	"github.com/google/go-github/v48/github"
 	version "github.com/hashicorp/go-version"
 )
@@ -24,20 +22,19 @@ func trimTagName(s string) string {
 
 // ReleaseClient gets GitHub Releases
 type ReleaseClient struct {
-	owner string
-	repo  string
-	http  *http.Client
+	owner    string
+	repo     string
+	ghClient *github.Client
 }
 
 // NewReleaseClient returns ReleaseClient
-func NewReleaseClient(owner, repo string, http *http.Client) *ReleaseClient {
-	return &ReleaseClient{owner, repo, http}
+func NewReleaseClient(owner, repo string, ghClient *github.Client) *ReleaseClient {
+	return &ReleaseClient{owner, repo, ghClient}
 }
 
 // GetLatestReleaseTag returns latest published release tag in GitHub Releases of neco repository
 func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
-	client := neco.NewGitHubClient(c.http)
-	release, _, err := client.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
+	release, _, err := c.ghClient.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
 	if err != nil {
 		log.Warn("failed to get the latest GitHub release", map[string]interface{}{
 			"owner":      c.owner,
@@ -59,15 +56,13 @@ func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) 
 
 // GetLatestPublishedTag returns latest published release/pre-release tag in GitHub Releases of neco repository
 func (c ReleaseClient) GetLatestPublishedTag(ctx context.Context) (string, error) {
-	client := neco.NewGitHubClient(c.http)
-
 	opt := &github.ListOptions{
 		PerPage: 100,
 	}
 
 	var releases []*github.RepositoryRelease
 	for {
-		rs, resp, err := client.Repositories.ListReleases(ctx, c.owner, c.repo, opt)
+		rs, resp, err := c.ghClient.Repositories.ListReleases(ctx, c.owner, c.repo, opt)
 		if err != nil {
 			log.Warn("failed to list GitHub releases", map[string]interface{}{
 				"owner":      c.owner,
