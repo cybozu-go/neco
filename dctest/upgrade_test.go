@@ -488,11 +488,11 @@ func checkVersionInJob(namespace, jobPrefix, image string) error {
 	}
 
 	found := false
-	var job batchv1.Job
+	var jobs []batchv1.Job
 	for _, j := range jobList.Items {
 		if strings.HasPrefix(j.Name, jobPrefix) {
 			found = true
-			job = j
+			jobs = append(jobs, j)
 		}
 	}
 	if !found {
@@ -500,13 +500,19 @@ func checkVersionInJob(namespace, jobPrefix, image string) error {
 	}
 
 	found = false
-	for _, c := range job.Spec.Template.Spec.Containers {
-		if c.Image == image {
-			found = true
+	for _, job := range jobs {
+		for _, c := range job.Spec.Template.Spec.Containers {
+			if c.Image == image {
+				found = true
+				break
+			}
+		}
+		if found {
+			break
 		}
 	}
 	if !found {
-		return fmt.Errorf("%s not found in %s", image, job.Name)
+		return fmt.Errorf("%s not found in %v", image, jobs)
 	}
 	return nil
 }
