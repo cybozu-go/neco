@@ -3,7 +3,7 @@ bgp:
     loadbalancerIP: true
   enabled: true
 bpf:
-  hostRouting: true
+  hostLegacyRouting: true
   policyMapMax: 65536
 cni:
   chainingMode: "generic-veth"
@@ -19,9 +19,6 @@ extraConfig:
   bpf-ct-timeout-service-any: 1h0m0s
 hostPort:
   enabled: false
-hostServices:
-  enabled: true
-  hostNamespaceOnly: true
 hubble:
   relay:
     enabled: true
@@ -74,4 +71,8 @@ resources:
     cpu: 100m
     memory: 400Mi
 rollOutCiliumPods: true
+sessionAffinity: true
+socketLB:
+  enabled: true
+  hostNamespaceOnly: true
 tunnel: "disabled"
