@@ -75,6 +75,8 @@ func runBeforeSuiteInstall() {
 	}, 20*time.Minute).Should(Succeed())
 
 	for _, host := range allBootServers {
+		// Unhold cloud-init before purging netplan.io, otherwise pkgProblemResolver::Resolve generated breaks error happens
+		execSafeAt(host, "sudo", "apt-mark", "unhold", "cloud-init")
 		// on VMs, netplan.io should be purged after cloud-init completed
 		execSafeAt(host, "sudo", "apt-get", "purge", "-y", "--autoremove", "netplan.io")
 	}
