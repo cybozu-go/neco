@@ -221,6 +221,11 @@ func subMain() error {
 	}
 
 	fmt.Fprintln(os.Stderr, "Upgrading packages...")
+	// Upgrading cloud-init triggers a cloud-init run again. The second run changes hostname unexpectedly and causes
+	// the serf startup failure. Hold the cloud-init version here to avoid it.
+	if err := runCmd("apt-mark", "hold", "cloud-init"); err != nil {
+		return err
+	}
 	if err := runCmd("apt-get", "-y", "dist-upgrade"); err != nil {
 		return err
 	}
