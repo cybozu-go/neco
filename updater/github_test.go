@@ -3,31 +3,34 @@ package updater
 import (
 	"context"
 	"testing"
+
+	"github.com/cybozu-go/neco"
 )
 
-func testGetLatestReleaseTag(t *testing.T) {
-	t.Skip()
+// These tests use https://github.com/neco-test/neco-ci
 
-	c := ReleaseClient{owner: "kubernetes", repo: "kubernetes"}
+func testGetLatestReleaseTag(t *testing.T) {
+	ghClient := neco.NewDefaultGitHubClient()
+	c := NewReleaseClient("neco-test", "neco-ci", ghClient)
 	ver, err := c.GetLatestReleaseTag(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("version = %s", ver)
+	if ver != "2022.03.03-0303" {
+		t.Errorf("unexpected version: %s", ver)
+	}
 }
 
 func testGetLatestPublishedTag(t *testing.T) {
-	t.Skip()
-
-	c := ReleaseClient{owner: "kubernetes", repo: "kubernetes"}
+	ghClient := neco.NewDefaultGitHubClient()
+	c := NewReleaseClient("neco-test", "neco-ci", ghClient)
 	ver, err := c.GetLatestPublishedTag(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	// The method returns `v1.0.5' since Kubernetes publish pre-release
-	// with tag as `v1.13.0-alpha.3'.  The version is parsed as `alpha.3'
-	// and it is skipped in the method.
-	t.Logf("version = %s", ver)
+	if ver != "2022.04.04-0404" {
+		t.Errorf("unexpected version: %s", ver)
+	}
 }
 
 func TestGitHub(t *testing.T) {
