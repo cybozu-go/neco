@@ -414,7 +414,7 @@ init-scripts:
 - setup-iptables
 interfaces:
 - addresses:
-  - 10.72.0.2/24
+  - 10.0.0.2/24
   network: internet
 - addresses:
     - 10.72.3.1/24
