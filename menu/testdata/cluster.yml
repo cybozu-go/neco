@@ -414,13 +414,13 @@ init-scripts:
 - setup-iptables
 interfaces:
 - addresses:
-  - 10.0.0.2/24
+  - 10.72.0.2/24
   network: internet
 - addresses:
-    - 10.0.3.1/24
+    - 10.72.3.1/24
   network: core-to-ext
 - addresses:
-    - 10.0.4.1/24
+    - 10.72.4.1/24
   network: core-to-op
 - addresses:
   - 10.0.49.3/32
@@ -429,10 +429,10 @@ interfaces:
   - 172.16.4.67/29
   network: core-ntp
 - addresses:
-  - 10.0.2.0/31
+  - 10.72.2.0/31
   network: core-to-s1
 - addresses:
-  - 10.0.2.2/31
+  - 10.72.2.2/31
   network: core-to-s2
 ---
 kind: NetworkNamespace
@@ -450,22 +450,22 @@ init-scripts:
 - setup-iptables-spine
 interfaces:
 - addresses:
-  - 10.0.2.1/31
+  - 10.72.2.1/31
   network: core-to-s1
 - addresses:
   - 10.72.16.2/20
   network: bmc
 - addresses:
-  - 10.0.1.0/31
+  - 10.72.1.0/31
   network: s1-to-r0-1
 - addresses:
-  - 10.0.1.2/31
+  - 10.72.1.2/31
   network: s1-to-r0-2
 - addresses:
-  - 10.0.1.4/31
+  - 10.72.1.4/31
   network: s1-to-r1-1
 - addresses:
-  - 10.0.1.6/31
+  - 10.72.1.6/31
   network: s1-to-r1-2
 ---
 kind: NetworkNamespace
@@ -483,22 +483,22 @@ init-scripts:
 - setup-iptables-spine
 interfaces:
 - addresses:
-  - 10.0.2.3/31
+  - 10.72.2.3/31
   network: core-to-s2
 - addresses:
   - 10.72.16.3/20
   network: bmc
 - addresses:
-  - 10.0.1.8/31
+  - 10.72.1.8/31
   network: s2-to-r0-1
 - addresses:
-  - 10.0.1.10/31
+  - 10.72.1.10/31
   network: s2-to-r0-2
 - addresses:
-  - 10.0.1.12/31
+  - 10.72.1.12/31
   network: s2-to-r1-1
 - addresses:
-  - 10.0.1.14/31
+  - 10.72.1.14/31
   network: s2-to-r1-2
 ---
 kind: NetworkNamespace
@@ -522,10 +522,10 @@ apps:
   - 10.69.0.65,10.69.0.195
 interfaces:
 - addresses:
-  - 10.0.1.1/31
+  - 10.72.1.1/31
   network: s1-to-r0-1
 - addresses:
-  - 10.0.1.9/31
+  - 10.72.1.9/31
   network: s2-to-r0-1
 - addresses:
   - 10.69.0.65/26
@@ -552,10 +552,10 @@ apps:
   - 10.69.0.129,10.69.0.195
 interfaces:
 - addresses:
-  - 10.0.1.3/31
+  - 10.72.1.3/31
   network: s1-to-r0-2
 - addresses:
-  - 10.0.1.11/31
+  - 10.72.1.11/31
   network: s2-to-r0-2
 - addresses:
   - 10.69.0.129/26
@@ -582,10 +582,10 @@ apps:
   - 10.69.1.1,10.69.0.3
 interfaces:
 - addresses:
-  - 10.0.1.5/31
+  - 10.72.1.5/31
   network: s1-to-r1-1
 - addresses:
-  - 10.0.1.13/31
+  - 10.72.1.13/31
   network: s2-to-r1-1
 - addresses:
   - 10.69.1.1/26
@@ -612,10 +612,10 @@ apps:
   - 10.69.1.65,10.69.0.3
 interfaces:
 - addresses:
-  - 10.0.1.7/31
+  - 10.72.1.7/31
   network: s1-to-r1-2
 - addresses:
-  - 10.0.1.15/31
+  - 10.72.1.15/31
   network: s2-to-r1-2
 - addresses:
   - 10.69.1.65/26
@@ -627,7 +627,7 @@ init-scripts:
 - setup-default-gateway-external
 interfaces:
 - addresses:
-  - 10.0.3.2/24
+  - 10.72.3.2/24
   network: core-to-ext
 ---
 kind: NetworkNamespace
@@ -636,5 +636,5 @@ init-scripts:
 - setup-default-gateway-operation
 interfaces:
 - addresses:
-  - 10.0.4.2/24
+  - 10.72.4.2/24
   network: core-to-op
