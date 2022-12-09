@@ -194,6 +194,8 @@ data:
   bpf-lb-mode: "dsr"
   bpf-lb-algorithm: "maglev"
   bpf-lb-acceleration: "disabled"
+  bpf-lb-dsr-l4-xlate: "backend"
+  bpf-lb-dsr-dispatch: "ipipcni"
   bpf-lb-maglev-hash-seed: "3HCx6JennjWtot2U"
   enable-session-affinity: "true"
   enable-svc-source-range-check: "true"
@@ -744,7 +746,7 @@ spec:
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "fa12f53950a3c06f4133efea90393b3c09b0cc301c71f77b6aad230c0805a8e6"
+        cilium.io/cilium-configmap-checksum: "e4b2ebd6e96218c0e1b14b78006abe26966cce693ed7ea87cc929a6aeefb157e"
         # Set app AppArmor's profile to "unconfined". The value of this annotation
         # can be modified as long users know which profiles they have available
         # in AppArmor.
@@ -1233,7 +1235,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "fa12f53950a3c06f4133efea90393b3c09b0cc301c71f77b6aad230c0805a8e6"
+        cilium.io/cilium-configmap-checksum: "e4b2ebd6e96218c0e1b14b78006abe26966cce693ed7ea87cc929a6aeefb157e"
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:

@@ -49,6 +49,8 @@ loadBalancer:
   # We can't enable XDP Acceleration because rolling restart Cilium with XDP enabled disrupts in-cluster connectivity
   acceleration: disabled
   algorithm: maglev
+  dsrDispatch: ipipcni
+  dsrL4Translate: backend
   mode: dsr
 maglev:
   hashSeed: 3HCx6JennjWtot2U
