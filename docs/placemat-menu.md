@@ -70,7 +70,7 @@ spec:
   asn-base: 64600
   internet: 10.0.0.0/24
   spine-tor: 10.0.1.0
-  core-spine: 10.0.2.0/31
+  core-spine: 10.72.2.0/31
   core-external: 10.0.3.0/24
   core-operation: 10.0.4.0/24
   proxy: 10.0.49.3

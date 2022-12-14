@@ -1,8 +1,6 @@
 #!/bin/sh
 
 # eth0 -> internet
-# eth1 -> BMC
 iptables -t nat -A POSTROUTING -o eth0 -s 172.19.0.0/24 -j MASQUERADE
 # This rule SNAT packets destined to the internet from NTP servers so that those packets can reach the internet.
 iptables -t nat -A POSTROUTING -o eth0 -s 172.16.4.64/29 -j MASQUERADE
-iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
