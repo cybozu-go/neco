@@ -121,6 +121,7 @@ func assertTargets(t *testing.T, testdataDir, resultDir string) {
 		"setup-default-gateway-external",
 		"setup-default-gateway-operation",
 		"setup-iptables",
+		"setup-iptables-spine",
 		"squid.conf",
 	}
 
