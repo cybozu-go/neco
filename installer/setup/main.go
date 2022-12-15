@@ -76,6 +76,8 @@ func configure() error {
 		return fmt.Errorf("invalid URL %s: %w", config.proxy, err)
 	}
 
+	// Most of the following values are copied from http.DefaultTransport to workaround a proxy issue.
+	// See: https://github.com/golang/go/issues/25793
 	tr := &http.Transport{
 		Proxy: http.ProxyURL(u),
 		DialContext: (&net.Dialer{
