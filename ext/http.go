@@ -26,6 +26,8 @@ func ProxyHTTPClient(ctx context.Context, st storage.Storage) (*http.Client, err
 		return nil, err
 	}
 
+	// Most of the following values are copied from http.DefaultTransport to workaround a proxy issue.
+	// See: https://github.com/golang/go/issues/25793
 	transport := &http.Transport{
 		Proxy: http.ProxyURL(u),
 		DialContext: (&net.Dialer{
@@ -46,6 +48,8 @@ func ProxyHTTPClient(ctx context.Context, st storage.Storage) (*http.Client, err
 
 // LocalHTTPClient returns a *http.Client to access intranet services.
 func LocalHTTPClient() *http.Client {
+	// Most of the following values are copied from http.DefaultTransport to workaround a proxy issue.
+	// See: https://github.com/golang/go/issues/25793
 	transport := &http.Transport{
 		Proxy: nil,
 		DialContext: (&net.Dialer{
