@@ -3,7 +3,6 @@ package updater
 import (
 	"context"
 	"errors"
-	"sort"
 	"strings"
 
 	"github.com/cybozu-go/log"
@@ -33,6 +32,7 @@ func NewReleaseClient(owner, repo string, ghClient *github.Client) *ReleaseClien
 }
 
 // GetLatestReleaseTag returns latest published release tag in GitHub Releases of neco repository
+// In this function, "latest" means the release which is marked "latest" on GitHub.
 func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
 	release, _, err := c.ghClient.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
 	if err != nil {
@@ -55,14 +55,16 @@ func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) 
 }
 
 // GetLatestPublishedTag returns latest published release/pre-release tag in GitHub Releases of neco repository
+// In this Function, "latest" means the release whose version part is the greatest.
 func (c ReleaseClient) GetLatestPublishedTag(ctx context.Context) (string, error) {
 	opt := &github.ListOptions{
 		PerPage: 100,
 	}
 
-	var releases []*github.RepositoryRelease
+	var latest *version.Version
+
 	for {
-		rs, resp, err := c.ghClient.Repositories.ListReleases(ctx, c.owner, c.repo, opt)
+		releases, resp, err := c.ghClient.Repositories.ListReleases(ctx, c.owner, c.repo, opt)
 		if err != nil {
 			log.Warn("failed to list GitHub releases", map[string]interface{}{
 				"owner":      c.owner,
@@ -71,29 +73,33 @@ func (c ReleaseClient) GetLatestPublishedTag(ctx context.Context) (string, error
 			})
 			return "", ErrNoReleases
 		}
-		releases = append(releases, rs...)
+
+		for _, r := range releases {
+			if r.TagName == nil || r.GetDraft() {
+				continue
+			}
+			if !strings.HasPrefix(*r.TagName, "release-") {
+				continue
+			}
+			s := trimTagName(*r.TagName)
+			v, err := version.NewVersion(s)
+			if err != nil {
+				continue
+			}
+			if latest == nil || v.Compare(latest) > 0 {
+				latest = v
+			}
+		}
+
 		if resp.NextPage == 0 {
 			break
 		}
 		opt.Page = resp.NextPage
 	}
-	versions := make([]*version.Version, 0, len(releases))
-	for _, r := range releases {
-		if r.TagName == nil || r.GetDraft() {
-			continue
-		}
-		s := trimTagName(*r.TagName)
-		v, err := version.NewVersion(s)
-		if err != nil {
-			continue
-		}
-		versions = append(versions, v)
-	}
-	sort.Sort(sort.Reverse(version.Collection(versions)))
 
-	if len(versions) == 0 {
+	if latest == nil {
 		return "", ErrNoReleases
 	}
 
-	return versions[0].Original(), nil
+	return latest.Original(), nil
 }
