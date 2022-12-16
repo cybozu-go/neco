@@ -31,6 +31,15 @@ func testGetLatestPublishedTag(t *testing.T) {
 	if ver != "2022.04.04-0404" {
 		t.Errorf("unexpected version: %s", ver)
 	}
+
+	c.SetTagPrefix("test-")
+	ver, err = c.GetLatestPublishedTag(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ver != "2022.06.06-0606" {
+		t.Errorf("unexpected version: %s", ver)
+	}
 }
 
 func TestGitHub(t *testing.T) {
