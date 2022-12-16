@@ -149,12 +149,12 @@ jobs:
       - run:
           name: Build deb package
           command: |
-            VERSION=$(echo $CIRCLE_TAG | sed 's/^release-//')
+            VERSION=$(echo $CIRCLE_TAG | sed 's/^[^-]*-//')
             time make deb SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
       - run:
           name: Build neco-operation-cli packages
           command: |
-            VERSION=$(echo $CIRCLE_TAG | sed 's/^release-//')
+            VERSION=$(echo $CIRCLE_TAG | sed 's/^[^-]*-//')
             time make tools SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
       - persist_to_workspace:
           root: .
@@ -427,7 +427,7 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^release-.*/
+              only: /^(release|test)-.*/
       - deploy_github:
           requires:
             - build_release
@@ -435,7 +435,7 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^release-.*/
+              only: /^(release|test)-.*/
 
   # Testing `main` branch and update "release" branch.
   update-release:
