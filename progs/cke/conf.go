@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
@@ -49,7 +50,7 @@ func GenerateCKETemplate(ctx context.Context, st storage.Storage, name string, c
 		return nil, err
 	}
 
-	if name == "stage0" {
+	if strings.HasPrefix(name, "stage") {
 		if r, ok := tmpl["reboot"].(map[string]interface{}); ok {
 			r["protected_namespaces"] = map[string]interface{}{
 				"matchExpressions": []interface{}{
