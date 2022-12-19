@@ -63,9 +63,12 @@ update-coil:
 
 .PHONY: update-cilium
 update-cilium: helm
-	$(HELM) repo add cilium https://helm.cilium.io/ > /dev/null
-	$(HELM) repo update
-	$(HELM) template cilium cilium/cilium --version $(shell echo $(CILIUM_TAG) | cut -d \. -f 1,2,3) \
+	rm -rf /tmp/work-cilium
+	mkdir -p /tmp/work-cilium
+	curl -sSfL https://github.com/cilium/cilium/archive/$(shell echo $(CILIUM_TAG) | cut -d \. -f 1,2,3).tar.gz | tar -C /tmp/work-cilium -xzf - --strip-components=1
+	curl -sSfL -o /tmp/work-cilium/18449.patch https://raw.githubusercontent.com/cybozu/neco-containers/main/cilium/18449.patch
+	cd /tmp/work-cilium; patch -p1 --no-backup-if-mismatch < /tmp/work-cilium/18449.patch
+	$(HELM) template /tmp/work-cilium/install/kubernetes/cilium/ \
 		--namespace=kube-system \
 		--values cilium/$(CILIUM_OVERLAY)/values.yaml \
 		--set image.repository=quay.io/cybozu/cilium \
@@ -81,6 +84,7 @@ update-cilium: helm
 		--set certgen.image.tag=$(CILIUM_CERTGEN_TAG) \
 		--set certgen.image.useDigest=false > cilium/$(CILIUM_OVERLAY)/upstream.yaml
 	bin/kustomize build cilium/$(CILIUM_OVERLAY) > etc/cilium$(CILIUM_CONFIG_SUFFIX).yaml
+	rm -rf /tmp/work-cilium
 
 HELM := $(shell pwd)/bin/helm
 .PHONY: helm

@@ -452,6 +452,8 @@ data:
   bpf-ct-timeout-service-any: 1h0m0s
   bpf-lb-acceleration: disabled
   bpf-lb-algorithm: maglev
+  bpf-lb-dsr-dispatch: ipipcni
+  bpf-lb-dsr-l4-xlate: backend
   bpf-lb-external-clusterip: "false"
   bpf-lb-maglev-hash-seed: 3HCx6JennjWtot2U
   bpf-lb-map-max: "65536"
@@ -662,7 +664,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: fa12f53950a3c06f4133efea90393b3c09b0cc301c71f77b6aad230c0805a8e6
+        cilium.io/cilium-configmap-checksum: e4b2ebd6e96218c0e1b14b78006abe26966cce693ed7ea87cc929a6aeefb157e
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -913,7 +915,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: fa12f53950a3c06f4133efea90393b3c09b0cc301c71f77b6aad230c0805a8e6
+        cilium.io/cilium-configmap-checksum: e4b2ebd6e96218c0e1b14b78006abe26966cce693ed7ea87cc929a6aeefb157e
         container.apparmor.security.beta.kubernetes.io/apply-sysctl-overwrites: unconfined
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
