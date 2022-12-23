@@ -5,6 +5,10 @@ bgp:
 bpf:
   hostLegacyRouting: true
   policyMapMax: 65536
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
 cni:
   chainingMode: "generic-veth"
   customConf: true
