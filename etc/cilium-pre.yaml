@@ -463,7 +463,7 @@ data:
   bpf-map-dynamic-size-ratio: "0.0025"
   bpf-policy-map-max: "65536"
   bpf-root: /sys/fs/bpf
-  cgroup-root: /run/cilium/cgroupv2
+  cgroup-root: /sys/fs/cgroup
   cilium-endpoint-gc-interval: 5m0s
   cluster-id: "0"
   cluster-name: default
@@ -664,7 +664,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: e4b2ebd6e96218c0e1b14b78006abe26966cce693ed7ea87cc929a6aeefb157e
+        cilium.io/cilium-configmap-checksum: 6782953c836676cff457c41bd94e8e062246c3fcdf23e29ee9b6033ee959a776
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -915,11 +915,9 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: e4b2ebd6e96218c0e1b14b78006abe26966cce693ed7ea87cc929a6aeefb157e
-        container.apparmor.security.beta.kubernetes.io/apply-sysctl-overwrites: unconfined
+        cilium.io/cilium-configmap-checksum: 6782953c836676cff457c41bd94e8e062246c3fcdf23e29ee9b6033ee959a776
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
-        container.apparmor.security.beta.kubernetes.io/mount-cgroup: unconfined
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
       labels:
@@ -1069,6 +1067,8 @@ spec:
         - mountPath: /sys/fs/bpf
           mountPropagation: HostToContainer
           name: bpf-maps
+        - mountPath: /sys/fs/cgroup
+          name: cilium-cgroup
         - mountPath: /var/run/cilium
           name: cilium-run
         - mountPath: /host/opt/cni/bin
@@ -1094,68 +1094,6 @@ spec:
           readOnly: true
       hostNetwork: true
       initContainers:
-      - command:
-        - sh
-        - -ec
-        - |
-          cp /usr/bin/cilium-mount /hostbin/cilium-mount;
-          nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT;
-          rm /hostbin/cilium-mount
-        env:
-        - name: CGROUP_ROOT
-          value: /run/cilium/cgroupv2
-        - name: BIN_PATH
-          value: /opt/cni/bin
-        image: quay.io/cybozu/cilium:1.12.4.1
-        imagePullPolicy: IfNotPresent
-        name: mount-cgroup
-        securityContext:
-          capabilities:
-            add:
-            - SYS_ADMIN
-            - SYS_CHROOT
-            - SYS_PTRACE
-            drop:
-            - ALL
-          seLinuxOptions:
-            level: s0
-            type: spc_t
-        terminationMessagePolicy: FallbackToLogsOnError
-        volumeMounts:
-        - mountPath: /hostproc
-          name: hostproc
-        - mountPath: /hostbin
-          name: cni-path
-      - command:
-        - sh
-        - -ec
-        - |
-          cp /usr/bin/cilium-sysctlfix /hostbin/cilium-sysctlfix;
-          nsenter --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-sysctlfix";
-          rm /hostbin/cilium-sysctlfix
-        env:
-        - name: BIN_PATH
-          value: /opt/cni/bin
-        image: quay.io/cybozu/cilium:1.12.4.1
-        imagePullPolicy: IfNotPresent
-        name: apply-sysctl-overwrites
-        securityContext:
-          capabilities:
-            add:
-            - SYS_ADMIN
-            - SYS_CHROOT
-            - SYS_PTRACE
-            drop:
-            - ALL
-          seLinuxOptions:
-            level: s0
-            type: spc_t
-        terminationMessagePolicy: FallbackToLogsOnError
-        volumeMounts:
-        - mountPath: /hostproc
-          name: hostproc
-        - mountPath: /hostbin
-          name: cni-path
       - args:
         - mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf
         command:
@@ -1214,7 +1152,7 @@ spec:
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
-        - mountPath: /run/cilium/cgroupv2
+        - mountPath: /sys/fs/cgroup
           mountPropagation: HostToContainer
           name: cilium-cgroup
         - mountPath: /var/run/cilium
@@ -1238,11 +1176,7 @@ spec:
           type: DirectoryOrCreate
         name: bpf-maps
       - hostPath:
-          path: /proc
-          type: Directory
-        name: hostproc
-      - hostPath:
-          path: /run/cilium/cgroupv2
+          path: /sys/fs/cgroup
           type: DirectoryOrCreate
         name: cilium-cgroup
       - hostPath:
