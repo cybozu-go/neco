@@ -65,7 +65,7 @@ options:
             - system:kube-scheduler
         - level: RequestResponse
     extra_args:
-      - "--feature-gates=GRPCContainerProbe=true,MixedProtocolLBService=true"
+      - "--feature-gates=MixedProtocolLBService=true"
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
       - "--audit-log-maxbackup=10"
@@ -75,7 +75,7 @@ options:
         read_only: false
   kube-controller-manager:
     extra_args:
-      - "--feature-gates=GRPCContainerProbe=true,MixedProtocolLBService=true"
+      - "--feature-gates=MixedProtocolLBService=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -119,7 +119,7 @@ options:
               whenUnsatisfiable: ScheduleAnyway
             defaultingType: List
     extra_args:
-      - "--feature-gates=GRPCContainerProbe=true,MixedProtocolLBService=true"
+      - "--feature-gates=MixedProtocolLBService=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
