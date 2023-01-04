@@ -21,11 +21,11 @@ spec:
   cluster-id: dev0
   spine: 2
   rack:
-    - cs: 2
+    - cs: 4
       ss: 1
-    - cs: 2
+    - cs: 4
       ss: 1
-    - cs: 2
+    - cs: 4
       ss: 1
 ---
 kind: Image

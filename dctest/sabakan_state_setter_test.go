@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -46,7 +47,7 @@ func testSabakanStateSetter() {
 			}
 
 			return nil
-		}).Should(Succeed())
+		}, 30*time.Minute).Should(Succeed())
 	})
 
 	It("should wait for all machines to become healthy", func() {

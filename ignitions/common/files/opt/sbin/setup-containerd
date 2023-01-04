@@ -64,6 +64,8 @@ for i in $(seq 20); do
     sleep 5
 done
 
+sleep $(($RANDOM % 540 + 360))
+
 chmod a+x /opt/sbin/containerd
 chmod a+x /opt/sbin/containerd-shim
 chmod a+x /opt/sbin/containerd-shim-runc-v1
