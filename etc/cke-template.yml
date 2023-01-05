@@ -153,6 +153,21 @@ options:
       - source: /var/lib/rook
         destination: /var/lib/rook
         read_only: false
+      - destination: /opt/cni/bin
+        propagation: ""
+        read_only: true
+        selinux_label: "z"
+        source: /tmp/opt/cni/bin
+      - destination: /etc/cni/net.d
+        propagation: ""
+        read_only: true
+        selinux_label: "z"
+        source: /tmp/etc/cni/net.d
+      - destination: /var/lib/cni
+        propagation: ""
+        read_only: false
+        selinux_label: "z"
+        source: /tmp/var/lib/cni
   rivers:
     extra_args:
       - "--dial-timeout=4s"
