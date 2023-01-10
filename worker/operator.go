@@ -115,6 +115,9 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 	if env == neco.TestEnv {
 		return installLocalPackage(ctx, deb)
 	}
+	if env == neco.DevEnv {
+		deb.Release = "test-" + req.Version
+	}
 	return InstallDebianPackage(ctx, o.proxyClient, o.ghClient, deb, true)
 }
 

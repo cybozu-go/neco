@@ -6,6 +6,7 @@ import "time"
 const (
 	NoneEnv    = "none"
 	TestEnv    = "test"
+	DevEnv     = "dev"
 	StagingEnv = "staging"
 	ProdEnv    = "prod"
 )

@@ -21,19 +21,24 @@ func trimTagName(s string) string {
 
 // ReleaseClient gets GitHub Releases
 type ReleaseClient struct {
-	owner    string
-	repo     string
-	ghClient *github.Client
+	owner     string
+	repo      string
+	tagPrefix string
+	ghClient  *github.Client
 }
 
 // NewReleaseClient returns ReleaseClient
 func NewReleaseClient(owner, repo string, ghClient *github.Client) *ReleaseClient {
-	return &ReleaseClient{owner, repo, ghClient}
+	return &ReleaseClient{owner, repo, "release-", ghClient}
+}
+
+func (c *ReleaseClient) SetTagPrefix(tagPrefix string) {
+	c.tagPrefix = tagPrefix
 }
 
 // GetLatestReleaseTag returns latest published release tag in GitHub Releases of neco repository
 // In this function, "latest" means the release which is marked "latest" on GitHub.
-func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
+func (c *ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) {
 	release, _, err := c.ghClient.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
 	if err != nil {
 		log.Warn("failed to get the latest GitHub release", map[string]interface{}{
@@ -56,7 +61,7 @@ func (c ReleaseClient) GetLatestReleaseTag(ctx context.Context) (string, error) 
 
 // GetLatestPublishedTag returns latest published release/pre-release tag in GitHub Releases of neco repository
 // In this Function, "latest" means the release whose version part is the greatest.
-func (c ReleaseClient) GetLatestPublishedTag(ctx context.Context) (string, error) {
+func (c *ReleaseClient) GetLatestPublishedTag(ctx context.Context) (string, error) {
 	opt := &github.ListOptions{
 		PerPage: 100,
 	}
@@ -78,7 +83,7 @@ func (c ReleaseClient) GetLatestPublishedTag(ctx context.Context) (string, error
 			if r.TagName == nil || r.GetDraft() {
 				continue
 			}
-			if !strings.HasPrefix(*r.TagName, "release-") {
+			if !strings.HasPrefix(*r.TagName, c.tagPrefix) {
 				continue
 			}
 			s := trimTagName(*r.TagName)

@@ -8,6 +8,9 @@
     },
     "stage0": {
       "include": "../../common/common-stage0.yml"
+    },
+    "stage1": {
+      "include": "../../common/common-stage1.yml"
     }
   },
   "cs": {
@@ -49,6 +52,19 @@
           "enabled": true
         }
       ]
+    },
+    "stage1": {
+      "include": "../../common/common-stage1.yml",
+      "files": ["/opt/sbin/update-neco-operation-cli"],
+      "systemd": [
+        {
+          "name": "update-neco-operation-cli.service"
+        },
+        {
+          "name": "update-neco-operation-cli.timer",
+          "enabled": true
+        }
+      ]
     }
   },
   "ss": {
@@ -68,6 +84,13 @@
     },
     "stage0": {
       "include": "../../common/common-stage0.yml",
+      "files": [
+        "/etc/udev/crypt-base-path",
+        "/etc/udev/rules.d/99-neco.rules"
+      ]
+    },
+    "stage1": {
+      "include": "../../common/common-stage1.yml",
       "files": [
         "/etc/udev/crypt-base-path",
         "/etc/udev/rules.d/99-neco.rules"
@@ -338,6 +361,15 @@
         "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
         "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml",
         "/etc/k8s-containerd/conf.d/registry-local.registry.stage0.cybozu-ne.co/hosts.toml"
+      ]
+    },
+    "stage1": {
+      "include": "common.yml",
+      "files": [
+        "/etc/k8s-containerd/conf.d/docker.elastic.co/hosts.toml",
+        "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
+        "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml",
+        "/etc/k8s-containerd/conf.d/registry-local.registry.stage1.cybozu-ne.co/hosts.toml"
       ]
     }
   }
