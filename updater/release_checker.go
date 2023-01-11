@@ -32,7 +32,7 @@ func NewReleaseChecker(st storage.Storage, leaderKey string, ghClient *github.Cl
 
 // Run periodically checks the new release of neco package at GitHub.
 func (c *ReleaseChecker) Run(ctx context.Context) error {
-	github := &ReleaseClient{neco.GitHubRepoOwner, neco.GitHubRepoName, c.ghClient}
+	github := NewReleaseClient(neco.GitHubRepoOwner, neco.GitHubRepoName, c.ghClient)
 
 	env, err := c.storage.GetEnvConfig(ctx)
 	if err != nil {
@@ -48,6 +48,9 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 		c.check = func(ctx context.Context) (string, error) {
 			return "9999.12.31-99999", nil
 		}
+	case neco.DevEnv:
+		github.SetTagPrefix("test-")
+		c.check = github.GetLatestPublishedTag
 	case neco.StagingEnv:
 		c.check = github.GetLatestPublishedTag
 	case neco.ProdEnv:

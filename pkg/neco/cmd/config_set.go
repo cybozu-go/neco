@@ -78,7 +78,7 @@ Possible keys are:
 			switch key {
 			case "env":
 				value = args[1]
-				if value != neco.TestEnv && value != neco.StagingEnv && value != neco.ProdEnv {
+				if value != neco.TestEnv && value != neco.DevEnv && value != neco.StagingEnv && value != neco.ProdEnv {
 					return errors.New("invalid environment")
 				}
 				return st.PutEnvConfig(ctx, value)
