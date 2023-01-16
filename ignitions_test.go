@@ -118,7 +118,6 @@ func testIgnitionTemplates(path string, filestateInDir map[string]bool) error {
 			return err
 		}
 
-		var filelistInDir []string
 		err = filepath.Walk(systemdDir, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -126,21 +125,27 @@ func testIgnitionTemplates(path string, filestateInDir map[string]bool) error {
 			if info.IsDir() {
 				return nil
 			}
-			filelistInDir = append(filelistInDir, path)
+			if _, ok := filestateInDir[path]; !ok {
+				filestateInDir[path] = false
+			}
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 
-	OUTER:
-		for _, f := range filelistInDir {
-			for _, s := range t.Systemd {
-				if f == filepath.Join(systemdDir, s.Name) {
-					continue OUTER
-				}
+		var filelistInYAML []string
+		for _, f := range t.Systemd {
+			realPath := filepath.Join(systemdDir, f.Name)
+			filelistInYAML = append(filelistInYAML, realPath)
+		}
+		sort.Strings(filelistInYAML)
+		for _, s := range filelistInYAML {
+			if _, ok := filestateInDir[s]; ok {
+				filestateInDir[s] = true
+			} else {
+				fmt.Printf("%s is pre-installed service.\n", s)
 			}
-			return fmt.Errorf("%s is not defined in %s", f, path)
 		}
 	}
 
