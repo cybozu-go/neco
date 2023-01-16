@@ -6,3 +6,5 @@ systemd:
   - name: update-neco-operation-cli.service
   - enabled: true
     name: update-neco-operation-cli.timer
+  - enabled: true
+    name: cpu-governor.service
