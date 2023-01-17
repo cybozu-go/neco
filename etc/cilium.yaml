@@ -705,7 +705,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium-operator-generic:1.12.4.1
+        image: quay.io/cybozu/cilium-operator-generic:1.12.4.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

@@ -16,7 +16,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "5.7.0.1", Private: false},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.11.3.1", Private: false},
 		{Name: "cilium", Repository: "quay.io/cybozu/cilium", Tag: "1.12.4.1", Private: false},
-		{Name: "cilium-operator-generic", Repository: "quay.io/cybozu/cilium-operator-generic", Tag: "1.12.4.1", Private: false},
+		{Name: "cilium-operator-generic", Repository: "quay.io/cybozu/cilium-operator-generic", Tag: "1.12.4.2", Private: false},
 		{Name: "hubble-relay", Repository: "quay.io/cybozu/hubble-relay", Tag: "1.12.4.1", Private: false},
 		{Name: "cilium-certgen", Repository: "quay.io/cybozu/cilium-certgen", Tag: "0.1.8.1", Private: false},
 	},

@@ -1156,7 +1156,7 @@ spec:
     spec:
       containers:
       - name: cilium-operator
-        image: "quay.io/cybozu/cilium-operator-generic:1.12.4.1"
+        image: "quay.io/cybozu/cilium-operator-generic:1.12.4.2"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
