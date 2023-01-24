@@ -122,6 +122,12 @@ const (
 	BashCompletionDir = "/etc/bash_completion.d"
 )
 
+// APT params
+const (
+	KeyringsDir    = "/etc/apt/keyrings/"
+	SourceslistDir = "/etc/apt/sources.list.d/"
+)
+
 // File locations
 var (
 	RackFile        = filepath.Join(NecoDir, "rack")
@@ -190,4 +196,7 @@ var (
 	PromtailConfFile = filepath.Join(PromtailDir, "promtail.yaml")
 
 	IgnitionDirectory = filepath.Join(NecoDataDir, "ignitions")
+
+	DockerKeyringFile    = filepath.Join(KeyringsDir, "docker-key.asc")
+	DockerSourceListFile = filepath.Join(SourceslistDir, "docker.list")
 )

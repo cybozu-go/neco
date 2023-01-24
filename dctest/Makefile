@@ -23,7 +23,7 @@ CT := $(shell pwd)/bin/ct
 
 export PLACEMAT GINKGO SUITE MACHINES_FILE ADDRESS_POOLS_FILE SUDO
 
-CUSTOM_UBUNTU = cybozu-ubuntu-20.04-server-cloudimg-amd64.img
+CUSTOM_UBUNTU = cybozu-ubuntu-22.04-server-cloudimg-amd64.img
 FLATCAR_IMAGE := flatcar_production_qemu_image.img
 
 GITHUB_TOKEN_FILE = $(CURDIR)/../github-token
