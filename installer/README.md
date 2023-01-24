@@ -25,8 +25,8 @@ To test built images, QEMU/KVM is used.
 3. Run `make setup`.  This is a one-time procedure.
 4. Run `make all` to build everything.
 
-- `build/cybozu-ubuntu-20.04-live-server-amd64.iso` is the custom ISO installer.
-- `build/cybozu-ubuntu-20.04-server-cloudimg-amd64.img` is the custom cloud image.
+- `build/cybozu-ubuntu-22.04-live-server-amd64.iso` is the custom ISO installer.
+- `build/cybozu-ubuntu-22.04-server-cloudimg-amd64.img` is the custom cloud image.
 
 ## Test
 
