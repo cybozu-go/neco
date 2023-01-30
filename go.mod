@@ -7,6 +7,7 @@ go 1.19
 replace github.com/hashicorp/go-msgpack => github.com/hashicorp/go-msgpack v0.5.3
 
 require (
+	github.com/cybozu-go/cke v1.24.1
 	github.com/cybozu-go/etcdutil v1.6.2
 	github.com/cybozu-go/log v1.6.1
 	github.com/cybozu-go/netutil v1.4.3
@@ -43,6 +44,27 @@ require (
 	k8s.io/api v0.24.9
 	k8s.io/apimachinery v0.24.9
 	sigs.k8s.io/yaml v1.3.0
+)
+
+require (
+	github.com/PuerkitoBio/purell v1.1.1 // indirect
+	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
+	github.com/containernetworking/cni v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/emicklei/go-restful v2.9.5+incompatible // indirect
+	github.com/go-openapi/jsonpointer v0.19.5 // indirect
+	github.com/go-openapi/jsonreference v0.19.5 // indirect
+	github.com/go-openapi/swag v0.19.14 // indirect
+	github.com/google/gnostic v0.5.7-v3refs // indirect
+	github.com/josharian/intern v1.0.0 // indirect
+	github.com/mailru/easyjson v0.7.6 // indirect
+	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	k8s.io/client-go v0.24.8 // indirect
+	k8s.io/component-base v0.24.8 // indirect
+	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
+	k8s.io/kube-proxy v0.24.8 // indirect
+	k8s.io/kube-scheduler v0.24.8 // indirect
+	k8s.io/kubelet v0.24.8 // indirect
 )
 
 require (
@@ -141,7 +163,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
-	k8s.io/utils v0.0.0-20221107191617-1a15be271d1d // indirect
+	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
