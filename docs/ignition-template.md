@@ -25,12 +25,12 @@ The generated pseudo-Ignition file can be checked for differences between enviro
 The following commands can be used to generate pseudo-Ignition files by specifying roles and clusters.
 The generated pseudo-Ignition file's contents are output to stdout.
 If you want to compare generated files, please redirect stdout and save to files.
-```bash
-make build
-./bin/configgenerator --cluster=<cluster name> <role>
+```console
+$ make build
+$ ./bin/configgenerator --cluster=<cluster name> <role>
 ```
 
 The command to display the differences in pseudo-Ignition for each environment is as follows.
-```
-git diff /tmp/roles/<role>/site.yml /tmp/roles/test1/site-<cluster>.yml
+```console
+$ git diff /tmp/roles/<role>/site.yml /tmp/roles/test1/site-<cluster>.yml
 ```

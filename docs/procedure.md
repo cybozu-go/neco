@@ -13,14 +13,14 @@ $ git pull
 
 Build `generate-artifacs` and update `artifacts.go`.
 
-```
+```console
 $ go install ./pkg/generate-artifacts/
 $ generate-artifacts > artifacts.go
 ```
 
 Create a PR.
 
-```
+```console
 $ git commit -s -m "Update artifacts"
 $ git neco review
 ```
