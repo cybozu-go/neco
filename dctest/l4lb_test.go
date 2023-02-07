@@ -79,6 +79,20 @@ func testL4LB() {
 			return exec.Command("ip", "netns", "exec", "external", "curl", targetIPForLocal, "-m", "5").Run()
 		}).Should(Succeed())
 
+		By("access service from external(Inbound packets have the tos)")
+		Expect(exec.Command("ip", "netns", "exec", "external",
+			"iptables", "-t", "mangle", "-A", "OUTPUT", "-p", "TCP", "--dport", "80", "-j", "TOS", "--set-tos", "0x20").Run()).ShouldNot(HaveOccurred())
+		Eventually(func() error {
+			err := exec.Command("ip", "netns", "exec", "external", "curl", targetIP, "-m", "5").Run()
+			if err != nil {
+				return err
+			}
+
+			return exec.Command("ip", "netns", "exec", "external", "curl", targetIPForLocal, "-m", "5").Run()
+		}).Should(Succeed())
+		Expect(exec.Command("ip", "netns", "exec", "external",
+			"iptables", "-t", "mangle", "-D", "OUTPUT", "-p", "TCP", "--dport", "80", "-j", "TOS", "--set-tos", "0x20").Run()).ShouldNot(HaveOccurred())
+
 		By("prepare a test client")
 		stdout, stderr, err := execAt(bootServers[0], "kubectl", "-n", ns, "get", "pods", "-l", "app.kubernetes.io/name=testhttpd", "-o", "json")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
