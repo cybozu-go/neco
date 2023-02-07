@@ -81,7 +81,7 @@ fi
 
 # Prepare files
 mkdir -p \${NECO_DIR}/installer/build
-cp /assets/ubuntu-20.04-server-cloudimg-amd64.img \${NECO_DIR}/installer/build
+cp /assets/ubuntu-*-server-cloudimg-amd64.img \${NECO_DIR}/installer/build
 mkdir -p \${NECO_DIR}/dctest/output
 cp /assets/flatcar_production_qemu_image.img \${NECO_DIR}/dctest/output
 
@@ -94,7 +94,7 @@ if [ -n "${DATACENTER}" ]; then
 
   # Prepare files
   mkdir -p \${TEMP_DIR}/installer/build
-  cp /assets/ubuntu-20.04-server-cloudimg-amd64.img \${TEMP_DIR}/installer/build
+  cp /assets/ubuntu-*-server-cloudimg-amd64.img \${TEMP_DIR}/installer/build
   mkdir -p \${TEMP_DIR}/dctest/output
   cp /assets/flatcar_production_qemu_image.img \${TEMP_DIR}/dctest/output
 fi
