@@ -757,7 +757,7 @@ spec:
     spec:
       containers:
       - name: cilium-agent
-        image: "quay.io/cybozu/cilium:1.12.4.1"
+        image: "quay.io/cybozu/cilium:1.12.4.2"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
@@ -950,7 +950,7 @@ spec:
       # from a privileged container because the mount propagation bidirectional
       # only works from privileged containers.
       - name: mount-bpf-fs
-        image: "quay.io/cybozu/cilium:1.12.4.1"
+        image: "quay.io/cybozu/cilium:1.12.4.2"
         imagePullPolicy: IfNotPresent
         args:
         - 'mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf'
@@ -966,7 +966,7 @@ spec:
           mountPath: /sys/fs/bpf
           mountPropagation: Bidirectional
       - name: clean-cilium-state
-        image: "quay.io/cybozu/cilium:1.12.4.1"
+        image: "quay.io/cybozu/cilium:1.12.4.2"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
