@@ -25,7 +25,7 @@ LIBSSH_URL = http://archive.ubuntu.com/ubuntu/pool/main/libs/libssh/libssh-gcryp
 LIBSSH_DEB = build/$(notdir $(LIBSSH_URL))
 # A seucrity fix with high rate has been released for libssl3, but libssl3 in the iso image is a version without the security fix applied.
 # We download and install the version with the security fix applied.
-LIBSSL3_URL = http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl3_3.0.2-0ubuntu1.7_amd64.deb
+LIBSSL3_URL = http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl3_3.0.2-0ubuntu1.8_amd64.deb
 LIBSSL3_DEB = build/$(notdir $(LIBSSL3_URL))
 DEBS = $(CHRONY_DEB) $(BIRD2_DEB) $(LIBSSH_DEB) $(LIBSSL3_DEB)
 

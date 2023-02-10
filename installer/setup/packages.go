@@ -16,6 +16,7 @@ var (
 		"popularity-contest",
 		"unattended-upgrades",
 		"update-manager-core",
+		"ubuntu-release-upgrader-core",
 	}
 
 	installList = []string{
