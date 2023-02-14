@@ -23,6 +23,8 @@ fi
 
 # Run dctest
 cd \${GOPATH}/src/github.com/cybozu-go/neco/dctest
+## re-run setup to upgrade ginkgo
+make setup
 exec make test TAGS=${TAG_NAME} SUITE=${SUITE_NAME} MACHINES_FILE=\${MACHINES_FILE}
 EOF
 chmod +x run.sh
