@@ -4,7 +4,7 @@
 SUDO = sudo
 OUTPUT = ./output
 PLACEMAT = /usr/bin/placemat2
-GINKGO = env GO111MODULE=on $(GOPATH)/bin/ginkgo --failFast -v
+GINKGO = env GO111MODULE=on $(GOPATH)/bin/ginkgo --fail-fast -v
 SUITE = bootstrap
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
@@ -143,7 +143,7 @@ clean:
 setup:
 	cd ../ && time -p $(MAKE) setup
 	cd ../installer && time -p $(MAKE) setup
-	go install github.com/onsi/ginkgo/ginkgo
+	go install github.com/onsi/ginkgo/v2/ginkgo
 
 $(CT):
 	mkdir -p bin
