@@ -14,7 +14,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/sabakan/v2"
 	"github.com/hashicorp/go-version"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"

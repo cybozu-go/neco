@@ -11,7 +11,7 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/sabakan/v2"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
