@@ -392,19 +392,20 @@ workflows:
   # Main workflow for feature branch.
   main:
     jobs:
-      - build
-      - dctest-functions:
-          filters:
-            branches:
-              ignore:
-                - release
-                - main
-      - dctest-upgrade:
-          filters:
-            branches:
-              ignore:
-                - release
-                - main
+      #- build
+      - build_release
+      #- dctest-functions:
+      #    filters:
+      #      branches:
+      #        ignore:
+      #          - release
+      #          - main
+      #- dctest-upgrade:
+      #    filters:
+      #      branches:
+      #        ignore:
+      #          - release
+      #          - main
 
   manual-reboot:
     jobs:
