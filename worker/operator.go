@@ -11,7 +11,7 @@ import (
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/google/go-containerregistry/pkg/authn"
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v48/github"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 

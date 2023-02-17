@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/cybozu-go/log"
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v48/github"
 	version "github.com/hashicorp/go-version"
 )
 
