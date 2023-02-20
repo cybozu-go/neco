@@ -8115,7 +8115,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        image: ghcr.io/cybozu-go/coil:2.2.0
+        image: ghcr.io/cybozu-go/coil:2.3.0
         livenessProbe:
           httpGet:
             host: localhost
@@ -8197,7 +8197,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: ghcr.io/cybozu-go/coil:2.2.0
+        image: ghcr.io/cybozu-go/coil:2.3.0
         livenessProbe:
           httpGet:
             host: localhost
@@ -8240,7 +8240,7 @@ spec:
             configMapKeyRef:
               key: cni_netconf
               name: coil-config-tc2gh94mfh
-        image: ghcr.io/cybozu-go/coil:2.2.0
+        image: ghcr.io/cybozu-go/coil:2.3.0
         name: coil-installer
         securityContext:
           privileged: true
