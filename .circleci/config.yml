@@ -393,7 +393,12 @@ workflows:
   main:
     jobs:
       #- build
-      - build_release
+      - build_release:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^debug-.*/
       #- dctest-functions:
       #    filters:
       #      branches:
