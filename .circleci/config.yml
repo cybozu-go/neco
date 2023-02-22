@@ -150,12 +150,12 @@ jobs:
           name: Build deb package
           command: |
             VERSION=$(echo $CIRCLE_TAG | sed 's/^[^-]*-//')
-            time make deb SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
+            time make deb SUDO="" DEBBUILD_FLAGS="-Zxz" VERSION="$VERSION" TAGS=release FAKEROOT=
       - run:
           name: Build neco-operation-cli packages
           command: |
             VERSION=$(echo $CIRCLE_TAG | sed 's/^[^-]*-//')
-            time make tools SUDO="" DEBBUILD_FLAGS="" VERSION="$VERSION" TAGS=release FAKEROOT=
+            time make tools SUDO="" DEBBUILD_FLAGS="-Zxz" VERSION="$VERSION" TAGS=release FAKEROOT=
       - persist_to_workspace:
           root: .
           paths:
