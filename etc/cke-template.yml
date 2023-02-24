@@ -65,7 +65,7 @@ options:
             - system:kube-scheduler
         - level: RequestResponse
     extra_args:
-      - "--feature-gates=MixedProtocolLBService=true"
+      - "--feature-gates=NodeInclusionPolicyInPodTopologySpread=true,MinDomainsInPodTopologySpread=true"
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
       - "--audit-log-maxbackup=10"
@@ -75,7 +75,7 @@ options:
         read_only: false
   kube-controller-manager:
     extra_args:
-      - "--feature-gates=MixedProtocolLBService=true"
+      - "--feature-gates=NodeInclusionPolicyInPodTopologySpread=true,MinDomainsInPodTopologySpread=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -120,7 +120,7 @@ options:
               whenUnsatisfiable: ScheduleAnyway
             defaultingType: List
     extra_args:
-      - "--feature-gates=MixedProtocolLBService=true"
+      - "--feature-gates=NodeInclusionPolicyInPodTopologySpread=true,MinDomainsInPodTopologySpread=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -142,11 +142,13 @@ options:
       imageGCHighThresholdPercent: 65
       imageGCLowThresholdPercent: 60
       featureGates:
-        GRPCContainerProbe: true
-        MixedProtocolLBService: true
+        SeccompDefault: true
+        NodeInclusionPolicyInPodTopologySpread: true
+        MinDomainsInPodTopologySpread: true
     cri_endpoint: unix:///var/run/k8s-containerd.sock
     extra_args:
       - "--containerd=/var/run/k8s-containerd.sock"
+      - "--seccomp-default=true"
     extra_binds:
       - source: /var/lib/k8s-containerd
         destination: /var/lib/k8s-containerd
