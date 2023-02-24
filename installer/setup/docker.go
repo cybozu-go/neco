@@ -19,9 +19,7 @@ var (
 	}
 
 	dockerPackages = []string{
-		"docker-ce",
-		"docker-ce-cli",
-		"containerd.io",
+		"docker.io",
 	}
 )
 

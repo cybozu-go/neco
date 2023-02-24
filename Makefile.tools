@@ -85,11 +85,11 @@ $(CONTAINERD_DOWNLOAD):
 
 .PHONY: containerd
 containerd: $(CONTAINERD_DOWNLOAD)
-	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
+	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@-neco/
 	tar xzf $(CONTAINERD_DLDIR)/containerd.tar.gz --strip-components=1 -C $(LIBEXECDIR) bin/containerd bin/containerd-shim bin/containerd-shim-runc-v1 bin/containerd-shim-runc-v2 bin/ctr
-	$(CP) $(CONTAINERD_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
-	$(CP) $(CONTAINERD_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
-	$(CP) $(CONTAINERD_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(CONTAINERD_DLDIR)/LICENSE   $(DOCDIR)/$@-neco/LICENSE
+	$(CP) $(CONTAINERD_DLDIR)/NOTICE    $(DOCDIR)/$@-neco/NOTICE
+	$(CP) $(CONTAINERD_DLDIR)/README.md $(DOCDIR)/$@-neco/README.md
 
 $(NERDCTL_DOWNLOAD):
 	mkdir -p $(NERDCTL_DLDIR)
@@ -132,12 +132,12 @@ $(RUNC_DOWNLOAD):
 
 .PHONY: runc
 runc: $(RUNC_DOWNLOAD)
-	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@/
+	mkdir -p $(LIBEXECDIR) $(DOCDIR)/$@-neco/
 	$(CP) $(RUNC_DLDIR)/runc.amd64 $(LIBEXECDIR)/k8s-runc
 	chmod +x $(LIBEXECDIR)/k8s-runc
-	$(CP) $(RUNC_DLDIR)/LICENSE   $(DOCDIR)/$@/LICENSE
-	$(CP) $(RUNC_DLDIR)/NOTICE    $(DOCDIR)/$@/NOTICE
-	$(CP) $(RUNC_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(RUNC_DLDIR)/LICENSE   $(DOCDIR)/$@-neco/LICENSE
+	$(CP) $(RUNC_DLDIR)/NOTICE    $(DOCDIR)/$@-neco/NOTICE
+	$(CP) $(RUNC_DLDIR)/README.md $(DOCDIR)/$@-neco/README.md
 
 $(ARGOCD_DOWNLOAD):
 	mkdir -p $(ARGOCD_DLDIR)
