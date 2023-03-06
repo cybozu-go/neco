@@ -41,6 +41,10 @@
         {
           "name": "update-neco-operation-cli.timer",
           "enabled": true
+        },
+        {
+          "name": "cpu-governor.service",
+          "enabled": true
         }
       ]
     },
@@ -152,7 +156,9 @@
         "/opt/sbin/setup-serf-conf",
         "/opt/sbin/setup-serf-tags",
         "/opt/sbin/setup-setup-hw",
-        "/opt/sbin/setup-var"
+        "/opt/sbin/setup-var",
+        "/var/lib/kubelet/seccomp/profiles/audit.json",
+        "/var/hoge"
       ],
       "systemd": [
         {

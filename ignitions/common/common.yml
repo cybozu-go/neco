@@ -41,6 +41,8 @@ files:
   - /opt/sbin/setup-serf-tags
   - /opt/sbin/setup-setup-hw
   - /opt/sbin/setup-var
+  - /var/lib/kubelet/seccomp/profiles/audit.json
+  - /var/hoge
 systemd:
   - mask: true
     name: update-engine.service
