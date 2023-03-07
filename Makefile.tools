@@ -51,9 +51,11 @@ HUBBLE_DLDIR := $(DOWNLOADDIR)/hubble-v$(HUBBLE_VERSION)
 HUBBLE_DOWNLOAD := $(HUBBLE_DLDIR)/downloaded
 TEMPO_DLDIR := $(DOWNLOADDIR)/tempo-v$(TEMPO_VERSION)
 TEMPO_DOWNLOAD := $(TEMPO_DLDIR)/downloaded
+HELM_DLDIR := $(DOWNLOADDIR)/helm-v$(HELM_VERSION)
+HELM_DOWNLOAD := $(HELM_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo
+all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm
 	# all binaries in BINDIR and SBINDIR must have executable bits
 	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
@@ -501,6 +503,16 @@ tempo: $(TEMPO_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
 	tar xvf $(TEMPO_DLDIR)/tempo_linux_amd64.tar.gz -C $(BINDIR) tempo-cli
 	tar xvf $(TEMPO_DLDIR)/tempo_linux_amd64.tar.gz -C $(DOCDIR)/$@/ LICENSE README.md
+
+$(HELM_DOWNLOAD):
+	mkdir -p $(HELM_DLDIR)
+	wget -O $(HELM_DLDIR)/helm-linux-amd64.tar.gz https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz
+
+.PHONY: helm
+helm: $(HELM_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	tar xvf $(HELM_DLDIR)/helm-linux-amd64.tar.gz -C $(BINDIR)     --strip-components=1 linux-amd64/helm
+	tar xvf $(HELM_DLDIR)/helm-linux-amd64.tar.gz -C $(DOCDIR)/$@/ --strip-components=1 linux-amd64/LICENSE linux-amd64/README.md
 
 .PHONY: clean
 clean:
