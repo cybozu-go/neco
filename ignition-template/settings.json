@@ -153,12 +153,11 @@
         "/opt/sbin/setup-iptables-rules",
         "/opt/sbin/setup-local-network",
         "/opt/sbin/setup-node-exporter",
+        "/opt/sbin/setup-seccomp-profile",
         "/opt/sbin/setup-serf-conf",
         "/opt/sbin/setup-serf-tags",
         "/opt/sbin/setup-setup-hw",
-        "/opt/sbin/setup-var",
-        "/var/lib/kubelet/seccomp/profiles/audit.json",
-        "/var/hoge"
+        "/opt/sbin/setup-var"
       ],
       "systemd": [
         {
@@ -355,6 +354,10 @@
         },
         {
           "name": "remove-kubelet-state.service",
+          "enabled": true
+        },
+        {
+          "name": "setup-seccomp-profile.service",
           "enabled": true
         }
       ],

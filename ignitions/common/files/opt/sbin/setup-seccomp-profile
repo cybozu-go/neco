@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+mkdir -p /var/lib/kubelet/seccomp/profiles
+cat <<EOF > /var/lib/kubelet/seccomp/profiles/audit.json
+{
+    "defaultAction": "SCMP_ACT_LOG"
+}
+EOF
