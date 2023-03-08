@@ -117,6 +117,7 @@
     "common": {
       "passwd": "passwd.yml",
       "files": [
+        "/etc/audit/rules.d/99-default.rules",
         "/etc/bird/bird.conf",
         "/etc/chrony.conf",
         "/etc/crictl.yaml",

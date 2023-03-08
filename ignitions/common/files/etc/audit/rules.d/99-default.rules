@@ -1,0 +1,5 @@
+# Always report changes to the audit subsystem itself.
+-a exclude,never -F msgtype=CONFIG_CHANGE
+
+# Ignore any tha are not AUDIT_SECCOMP(1326).
+-a always,exclude -F msgtype!=1326 -F msgtype>0
