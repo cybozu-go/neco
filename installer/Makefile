@@ -3,6 +3,7 @@
 SUDO = sudo
 
 UBUNTU_VERSION = 22.04.1
+UBUNTU_RELEASE = 22.04
 BUILD_DEPS := xorriso qemu-utils qemu-kvm ovmf curl ca-certificates cloud-image-utils gdisk kpartx
 
 ORIGINAL_ISO_NAME = ubuntu-$(UBUNTU_VERSION)-live-server-amd64.iso
@@ -10,23 +11,38 @@ ORIGINAL_ISO_PATH = build/$(ORIGINAL_ISO_NAME)
 CUSTOM_ISO_PATH = build/cybozu-$(ORIGINAL_ISO_NAME)
 SRC_DIR_PATH = build/src
 
-ORIGINAL_CLOUD_IMAGE = ubuntu-22.04-server-cloudimg-amd64.img
+ORIGINAL_CLOUD_IMAGE = ubuntu-$(UBUNTU_RELEASE)-server-cloudimg-amd64.img
 ORIGINAL_CLOUD_PATH = build/$(ORIGINAL_CLOUD_IMAGE)
 CUSTOM_CLOUD_PATH = build/cybozu-$(ORIGINAL_CLOUD_IMAGE)
 
 PREVIEW_IMG = build/ubuntu.img
 LOCALDS_IMG = build/seed.img
 
+ifeq ($(shell lsb_release --release --short),$(UBUNTU_RELEASE))
+# usage: get-deb-filename PACKAGE
+define get-deb-filename
+$(shell apt-get install --print-uris --reinstall $1 | tail -1 | awk '{print $$2}')
+endef
+CHRONY_DEB = build/$(call get-deb-filename,chrony)
+BIRD2_DEB = build/$(call get-deb-filename,bird2)
+LIBSSH_DEB = build/$(call get-deb-filename,libssh-gcrypt-4)
+# Though the "libssl3" package can be installed from the original ISO image, it could be old in terms of security.
+# We download and burn the version with the security fixes applied.
+LIBSSL3_DEB = build/$(call get-deb-filename,libssl3)
+else
 CHRONY_URL = http://archive.ubuntu.com/ubuntu/pool/main/c/chrony/chrony_4.2-2ubuntu2_amd64.deb
 CHRONY_DEB = build/$(notdir $(CHRONY_URL))
+CHRONY_SHA512 = 624f075f6415c71584404418d6cee32cb8498dcd809fe0d441497ce95f23b76c6ecb74e58afc8ccbeaa8c0af20740e103f7398d443e696971f12a4955a05abaf
 BIRD2_URL = http://archive.ubuntu.com/ubuntu/pool/universe/b/bird2/bird2_2.0.8-2_amd64.deb
 BIRD2_DEB = build/$(notdir $(BIRD2_URL))
+BIRD2_SHA512 = 21b17a1e52dba90e0f35bb6b0cd8048c355de4c8364951d495e50d6e387ca807c4294e44444cd721b2cbf2d93e73f6824e748cf670b9cd0c99e2cc2f313f6f7e
 LIBSSH_URL = http://archive.ubuntu.com/ubuntu/pool/main/libs/libssh/libssh-gcrypt-4_0.9.6-2build1_amd64.deb
 LIBSSH_DEB = build/$(notdir $(LIBSSH_URL))
-# A seucrity fix with high rate has been released for libssl3, but libssl3 in the iso image is a version without the security fix applied.
-# We download and install the version with the security fix applied.
+LIBSSH_SHA512 = c0a52a502da59cc644e178b351dc1edfdc44e04ea61184fc858e6d9dbdf161b27f2a30371e721a3ffb9c513ac23706fecc0df1b21259ec1183788049bf64547d
 LIBSSL3_URL = http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl3_3.0.2-0ubuntu1.8_amd64.deb
 LIBSSL3_DEB = build/$(notdir $(LIBSSL3_URL))
+LIBSSL3_SHA512 = eb625fb41e4a523181bb4d881bae27be421a15fe12e13c6e3d58306302561d6926607818891fcc8889ad66dc6f5c9ed2846559bedbd0307111aa3081ccd8052a
+endif
 DEBS = $(CHRONY_DEB) $(BIRD2_DEB) $(LIBSSH_DEB) $(LIBSSL3_DEB)
 
 .PHONY: help
@@ -53,19 +69,43 @@ $(ORIGINAL_ISO_PATH):
 
 $(CHRONY_DEB):
 	mkdir -p build
-	cd build; curl -O -fsSL $(CHRONY_URL)
+ifndef CHRONY_URL
+	cd build; apt-get download chrony
+else
+	curl -o $@.tmp -fsSL $(CHRONY_URL)
+	echo "$(CHRONY_SHA512) $@.tmp" | sha512sum -c -
+	mv $@.tmp $@
+endif
 
 $(BIRD2_DEB):
 	mkdir -p build
-	cd build; curl -O -fsSL $(BIRD2_URL)
+ifndef BIRD2_URL
+	cd build; apt-get download bird2
+else
+	curl -o $@.tmp -fsSL $(BIRD2_URL)
+	echo "$(BIRD2_SHA512) $@.tmp" | sha512sum -c -
+	mv $@.tmp $@
+endif
 
 $(LIBSSH_DEB):
 	mkdir -p build
-	cd build; curl -O -fsSL $(LIBSSH_URL)
+ifndef LIBSSH_URL
+	cd build; apt-get download libssh-gcrypt-4
+else
+	curl -o $@.tmp -fsSL $(LIBSSH_URL)
+	echo "$(LIBSSH_SHA512) $@.tmp" | sha512sum -c -
+	mv $@.tmp $@
+endif
 
 $(LIBSSL3_DEB):
 	mkdir -p build
-	cd build; curl -O -fsSL $(LIBSSL3_URL)
+ifndef LIBSSL3_URL
+	cd build; apt-get download libssl3
+else
+	curl -o $@.tmp -fsSL $(LIBSSL3_URL)
+	echo "$(LIBSSL3_SHA512) $@.tmp" | sha512sum -c -
+	mv $@.tmp $@
+endif
 
 $(CUSTOM_ISO_PATH): $(ORIGINAL_ISO_PATH) $(DEBS) cluster.json
 	rm -rf $(SRC_DIR_PATH)
@@ -117,7 +157,7 @@ cloud: $(CUSTOM_CLOUD_PATH)
 
 $(ORIGINAL_CLOUD_PATH):
 	mkdir -p build
-	curl -o $@ -fsSL https://cloud-images.ubuntu.com/releases/22.04/release/$(ORIGINAL_CLOUD_IMAGE)
+	curl -o $@ -fsSL https://cloud-images.ubuntu.com/releases/$(UBUNTU_RELEASE)/release/$(ORIGINAL_CLOUD_IMAGE)
 
 $(CUSTOM_CLOUD_PATH): $(ORIGINAL_CLOUD_PATH) $(DEBS) cluster.json
 	cp $< $@
