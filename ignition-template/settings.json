@@ -54,6 +54,10 @@
         {
           "name": "update-neco-operation-cli.timer",
           "enabled": true
+        },
+        {
+          "name": "cpu-governor.service",
+          "enabled": true
         }
       ]
     },
@@ -367,8 +371,7 @@
       "files": [
         "/etc/k8s-containerd/conf.d/docker.elastic.co/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
-        "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml",
-        "/etc/k8s-containerd/conf.d/registry-local.registry.stage0.cybozu-ne.co/hosts.toml"
+        "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml"
       ]
     },
     "stage1": {
