@@ -41,10 +41,6 @@
         {
           "name": "update-neco-operation-cli.timer",
           "enabled": true
-        },
-        {
-          "name": "cpu-governor.service",
-          "enabled": true
         }
       ]
     },
