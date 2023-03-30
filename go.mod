@@ -27,7 +27,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
-	github.com/stmcginnis/gofish v0.14.0
+	github.com/stmcginnis/gofish v0.13.0
 	github.com/tcnksm/go-input v0.0.0-20180404061846-548a7d7a8ee8
 	github.com/vektah/gqlparser/v2 v2.5.1
 	github.com/vincent-petithory/dataurl v1.0.0
