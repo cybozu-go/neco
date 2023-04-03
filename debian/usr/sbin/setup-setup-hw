@@ -1,7 +1,0 @@
-#!/bin/sh -e
-case $(cat /sys/devices/virtual/dmi/id/product_name) in
-    "PowerEdge R6525"|"PowerEdge R7525")
-        mkdir -p /var/lib/setup-hw
-        touch /var/lib/setup-hw/no-reset
-        ;;
-esac
