@@ -190,7 +190,7 @@ func rebootMachines(machines []sabakan.Machine) error {
 		// enqueue nodes so that SSs and non-SSs alternate as much as possible
 		for i := 0; i < len(ss)+len(nonss); i++ {
 			var address string
-			if nonssIndex*len(ss) <= ssIndex*len(nonss) {
+			if nonssIndex*len(ss) <= ssIndex*len(nonss) && len(nonss) > 0 {
 				address = nonss[nonssIndex]
 				nonssIndex++
 			} else {
