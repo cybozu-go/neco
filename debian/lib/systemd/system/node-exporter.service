@@ -8,7 +8,7 @@ Type=simple
 Restart=always
 RestartForceExitStatus=SIGPIPE
 ExecStartPre=/bin/mkdir -p /var/lib/node_exporter/textfile
-ExecStart=/usr/sbin/node_exporter --collector.textfile.directory /var/lib/node_exporter/textfile
+ExecStart=/usr/sbin/node_exporter --collector.textfile.directory /var/lib/node_exporter/textfile --no-collector.ipvs
 
 [Install]
 WantedBy=multi-user.target
