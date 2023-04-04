@@ -113,6 +113,7 @@
     "common": {
       "passwd": "passwd.yml",
       "files": [
+        "/etc/audit/rules.d/99-default.rules",
         "/etc/bird/bird.conf",
         "/etc/chrony.conf",
         "/etc/crictl.yaml",
@@ -149,6 +150,7 @@
         "/opt/sbin/setup-iptables-rules",
         "/opt/sbin/setup-local-network",
         "/opt/sbin/setup-node-exporter",
+        "/opt/sbin/setup-seccomp-profile",
         "/opt/sbin/setup-serf-conf",
         "/opt/sbin/setup-serf-tags",
         "/opt/sbin/setup-var"
@@ -348,6 +350,10 @@
         },
         {
           "name": "remove-kubelet-state.service",
+          "enabled": true
+        },
+        {
+          "name": "setup-seccomp-profile.service",
           "enabled": true
         }
       ],

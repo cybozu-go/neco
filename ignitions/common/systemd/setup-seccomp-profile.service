@@ -1,0 +1,11 @@
+[Unit]
+Description=Setup seccomp profile for kubelet
+After=local-fs.target
+Before=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/setup-seccomp-profile
+
+[Install]
+WantedBy=multi-user.target
