@@ -21,7 +21,7 @@ const (
 )
 
 // Setup installs and configures etcd and vault cluster.
-func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
+func Setup(ctx context.Context, lrns []int, revoke bool, proxy, ghToken string) error {
 	rt, err := neco.GetContainerRuntime(proxy)
 	if err != nil {
 		return err
@@ -252,6 +252,12 @@ func Setup(ctx context.Context, lrns []int, revoke bool, proxy string) error {
 		err = enableEtcdAuth(ctx, ec)
 		if err != nil {
 			return err
+		}
+
+		if ghToken != "" {
+			if err := st.PutGitHubToken(ctx, ghToken); err != nil {
+				return err
+			}
 		}
 	}
 

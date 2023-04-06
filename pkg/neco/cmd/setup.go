@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"io"
 	"net/url"
+	"os"
 	"strconv"
 
 	"github.com/cybozu-go/log"
@@ -13,9 +16,10 @@ import (
 )
 
 var setupParams struct {
-	lrns     []int
-	noRevoke bool
-	proxy    string
+	lrns        []int
+	noRevoke    bool
+	proxy       string
+	ghTokenFile string
 }
 
 // setupCmd represents the setup command
@@ -30,6 +34,10 @@ This command should be invoked at once on all boot servers specified by LRN.
 
 When --no-revoke option is specified, it does not remove the etcd key
 <prefix>/vault-root-token. This option is used by automatic setup of dctest.
+
+When --gh-token-file option is specified, it will read a GitHub token and store
+it in etcd. If not, it will read it from stdin instead. The stored token will used
+by neco-worker when it sends requests to GitHub API to avoid the rate limit exceeded error.
 
 When --proxy option is specified, it uses this proxy to download container
 images. It also stores proxy configuration in the etcd database after it
@@ -64,11 +72,25 @@ DO NOT pass http_proxy and https_proxy environment variables to neco.`,
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
+		input := os.Stdin
+		if len(setupParams.ghTokenFile) > 0 {
+			f, err := os.Open(setupParams.ghTokenFile)
+			if err != nil {
+				log.ErrorExit(err)
+			}
+			defer f.Close()
+			input = f
+		}
+		token, err := io.ReadAll(input)
+		if err != nil {
+			log.ErrorExit(err)
+		}
+
 		well.Go(func(ctx context.Context) error {
-			return setup.Setup(ctx, setupParams.lrns, !setupParams.noRevoke, setupParams.proxy)
+			return setup.Setup(ctx, setupParams.lrns, !setupParams.noRevoke, setupParams.proxy, string(bytes.TrimSpace(token)))
 		})
 		well.Stop()
-		err := well.Wait()
+		err = well.Wait()
 		if err != nil {
 			log.ErrorExit(err)
 		}
@@ -80,4 +102,5 @@ func init() {
 
 	setupCmd.Flags().BoolVar(&setupParams.noRevoke, "no-revoke", false, "keep vault root token in etcd")
 	setupCmd.Flags().StringVar(&setupParams.proxy, "proxy", "", "use and store config of HTTP proxy server")
+	setupCmd.Flags().StringVar(&setupParams.ghTokenFile, "gh-token-file", "", "gh token file for neco-worker")
 }
