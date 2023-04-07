@@ -3,6 +3,7 @@ package dctest
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -47,8 +48,9 @@ WantedBy=multi-user.target`
 	It("should complete on all boot servers", func() {
 		env := well.NewEnvironment(context.Background())
 		env.Go(func(ctx context.Context) error {
-			stdout, stderr, err := execAt(
-				bootServers[0], "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
+			stdout, stderr, err := execAtWithInput(
+				bootServers[0], []byte(os.Getenv("GITHUB_TOKEN")), "sudo", "neco", "setup", "--no-revoke",
+				"--proxy="+proxy, "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-0",
@@ -60,8 +62,9 @@ WantedBy=multi-user.target`
 			return nil
 		})
 		env.Go(func(ctx context.Context) error {
-			stdout, stderr, err := execAt(
-				bootServers[1], "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
+			stdout, stderr, err := execAtWithInput(
+				bootServers[1], []byte(os.Getenv("GITHUB_TOKEN")), "sudo", "neco", "setup", "--no-revoke",
+				"--proxy="+proxy, "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-1",
@@ -73,8 +76,9 @@ WantedBy=multi-user.target`
 			return nil
 		})
 		env.Go(func(ctx context.Context) error {
-			stdout, stderr, err := execAt(
-				bootServers[2], "sudo", "neco", "setup", "--no-revoke", "--proxy="+proxy, "0", "1", "2")
+			stdout, stderr, err := execAtWithInput(
+				bootServers[2], []byte(os.Getenv("GITHUB_TOKEN")), "sudo", "neco", "setup", "--no-revoke",
+				"--proxy="+proxy, "0", "1", "2")
 			if err != nil {
 				log.Error("neco setup failed", map[string]interface{}{
 					"host":   "boot-2",
