@@ -18,7 +18,7 @@ ARGOCD_VERSION = 2.6.7
 KUSTOMIZE_VERSION = 4.5.7
 # Follow Argo CD installed google/go-jsonnet version
 # https://github.com/argoproj/argo-cd/blob/v${ARGOCD_VERSION}/go.mod
-JSONNET_VERSION = 0.18.0
+JSONNET_VERSION = 0.19.1
 MOCO_VERSION = 0.14.1
 NODE_EXPORTER_VERSION = 1.5.0
 TELEPORT_VERSION = 11.3.3
