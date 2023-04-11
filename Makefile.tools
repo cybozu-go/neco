@@ -35,8 +35,8 @@ CKE_DLDIR := $(DOWNLOADDIR)/cke-v$(CKE_VERSION)
 CKE_DOWNLOAD := $(CKE_DLDIR)/downloaded
 MOCO_DLDIR := $(DOWNLOADDIR)/moco-v$(MOCO_VERSION)
 MOCO_DOWNLOAD := $(MOCO_DLDIR)/downloaded
-LOGCLI_DLDIR := $(DOWNLOADDIR)/logcli-v$(LOGCLI_VERSION)
-LOGCLI_DOWNLOAD := $(LOGCLI_DLDIR)/downloaded
+LOKI_LOGCLI_DLDIR := $(DOWNLOADDIR)/logcli-v$(LOKI_LOGCLI_VERSION)
+LOKI_LOGCLI_DOWNLOAD := $(LOKI_LOGCLI_DLDIR)/downloaded
 YQ_DLDIR := $(DOWNLOADDIR)/yq-v$(YQ_VERSION)
 YQ_DOWNLOAD := $(YQ_DLDIR)/downloaded
 KUBECTL_NEAT_DLDIR := $(DOWNLOADDIR)/kubectl-neat-v$(KUBECTL_NEAT_VERSION)
@@ -353,29 +353,29 @@ moco: $(MOCO_DOWNLOAD)
 	$(CP) $(MOCO_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 	$(CP) $(MOCO_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
-$(LOGCLI_DOWNLOAD):
-	mkdir -p $(LOGCLI_DLDIR)
-	$(WGET_GITHUB) -O $(LOGCLI_DLDIR)/logcli-linux-amd64.zip       https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-linux-amd64.zip
-	$(WGET_GITHUB) -O $(LOGCLI_DLDIR)/logcli-windows-amd64.exe.zip https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-windows-amd64.exe.zip
-	$(WGET_GITHUB) -O $(LOGCLI_DLDIR)/logcli-darwin-amd64.zip      https://github.com/grafana/loki/releases/download/v$(LOGCLI_VERSION)/logcli-darwin-amd64.zip
-	$(WGET_GITHUB) -O $(LOGCLI_DLDIR)/LICENSE   https://raw.githubusercontent.com/grafana/loki/v$(LOGCLI_VERSION)/LICENSE
-	$(WGET_GITHUB) -O $(LOGCLI_DLDIR)/README.md https://raw.githubusercontent.com/grafana/loki/v$(LOGCLI_VERSION)/README.md
+$(LOKI_LOGCLI_DOWNLOAD):
+	mkdir -p $(LOKI_LOGCLI_DLDIR)
+	$(WGET_GITHUB) -O $(LOKI_LOGCLI_DLDIR)/logcli-linux-amd64.zip       https://github.com/grafana/loki/releases/download/v$(LOKI_LOGCLI_VERSION)/logcli-linux-amd64.zip
+	$(WGET_GITHUB) -O $(LOKI_LOGCLI_DLDIR)/logcli-windows-amd64.exe.zip https://github.com/grafana/loki/releases/download/v$(LOKI_LOGCLI_VERSION)/logcli-windows-amd64.exe.zip
+	$(WGET_GITHUB) -O $(LOKI_LOGCLI_DLDIR)/logcli-darwin-amd64.zip      https://github.com/grafana/loki/releases/download/v$(LOKI_LOGCLI_VERSION)/logcli-darwin-amd64.zip
+	$(WGET_GITHUB) -O $(LOKI_LOGCLI_DLDIR)/LICENSE   https://raw.githubusercontent.com/grafana/loki/v$(LOKI_LOGCLI_VERSION)/LICENSE
+	$(WGET_GITHUB) -O $(LOKI_LOGCLI_DLDIR)/README.md https://raw.githubusercontent.com/grafana/loki/v$(LOKI_LOGCLI_VERSION)/README.md
 	touch $@
 
 .PHONY: logcli
-logcli: $(LOGCLI_DOWNLOAD)
+logcli: $(LOKI_LOGCLI_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
-	unzip -p $(LOGCLI_DLDIR)/logcli-linux-amd64.zip > $(BINDIR)/logcli
+	unzip -p $(LOKI_LOGCLI_DLDIR)/logcli-linux-amd64.zip > $(BINDIR)/logcli
 	chmod +x $(BINDIR)/logcli
-	unzip -p $(LOGCLI_DLDIR)/logcli-windows-amd64.exe.zip > $(WINDOWS_BINDIR)/logcli.exe
-	unzip -p $(LOGCLI_DLDIR)/logcli-darwin-amd64.zip > $(MAC_BINDIR)/logcli 
+	unzip -p $(LOKI_LOGCLI_DLDIR)/logcli-windows-amd64.exe.zip > $(WINDOWS_BINDIR)/logcli.exe
+	unzip -p $(LOKI_LOGCLI_DLDIR)/logcli-darwin-amd64.zip > $(MAC_BINDIR)/logcli 
 	chmod +x $(MAC_BINDIR)/logcli
-	$(CP) $(LOGCLI_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
-	$(CP) $(LOGCLI_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
-	$(CP) $(LOGCLI_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
-	$(CP) $(LOGCLI_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	$(CP) $(LOGCLI_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
-	$(CP) $(LOGCLI_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
+	$(CP) $(LOKI_LOGCLI_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
+	$(CP) $(LOKI_LOGCLI_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
+	$(CP) $(LOKI_LOGCLI_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/LICENSE
+	$(CP) $(LOKI_LOGCLI_DLDIR)/README.md $(DOCDIR)/$@/README.md
+	$(CP) $(LOKI_LOGCLI_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
+	$(CP) $(LOKI_LOGCLI_DLDIR)/README.md $(MAC_DOCDIR)/$@/README.md
 
 $(YQ_DOWNLOAD):
 	mkdir -p $(YQ_DLDIR)
