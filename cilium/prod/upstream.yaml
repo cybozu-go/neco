@@ -48,6 +48,7 @@ data:
   identity-allocation-mode: crd
   cilium-endpoint-gc-interval: "5m0s"
   nodes-gc-interval: "5m0s"
+  skip-cnp-status-startup-clean: "false"
   # Disable the usage of CiliumEndpoint CRD
   disable-endpoint-crd: "false"
   # To include or exclude matched resources from cilium identity evaluation
@@ -201,6 +202,7 @@ data:
   enable-svc-source-range-check: "true"
   enable-l2-neigh-discovery: "true"
   arping-refresh-period: "30s"
+  cni-uninstall: "true"
   # Disable health checking, when chaining mode is not set to portmap or none
   enable-endpoint-health-checking: "false"
   enable-health-checking: "true"
@@ -746,7 +748,7 @@ spec:
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "6782953c836676cff457c41bd94e8e062246c3fcdf23e29ee9b6033ee959a776"
+        cilium.io/cilium-configmap-checksum: "4e1abf0cfb0def3954391477f8ccf2b6ed26880390e3248de85b67aea9a1b449"
         # Set app AppArmor's profile to "unconfined". The value of this annotation
         # can be modified as long users know which profiles they have available
         # in AppArmor.
@@ -757,7 +759,7 @@ spec:
     spec:
       containers:
       - name: cilium-agent
-        image: "quay.io/cybozu/cilium:1.12.4.2"
+        image: "quay.io/cybozu/cilium:1.12.8.4"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
@@ -865,11 +867,8 @@ spec:
           protocol: TCP
         securityContext:
           seLinuxOptions:
-            level: 's0'
-            # Running with spc_t since we have removed the privileged mode.
-            # Users can change it to a different type as long as they have the
-            # type available on the system.
-            type: 'spc_t'
+            level: s0
+            type: spc_t
           capabilities:
             add:
               # Use to set socket permission
@@ -923,8 +922,6 @@ spec:
           mountPath: /sys/fs/cgroup
         - name: cilium-run
           mountPath: /var/run/cilium
-        - name: cni-path
-          mountPath: /host/opt/cni/bin
         - name: etc-cni-netd
           mountPath: /host/etc/cni/net.d
         - name: clustermesh-secrets
@@ -950,7 +947,7 @@ spec:
       # from a privileged container because the mount propagation bidirectional
       # only works from privileged containers.
       - name: mount-bpf-fs
-        image: "quay.io/cybozu/cilium:1.12.4.2"
+        image: "quay.io/cybozu/cilium:1.12.8.4"
         imagePullPolicy: IfNotPresent
         args:
         - 'mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf'
@@ -966,7 +963,7 @@ spec:
           mountPath: /sys/fs/bpf
           mountPropagation: Bidirectional
       - name: clean-cilium-state
-        image: "quay.io/cybozu/cilium:1.12.4.2"
+        image: "quay.io/cybozu/cilium:1.12.8.4"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
@@ -990,11 +987,8 @@ spec:
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           seLinuxOptions:
-            level: 's0'
-            # Running with spc_t since we have removed the privileged mode.
-            # Users can change it to a different type as long as they have the
-            # type available on the system.
-            type: 'spc_t'
+            level: s0
+            type: spc_t
           capabilities:
             # Most of the capabilities here are the same ones used in the
             # cilium-agent's container because this container can be used to
@@ -1031,10 +1025,32 @@ spec:
           requests:
             cpu: 100m
             memory: 100Mi # wait-for-kube-proxy
+      # Install the CNI binaries in an InitContainer so we don't have a writable host mount in the agent
+      - name: install-cni-binaries
+        image: "quay.io/cybozu/cilium:1.12.8.4"
+        imagePullPolicy: IfNotPresent
+        command:
+          - "/install-plugin.sh"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 10Mi
+        securityContext:
+          seLinuxOptions:
+            level: s0
+            type: spc_t
+          capabilities:
+            drop:
+              - ALL
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+          - name: cni-path
+            mountPath: /host/opt/cni/bin
       restartPolicy: Always
       priorityClassName: system-node-critical
       serviceAccount: "cilium"
       serviceAccountName: "cilium"
+      automountServiceAccountToken: true
       terminationGracePeriodSeconds: 1
       hostNetwork: true
       affinity:
@@ -1147,7 +1163,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "6782953c836676cff457c41bd94e8e062246c3fcdf23e29ee9b6033ee959a776"
+        cilium.io/cilium-configmap-checksum: "4e1abf0cfb0def3954391477f8ccf2b6ed26880390e3248de85b67aea9a1b449"
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -1156,7 +1172,7 @@ spec:
     spec:
       containers:
       - name: cilium-operator
-        image: "quay.io/cybozu/cilium-operator-generic:1.12.4.2"
+        image: "quay.io/cybozu/cilium-operator-generic:1.12.8.1"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
@@ -1215,6 +1231,7 @@ spec:
       priorityClassName: system-cluster-critical
       serviceAccount: "cilium-operator"
       serviceAccountName: "cilium-operator"
+      automountServiceAccountToken: true
       # In HA mode, cilium-operator pods must not be scheduled on the same
       # node as they will clash with each other.
       affinity:
@@ -1264,7 +1281,7 @@ spec:
     spec:
       containers:
         - name: hubble-relay
-          image: "quay.io/cybozu/hubble-relay:1.12.4.1"
+          image: "quay.io/cybozu/hubble-relay:1.12.8.1"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
@@ -1339,7 +1356,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hubble-generate-certs-6458353616
+  name: hubble-generate-certs-5d5d11e923
   namespace: kube-system
   labels:
     k8s-app: hubble-generate-certs
@@ -1372,6 +1389,7 @@ spec:
       hostNetwork: true
       serviceAccount: "hubble-generate-certs"
       serviceAccountName: "hubble-generate-certs"
+      automountServiceAccountToken: true
       restartPolicy: OnFailure
   ttlSecondsAfterFinished: 1800
 ---
@@ -1416,5 +1434,6 @@ spec:
           hostNetwork: true
           serviceAccount: "hubble-generate-certs"
           serviceAccountName: "hubble-generate-certs"
+          automountServiceAccountToken: true
           restartPolicy: OnFailure
       ttlSecondsAfterFinished: 1800

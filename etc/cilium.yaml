@@ -470,6 +470,7 @@ data:
   cluster-pool-ipv4-cidr: 10.0.0.0/8
   cluster-pool-ipv4-mask-size: "24"
   cni-chaining-mode: generic-veth
+  cni-uninstall: "true"
   custom-cni-conf: "true"
   debug: "false"
   devices: eth+ eno1+ eno2+
@@ -536,6 +537,7 @@ data:
   remove-cilium-node-taints: "true"
   set-cilium-is-up-condition: "true"
   sidecar-istio-proxy-image: cilium/istio_proxy
+  skip-cnp-status-startup-clean: "false"
   synchronize-k8s-nodes: "true"
   tofqdns-dns-reject-response-code: refused
   tofqdns-enable-dns-compression: "true"
@@ -664,7 +666,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 6782953c836676cff457c41bd94e8e062246c3fcdf23e29ee9b6033ee959a776
+        cilium.io/cilium-configmap-checksum: 4e1abf0cfb0def3954391477f8ccf2b6ed26880390e3248de85b67aea9a1b449
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -678,6 +680,7 @@ spec:
               matchLabels:
                 io.cilium/app: operator
             topologyKey: kubernetes.io/hostname
+      automountServiceAccountToken: true
       containers:
       - args:
         - --config-dir=/tmp/cilium/config-map
@@ -705,7 +708,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium-operator-generic:1.12.4.2
+        image: quay.io/cybozu/cilium-operator-generic:1.12.8.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -787,7 +790,7 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: quay.io/cybozu/hubble-relay:1.12.4.1
+        image: quay.io/cybozu/hubble-relay:1.12.8.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
@@ -862,6 +865,7 @@ spec:
           labels:
             k8s-app: hubble-generate-certs
         spec:
+          automountServiceAccountToken: true
           containers:
           - args:
             - --cilium-namespace=kube-system
@@ -915,7 +919,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 6782953c836676cff457c41bd94e8e062246c3fcdf23e29ee9b6033ee959a776
+        cilium.io/cilium-configmap-checksum: 4e1abf0cfb0def3954391477f8ccf2b6ed26880390e3248de85b67aea9a1b449
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
@@ -930,6 +934,7 @@ spec:
               matchLabels:
                 k8s-app: cilium
             topologyKey: kubernetes.io/hostname
+      automountServiceAccountToken: true
       containers:
       - args:
         - --config-dir=/tmp/cilium/config-map
@@ -964,7 +969,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.12.4.2
+        image: quay.io/cybozu/cilium:1.12.8.4
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -1071,8 +1076,6 @@ spec:
           name: cilium-cgroup
         - mountPath: /var/run/cilium
           name: cilium-run
-        - mountPath: /host/opt/cni/bin
-          name: cni-path
         - mountPath: /host/etc/cni/net.d
           name: etc-cni-netd
         - mountPath: /var/lib/cilium/clustermesh
@@ -1100,7 +1103,7 @@ spec:
         - /bin/bash
         - -c
         - --
-        image: quay.io/cybozu/cilium:1.12.4.2
+        image: quay.io/cybozu/cilium:1.12.8.4
         imagePullPolicy: IfNotPresent
         name: mount-bpf-fs
         securityContext:
@@ -1129,7 +1132,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.12.4.2
+        image: quay.io/cybozu/cilium:1.12.8.4
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -1157,6 +1160,26 @@ spec:
           name: cilium-cgroup
         - mountPath: /var/run/cilium
           name: cilium-run
+      - command:
+        - /install-plugin.sh
+        image: quay.io/cybozu/cilium:1.12.8.4
+        imagePullPolicy: IfNotPresent
+        name: install-cni-binaries
+        resources:
+          requests:
+            cpu: 100m
+            memory: 10Mi
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+          seLinuxOptions:
+            level: s0
+            type: spc_t
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-path
       nodeSelector:
         kubernetes.io/os: linux
       priorityClassName: system-node-critical
@@ -1237,7 +1260,7 @@ kind: Job
 metadata:
   labels:
     k8s-app: hubble-generate-certs
-  name: hubble-generate-certs-6458353616
+  name: hubble-generate-certs-5d5d11e923
   namespace: kube-system
 spec:
   template:
@@ -1245,6 +1268,7 @@ spec:
       labels:
         k8s-app: hubble-generate-certs
     spec:
+      automountServiceAccountToken: true
       containers:
       - args:
         - --cilium-namespace=kube-system
