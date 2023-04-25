@@ -73,6 +73,8 @@ policyAuditMode: false
 policyEnforcementMode: "default"
 prometheus:
   enabled: true
+  metrics:
+    - +cilium_bpf_map_pressure
 resources:
   requests:
     cpu: 100m
