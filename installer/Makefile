@@ -39,9 +39,9 @@ BIRD2_SHA512 = 21b17a1e52dba90e0f35bb6b0cd8048c355de4c8364951d495e50d6e387ca807c
 LIBSSH_URL = http://archive.ubuntu.com/ubuntu/pool/main/libs/libssh/libssh-gcrypt-4_0.9.6-2build1_amd64.deb
 LIBSSH_DEB = build/$(notdir $(LIBSSH_URL))
 LIBSSH_SHA512 = c0a52a502da59cc644e178b351dc1edfdc44e04ea61184fc858e6d9dbdf161b27f2a30371e721a3ffb9c513ac23706fecc0df1b21259ec1183788049bf64547d
-LIBSSL3_URL = http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl3_3.0.2-0ubuntu1.8_amd64.deb
+LIBSSL3_URL = http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl3_3.0.2-0ubuntu1.9_amd64.deb
 LIBSSL3_DEB = build/$(notdir $(LIBSSL3_URL))
-LIBSSL3_SHA512 = eb625fb41e4a523181bb4d881bae27be421a15fe12e13c6e3d58306302561d6926607818891fcc8889ad66dc6f5c9ed2846559bedbd0307111aa3081ccd8052a
+LIBSSL3_SHA512 = c1906da77753689db0d9748d49ef6759b26d1bfaabf18ad40a01a00dd706ce90cea19ce2151b47507cc7d0f7ac227b571fbfe8b3230970866b6537451180d162
 endif
 DEBS = $(CHRONY_DEB) $(BIRD2_DEB) $(LIBSSH_DEB) $(LIBSSL3_DEB)
 
