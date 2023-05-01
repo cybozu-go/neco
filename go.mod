@@ -3,7 +3,7 @@ module github.com/cybozu-go/neco
 go 1.19
 
 require (
-	github.com/cybozu-go/cke v1.25.0
+	github.com/cybozu-go/cke v1.25.1
 	github.com/cybozu-go/etcdutil v1.6.4
 	github.com/cybozu-go/log v1.7.0
 	github.com/cybozu-go/netutil v1.4.4
@@ -100,6 +100,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc2 // indirect
+	github.com/opencontainers/selinux v1.11.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect

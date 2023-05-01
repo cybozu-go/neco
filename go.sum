@@ -102,8 +102,8 @@ github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/cybozu-go/cke v1.25.0 h1:+IG8DwtJhmC9JwurtyDzoq1nYQ29mWLA35yUgA1Wi5I=
-github.com/cybozu-go/cke v1.25.0/go.mod h1:OVUs4oSnb/lJvrPPLAWEpC7Qj/qJWtm23iEHT0RqpXI=
+github.com/cybozu-go/cke v1.25.1 h1:0IKyy/BiS5ilUHHwboLarPJWViQolintf/gQwqQODzs=
+github.com/cybozu-go/cke v1.25.1/go.mod h1:OqNACSvYexFRIa2IV5frtTMPt0wcIWPfV04t1ZiKS2k=
 github.com/cybozu-go/etcdutil v1.6.4 h1:iO/HOn+AOeF1ZT9wcNpMidmins7WnNEAYMD1m3wVc7A=
 github.com/cybozu-go/etcdutil v1.6.4/go.mod h1:WAfioaWB+EV/yjFmZzofKhLQyI19Yz8f71hAm0kanNo=
 github.com/cybozu-go/log v1.7.0 h1:wPTkNDWcnSLLAv1ejFSn07qvYG8ng6U6Gygv04dYW1w=
@@ -400,6 +400,8 @@ github.com/opencontainers/go-digest v1.0.0 h1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8
 github.com/opencontainers/go-digest v1.0.0/go.mod h1:0JzlMkj0TRzQZfJkVvzbP0HBR3IKzErnv2BNG4W4MAM=
 github.com/opencontainers/image-spec v1.1.0-rc2 h1:2zx/Stx4Wc5pIPDvIxHXvXtQFW/7XWJGmnM7r3wg034=
 github.com/opencontainers/image-spec v1.1.0-rc2/go.mod h1:3OVijpioIKYWTqjiG0zfF6wvoJ4fAXGbjdZuI2NgsRQ=
+github.com/opencontainers/selinux v1.11.0 h1:+5Zbo97w3Lbmb3PeqQtpmTkMwsW5nRI3YaLpt7tQ7oU=
+github.com/opencontainers/selinux v1.11.0/go.mod h1:E5dMC3VPuVvVHDYmi78qvhJp8+M586T4DlDRYpFkyec=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pascaldekloe/goe v0.1.0 h1:cBOtyMzM9HTpWjXfbbunk26uA6nG3a8n06Wieeh0MwY=
 github.com/pascaldekloe/goe v0.1.0/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
