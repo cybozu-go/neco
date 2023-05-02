@@ -27,6 +27,7 @@ reboot:
   max_concurrent_reboots: 1
   eviction_timeout_seconds: 1800
   command_timeout_seconds: 30
+  command_retries: 5
 options:
   kube-api:
     audit_log_enabled: true
