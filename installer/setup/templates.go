@@ -14,8 +14,8 @@ protocol direct singles {
 }
 protocol bfd {
     interface "*" {
-       min rx interval 300 ms;
-       min tx interval 300 ms;
+       min rx interval 400 ms;
+       min tx interval 400 ms;
     };
 }
 protocol kernel {
@@ -37,6 +37,7 @@ template bgp tor {
     local as {{ .ASN }};
     direct;
     bfd;
+    error wait time 3,300;
 
     ipv4 {
         # Accept routes regardless of its NEXT_HOP.
