@@ -1,6 +1,6 @@
 module github.com/cybozu-go/neco
 
-go 1.19
+go 1.20
 
 require (
 	github.com/cybozu-go/cke v1.25.1
@@ -37,8 +37,8 @@ require (
 	golang.org/x/crypto v0.7.0
 	golang.org/x/oauth2 v0.6.0
 	golang.org/x/term v0.6.0
-	k8s.io/api v0.25.6
-	k8s.io/apimachinery v0.25.6
+	k8s.io/api v0.25.9
+	k8s.io/apimachinery v0.25.9
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -134,7 +134,7 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/client-go v0.25.6 // indirect
+	k8s.io/client-go v0.25.9 // indirect
 	k8s.io/component-base v0.25.6 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230327201221-f5883ff37f0c // indirect
