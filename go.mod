@@ -1,9 +1,9 @@
 module github.com/cybozu-go/neco
 
-go 1.19
+go 1.20
 
 require (
-	github.com/cybozu-go/cke v1.25.1
+	github.com/cybozu-go/cke v1.25.2
 	github.com/cybozu-go/etcdutil v1.6.4
 	github.com/cybozu-go/log v1.7.0
 	github.com/cybozu-go/netutil v1.4.4
@@ -37,8 +37,8 @@ require (
 	golang.org/x/crypto v0.7.0
 	golang.org/x/oauth2 v0.6.0
 	golang.org/x/term v0.6.0
-	k8s.io/api v0.25.6
-	k8s.io/apimachinery v0.25.6
+	k8s.io/api v0.25.9
+	k8s.io/apimachinery v0.25.9
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -56,7 +56,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/cli v23.0.2+incompatible // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
-	github.com/docker/docker v23.0.2+incompatible // indirect
+	github.com/docker/docker v23.0.3+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.2 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -134,13 +134,13 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/client-go v0.25.6 // indirect
-	k8s.io/component-base v0.25.6 // indirect
+	k8s.io/client-go v0.25.9 // indirect
+	k8s.io/component-base v0.25.9 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230327201221-f5883ff37f0c // indirect
-	k8s.io/kube-proxy v0.25.6 // indirect
-	k8s.io/kube-scheduler v0.25.6 // indirect
-	k8s.io/kubelet v0.25.6 // indirect
+	k8s.io/kube-proxy v0.25.9 // indirect
+	k8s.io/kube-scheduler v0.25.9 // indirect
+	k8s.io/kubelet v0.25.9 // indirect
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
