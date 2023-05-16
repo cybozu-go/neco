@@ -319,9 +319,9 @@ teleport: $(TELEPORT_DOWNLOAD)
 $(CKE_DOWNLOAD):
 	mkdir -p $(CKE_DLDIR)
 	git clone --depth 1 -b v$(CKE_VERSION) https://github.com/cybozu-go/cke $(CKE_DLDIR)/source
-	cd $(CKE_DLDIR)/source; go build -ldflags="-w -s" ./pkg/cke
-	cd $(CKE_DLDIR)/source; go build -ldflags="-w -s" ./pkg/cke-localproxy
-	cd $(CKE_DLDIR)/source; go build -ldflags="-w -s" ./pkg/ckecli
+	cd $(CKE_DLDIR)/source; CGO_ENABLED=0 go build -ldflags="-w -s" ./pkg/cke
+	cd $(CKE_DLDIR)/source; CGO_ENABLED=0 go build -ldflags="-w -s" ./pkg/cke-localproxy
+	cd $(CKE_DLDIR)/source; CGO_ENABLED=0 go build -ldflags="-w -s" ./pkg/ckecli
 	touch $@
 
 .PHONY: cke
