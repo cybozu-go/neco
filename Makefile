@@ -136,9 +136,9 @@ setup-files-for-deb: setup-tools
 	cp -r debian/* $(WORKDIR)
 	mkdir -p $(WORKDIR)/src $(BINDIR) $(SBINDIR) $(SHAREDIR) $(DOCDIR)/neco
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
-	GOBIN=$(BINDIR) go install -tags='$(GOTAGS)' $(BIN_PKGS)
-	go build -o $(BINDIR)/sabakan-state-setter -tags='$(GOTAGS)' ./pkg/sabakan-state-setter/cmd
-	GOBIN=$(SBINDIR) go install -tags='$(GOTAGS)' $(SBIN_PKGS)
+	GOBIN=$(BINDIR) CGO_ENABLED=0 go install -ldflags="-s -w" -tags='$(GOTAGS)' $(BIN_PKGS)
+	CGO_ENABLED=0 go build -o $(BINDIR)/sabakan-state-setter -ldflags="-s -w" -tags='$(GOTAGS)' ./pkg/sabakan-state-setter/cmd
+	GOBIN=$(SBINDIR) CGO_ENABLED=0 go install -ldflags="-s -w" -tags='$(GOTAGS)' $(SBIN_PKGS)
 	tar -c -f $(LIBEXECDIR)/neco-operation-cli.tgz -z -C $(BINDIR) $(OPDEB_BINNAMES)
 	cp etc/* $(SHAREDIR)
 	cp -a ignitions $(SHAREDIR)
