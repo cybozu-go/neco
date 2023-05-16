@@ -123,7 +123,7 @@ $(CUSTOM_ISO_PATH): $(ORIGINAL_ISO_PATH) $(DEBS) cluster.json
 	# Add extra files
 	mkdir $(SRC_DIR_PATH)/extras
 	cp $(DEBS) $(SRC_DIR_PATH)/extras/
-	GOBIN=$(abspath $(SRC_DIR_PATH)/extras) go install ./setup
+	GOBIN=$(abspath $(SRC_DIR_PATH)/extras) CGO_ENABLED=0 go install -ldflags="-s -w" ./setup
 	cp cluster.json $(SRC_DIR_PATH)/extras/
 
 	# Setup autoinstall script
@@ -162,7 +162,7 @@ $(ORIGINAL_CLOUD_PATH):
 $(CUSTOM_CLOUD_PATH): $(ORIGINAL_CLOUD_PATH) $(DEBS) cluster.json
 	cp $< $@
 	qemu-img resize $@ 30G
-	GOBIN=$(abspath build) go install ./setup
+	GOBIN=$(abspath build) CGO_ENABLED=0 go install -ldflags="-s -w" ./setup
 	$(SUDO) ./customize-cloud-image $@ $(DEBS) build/setup cluster.json
 
 .PHONY: preview-cloud
