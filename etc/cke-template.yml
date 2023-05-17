@@ -142,6 +142,7 @@ options:
         cpu: "1"
       imageGCHighThresholdPercent: 65
       imageGCLowThresholdPercent: 60
+      serializeImagePulls: false
       featureGates:
         SeccompDefault: true
         NodeInclusionPolicyInPodTopologySpread: true
