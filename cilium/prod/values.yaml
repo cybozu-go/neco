@@ -37,14 +37,6 @@ hubble:
   tls:
     auto:
       method: "cronJob"
-  metrics:
-    enabled:
-      - "dns"
-      - "drop:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip"
-      - "tcp"
-      - "flow:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip"
-      - "icmp"
-      - "http"
 k8sServiceHost: 127.0.0.1
 k8sServicePort: 16443
 kubeProxyReplacement: "partial"

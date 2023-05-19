@@ -508,9 +508,6 @@ data:
   enable-xt-socket-fallback: "true"
   hubble-disable-tls: "false"
   hubble-listen-address: :4244
-  hubble-metrics: dns drop:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip
-    tcp flow:destinationContext=pod|dns|ip;sourceContext=pod|dns|ip icmp http
-  hubble-metrics-server: :9965
   hubble-socket-path: /var/run/cilium/hubble.sock
   hubble-tls-cert-file: /var/lib/cilium/tls/hubble/server.crt
   hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/client-ca.crt
@@ -593,27 +590,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    prometheus.io/port: "9965"
-    prometheus.io/scrape: "true"
-  labels:
-    k8s-app: hubble
-  name: hubble-metrics
-  namespace: kube-system
-spec:
-  clusterIP: None
-  ports:
-  - name: hubble-metrics
-    port: 9965
-    protocol: TCP
-    targetPort: hubble-metrics
-  selector:
-    k8s-app: cilium
-  type: ClusterIP
----
-apiVersion: v1
-kind: Service
-metadata:
   labels:
     k8s-app: cilium
   name: hubble-peer
@@ -666,7 +642,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 4e1abf0cfb0def3954391477f8ccf2b6ed26880390e3248de85b67aea9a1b449
+        cilium.io/cilium-configmap-checksum: 65aff468d3e584347030d5fecca8490c99558a232bef606e1e2fd11726d4037e
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -919,7 +895,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 4e1abf0cfb0def3954391477f8ccf2b6ed26880390e3248de85b67aea9a1b449
+        cilium.io/cilium-configmap-checksum: 65aff468d3e584347030d5fecca8490c99558a232bef606e1e2fd11726d4037e
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
@@ -1009,10 +985,6 @@ spec:
         - containerPort: 9964
           hostPort: 9964
           name: envoy-metrics
-          protocol: TCP
-        - containerPort: 9965
-          hostPort: 9965
-          name: hubble-metrics
           protocol: TCP
         readinessProbe:
           failureThreshold: 3
