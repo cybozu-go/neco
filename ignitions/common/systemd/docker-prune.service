@@ -5,5 +5,5 @@ Wants=network-online.target docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/docker container prune -f --filter "until=72h"
-ExecStart=/usr/bin/docker image prune -a -f --filter "until=72h"
+ExecStart=/usr/bin/docker container prune -f --filter "until=168h"
+ExecStart=/usr/bin/docker image prune -a -f --filter "until=168h"
