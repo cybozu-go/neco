@@ -1,10 +1,10 @@
 package dctest
 
 import (
-	"os"
-
+	"bytes" // for discovering the cause
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"os"
 )
 
 // testEtcdpasswd tests etcdpasswd operation
