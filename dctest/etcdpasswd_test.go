@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"fmt"
+	"log"
 )
 
 // testEtcdpasswd tests etcdpasswd operation
@@ -27,18 +27,20 @@ func testEtcdpasswd() {
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		By("executing command with sudo at boot servers")
-		fmt.Println("bobPrivateKey = ", bobPrivateKey)
+		log.Println("bobPrivateKey = ", bobPrivateKey)
 		sshKey, err := parsePrivateKey(bobPrivateKey)
-		fmt.Println("sshKey = ", sshKey)
+		log.Println("sshKey = ", sshKey, " err = ", err)
+
 		Expect(err).ShouldNot(HaveOccurred())
 		Eventually(func() error {
 			for _, h := range bootServers {
-				fmt.Println("user = ", user)
+				log.Println("h= ", h, "user = ", user)
 				agent, err := sshTo(h, sshKey, user)
 				if err != nil {
-					fmt.Println("sshTo err = ", err)
+					log.Println("h= ", h, "  sshTo err = ", err)
 					return err
 				}
+				log.Println("agent = ", agent)
 				_, _, err = doExec(agent, nil, "sudo", "ls")
 				if err != nil {
 					return err
