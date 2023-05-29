@@ -22,17 +22,18 @@ func testEtcdpasswd() {
 
 		// for discovering the cause
 		ret := execSafeAt(bootServers[0], "etcdpasswd", "set", "start-uid", "2000")
-		GinkgoWriter.Println("*** etcdpasswd set start-uid = ", string(bytes.TrimSpace(ret)))
+		GinkgoWriter.Println("*** etcdpasswd set start-uid,  stdout= ", string(bytes.TrimSpace(ret)))
 		ret = execSafeAt(bootServers[0], "etcdpasswd", "set", "start-gid", "2000")
-		GinkgoWriter.Println("*** etcdpasswd set start-gid = ", string(bytes.TrimSpace(ret)))
+		GinkgoWriter.Println("*** etcdpasswd set start-gid,  stdout= ", string(bytes.TrimSpace(ret)))
 		ret = execSafeAt(bootServers[0], "etcdpasswd", "set", "default-group", "cybozu")
-		GinkgoWriter.Println("*** etcdpasswd set default-group = ", string(bytes.TrimSpace(ret)))
+		GinkgoWriter.Println("*** etcdpasswd set default-group,  stdout= ", string(bytes.TrimSpace(ret)))
 		ret = execSafeAt(bootServers[0], "etcdpasswd", "set", "default-groups", "sudo,adm")
-		GinkgoWriter.Println("*** etcdpasswd set default-groups = ", string(bytes.TrimSpace(ret)))
+		GinkgoWriter.Println("*** etcdpasswd set default-groups, stdout= ", string(bytes.TrimSpace(ret)))
 		ret = execSafeAt(bootServers[0], "etcdpasswd", "user", "add", user)
-		GinkgoWriter.Println("*** etcdpasswd user add = ", string(bytes.TrimSpace(ret)))
+		GinkgoWriter.Println("*** etcdpasswd user add,  stdout= ", string(bytes.TrimSpace(ret)))
 		ret = execSafeAt(bootServers[0], "etcdpasswd", "user", "get", user)
-		GinkgoWriter.Println("*** etcdpasswd user get = ", string(bytes.TrimSpace(ret)))
+		GinkgoWriter.Println("*** etcdpasswd user get,  stdout= ", string(bytes.TrimSpace(ret)))
+		// end
 
 		keyBytes, err := os.ReadFile(bobPublicKey)
 		GinkgoWriter.Println("*** keyBytes= ", keyBytes, "err=", err) // for discovering the cause
