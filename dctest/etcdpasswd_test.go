@@ -29,7 +29,7 @@ func testEtcdpasswd() {
 		By("executing command with sudo at boot servers")
 		fmt.Println("bobPrivateKey = ", bobPrivateKey)
 		sshKey, err := parsePrivateKey(bobPrivateKey)
-		fmt.Println("sshKey = ", sshkey)
+		fmt.Println("sshKey = ", sshKey)
 		Expect(err).ShouldNot(HaveOccurred())
 		Eventually(func() error {
 			for _, h := range bootServers {
