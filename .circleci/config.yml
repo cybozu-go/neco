@@ -40,6 +40,12 @@ commands:
             ./bin/watch_service neco-worker
           background: true
       - run:
+          name: Watch ep-agent logs
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_service ep-agent
+          background: true
+      - run:
           name: Watch all pod logs
           command: |
             if [ -f .skip ]; then exit 0; fi
