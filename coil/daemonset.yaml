@@ -3,6 +3,8 @@ kind: DaemonSet
 metadata:
   namespace: kube-system
   name: coild
+  annotations:
+    cke.cybozu.com/rank: "2700"
 spec:
   updateStrategy:
     type: RollingUpdate

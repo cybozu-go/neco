@@ -624,6 +624,8 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    cke.cybozu.com/rank: "2800"
   labels:
     io.cilium/app: operator
     name: cilium-operator
@@ -885,6 +887,8 @@ spec:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  annotations:
+    cke.cybozu.com/rank: "2900"
   labels:
     k8s-app: cilium
   name: cilium

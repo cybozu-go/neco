@@ -8171,6 +8171,8 @@ spec:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  annotations:
+    cke.cybozu.com/rank: "2700"
   labels:
     app.kubernetes.io/component: coild
     app.kubernetes.io/name: coil
