@@ -11,7 +11,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.5.7.2", Private: false},
 		{Name: "promtail", Repository: "quay.io/cybozu/promtail", Tag: "2.8.0.2", Private: false},
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "2.13.2", Private: false},
-		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.10.1.1", Private: false},
+		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.10.1.2", Private: false},
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.13.2", Private: true},
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "5.8.0.2", Private: false},
 		{Name: "vault", Repository: "quay.io/cybozu/vault", Tag: "1.13.0.1", Private: false},
@@ -23,5 +23,5 @@ var CurrentArtifacts = ArtifactSet{
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.4.2"},
 	},
-	OSImage: OSImage{Channel: "stable", Version: "3510.2.1"},
+	OSImage: OSImage{Channel: "stable", Version: "3510.2.2"},
 }
