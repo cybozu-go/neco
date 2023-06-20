@@ -17,3 +17,7 @@ patchesJson6902:
           effect: NoExecute
           key: node.cybozu.io/cluster-not-ready
           operator: Exists
+      - op: add
+        path: /metadata/annotations
+        value:
+          cke.cybozu.com/rank: "2600"
