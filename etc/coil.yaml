@@ -8072,6 +8072,8 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    cke.cybozu.com/rank: "2600"
   labels:
     app.kubernetes.io/component: coil-controller
     app.kubernetes.io/name: coil
@@ -8171,6 +8173,8 @@ spec:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  annotations:
+    cke.cybozu.com/rank: "2500"
   labels:
     app.kubernetes.io/component: coild
     app.kubernetes.io/name: coil

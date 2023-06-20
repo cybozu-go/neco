@@ -49,10 +49,17 @@ func testCoilSetup() {
 		}).Should(Succeed())
 
 		By("creating IP address pool")
-		data, err := os.ReadFile(addressPoolsFile)
-		Expect(err).NotTo(HaveOccurred())
-		stdout, stderr, err := execAtWithInput(bootServers[0], data, "kubectl", "apply", "-f", "-")
-		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		Eventually(func() error {
+			data, err := os.ReadFile(addressPoolsFile)
+			if err != nil {
+				return err
+			}
+			stdout, stderr, err := execAtWithInput(bootServers[0], data, "kubectl", "apply", "-f", "-")
+			if err != nil {
+				return fmt.Errorf("err=%s stdout=%s, stderr=%s", err, stdout, stderr)
+			}
+			return nil
+		}).Should(Succeed())
 	})
 }
 
