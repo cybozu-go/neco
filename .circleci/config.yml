@@ -122,7 +122,7 @@ jobs:
   build:
     docker:
       - image: quay.io/cybozu/golang:1.20-jammy
-      - image: quay.io/coreos/etcd:v3.5.7
+      - image: quay.io/coreos/etcd:v3.5.9
     working_directory: /work
     resource_class: xlarge
     steps:
@@ -144,7 +144,7 @@ jobs:
   build_release:
     docker:
       - image: quay.io/cybozu/golang:1.20-jammy
-      - image: quay.io/coreos/etcd:v3.5.7
+      - image: quay.io/coreos/etcd:v3.5.9
     working_directory: /work
     resource_class: xlarge
     steps:
