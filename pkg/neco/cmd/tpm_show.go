@@ -14,7 +14,7 @@ import (
 
 type tpmSettings struct {
 	Devices    []redfish.TrustedModules
-	Attributes redfish.BiosAttributes
+	Attributes redfish.SettingsAttributes
 }
 
 func getTpmSettings(client *gofish.APIClient) (*tpmSettings, error) {
@@ -24,7 +24,7 @@ func getTpmSettings(client *gofish.APIClient) (*tpmSettings, error) {
 	}
 
 	// Get BIOS attributes related to TPM.
-	tpmAttrs := redfish.BiosAttributes{}
+	tpmAttrs := redfish.SettingsAttributes{}
 	bios, err := system.Bios()
 	if err != nil && !strings.Contains(err.Error(), "404") {
 		// Ignore error if return 404. It means bios endpoint is not implemented.
