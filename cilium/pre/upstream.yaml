@@ -729,7 +729,7 @@ spec:
     spec:
       containers:
       - name: cilium-agent
-        image: "quay.io/cybozu/cilium:1.12.8.4"
+        image: "quay.io/cybozu/cilium:1.12.11.1"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
@@ -913,7 +913,7 @@ spec:
       # from a privileged container because the mount propagation bidirectional
       # only works from privileged containers.
       - name: mount-bpf-fs
-        image: "quay.io/cybozu/cilium:1.12.8.4"
+        image: "quay.io/cybozu/cilium:1.12.11.1"
         imagePullPolicy: IfNotPresent
         args:
         - 'mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf'
@@ -929,7 +929,7 @@ spec:
           mountPath: /sys/fs/bpf
           mountPropagation: Bidirectional
       - name: clean-cilium-state
-        image: "quay.io/cybozu/cilium:1.12.8.4"
+        image: "quay.io/cybozu/cilium:1.12.11.1"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
@@ -993,7 +993,7 @@ spec:
             memory: 100Mi # wait-for-kube-proxy
       # Install the CNI binaries in an InitContainer so we don't have a writable host mount in the agent
       - name: install-cni-binaries
-        image: "quay.io/cybozu/cilium:1.12.8.4"
+        image: "quay.io/cybozu/cilium:1.12.11.1"
         imagePullPolicy: IfNotPresent
         command:
           - "/install-plugin.sh"
@@ -1138,7 +1138,7 @@ spec:
     spec:
       containers:
       - name: cilium-operator
-        image: "quay.io/cybozu/cilium-operator-generic:1.12.8.1"
+        image: "quay.io/cybozu/cilium-operator-generic:1.12.11.1"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
@@ -1247,7 +1247,7 @@ spec:
     spec:
       containers:
         - name: hubble-relay
-          image: "quay.io/cybozu/hubble-relay:1.12.8.1"
+          image: "quay.io/cybozu/hubble-relay:1.12.11.1"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
