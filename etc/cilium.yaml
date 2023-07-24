@@ -686,7 +686,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium-operator-generic:1.12.8.1
+        image: quay.io/cybozu/cilium-operator-generic:1.12.11.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -768,7 +768,7 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: quay.io/cybozu/hubble-relay:1.12.8.1
+        image: quay.io/cybozu/hubble-relay:1.12.11.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
@@ -949,7 +949,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.12.8.4
+        image: quay.io/cybozu/cilium:1.12.11.1
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -1079,7 +1079,7 @@ spec:
         - /bin/bash
         - -c
         - --
-        image: quay.io/cybozu/cilium:1.12.8.4
+        image: quay.io/cybozu/cilium:1.12.11.1
         imagePullPolicy: IfNotPresent
         name: mount-bpf-fs
         securityContext:
@@ -1108,7 +1108,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.12.8.4
+        image: quay.io/cybozu/cilium:1.12.11.1
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -1138,7 +1138,7 @@ spec:
           name: cilium-run
       - command:
         - /install-plugin.sh
-        image: quay.io/cybozu/cilium:1.12.8.4
+        image: quay.io/cybozu/cilium:1.12.11.1
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
