@@ -35,6 +35,9 @@ func (w WorkerWatcher) Watch(ctx context.Context, rev int64, storage Storage) er
 		clientv3.WithRev(rev+1), clientv3.WithFilterDelete(), clientv3.WithPrefix(),
 	)
 	for resp := range ch {
+		if err := resp.Err(); err != nil {
+			return err
+		}
 		for _, ev := range resp.Events {
 			st := new(neco.UpdateStatus)
 			err := json.Unmarshal(ev.Kv.Value, st)
