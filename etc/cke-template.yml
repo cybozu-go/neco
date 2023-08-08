@@ -66,17 +66,18 @@ options:
             - system:kube-scheduler
         - level: RequestResponse
     extra_args:
-      - "--feature-gates=NodeInclusionPolicyInPodTopologySpread=true,MinDomainsInPodTopologySpread=true"
+      - "--feature-gates=NodeInclusionPolicyInPodTopologySpread=true,MinDomainsInPodTopologySpread=true,ComponentSLIs=true,ValidatingAdmissionPolicy=true"
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
       - "--audit-log-maxbackup=10"
+      - "--runtime-config=admissionregistration.k8s.io/v1alpha1=true"
     extra_binds:
       - source: /var/log/audit
         destination: /var/log/audit
         read_only: false
   kube-controller-manager:
     extra_args:
-      - "--feature-gates=NodeInclusionPolicyInPodTopologySpread=true,MinDomainsInPodTopologySpread=true"
+      - "--feature-gates=NodeInclusionPolicyInPodTopologySpread=true,MinDomainsInPodTopologySpread=true,ComponentSLIs=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -90,7 +91,7 @@ options:
       mode: ipvs
   kube-scheduler:
     config:
-      apiVersion: kubescheduler.config.k8s.io/v1beta3
+      apiVersion: kubescheduler.config.k8s.io/v1
       kind: KubeSchedulerConfiguration
       extenders:
       - urlPrefix: "http://127.0.0.1:9251"
@@ -114,14 +115,14 @@ options:
         pluginConfig:
         - name: PodTopologySpread
           args:
-            # https://pkg.go.dev/k8s.io/kube-scheduler/config/v1beta3#PodTopologySpreadArgs
+            # https://pkg.go.dev/k8s.io/kube-scheduler/config/v1#PodTopologySpreadArgs
             defaultConstraints:
             - maxSkew: 1
               topologyKey: topology.kubernetes.io/zone
               whenUnsatisfiable: ScheduleAnyway
             defaultingType: List
     extra_args:
-      - "--feature-gates=NodeInclusionPolicyInPodTopologySpread=true,MinDomainsInPodTopologySpread=true"
+      - "--feature-gates=NodeInclusionPolicyInPodTopologySpread=true,MinDomainsInPodTopologySpread=true,ComponentSLIs=true"
       - "--leader-elect-retry-period=5s"
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
@@ -150,6 +151,7 @@ options:
     extra_args:
       - "--containerd=/var/run/k8s-containerd.sock"
       - "--seccomp-default=true"
+      - "--feature-gates=ComponentSLIs=true"
     extra_binds:
       - source: /var/lib/k8s-containerd
         destination: /var/lib/k8s-containerd
