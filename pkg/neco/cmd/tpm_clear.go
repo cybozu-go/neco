@@ -66,7 +66,7 @@ func dellRedfishSetTpmAttribute(client *gofish.APIClient) error {
 		return err
 	}
 
-	attr := redfish.BiosAttributes{
+	attr := redfish.SettingsAttributes{
 		"Tpm2Hierarchy": "Clear",
 	}
 	return bios.UpdateBiosAttributes(attr)

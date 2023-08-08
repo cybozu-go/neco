@@ -1,14 +1,14 @@
 # tool versions used for both local bin and deb/zip packages
 
 ## These should be updated when Kubernetes is updated
-CKE_VERSION = 1.25.9
-CONTAINERD_VERSION = 1.6.18
-NERDCTL_VERSION = 1.2.0
-CRITOOLS_VERSION = 1.26.0
-RUNC_VERSION = 1.1.4
-K8S_VERSION = 1.25.10
-HELM_VERSION = 3.10.3
-STERN_VERSION = 1.23.0
+CKE_VERSION = 1.26.0
+CONTAINERD_VERSION = 1.7.2
+NERDCTL_VERSION = 1.4.0
+CRITOOLS_VERSION = 1.27.1
+RUNC_VERSION = 1.1.8
+K8S_VERSION = 1.26.6
+HELM_VERSION = 3.12.2
+STERN_VERSION = 1.25.0
 
 
 ## These should be updated regularly
