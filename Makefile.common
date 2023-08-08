@@ -21,7 +21,7 @@ KUSTOMIZE_VERSION = 4.5.7
 JSONNET_VERSION = 0.19.1
 MOCO_VERSION = 0.16.1
 NODE_EXPORTER_VERSION = 1.5.0
-TELEPORT_VERSION = 12.4.10
+TELEPORT_VERSION = 13.3.1
 # kubeseal is a CLI tool for Sealed Secrets
 # https://github.com/bitnami-labs/sealed-secrets
 KUBESEAL_VERSION = 0.19.5
