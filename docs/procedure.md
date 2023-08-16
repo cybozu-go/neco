@@ -31,6 +31,7 @@ Build `generate-artifacs` and update `artifacts.go`.
 ```console
 $ go install ./pkg/generate-artifacts/
 $ generate-artifacts > artifacts.go
+$ git add artifacts.go
 ```
 
 Create a PR.
