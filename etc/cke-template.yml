@@ -28,6 +28,8 @@ reboot:
   eviction_timeout_seconds: 1800
   command_timeout_seconds: 30
   command_retries: 5
+  evict_retries: 30
+  evict_interval: 10
 options:
   kube-api:
     audit_log_enabled: true
