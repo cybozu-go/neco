@@ -10,12 +10,28 @@ $ cd $GOPATH/src/github.com/cybozu-go/neco
 $ git checkout main
 $ git pull
 ```
+ 
+Or clone repository.
+
+```console
+$ git clone git@github.com:cybozu-go/neco.git
+$ cd neco
+```
+
+Create branch.
+
+```console
+$ VERSION=x.y.z
+$ echo $VERSION
+$ git neco dev "bump-$VERSION"
+```
 
 Build `generate-artifacs` and update `artifacts.go`.
 
 ```console
 $ go install ./pkg/generate-artifacts/
 $ generate-artifacts > artifacts.go
+$ git add artifacts.go
 ```
 
 Create a PR.
