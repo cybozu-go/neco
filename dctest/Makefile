@@ -79,7 +79,7 @@ $(OUTPUT)/$(FLATCAR_IMAGE):
 # SABAKAN_CONTENTS
 $(DHCP_JSON):
 	cd ..; go install ./pkg/placemat-menu
-	$(GOPATH)/bin/placemat-menu -f $(MENU) -o $(OUTPUT)
+	$(shell go env GOPATH)/bin/placemat-menu -f $(MENU) -o $(OUTPUT)
 
 $(OUTPUT)/chrony.ign: $(DHCP_JSON) $(CT)
 	mkdir -p $(OUTPUT)
