@@ -112,6 +112,7 @@ test:
 	go test -tags='$(GOTAGS)' -race -v ./...
 	RUN_COMPACTION_TEST=yes go test -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
 	go vet -tags='$(GOTAGS)' ./...
+	make -C ignition-template/ validation
 
 .PHONY: check-generate
 check-generate:
