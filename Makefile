@@ -112,10 +112,10 @@ test:
 	go test -tags='$(GOTAGS)' -race -v ./...
 	RUN_COMPACTION_TEST=yes go test -tags='$(GOTAGS)' -race -v -run=TestEtcdCompaction ./worker/
 	go vet -tags='$(GOTAGS)' ./...
-	make -C ignition-template validation
 
 .PHONY: check-generate
 check-generate:
+	$(MAKE) -C ignition-template all
 	$(MAKE) update-coil
 	$(MAKE) update-cilium
 	$(MAKE) update-cilium CILIUM_PRE=true

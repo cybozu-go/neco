@@ -64,14 +64,6 @@ build:
 	mkdir -p $(BINDIR)
 	@go build -o $(BINDIR)/configgenerator
 
-.PHONY: validation
-validation: all
-	if ! test -z "$$(git status --porcelain)"; then \
-		echo "ERROR: git status is not clean"; \
-		git status; \
-		exit 1; \
-	fi
-
 .PHONY: clean
 clean:
 	rm -rf $(BINDIR)
