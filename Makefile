@@ -115,6 +115,7 @@ test:
 
 .PHONY: check-generate
 check-generate:
+	$(MAKE) -C ignition-template all
 	$(MAKE) update-coil
 	$(MAKE) update-cilium
 	$(MAKE) update-cilium CILIUM_PRE=true
