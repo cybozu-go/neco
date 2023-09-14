@@ -57,6 +57,10 @@ systemd:
     name: systemd-timesyncd.service
   - mask: true
     name: tcsd.service
+  - mask: true
+    name: iscsiuio.service
+  - mask: true
+    name: iscsiuio.socket
   - enabled: true
     name: docker.service
   - enabled: true

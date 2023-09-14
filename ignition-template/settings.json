@@ -185,6 +185,14 @@
           "mask": true
         },
         {
+          "name": "iscsiuio.service",
+          "mask": true
+        },
+        {
+          "name": "iscsiuio.socket",
+          "mask": true
+        },
+        {
           "name": "docker.service",
           "enabled": true
         },
