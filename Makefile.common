@@ -1,7 +1,7 @@
 # tool versions used for both local bin and deb/zip packages
 
 ## These should be updated when Kubernetes is updated
-CKE_VERSION = 1.26.1
+CKE_VERSION = 1.26.2
 CONTAINERD_VERSION = 1.7.2
 NERDCTL_VERSION = 1.4.0
 CRITOOLS_VERSION = 1.27.1
