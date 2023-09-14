@@ -1,7 +1,0 @@
-server = 'https://asia-northeast1-docker.pkg.dev'
-
-[host.'http://127.0.0.1:30020']
-capabilities = ['pull', 'resolve']
-
-[host.'http://127.0.0.1:30021']
-capabilities = ['pull', 'resolve']

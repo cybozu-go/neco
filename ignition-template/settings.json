@@ -365,7 +365,6 @@
     "gcp0": {
       "include": "common.yml",
       "files": [
-        "/etc/k8s-containerd/conf.d/asia-northeast1-docker.pkg.dev/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.elastic.co/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
         "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml",
@@ -375,7 +374,6 @@
     "stage0": {
       "include": "common.yml",
       "files": [
-        "/etc/k8s-containerd/conf.d/asia-northeast1-docker.pkg.dev/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.elastic.co/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
         "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml",
@@ -385,7 +383,6 @@
     "stage1": {
       "include": "common.yml",
       "files": [
-        "/etc/k8s-containerd/conf.d/asia-northeast1-docker.pkg.dev/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.elastic.co/hosts.toml",
         "/etc/k8s-containerd/conf.d/docker.io/hosts.toml",
         "/etc/k8s-containerd/conf.d/localhost:5050/hosts.toml",
