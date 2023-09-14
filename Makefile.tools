@@ -278,7 +278,7 @@ jsonnet: $(JSONNET_DOWNLOAD)
 	$(CP) $(JSONNET_DLDIR)/README.md $(DOCDIR)/$@/README.md
 	$(CP) $(JSONNET_DLDIR)/windows_amd64/jsonnet.exe $(WINDOWS_BINDIR)/jsonnet.exe
 	$(CP) $(JSONNET_DLDIR)/windows_amd64/jsonnetfmt.exe $(WINDOWS_BINDIR)/jsonnetfmt.exe
-	$(CP) $(JSONNET_DLDIR)/windows_amd64/jsonnet_lint.exe $(WINDOWS_BINDIR)/jsonnet-lint.exe
+	$(CP) $(JSONNET_DLDIR)/windows_amd64/jsonnet-lint.exe $(WINDOWS_BINDIR)/jsonnet-lint.exe
 	$(CP) $(JSONNET_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	$(CP) $(JSONNET_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 	$(CP) $(JSONNET_DLDIR)/darwin_amd64/jsonnet $(MAC_BINDIR)/jsonnet
