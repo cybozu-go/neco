@@ -103,8 +103,8 @@ github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/cybozu-go/cke v1.26.1 h1:WL5CmJQJ/IpbmmHdp79eBf5ICAjkAdiLmhIFfNlUk4A=
-github.com/cybozu-go/cke v1.26.1/go.mod h1:kHKAByuS7MMzN/hbfBrFjx7uiEEAIf2mpvu5Y9+YY90=
+github.com/cybozu-go/cke v1.26.2 h1:2IAgkD2+43Wq8gFLe4+OHbbF6mJcGMZqB8fSf4hJD50=
+github.com/cybozu-go/cke v1.26.2/go.mod h1:kHKAByuS7MMzN/hbfBrFjx7uiEEAIf2mpvu5Y9+YY90=
 github.com/cybozu-go/etcdutil v1.6.5 h1:jZrYFsbT1CLMwDMV0g7YSqVPdgZMs68dfzH1Xk8UQvU=
 github.com/cybozu-go/etcdutil v1.6.5/go.mod h1:1Mmdabyl3azG3/i93ezqH0DE8Dno/oiDj/+UGMGlgB4=
 github.com/cybozu-go/log v1.7.0 h1:wPTkNDWcnSLLAv1ejFSn07qvYG8ng6U6Gygv04dYW1w=
