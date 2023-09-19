@@ -16,8 +16,10 @@ func GenerateConf(w io.Writer, mylrn int, lrns []int) error {
 		endpoints[i] = "https://" + ip.String() + ":2379"
 	}
 	data := map[string]interface{}{
-		"advertise-url": "http://" + myip.String() + ":10080",
-		"dhcp-bind":     "0.0.0.0:67",
+		"advertise-url":       "http://" + myip.String() + ":10080",
+		"advertise-url-https": "https://" + myip.String() + ":10443",
+
+		"dhcp-bind": "0.0.0.0:67",
 		"etcd": map[string]interface{}{
 			"endpoints":     endpoints,
 			"tls-cert-file": neco.SabakanEtcdCertFile,

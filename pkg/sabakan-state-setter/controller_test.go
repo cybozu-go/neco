@@ -18,6 +18,7 @@ func newMockController(saba *sabakanMockClient, prom *promMockClient, serf *serf
 		interval:          time.Minute,
 		parallelSize:      2,
 		sabakanClient:     saba,
+		sabakanTLSClient:  saba,
 		promClient:        prom,
 		serfClient:        serf,
 		necoExecutor:      neco,

@@ -27,10 +27,11 @@ type Controller struct {
 	sessionTTL    time.Duration
 
 	// Clients
-	necoExecutor  NecoCmdExecutor
-	promClient    PrometheusClient
-	sabakanClient SabakanClientWrapper
-	serfClient    SerfClient
+	necoExecutor     NecoCmdExecutor
+	promClient       PrometheusClient
+	sabakanClient    SabakanClientWrapper
+	sabakanTLSClient SabakanClientWrapper
+	serfClient       SerfClient
 
 	// others
 	interval          time.Duration
@@ -62,13 +63,17 @@ func (c *Controller) ClearUnhealthy(m *machine) {
 }
 
 // NewController returns controller for sabakan-state-setter
-func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, configFile, electionValue string, interval time.Duration, parallelSize int, sessionTTL time.Duration) (*Controller, error) {
+func NewController(etcdClient *clientv3.Client, sabakanAddress, sabakanAddressHTTPS, serfAddress, configFile, electionValue string, interval time.Duration, parallelSize int, sessionTTL time.Duration) (*Controller, error) {
 	shutdownSchedule, machineTypes, err := readConfigFile(configFile)
 	if err != nil {
 		return nil, err
 	}
 
 	sabakanClient, err := newSabakanGQLClient(sabakanAddress)
+	if err != nil {
+		return nil, err
+	}
+	sabakanTLSClient, err := newSabakanGQLClient(sabakanAddressHTTPS)
 	if err != nil {
 		return nil, err
 	}
@@ -86,10 +91,11 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, con
 		electionValue: electionValue,
 		sessionTTL:    sessionTTL,
 
-		necoExecutor:  necoExecutor,
-		promClient:    promClient,
-		sabakanClient: sabakanClient,
-		serfClient:    serfClient,
+		necoExecutor:     necoExecutor,
+		promClient:       promClient,
+		sabakanClient:    sabakanClient,
+		sabakanTLSClient: sabakanTLSClient,
+		serfClient:       serfClient,
 
 		interval:          interval,
 		parallelSize:      parallelSize,
@@ -392,7 +398,7 @@ func (c *Controller) machineRetire(ctx context.Context, machines []*machine) map
 			continue
 		}
 
-		err := c.sabakanClient.CryptsDelete(ctx, m.Serial)
+		err := c.sabakanTLSClient.CryptsDelete(ctx, m.Serial)
 		if err != nil {
 			log.Warn("failed to delete crypts on sabakan", map[string]interface{}{
 				log.FnError: err.Error(),
