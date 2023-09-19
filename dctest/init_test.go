@@ -104,8 +104,8 @@ func testInit() {
 
 			execSafeAt(host, "test", "-d", neco.SabakanDataDir)
 			execSafeAt(host, "test", "-f", neco.SabakanConfFile)
-			execSafeAt(host, "test", "-f", neco.SabakanKeyFile)
-			execSafeAt(host, "test", "-f", neco.SabakanCertFile)
+			execSafeAt(host, "test", "-f", neco.SabakanEtcdKeyFile)
+			execSafeAt(host, "test", "-f", neco.SabakanEtcdCertFile)
 			execSafeAt(host, "test", "-f", neco.SabactlBashCompletionFile)
 
 			Eventually(func(g Gomega) {

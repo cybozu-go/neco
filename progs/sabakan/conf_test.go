@@ -33,8 +33,8 @@ func TestGenerateConf(t *testing.T) {
 				"https://" + neco.BootNode0IP(1).String() + ":2379",
 				"https://" + neco.BootNode0IP(2).String() + ":2379",
 			},
-			"tls-cert-file": neco.SabakanCertFile,
-			"tls-key-file":  neco.SabakanKeyFile,
+			"tls-cert-file": neco.SabakanEtcdCertFile,
+			"tls-key-file":  neco.SabakanEtcdKeyFile,
 		},
 	}
 

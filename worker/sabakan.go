@@ -47,7 +47,7 @@ func (o *operator) UpdateSabakan(ctx context.Context, req *neco.UpdateRequest) e
 		return err
 	}
 
-	_, err = os.Stat(neco.SabakanKeyFile)
+	_, err = os.Stat(neco.SabakanEtcdKeyFile)
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Info("sabakan: updated", nil)

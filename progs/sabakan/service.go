@@ -21,8 +21,8 @@ func GenerateService(w io.Writer, rt neco.ContainerRuntime) error {
 	}{
 		Image:    rt.ImageFullName(img),
 		ConfFile: neco.SabakanConfFile,
-		CertFile: neco.SabakanCertFile,
-		KeyFile:  neco.SabakanKeyFile,
+		CertFile: neco.SabakanEtcdCertFile,
+		KeyFile:  neco.SabakanEtcdKeyFile,
 	}
 
 	return serviceTmpl.Execute(w, tmplArgs)

@@ -139,6 +139,9 @@ var (
 	ServerCertFile = filepath.Join(NecoDir, "server.crt")
 	ServerKeyFile  = filepath.Join(NecoDir, "server.key")
 
+	SabakanServerCertFile = filepath.Join(SabakanDir, "server.crt")
+	SabakanServerKeyFile  = filepath.Join(SabakanDir, "server.key")
+
 	EtcdPeerCAFile   = filepath.Join(EtcdDir, "ca-peer.crt")
 	EtcdClientCAFile = filepath.Join(EtcdDir, "ca-client.crt")
 	EtcdPeerCertFile = filepath.Join(EtcdDir, "peer.crt")
@@ -159,8 +162,8 @@ var (
 
 	TeleportConfFile = filepath.Join(TeleportDir, "teleport.yaml")
 
-	SabakanCertFile           = filepath.Join(SabakanDir, "etcd.crt")
-	SabakanKeyFile            = filepath.Join(SabakanDir, "etcd.key")
+	SabakanEtcdCertFile       = filepath.Join(SabakanDir, "etcd.crt")
+	SabakanEtcdKeyFile        = filepath.Join(SabakanDir, "etcd.key")
 	SabakanConfFile           = filepath.Join(SabakanDir, "config.yml")
 	SabactlBin                = "/usr/local/bin/sabactl"
 	SabactlBashCompletionFile = filepath.Join(BashCompletionDir, "sabactl")

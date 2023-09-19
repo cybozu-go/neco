@@ -20,8 +20,8 @@ func GenerateConf(w io.Writer, mylrn int, lrns []int) error {
 		"dhcp-bind":     "0.0.0.0:67",
 		"etcd": map[string]interface{}{
 			"endpoints":     endpoints,
-			"tls-cert-file": neco.SabakanCertFile,
-			"tls-key-file":  neco.SabakanKeyFile,
+			"tls-cert-file": neco.SabakanEtcdCertFile,
+			"tls-key-file":  neco.SabakanEtcdKeyFile,
 		},
 	}
 	b, err := yaml.Marshal(data)
