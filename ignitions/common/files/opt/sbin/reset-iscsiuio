@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+if systemctl list-units --state=masked --no-legend --plain --full | fgrep iscsiuio.service; then
+    if [ "$(systemctl is-active iscsiuio.service)" = "failed" ]; then
+        echo 'iscsiuio.service is masked but failed. Resetting...'
+        systemctl reset-failed iscsiuio.service
+    fi
+fi

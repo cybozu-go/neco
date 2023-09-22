@@ -32,6 +32,7 @@ files:
   - /opt/sbin/chrony-wait
   - /opt/sbin/disable-nic-offload
   - /opt/sbin/neco-wait-dhcp-online
+  - /opt/sbin/reset-iscsiuio
   - /opt/sbin/setup-bmc-user
   - /opt/sbin/setup-containerd
   - /opt/sbin/setup-hw
@@ -143,6 +144,8 @@ systemd:
     name: remove-kubelet-state.service
   - enabled: true
     name: setup-seccomp-profile.service
+  - enabled: true
+    name: reset-iscsiuio.service
 networkd:
   - 01-eth0.network
   - 01-eth1.network
