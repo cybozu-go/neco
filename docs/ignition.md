@@ -211,6 +211,8 @@ Following services are masked:
 * `systemd-timesyncd.service`: ditto.
 * `rkt-metadata.service`: we do not use this.
 * `rkt-metadata.socket`: ditto.
+* `iscsiuio.service`: we do not use this.
+* `iscsiuio.socket`: ditto.
 
 Serf tags
 ---------
