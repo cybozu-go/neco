@@ -1,0 +1,13 @@
+[Unit]
+Description=Reset unused iSCSI UserSpace I/O service
+Before=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sbin/reset-iscsiuio
+RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target
