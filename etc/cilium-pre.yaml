@@ -23,6 +23,23 @@ metadata:
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/part-of: cilium
+  name: cilium-config-agent
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
@@ -82,6 +99,8 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  labels:
+    app.kubernetes.io/part-of: cilium
   name: cilium
 rules:
 - apiGroups:
@@ -123,12 +142,11 @@ rules:
 - apiGroups:
   - cilium.io
   resources:
-  - ciliumbgploadbalancerippools
+  - ciliumloadbalancerippools
   - ciliumbgppeeringpolicies
   - ciliumclusterwideenvoyconfigs
   - ciliumclusterwidenetworkpolicies
   - ciliumegressgatewaypolicies
-  - ciliumegressnatpolicies
   - ciliumendpoints
   - ciliumendpointslices
   - ciliumenvoyconfigs
@@ -136,6 +154,7 @@ rules:
   - ciliumlocalredirectpolicies
   - ciliumnetworkpolicies
   - ciliumnodes
+  - ciliumnodeconfigs
   verbs:
   - list
   - watch
@@ -181,6 +200,8 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  labels:
+    app.kubernetes.io/part-of: cilium
   name: cilium-operator
 rules:
 - apiGroups:
@@ -220,6 +241,7 @@ rules:
   - services/status
   verbs:
   - update
+  - patch
 - apiGroups:
   - ""
   resources:
@@ -302,6 +324,7 @@ rules:
   - list
   - watch
   - delete
+  - patch
 - apiGroups:
   - apiextensions.k8s.io
   resources:
@@ -314,12 +337,11 @@ rules:
 - apiGroups:
   - apiextensions.k8s.io
   resourceNames:
-  - ciliumbgploadbalancerippools.cilium.io
+  - ciliumloadbalancerippools.cilium.io
   - ciliumbgppeeringpolicies.cilium.io
   - ciliumclusterwideenvoyconfigs.cilium.io
   - ciliumclusterwidenetworkpolicies.cilium.io
   - ciliumegressgatewaypolicies.cilium.io
-  - ciliumegressnatpolicies.cilium.io
   - ciliumendpoints.cilium.io
   - ciliumendpointslices.cilium.io
   - ciliumenvoyconfigs.cilium.io
@@ -328,10 +350,25 @@ rules:
   - ciliumlocalredirectpolicies.cilium.io
   - ciliumnetworkpolicies.cilium.io
   - ciliumnodes.cilium.io
+  - ciliumnodeconfigs.cilium.io
   resources:
   - customresourcedefinitions
   verbs:
   - update
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumloadbalancerippools
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumloadbalancerippools/status
+  verbs:
+  - patch
 - apiGroups:
   - coordination.k8s.io
   resources:
@@ -344,6 +381,8 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  labels:
+    app.kubernetes.io/part-of: cilium
   name: hubble-generate-certs
 rules:
 - apiGroups:
@@ -374,8 +413,26 @@ rules:
   - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/part-of: cilium
+  name: cilium-config-agent
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cilium-config-agent
+subjects:
+- kind: ServiceAccount
+  name: cilium
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/part-of: cilium
   name: cilium
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -389,6 +446,8 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/part-of: cilium
   name: cilium-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -402,6 +461,8 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/part-of: cilium
   name: hubble-generate-certs
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -473,13 +534,14 @@ data:
   cni-uninstall: "true"
   custom-cni-conf: "true"
   debug: "false"
+  debug-verbose: ""
   devices: eth+ eno1+ eno2+
   direct-routing-device: e+
   disable-cnp-status-updates: "true"
   disable-endpoint-crd: "false"
   enable-auto-protect-node-port-range: "true"
   enable-bgp-control-plane: "false"
-  enable-bpf-clock-probe: "true"
+  enable-bpf-clock-probe: "false"
   enable-endpoint-health-checking: "false"
   enable-external-ips: "true"
   enable-health-check-nodeport: "true"
@@ -491,6 +553,7 @@ data:
   enable-ipv4: "true"
   enable-ipv4-masquerade: "false"
   enable-ipv6: "false"
+  enable-ipv6-big-tcp: "false"
   enable-ipv6-masquerade: "true"
   enable-k8s-terminating-endpoint: "true"
   enable-l2-neigh-discovery: "true"
@@ -501,6 +564,7 @@ data:
   enable-node-port: "true"
   enable-policy: default
   enable-remote-node-identity: "true"
+  enable-sctp: "false"
   enable-session-affinity: "true"
   enable-svc-source-range-check: "true"
   enable-vtep: "false"
@@ -513,7 +577,8 @@ data:
   hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/client-ca.crt
   hubble-tls-key-file: /var/lib/cilium/tls/hubble/server.key
   identity-allocation-mode: crd
-  install-iptables-rules: "true"
+  identity-gc-interval: 15m0s
+  identity-heartbeat-timeout: 30m0s
   install-no-conntrack-iptables-rules: "false"
   ipam: cluster-pool
   kube-proxy-replacement: partial
@@ -574,6 +639,8 @@ metadata:
     prometheus.io/port: "9964"
     prometheus.io/scrape: "true"
   labels:
+    app.kubernetes.io/name: cilium-agent
+    app.kubernetes.io/part-of: cilium
     k8s-app: cilium
   name: cilium-agent
   namespace: kube-system
@@ -592,6 +659,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app.kubernetes.io/name: hubble-peer
+    app.kubernetes.io/part-of: cilium
     k8s-app: cilium
   name: hubble-peer
   namespace: kube-system
@@ -609,6 +678,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app.kubernetes.io/name: hubble-relay
+    app.kubernetes.io/part-of: cilium
     k8s-app: hubble-relay
   name: hubble-relay
   namespace: kube-system
@@ -627,6 +698,8 @@ metadata:
   annotations:
     cke.cybozu.com/rank: "2500"
   labels:
+    app.kubernetes.io/name: cilium-operator
+    app.kubernetes.io/part-of: cilium
     io.cilium/app: operator
     name: cilium-operator
   name: cilium-operator
@@ -645,10 +718,12 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 0b98692a8135484d3cdc0c9b00165864810bc7f547440e32cfe14040eba34c10
+        cilium.io/cilium-configmap-checksum: 8e9c9baedbea00df309272cc06f76842588a97cec233d9c6f56a3e73ab1fb579
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
+        app.kubernetes.io/name: cilium-operator
+        app.kubernetes.io/part-of: cilium
         io.cilium/app: operator
         name: cilium-operator
     spec:
@@ -687,7 +762,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium-operator-generic:1.12.11.1
+        image: quay.io/cybozu/cilium-operator-generic:1.13.7.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -737,6 +812,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    app.kubernetes.io/name: hubble-relay
+    app.kubernetes.io/part-of: cilium
     k8s-app: hubble-relay
   name: hubble-relay
   namespace: kube-system
@@ -754,6 +831,8 @@ spec:
       annotations:
         cilium.io/hubble-relay-configmap-checksum: 121d3ca340f3623a68297728e72f60908cf197df412eb4bb266f449c1794a5a7
       labels:
+        app.kubernetes.io/name: hubble-relay
+        app.kubernetes.io/part-of: cilium
         k8s-app: hubble-relay
     spec:
       affinity:
@@ -769,7 +848,7 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: quay.io/cybozu/hubble-relay:1.12.11.1
+        image: quay.io/cybozu/hubble-relay:1.13.7.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
@@ -832,6 +911,8 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   labels:
+    app.kubernetes.io/name: hubble-generate-certs
+    app.kubernetes.io/part-of: cilium
     k8s-app: hubble-generate-certs
   name: hubble-generate-certs
   namespace: kube-system
@@ -859,7 +940,7 @@ spec:
             - --hubble-relay-server-cert-validity-duration=94608000s
             command:
             - /usr/bin/cilium-certgen
-            image: quay.io/cybozu/cilium-certgen:0.1.8.1
+            image: quay.io/cybozu/cilium-certgen:0.1.9.1
             imagePullPolicy: IfNotPresent
             name: certgen
           hostNetwork: true
@@ -890,6 +971,8 @@ metadata:
   annotations:
     cke.cybozu.com/rank: "2500"
   labels:
+    app.kubernetes.io/name: cilium-agent
+    app.kubernetes.io/part-of: cilium
     k8s-app: cilium
   name: cilium
   namespace: kube-system
@@ -900,12 +983,14 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 0b98692a8135484d3cdc0c9b00165864810bc7f547440e32cfe14040eba34c10
+        cilium.io/cilium-configmap-checksum: 8e9c9baedbea00df309272cc06f76842588a97cec233d9c6f56a3e73ab1fb579
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
       labels:
+        app.kubernetes.io/name: cilium-agent
+        app.kubernetes.io/part-of: cilium
         k8s-app: cilium
     spec:
       affinity:
@@ -950,16 +1035,16 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.12.11.1
+        image: quay.io/cybozu/cilium:1.13.7.1
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
             exec:
               command:
-              - /cni-install.sh
-              - --enable-debug=false
-              - --cni-exclusive=true
-              - --log-file=/var/run/cilium/cilium-cni.log
+              - bash
+              - -c
+              - |
+                /cni-install.sh --enable-debug=false --cni-exclusive=true --log-file=/var/run/cilium/cilium-cni.log
           preStop:
             exec:
               command:
@@ -1058,9 +1143,6 @@ spec:
         - mountPath: /var/lib/cilium/clustermesh
           name: clustermesh-secrets
           readOnly: true
-        - mountPath: /tmp/cilium/config-map
-          name: cilium-config-path
-          readOnly: true
         - mountPath: /lib/modules
           name: lib-modules
           readOnly: true
@@ -1072,15 +1154,42 @@ spec:
         - mountPath: /var/lib/cilium/tls/hubble
           name: hubble-tls
           readOnly: true
+        - mountPath: /tmp
+          name: tmp
       hostNetwork: true
       initContainers:
+      - command:
+        - cilium
+        - build-config
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CILIUM_K8S_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
+        - name: KUBERNETES_SERVICE_PORT
+          value: "16443"
+        image: quay.io/cybozu/cilium:1.13.7.1
+        imagePullPolicy: IfNotPresent
+        name: config
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
       - args:
         - mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf
         command:
         - /bin/bash
         - -c
         - --
-        image: quay.io/cybozu/cilium:1.12.11.1
+        image: quay.io/cybozu/cilium:1.13.7.1
         imagePullPolicy: IfNotPresent
         name: mount-bpf-fs
         securityContext:
@@ -1109,7 +1218,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.12.11.1
+        image: quay.io/cybozu/cilium:1.13.7.1
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -1139,7 +1248,7 @@ spec:
           name: cilium-run
       - command:
         - /install-plugin.sh
-        image: quay.io/cybozu/cilium:1.12.11.1
+        image: quay.io/cybozu/cilium:1.13.7.1
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
@@ -1167,6 +1276,8 @@ spec:
       tolerations:
       - operator: Exists
       volumes:
+      - emptyDir: {}
+        name: tmp
       - hostPath:
           path: /var/run/cilium
           type: DirectoryOrCreate
@@ -1199,9 +1310,6 @@ spec:
           defaultMode: 256
           optional: true
           secretName: cilium-clustermesh
-      - configMap:
-          name: cilium-config
-        name: cilium-config-path
       - configMap:
           name: bgp-config
         name: bgp-config-path
@@ -1236,8 +1344,10 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   labels:
+    app.kubernetes.io/name: hubble-generate-certs
+    app.kubernetes.io/part-of: cilium
     k8s-app: hubble-generate-certs
-  name: hubble-generate-certs-5d5d11e923
+  name: hubble-generate-certs-52f7318499
   namespace: kube-system
 spec:
   template:
@@ -1260,7 +1370,7 @@ spec:
         - --hubble-relay-server-cert-validity-duration=94608000s
         command:
         - /usr/bin/cilium-certgen
-        image: quay.io/cybozu/cilium-certgen:0.1.8.1
+        image: quay.io/cybozu/cilium-certgen:0.1.9.1
         imagePullPolicy: IfNotPresent
         name: certgen
       hostNetwork: true

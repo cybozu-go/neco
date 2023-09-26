@@ -77,4 +77,4 @@ socketLB:
   enabled: true
   hostNamespaceOnly: true
 tunnel: "disabled"
-upgradeCompatibility: "1.11"
+upgradeCompatibility: "1.12"
