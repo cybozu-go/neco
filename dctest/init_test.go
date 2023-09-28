@@ -12,6 +12,14 @@ import (
 
 // testInit test initialization steps
 func testInit() {
+	It("should reset failed status of systemd-networkd-wait-online.service", func() {
+		// systemd-networkd-wait-online.service may fail due to timeout on dctest env
+		// Frankly speaking, it is not a problem because the test program can already connect to boot servers.
+		for _, host := range bootServers {
+			execSafeAt(host, "sudo", "systemctl", "reset-failed", "systemd-networkd-wait-online.service")
+		}
+	})
+
 	It("should create a Vault admin user", func() {
 		// wait for vault leader election
 		time.Sleep(10 * time.Second)
