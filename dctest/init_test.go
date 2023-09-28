@@ -56,6 +56,13 @@ func testInit() {
 		}
 	})
 
+	It("should reset failed status of systemd-networkd-wait-online.service", func() {
+		// systemd-networkd-wait-online.service may fail due to timeout on dctest env
+		for _, host := range bootServers {
+			execSafeAt(host, "sudo", "systemctl", "reset-failed", "systemd-networkd-wait-online.service")
+		}
+	})
+
 	It("should success initialize setup-serf-tags", func() {
 		for _, host := range bootServers {
 			execSafeAt(host, "test", "-f", "/usr/local/bin/setup-serf-tags")
