@@ -1,0 +1,3 @@
+images:
+- repository: quay.io/cybozu/squid
+  versions: ["6.3.0.1"]
