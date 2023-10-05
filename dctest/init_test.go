@@ -108,8 +108,13 @@ func testInit() {
 			execSafeAt(host, "test", "-f", neco.SabakanCertFile)
 			execSafeAt(host, "test", "-f", neco.SabactlBashCompletionFile)
 
-			execSafeAt(host, "systemctl", "-q", "is-active", "sabakan.service")
-			execSafeAt(host, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
+			Eventually(func(g Gomega) {
+				stdout, stderr, err := execAt(host, "systemctl", "-q", "is-active", "sabakan.service")
+				g.Expect(err).NotTo(HaveOccurred(), "host=%s, stdout=%s, stderr=%s", host, stdout, stderr)
+
+				stdout, stderr, err = execAt(host, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
+				g.Expect(err).NotTo(HaveOccurred(), "host=%s, stdout=%s, stderr=%s", host, stdout, stderr)
+			}).Should(Succeed())
 		}
 	})
 
