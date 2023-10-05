@@ -65,9 +65,8 @@ update-coil:
 update-cilium: helm
 	rm -rf /tmp/work-cilium
 	mkdir -p /tmp/work-cilium
-	curl -sSfL https://github.com/cilium/cilium/archive/$(shell echo $(CILIUM_TAG) | cut -d \. -f 1,2,3).tar.gz | tar -C /tmp/work-cilium -xzf - --strip-components=1
-	curl -sSfL -o /tmp/work-cilium/18449.patch https://raw.githubusercontent.com/cybozu/neco-containers/bafee04577033ed384add6152b016c04d2ffd55d/cilium/18449.patch
-	cd /tmp/work-cilium; patch -p1 --no-backup-if-mismatch < /tmp/work-cilium/18449.patch
+	git clone --depth 1 --branch v$(shell echo $(CILIUM_TAG) | cut -d \. -f 1,2,3)-lb-dsr-patch https://github.com/cybozu-go/cilium /tmp/work-cilium
+	cd /tmp/work-cilium
 	$(HELM) template /tmp/work-cilium/install/kubernetes/cilium/ \
 		--namespace=kube-system \
 		--values cilium/$(CILIUM_OVERLAY)/values.yaml \
