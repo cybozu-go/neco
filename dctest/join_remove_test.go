@@ -118,6 +118,12 @@ func testJoinRemove() {
 		Expect(names).Should(ContainElement("boot-3"))
 	})
 
+	It("should reset failed status of systemd-networkd-wait-online.service on boot-3", func() {
+		// systemd-networkd-wait-online.service may fail due to timeout on dctest env
+		// Frankly speaking, it is not a problem because the test program can already connect to boot servers.
+		execSafeAt(allBootServers[3], "sudo", "systemctl", "reset-failed", "systemd-networkd-wait-online.service")
+	})
+
 	It("should set state of boot-3 to healthy", func() {
 		By("Checking boot-3 machine state")
 		Eventually(func() error {
