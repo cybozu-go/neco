@@ -21,7 +21,7 @@ LOCALDS_IMG = build/seed.img
 ifeq ($(shell lsb_release --release --short),$(UBUNTU_RELEASE))
 # usage: get-deb-filename PACKAGE
 define get-deb-filename
-$(shell apt-get install --print-uris --reinstall $1 | tail -1 | awk '{print $$2}')
+$(shell apt-get download --print-uris $1 | awk '{print $$2}')
 endef
 CHRONY_DEB = build/$(call get-deb-filename,chrony)
 BIRD2_DEB = build/$(call get-deb-filename,bird2)
