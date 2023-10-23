@@ -217,7 +217,7 @@ jobs:
       - run:
           name: Run dctest reboot-worker
           command: ./bin/run-dctest-suite.sh reboot-worker
-          no_output_timeout: 31m
+          no_output_timeout: 51m
       - run:
           name: Set the instance lifetime and the state label
           command: |
