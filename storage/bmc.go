@@ -31,3 +31,23 @@ func (s Storage) PutBMCIPMIPassword(ctx context.Context, value string) error {
 func (s Storage) GetBMCIPMIPassword(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyBMCIPMIPassword)
 }
+
+// PutBMCRepairUser stores BMC username for repair operations.
+func (s Storage) PutBMCRepairUser(ctx context.Context, username string) error {
+	return s.put(ctx, KeyBMCRepairUser, username)
+}
+
+// GetBMCRepairUser returns BMC username for repair operations.
+func (s Storage) GetBMCRepairUser(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyBMCRepairUser)
+}
+
+// PutBMCRepairPassword stores BMC password for repair operations.
+func (s Storage) PutBMCRepairPassword(ctx context.Context, password string) error {
+	return s.put(ctx, KeyBMCRepairPassword, password)
+}
+
+// GetBMCRepairPassword returns BMC password for repair operations.
+func (s Storage) GetBMCRepairPassword(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyBMCRepairPassword)
+}
