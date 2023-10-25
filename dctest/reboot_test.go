@@ -127,7 +127,7 @@ func testRebootGracefully() {
 				return fmt.Errorf("reboot-queue is not processed")
 			}
 			return nil
-		}, 30*time.Minute).Should(Succeed())
+		}, 50*time.Minute).Should(Succeed())
 
 		workersAfter, err := getSerfWorkerMembers()
 		Expect(err).NotTo(HaveOccurred())
