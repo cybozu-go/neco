@@ -73,6 +73,11 @@ data:
   # Port to expose Envoy metrics (e.g. "9964"). Envoy metrics listener will be disabled if this
   # field is not set.
   proxy-prometheus-port: "9964"
+  # Metrics that should be enabled or disabled from the default metric
+  # list. (+metric_foo to enable metric_foo , -metric_bar to disable
+  # metric_bar).
+  metrics:
+    +cilium_bpf_map_pressure
   # If you want metrics enabled in cilium-operator, set the port for
   # which the Cilium Operator will have their metrics exposed.
   # NOTE that this will open the port on the nodes where Cilium operator pod
@@ -788,7 +793,7 @@ spec:
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "fd5500487695dec97fc18ba185925539a7376aa801c2950a67653164b20e3efe"
+        cilium.io/cilium-configmap-checksum: "8e9c9baedbea00df309272cc06f76842588a97cec233d9c6f56a3e73ab1fb579"
         # Set app AppArmor's profile to "unconfined". The value of this annotation
         # can be modified as long users know which profiles they have available
         # in AppArmor.
@@ -1196,7 +1201,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "fd5500487695dec97fc18ba185925539a7376aa801c2950a67653164b20e3efe"
+        cilium.io/cilium-configmap-checksum: "8e9c9baedbea00df309272cc06f76842588a97cec233d9c6f56a3e73ab1fb579"
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
