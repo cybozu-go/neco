@@ -46,6 +46,8 @@ const (
 	KeyBMCBMCUser               = "bmc/bmc-user"
 	KeyBMCIPMIUser              = "bmc/ipmi-user"
 	KeyBMCIPMIPassword          = "bmc/ipmi-password"
+	KeyBMCRepairUser            = "bmc/repair-user"
+	KeyBMCRepairPassword        = "bmc/repair-password"
 	KeyTeleportAuthToken        = "teleport/auth-token"
 	KeyCKEWeight                = "cke/weight"
 )

@@ -10,9 +10,11 @@ var bmcConfigGetCmd = &cobra.Command{
 	Long: `Show the current BMC configuration value.
 
 Possible keys are:
-    bmc-user      - bmc-user.json contents.
-    ipmi-user     - IPMI username for power management.
-    ipmi-password - IPMI password for power management.
+    bmc-user        - bmc-user.json contents.
+    ipmi-user       - IPMI username for power management.
+    ipmi-password   - IPMI password for power management.
+    repair-user     - BMC username for repair operations.
+    repair-password - BMC password for repair operations.
 `,
 }
 
