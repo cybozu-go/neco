@@ -167,10 +167,22 @@ Synopsis
     - `bmc-user`: Register [`bmc-user.json`](https://github.com/cybozu-go/setup-hw/blob/master/README.md#etcnecobmc-userjson)
     - `ipmi-user`: Register IPMI username for power management.
     - `ipmi-password`: Register IPMI password for power management.
+    - `repair-user`: Register BMC username for repair operations.
+    - `repair-password`: Register BMC password for repair operations.
 
 * `neco bmc config get KEY`
 
     Get the `VALUE` for `KEY`.
+
+* `neco bmc repair BMC_TYPE BMC_specific_command...`
+
+    Try to repair an unhealthy/unreachable machine by invoking BMC functions remotely.
+
+    * Dell iDRAC:
+        * `neco bmc repair dell reset-idrac SERIAL_OR_IP`
+            Reset the iDRAC of a machine having `SERIAL` or `IP` address.
+        * `neco bmc repair dell discharge SERIAL_OR_IP`
+            Simulate power-disconnection and discharge of a machine having `SERIAL` or `IP` address. This implies reboot of the machine.
 
 * `neco bmc setup-hw`
 
