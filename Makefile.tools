@@ -53,9 +53,11 @@ TEMPO_DLDIR := $(DOWNLOADDIR)/tempo-v$(TEMPO_VERSION)
 TEMPO_DOWNLOAD := $(TEMPO_DLDIR)/downloaded
 HELM_DLDIR := $(DOWNLOADDIR)/helm-v$(HELM_VERSION)
 HELM_DOWNLOAD := $(HELM_DLDIR)/downloaded
+FLAMEGRAPH_DLDIR := $(DOWNLOADDIR)/flamegraph-$(FLAMEGRAPH_COMMIT_HASH)
+FLAMEGRAPH_DOWNLOAD := $(FLAMEGRAPH_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm
+all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph
 	# all binaries in BINDIR and SBINDIR must have executable bits
 	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
@@ -372,7 +374,7 @@ logcli: $(LOKI_LOGCLI_DOWNLOAD)
 	unzip -p $(LOKI_LOGCLI_DLDIR)/logcli-linux-amd64.zip > $(BINDIR)/logcli
 	chmod +x $(BINDIR)/logcli
 	unzip -p $(LOKI_LOGCLI_DLDIR)/logcli-windows-amd64.exe.zip > $(WINDOWS_BINDIR)/logcli.exe
-	unzip -p $(LOKI_LOGCLI_DLDIR)/logcli-darwin-amd64.zip > $(MAC_BINDIR)/logcli 
+	unzip -p $(LOKI_LOGCLI_DLDIR)/logcli-darwin-amd64.zip > $(MAC_BINDIR)/logcli
 	chmod +x $(MAC_BINDIR)/logcli
 	$(CP) $(LOKI_LOGCLI_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	$(CP) $(LOKI_LOGCLI_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
@@ -511,12 +513,29 @@ tempo: $(TEMPO_DOWNLOAD)
 $(HELM_DOWNLOAD):
 	mkdir -p $(HELM_DLDIR)
 	$(WGET) -O $(HELM_DLDIR)/helm-linux-amd64.tar.gz https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz
+	touch $@
 
 .PHONY: helm
 helm: $(HELM_DOWNLOAD)
 	mkdir -p $(BINDIR) $(DOCDIR)/$@/
 	tar xvf $(HELM_DLDIR)/helm-linux-amd64.tar.gz -C $(BINDIR)     --strip-components=1 linux-amd64/helm
 	tar xvf $(HELM_DLDIR)/helm-linux-amd64.tar.gz -C $(DOCDIR)/$@/ --strip-components=1 linux-amd64/LICENSE linux-amd64/README.md
+
+$(FLAMEGRAPH_DOWNLOAD):
+	mkdir -p $(FLAMEGRAPH_DLDIR)
+	$(WGET_GITHUB) -O $(FLAMEGRAPH_DLDIR)/stackcollapse-perf.pl https://raw.githubusercontent.com/brendangregg/FlameGraph/$(FLAMEGRAPH_COMMIT_HASH)/stackcollapse-perf.pl
+	$(WGET_GITHUB) -O $(FLAMEGRAPH_DLDIR)/flamegraph.pl https://raw.githubusercontent.com/brendangregg/FlameGraph/$(FLAMEGRAPH_COMMIT_HASH)/flamegraph.pl
+	$(WGET_GITHUB) -O $(FLAMEGRAPH_DLDIR)/cddl1.txt https://raw.githubusercontent.com/brendangregg/FlameGraph/$(FLAMEGRAPH_COMMIT_HASH)/docs/cddl1.txt
+	touch $@
+
+.PHONY: flamegraph
+flamegraph: $(FLAMEGRAPH_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	$(CP) $(FLAMEGRAPH_DLDIR)/stackcollapse-perf.pl $(BINDIR)
+	$(CP) $(FLAMEGRAPH_DLDIR)/flamegraph.pl $(BINDIR)
+	chmod +x $(BINDIR)/stackcollapse-perf.pl
+	chmod +x $(BINDIR)/flamegraph.pl
+	$(CP) $(FLAMEGRAPH_DLDIR)/cddl1.txt $(DOCDIR)/$@/
 
 .PHONY: clean
 clean:
