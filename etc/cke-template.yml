@@ -57,6 +57,11 @@ options:
           resources:
             - group: ""
               resources: ["events"]
+        - level: RequestResponse
+          resources:
+            - group: "projectcontour.io"
+              resources: ["httpproxies"]
+              resourceNames: ["grafana-redirect-proxy"]
         - level: None
           userGroups:
             - system:nodes
