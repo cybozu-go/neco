@@ -584,6 +584,7 @@ data:
   kube-proxy-replacement: partial
   kube-proxy-replacement-healthz-bind-address: ""
   labels: k8s:!controller-uid k8s:!job-name k8s:!node
+  metrics: +cilium_bpf_map_pressure
   monitor-aggregation: medium
   monitor-aggregation-flags: all
   monitor-aggregation-interval: 5s
@@ -717,7 +718,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: fd5500487695dec97fc18ba185925539a7376aa801c2950a67653164b20e3efe
+        cilium.io/cilium-configmap-checksum: 8e9c9baedbea00df309272cc06f76842588a97cec233d9c6f56a3e73ab1fb579
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -982,7 +983,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: fd5500487695dec97fc18ba185925539a7376aa801c2950a67653164b20e3efe
+        cilium.io/cilium-configmap-checksum: 8e9c9baedbea00df309272cc06f76842588a97cec233d9c6f56a3e73ab1fb579
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
