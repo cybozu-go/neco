@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var ignitionsOnly, updateResourcesOnly bool
+var ignitionsOnly, updateResourcesOnly, uploadCACertOnly bool
 
 func initData(ctx context.Context, st storage.Storage) error {
 	version, err := neco.GetDebianVersion(neco.NecoPackageName)
@@ -74,6 +74,10 @@ func initData(ctx context.Context, st storage.Storage) error {
 		return cke.UpdateResources(ctx, st)
 	}
 
+	if uploadCACertOnly {
+		return sabakan.UploadCACert(ctx, localClient)
+	}
+
 	env := well.NewEnvironment(ctx)
 	env.Go(func(ctx context.Context) error {
 		return sabakan.UploadContents(ctx, localClient, proxyClient, version, fetcher, st)
@@ -89,6 +93,9 @@ func initData(ctx context.Context, st storage.Storage) error {
 	})
 	env.Go(func(ctx context.Context) error {
 		return cke.UpdateResources(ctx, st)
+	})
+	env.Go(func(ctx context.Context) error {
+		return sabakan.UploadCACert(ctx, localClient)
 	})
 	env.Stop()
 	return env.Wait()
@@ -122,5 +129,7 @@ If uploaded versions are up to date, do nothing.
 func init() {
 	initDataCmd.Flags().BoolVar(&ignitionsOnly, "ignitions-only", false, "upload ignitions only")
 	initDataCmd.Flags().BoolVar(&updateResourcesOnly, "update-resources-only", false, "update user-defined resources only")
+	initDataCmd.Flags().BoolVar(&uploadCACertOnly, "upload-ca-cert-only", false, "upload ca certificate of sabakan to assets only")
+
 	rootCmd.AddCommand(initDataCmd)
 }

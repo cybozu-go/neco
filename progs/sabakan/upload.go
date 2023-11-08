@@ -467,3 +467,12 @@ func UploadDHCPJSON(ctx context.Context, sabakanHTTP *http.Client) error {
 
 	return saba.DHCPConfigSet(ctx, &conf)
 }
+
+func UploadCACert(ctx context.Context, sabakanHTTP *http.Client) error {
+	saba, err := sabac.NewClient(neco.SabakanLocalEndpoint, sabakanHTTP)
+	if err != nil {
+		return err
+	}
+	_, err = saba.AssetsUpload(ctx, "sabakan-tls-ca.crt", neco.ServerCAFile, nil)
+	return err
+}
