@@ -81,8 +81,8 @@ func testJoinRemove() {
 
 		execSafeAt(allBootServers[3], "test", "-d", neco.SabakanDataDir)
 		execSafeAt(allBootServers[3], "test", "-f", neco.SabakanConfFile)
-		execSafeAt(allBootServers[3], "test", "-f", neco.SabakanKeyFile)
-		execSafeAt(allBootServers[3], "test", "-f", neco.SabakanCertFile)
+		execSafeAt(allBootServers[3], "test", "-f", neco.SabakanEtcdKeyFile)
+		execSafeAt(allBootServers[3], "test", "-f", neco.SabakanEtcdCertFile)
 		execSafeAt(allBootServers[3], "test", "-f", neco.SabactlBashCompletionFile)
 
 		execSafeAt(allBootServers[3], "systemctl", "-q", "is-active", "sabakan.service")
