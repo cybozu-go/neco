@@ -1,3 +1,9 @@
 images:
 - repository: quay.io/cybozu/squid
   versions: ["6.3.0.1", "6.4.0.1"]
+- repository: quay.io/cybozu/cilium
+  versions: ["1.13.7.2"]
+- repository: quay.io/cybozu/cilium-operator-generic
+  versions: ["1.13.7.2"]
+- repository: quay.io/cybozu/hubble-relay
+  versions: ["1.13.7.2"]
