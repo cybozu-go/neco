@@ -76,9 +76,10 @@ type graphQLResponse struct {
 }
 
 type sabacWrapper struct {
-	httpClient    *http.Client
-	sabakanClient *sabac.Client
-	gqlEndpoint   string
+	httpClient       *http.Client
+	sabakanClient    *sabac.Client
+	sabakanTLSClient *sabac.Client
+	gqlEndpoint      string
 }
 
 func toMachineState(str string) sabakan.MachineState {
@@ -110,21 +111,26 @@ func findLabelValue(labels []label, name string) string {
 	return ""
 }
 
-func newSabakanGQLClient(address string) (SabakanClientWrapper, error) {
+func newSabakanGQLClient(sabakanAddress, sabakanAddressHTTPS string) (SabakanClientWrapper, error) {
 	httpClient := ext.LocalHTTPClient()
-	sabakanClient, err := sabac.NewClient(address, httpClient)
+	sabakanClient, err := sabac.NewClient(sabakanAddress, httpClient)
 	if err != nil {
 		return nil, err
 	}
-	gqlEndpoint, err := url.Parse(address)
+	sabakanTLSClient, err := sabac.NewClient(sabakanAddressHTTPS, httpClient)
+	if err != nil {
+		return nil, err
+	}
+	gqlEndpoint, err := url.Parse(sabakanAddress)
 	if err != nil {
 		return nil, err
 	}
 	gqlEndpoint.Path = path.Join(gqlEndpoint.Path, "/graphql")
 	return &sabacWrapper{
-		httpClient:    httpClient,
-		sabakanClient: sabakanClient,
-		gqlEndpoint:   gqlEndpoint.String(),
+		httpClient:       httpClient,
+		sabakanClient:    sabakanClient,
+		sabakanTLSClient: sabakanTLSClient,
+		gqlEndpoint:      gqlEndpoint.String(),
 	}, nil
 }
 
@@ -236,5 +242,5 @@ func (c *sabacWrapper) UpdateSabakanState(ctx context.Context, serial string, st
 
 // CryptsDelete is wapper function of sabakan.Client's CryptsDelete().
 func (c *sabacWrapper) CryptsDelete(ctx context.Context, serial string) error {
-	return c.sabakanClient.CryptsDelete(ctx, serial)
+	return c.sabakanTLSClient.CryptsDelete(ctx, serial)
 }

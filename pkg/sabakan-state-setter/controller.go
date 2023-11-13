@@ -27,11 +27,10 @@ type Controller struct {
 	sessionTTL    time.Duration
 
 	// Clients
-	necoExecutor     NecoCmdExecutor
-	promClient       PrometheusClient
-	sabakanClient    SabakanClientWrapper
-	sabakanTLSClient SabakanClientWrapper
-	serfClient       SerfClient
+	necoExecutor  NecoCmdExecutor
+	promClient    PrometheusClient
+	sabakanClient SabakanClientWrapper
+	serfClient    SerfClient
 
 	// others
 	interval          time.Duration
@@ -69,11 +68,7 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, sabakanAddressHT
 		return nil, err
 	}
 
-	sabakanClient, err := newSabakanGQLClient(sabakanAddress)
-	if err != nil {
-		return nil, err
-	}
-	sabakanTLSClient, err := newSabakanGQLClient(sabakanAddressHTTPS)
+	sabakanClient, err := newSabakanGQLClient(sabakanAddress, sabakanAddressHTTPS)
 	if err != nil {
 		return nil, err
 	}
@@ -91,11 +86,10 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, sabakanAddressHT
 		electionValue: electionValue,
 		sessionTTL:    sessionTTL,
 
-		necoExecutor:     necoExecutor,
-		promClient:       promClient,
-		sabakanClient:    sabakanClient,
-		sabakanTLSClient: sabakanTLSClient,
-		serfClient:       serfClient,
+		necoExecutor:  necoExecutor,
+		promClient:    promClient,
+		sabakanClient: sabakanClient,
+		serfClient:    serfClient,
 
 		interval:          interval,
 		parallelSize:      parallelSize,
@@ -398,7 +392,7 @@ func (c *Controller) machineRetire(ctx context.Context, machines []*machine) map
 			continue
 		}
 
-		err := c.sabakanTLSClient.CryptsDelete(ctx, m.Serial)
+		err := c.sabakanClient.CryptsDelete(ctx, m.Serial)
 		if err != nil {
 			log.Warn("failed to delete crypts on sabakan", map[string]interface{}{
 				log.FnError: err.Error(),
