@@ -10,10 +10,11 @@ K8S_VERSION = 1.26.6
 HELM_VERSION = 3.12.2
 STERN_VERSION = 1.25.0
 FLAMEGRAPH_COMMIT_HASH = 7991019ca55b8e7d35de1fae9fe8a84b54dda75f
+NECOPERF_VERSION = 0.1.0
 
 
 ## These should be updated regularly
-ARGOCD_VERSION = 2.8.3
+ARGOCD_VERSION = 2.8.6
 # Follow Argo CD installed kustomize version
 # https://github.com/cybozu/neco-containers/blob/main/argocd/Dockerfile#L10
 KUSTOMIZE_VERSION = 5.1.0

@@ -55,9 +55,11 @@ HELM_DLDIR := $(DOWNLOADDIR)/helm-v$(HELM_VERSION)
 HELM_DOWNLOAD := $(HELM_DLDIR)/downloaded
 FLAMEGRAPH_DLDIR := $(DOWNLOADDIR)/flamegraph-$(FLAMEGRAPH_COMMIT_HASH)
 FLAMEGRAPH_DOWNLOAD := $(FLAMEGRAPH_DLDIR)/downloaded
+NECOPERF_DLDIR := $(DOWNLOADDIR)/necoperf-$(NECOPERF_VERSION)
+NECOPERF_DOWNLOAD := $(NECOPERF_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph
+all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf
 	# all binaries in BINDIR and SBINDIR must have executable bits
 	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
@@ -536,6 +538,17 @@ flamegraph: $(FLAMEGRAPH_DOWNLOAD)
 	chmod +x $(BINDIR)/stackcollapse-perf.pl
 	chmod +x $(BINDIR)/flamegraph.pl
 	$(CP) $(FLAMEGRAPH_DLDIR)/cddl1.txt $(DOCDIR)/$@/
+
+$(NECOPERF_DOWNLOAD):
+	mkdir -p $(NECOPERF_DLDIR)
+	$(WGET_GITHUB) -O $(NECOPERF_DLDIR)/necoperf_linux_amd64.tar.gz https://github.com/cybozu-go/necoperf/releases/download/v$(NECOPERF_VERSION)/necoperf-cli_v$(NECOPERF_VERSION)_linux_amd64.tar.gz
+	touch $@
+
+.PHONY: necoperf
+necoperf: $(NECOPERF_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/
+	tar xvf $(NECOPERF_DLDIR)/necoperf_linux_amd64.tar.gz -C $(BINDIR) necoperf-cli
+	tar xvf $(NECOPERF_DLDIR)/necoperf_linux_amd64.tar.gz -C $(DOCDIR)/$@/ LICENSE
 
 .PHONY: clean
 clean:
