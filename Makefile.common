@@ -1,7 +1,7 @@
 # tool versions used for both local bin and deb/zip packages
 
 ## These should be updated when Kubernetes is updated
-CKE_VERSION = 1.26.2
+CKE_VERSION = 1.26.3
 CONTAINERD_VERSION = 1.7.2
 NERDCTL_VERSION = 1.4.0
 CRITOOLS_VERSION = 1.27.1
@@ -9,8 +9,6 @@ RUNC_VERSION = 1.1.9
 K8S_VERSION = 1.26.6
 HELM_VERSION = 3.12.2
 STERN_VERSION = 1.25.0
-FLAMEGRAPH_COMMIT_HASH = 7991019ca55b8e7d35de1fae9fe8a84b54dda75f
-NECOPERF_VERSION = 0.1.0
 
 
 ## These should be updated regularly
@@ -35,6 +33,8 @@ ALERTMANAGER_VERSION = 0.25.0
 CILIUM_CLI_VERSION = 0.13.2
 HUBBLE_VERSION = 0.11.3
 TEMPO_VERSION = 2.1.1
+FLAMEGRAPH_COMMIT_HASH = 7991019ca55b8e7d35de1fae9fe8a84b54dda75f
+NECOPERF_VERSION = 0.1.0
 
 SUDO = sudo
 
