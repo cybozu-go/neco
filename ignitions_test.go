@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	sabakan "github.com/cybozu-go/sabakan/v2/client"
+	sabakan "github.com/cybozu-go/sabakan/v3/client"
 	"github.com/google/go-cmp/cmp"
 	"sigs.k8s.io/yaml"
 )

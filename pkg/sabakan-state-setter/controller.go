@@ -10,8 +10,8 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/storage"
-	"github.com/cybozu-go/sabakan/v2"
-	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
+	"github.com/cybozu-go/sabakan/v3"
+	gqlsabakan "github.com/cybozu-go/sabakan/v3/gql"
 	"github.com/cybozu-go/well"
 	"github.com/robfig/cron/v3"
 	"github.com/vektah/gqlparser/v2/gqlerror"

@@ -8,7 +8,7 @@ import (
 
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
-	"github.com/cybozu-go/sabakan/v2"
+	"github.com/cybozu-go/sabakan/v3"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )

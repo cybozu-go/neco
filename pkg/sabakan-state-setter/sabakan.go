@@ -10,9 +10,9 @@ import (
 	"path"
 
 	"github.com/cybozu-go/neco/ext"
-	"github.com/cybozu-go/sabakan/v2"
-	sabac "github.com/cybozu-go/sabakan/v2/client"
-	"github.com/cybozu-go/sabakan/v2/gql/graph/model"
+	"github.com/cybozu-go/sabakan/v3"
+	sabac "github.com/cybozu-go/sabakan/v3/client"
+	"github.com/cybozu-go/sabakan/v3/gql/graph/model"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 

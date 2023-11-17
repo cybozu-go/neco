@@ -2,7 +2,7 @@ package sss
 
 import (
 	"github.com/cybozu-go/log"
-	"github.com/cybozu-go/sabakan/v2"
+	"github.com/cybozu-go/sabakan/v3"
 	dto "github.com/prometheus/client_model/go"
 )
 
