@@ -68,7 +68,7 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, sabakanAddressHT
 		return nil, err
 	}
 
-	sabakanClient, err := newSabakanGQLClient(sabakanAddress, sabakanAddressHTTPS)
+	sabakanClient, err := newSabakanClientWrapper(sabakanAddress, sabakanAddressHTTPS)
 	if err != nil {
 		return nil, err
 	}

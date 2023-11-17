@@ -77,7 +77,6 @@ type graphQLResponse struct {
 
 type sabacWrapper struct {
 	httpClient       *http.Client
-	sabakanClient    *sabac.Client
 	sabakanTLSClient *sabac.Client
 	gqlEndpoint      string
 }
@@ -111,12 +110,8 @@ func findLabelValue(labels []label, name string) string {
 	return ""
 }
 
-func newSabakanGQLClient(sabakanAddress, sabakanAddressHTTPS string) (SabakanClientWrapper, error) {
+func newSabakanClientWrapper(sabakanAddress, sabakanAddressHTTPS string) (SabakanClientWrapper, error) {
 	httpClient := ext.LocalHTTPClient()
-	sabakanClient, err := sabac.NewClient(sabakanAddress, httpClient)
-	if err != nil {
-		return nil, err
-	}
 	sabakanTLSClient, err := sabac.NewClient(sabakanAddressHTTPS, httpClient)
 	if err != nil {
 		return nil, err
@@ -128,7 +123,6 @@ func newSabakanGQLClient(sabakanAddress, sabakanAddressHTTPS string) (SabakanCli
 	gqlEndpoint.Path = path.Join(gqlEndpoint.Path, "/graphql")
 	return &sabacWrapper{
 		httpClient:       httpClient,
-		sabakanClient:    sabakanClient,
 		sabakanTLSClient: sabakanTLSClient,
 		gqlEndpoint:      gqlEndpoint.String(),
 	}, nil
