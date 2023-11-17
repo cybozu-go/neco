@@ -3,6 +3,8 @@ images:
   versions: ["6.3.0.1", "6.4.0.1", "6.5.0.1"]
 - repository: ghcr.io/cybozu-go/coil
   versions: ["2.5.0"]
+- repository: quay.io/cybozu/sabakan
+  versions: ["3.0.0"]
 osImage:
 - channel: stable
   versions: ["3602.2.1"]
