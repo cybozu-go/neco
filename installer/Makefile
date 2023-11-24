@@ -65,7 +65,7 @@ iso: $(CUSTOM_ISO_PATH)
 
 $(ORIGINAL_ISO_PATH):
 	mkdir -p build
-	curl -o $@ -fsSL https://releases.ubuntu.com/$(UBUNTU_VERSION)/$(ORIGINAL_ISO_NAME)
+	../bin/download-with-blob-cache.sh "curl -fsSL" $@ https://releases.ubuntu.com/$(UBUNTU_VERSION)/$(ORIGINAL_ISO_NAME)
 
 $(CHRONY_DEB):
 	mkdir -p build
@@ -157,7 +157,7 @@ cloud: $(CUSTOM_CLOUD_PATH)
 
 $(ORIGINAL_CLOUD_PATH):
 	mkdir -p build
-	curl -o $@ -fsSL https://cloud-images.ubuntu.com/releases/$(UBUNTU_RELEASE)/release/$(ORIGINAL_CLOUD_IMAGE)
+	../bin/download-with-blob-cache.sh "curl -fsSL" $@ https://cloud-images.ubuntu.com/releases/$(UBUNTU_RELEASE)/release/$(ORIGINAL_CLOUD_IMAGE)
 
 $(CUSTOM_CLOUD_PATH): $(ORIGINAL_CLOUD_PATH) $(DEBS) cluster.json
 	cp $< $@
