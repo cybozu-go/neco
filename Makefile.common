@@ -3,7 +3,7 @@
 ## These should be updated when Kubernetes is updated
 CKE_VERSION = 1.26.3
 CONTAINERD_VERSION = 1.7.2
-NERDCTL_VERSION = 1.4.0
+NERDCTL_VERSION = 1.7.0
 CRITOOLS_VERSION = 1.27.1
 RUNC_VERSION = 1.1.9
 K8S_VERSION = 1.26.6
