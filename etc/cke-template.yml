@@ -57,6 +57,9 @@ options:
           resources:
             - group: ""
               resources: ["events"]
+        - level: RequestResponse
+          userGroups:
+            - system:serviceaccounts:teleport
         - level: None
           userGroups:
             - system:nodes
