@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	sabac "github.com/cybozu-go/sabakan/v2/client"
+	sabac "github.com/cybozu-go/sabakan/v3/client"
 	ign22 "github.com/flatcar/ignition/config/v2_2/types"
 	"github.com/vincent-petithory/dataurl"
 	"sigs.k8s.io/yaml"

@@ -1,0 +1,19 @@
+[Unit]
+Description=donwnload-sabakan-ca-cert
+DefaultDependencies=no
+Wants=neco-wait-dhcp-online.service rngd.service
+After=neco-wait-dhcp-online.service rngd.service
+Before=sabakan-cryptsetup.service
+
+[Service]
+Type=oneshot
+Environment=SABAKAN_URL={{ MyURL }}
+ExecStart=/usr/bin/mkdir -p /etc/sabakan
+ExecStart=/usr/bin/curl -sfSL -o /etc/sabakan/sabakan-tls-ca.crt {{ MyURL }}/api/v1/assets/sabakan-tls-ca.crt
+RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
+
+[Install]
+WantedBy=multi-user.target

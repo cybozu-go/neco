@@ -121,7 +121,7 @@ commands:
 jobs:
   build:
     docker:
-      - image: quay.io/cybozu/golang:1.20-jammy
+      - image: quay.io/cybozu/golang:1.21-jammy
       - image: quay.io/coreos/etcd:v3.5.9
     working_directory: /work
     resource_class: xlarge
@@ -143,7 +143,7 @@ jobs:
 
   build_release:
     docker:
-      - image: quay.io/cybozu/golang:1.20-jammy
+      - image: quay.io/cybozu/golang:1.21-jammy
       - image: quay.io/coreos/etcd:v3.5.9
     working_directory: /work
     resource_class: xlarge
@@ -170,7 +170,7 @@ jobs:
 
   deploy_github:
     docker:
-      - image: quay.io/cybozu/golang:1.20-jammy
+      - image: quay.io/cybozu/golang:1.21-jammy
     steps:
       - attach_workspace:
           at: ./artifacts
@@ -264,7 +264,7 @@ jobs:
 
   generate-artifacts:
     docker:
-      - image: quay.io/cybozu/golang:1.20-jammy
+      - image: quay.io/cybozu/golang:1.21-jammy
     steps:
       - checkout
       - run: go install ./pkg/generate-artifacts/
@@ -363,7 +363,7 @@ jobs:
 
   update-release:
     docker:
-      - image: quay.io/cybozu/golang:1.20-jammy
+      - image: quay.io/cybozu/golang:1.21-jammy
     steps:
       - add_ssh_keys:
           fingerprints:

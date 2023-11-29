@@ -11,7 +11,7 @@ import (
 	"github.com/cybozu-go/neco"
 	saba "github.com/cybozu-go/neco/progs/sabakan"
 	"github.com/cybozu-go/neco/storage"
-	sabakan "github.com/cybozu-go/sabakan/v2/client"
+	sabakan "github.com/cybozu-go/sabakan/v3/client"
 	"github.com/cybozu-go/well"
 )
 
