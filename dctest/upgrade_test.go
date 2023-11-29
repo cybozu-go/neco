@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/sabakan/v2"
+	"github.com/cybozu-go/sabakan/v3"
 	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

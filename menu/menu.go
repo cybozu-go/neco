@@ -13,7 +13,7 @@ import (
 
 	"github.com/cybozu-go/netutil"
 	"github.com/cybozu-go/placemat/v2/pkg/types"
-	"github.com/cybozu-go/sabakan/v2"
+	"github.com/cybozu-go/sabakan/v3"
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"sigs.k8s.io/yaml"
 )

@@ -94,7 +94,8 @@ sabakan-state-setter [OPTIONS]
 | `-etcd-session-ttl` | `1m`                     | TTL of etcd session. This value is interpreted as a [duration string][].          |
 | `-interval`         | `1m`                     | Interval of scraping metrics. This value is interpreted as a [duration string][]. |
 | `-parallel`         | `30`                     | The number of parallel execution of getting machines metrics.                     |
-| `-sabakan-url`      | `http://localhost:10080` | sabakan URL.                                                                      |
+| `-sabakan-url`      | `http://localhost:10080` | sabakan HTTP Server URL.                                                          |
+| `-sabakan-url-https`| `https://localhost:10443`| sabakan HTTPS Server URL.                                                         |
 | `-serf-address`     | `127.0.0.1:7373`         | serf address.                                                                     |
 
 Config file

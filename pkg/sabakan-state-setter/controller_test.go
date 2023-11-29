@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	sabakan "github.com/cybozu-go/sabakan/v2"
+	sabakan "github.com/cybozu-go/sabakan/v3"
 )
 
 func newMockController(saba *sabakanMockClient, prom *promMockClient, serf *serfMockClient, neco *necoCmdMockExecutor, mt ...*machineType) *Controller {

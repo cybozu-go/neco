@@ -368,6 +368,10 @@
         {
           "name": "reset-iscsiuio.service",
           "enabled": true
+        },
+        {
+          "name": "donwnload-sabakan-ca-cert.service",
+          "enabled": true
         }
       ],
       "networkd": [

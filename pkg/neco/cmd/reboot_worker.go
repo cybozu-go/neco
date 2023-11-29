@@ -11,8 +11,8 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/sabakan/v2"
-	"github.com/cybozu-go/sabakan/v2/client"
+	"github.com/cybozu-go/sabakan/v3"
+	"github.com/cybozu-go/sabakan/v3/client"
 	"github.com/cybozu-go/well"
 	"github.com/spf13/cobra"
 	"github.com/stmcginnis/gofish/redfish"

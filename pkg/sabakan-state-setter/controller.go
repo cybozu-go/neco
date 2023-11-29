@@ -10,8 +10,8 @@ import (
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco/storage"
-	"github.com/cybozu-go/sabakan/v2"
-	gqlsabakan "github.com/cybozu-go/sabakan/v2/gql"
+	"github.com/cybozu-go/sabakan/v3"
+	gqlsabakan "github.com/cybozu-go/sabakan/v3/gql"
 	"github.com/cybozu-go/well"
 	"github.com/robfig/cron/v3"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -62,13 +62,13 @@ func (c *Controller) ClearUnhealthy(m *machine) {
 }
 
 // NewController returns controller for sabakan-state-setter
-func NewController(etcdClient *clientv3.Client, sabakanAddress, serfAddress, configFile, electionValue string, interval time.Duration, parallelSize int, sessionTTL time.Duration) (*Controller, error) {
+func NewController(etcdClient *clientv3.Client, sabakanAddress, sabakanAddressHTTPS, serfAddress, configFile, electionValue string, interval time.Duration, parallelSize int, sessionTTL time.Duration) (*Controller, error) {
 	shutdownSchedule, machineTypes, err := readConfigFile(configFile)
 	if err != nil {
 		return nil, err
 	}
 
-	sabakanClient, err := newSabakanGQLClient(sabakanAddress)
+	sabakanClient, err := newSabakanClientWrapper(sabakanAddress, sabakanAddressHTTPS)
 	if err != nil {
 		return nil, err
 	}

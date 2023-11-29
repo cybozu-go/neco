@@ -146,6 +146,8 @@ systemd:
     name: setup-seccomp-profile.service
   - enabled: true
     name: reset-iscsiuio.service
+  - enabled: true
+    name: donwnload-sabakan-ca-cert.service
 networkd:
   - 01-eth0.network
   - 01-eth1.network
