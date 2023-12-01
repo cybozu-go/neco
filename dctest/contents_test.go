@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/exec"
 	"strconv"
 
+	"github.com/cybozu-go/neco"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -16,6 +19,18 @@ const ckeLabelWeight = "cke.cybozu.com/weight"
 
 // testInitData executes "neco init-data"
 func testInitData() {
+	if os.Getenv("NECO_CI_BLOB_CACHE_URL") != "" {
+		It("should upload initial kernel images from blob cache to sabakan", func() {
+			osImage := &neco.CurrentArtifacts.OSImage
+			kernelUrl, initrdUrl := osImage.URLs()
+			cmd := exec.Command("./upload-initial-kernel-image.sh", kernelUrl, initrdUrl, osImage.Version)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			err := cmd.Run()
+			Expect(err).NotTo(HaveOccurred())
+		})
+	}
+
 	It("should initialize data for sabakan and CKE", func() {
 		By("setting external IP address block")
 		execSafeAt(bootServers[0], "neco", "config", "set", "external-ip-address-block", externalIPBlock)
