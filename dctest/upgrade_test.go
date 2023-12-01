@@ -180,7 +180,7 @@ func testUpgrade() {
 			By("checking " + img + " is running")
 			Eventually(func() error {
 				switch strings.Split(img, ":")[0] {
-				case "quay.io/cybozu/unbound", "quay.io/cybozu/unbound_exporter":
+				case "quay.io/cybozu/unbound", "quay.io/cybozu/unbound_exporter", "ghcr.io/cybozu/unbound":
 					if err := checkVersionInDaemonSet("kube-system", "node-dns", img); err != nil {
 						return err
 					}

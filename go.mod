@@ -13,7 +13,7 @@ replace (
 )
 
 require (
-	github.com/cybozu-go/cke v1.26.3
+	github.com/cybozu-go/cke v1.26.4
 	github.com/cybozu-go/etcdutil v1.6.5
 	github.com/cybozu-go/log v1.7.0
 	github.com/cybozu-go/netutil v1.4.5
