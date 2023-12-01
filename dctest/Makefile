@@ -73,7 +73,7 @@ $(OUTPUT)/$(CUSTOM_UBUNTU):
 
 $(OUTPUT)/$(FLATCAR_IMAGE):
 	mkdir -p $(OUTPUT)
-	$(CURL) -o $@.bz2 https://stable.release.flatcar-linux.net/amd64-usr/current/$(FLATCAR_IMAGE).bz2
+	../bin/download-with-blob-cache.sh "$(CURL)" $@.bz2 https://stable.release.flatcar-linux.net/amd64-usr/current/$(FLATCAR_IMAGE).bz2
 	bunzip2 -q $@.bz2
 
 # SABAKAN_CONTENTS
