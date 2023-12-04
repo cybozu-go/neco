@@ -19,7 +19,7 @@ const ckeLabelWeight = "cke.cybozu.com/weight"
 
 // testInitData executes "neco init-data"
 func testInitData() {
-	if os.Getenv("NECO_CI_BLOB_CACHE_URL") != "" {
+	if os.Getenv("NOT_NECO_CI") != "" && os.Getenv("NECO_CI_BLOB_CACHE_URL") != "" {
 		It("should upload initial kernel images from blob cache to sabakan", func() {
 			osImage := &neco.CurrentArtifacts.OSImage
 			kernelUrl, initrdUrl := osImage.URLs()
