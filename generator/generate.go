@@ -28,7 +28,7 @@ var imageRepos = []string{
 	"quay.io/cybozu/serf",
 	"quay.io/cybozu/setup-hw",
 	"quay.io/cybozu/squid",
-	"quay.io/cybozu/vault",
+	"ghcr.io/cybozu/vault",
 	"quay.io/cybozu/cilium",
 	"quay.io/cybozu/cilium-operator-generic",
 	"quay.io/cybozu/hubble-relay",
