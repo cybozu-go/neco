@@ -47,8 +47,8 @@ spec:
 kind: Node
 type: cs
 spec:
-  cpu: 16
-  memory: 32G
+  cpu: 12
+  memory: 20G
   disk-count: 6
   disk-size: 80G
   tpm: true
