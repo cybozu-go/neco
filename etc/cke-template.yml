@@ -42,6 +42,12 @@ options:
         - RequestReceived
       omitManagedFields: true
       rules:
+        # Debug log for KubeAPIErrorsHigh problem in CI
+        - level: RequestResponse
+          verbs: ["get"]
+          resources:
+            - group: ""
+              resources: ["pods/log"]
         # Avoid logging secret values
         - level: Metadata
           resources:
