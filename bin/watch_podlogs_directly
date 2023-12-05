@@ -5,7 +5,7 @@ tail_once() {
     sudo ip netns exec operation ssh -F ssh_config \
         ${host} "test -f .kube/config" || return
     sudo ip netns exec operation ssh -F ssh_config \
-        ${host} -- stern --all-namespaces '.*'
+        ${host} -- stern --all-namespaces '.*' 2>&1 | (while read i; do echo "$(date) : ${i}"; done)
 }
 
 tail_forever() {
