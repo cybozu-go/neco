@@ -44,6 +44,7 @@ ExecStart=/usr/bin/docker run --name=serf --rm \
   --pull=never \
   --read-only \
   --volume=/etc/serf:/etc/serf:ro \
+  --memory 50G \
   {{ .Image }} agent -config-file {{ .ConfFile }}
 
 [Install]
