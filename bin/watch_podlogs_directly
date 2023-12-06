@@ -5,7 +5,7 @@ tail_once() {
     sudo ip netns exec operation ssh -F ssh_config \
         ${host} "test -f .kube/config" || return
     sudo ip netns exec operation ssh -F ssh_config \
-        ${host} -- stern --all-namespaces '.*'
+        ${host} -- stern --timestamps --max-log-requests=9999 --all-namespaces '.*'
 }
 
 tail_forever() {
