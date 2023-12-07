@@ -39,7 +39,7 @@ file: flatcar_production_qemu_image.img
 kind: Node
 type: boot
 spec:
-  cpu: 8
+  cpu: 4
   memory: 4G
   image: custom-ubuntu-image
   cloud-init-template: boot-seed.yml.template
