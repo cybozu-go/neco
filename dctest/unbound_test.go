@@ -49,7 +49,7 @@ func testUnbound() {
 	It("should resolve www.cybozu.com", func() {
 		By("running a test pod")
 		execSafeAt(bootServers[0], "kubectl", "run", "test",
-			"--image=$(ckecli images | grep -F quay.io/cybozu/unbound:)",
+			"--image=$(ckecli images | grep -F ghcr.io/cybozu/unbound:)",
 			"--command", "--", "pause")
 
 		By("executing getent hosts www.cybozu.com in test pod")

@@ -54,6 +54,7 @@ data:
       infra-host-ttl: 60
       prefetch: yes
       root-hints: "/etc/unbound/root.hints"
+      trust-anchor-file: "/usr/local/unbound/etc/unbound/root.key"
     remote-control:
       control-enable: yes
       control-interface: 127.0.0.1
