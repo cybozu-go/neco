@@ -107,7 +107,7 @@ systemd:
           -v /etc/chrony.conf:/etc/chrony.conf:ro \
           --mount type=tmpfs,destination=/run/chrony,tmpfs-mode=0700 \
           --mount type=tmpfs,destination=/var/lib/chrony,tmpfs-mode=0755 \
-        quay.io/cybozu/chrony:{{.ChronyTag}}
+        ghcr.io/cybozu/chrony:{{.ChronyTag}}
         ExecStartPost=/bin/sh -c 'while ! docker container inspect chrony >/dev/null; do sleep 1; done'
         ExecStartPost=/bin/sh -c 'echo $(docker inspect chrony | jq ".[0].State.Pid") > /sys/fs/cgroup/cgroup.procs'
         ExecStartPost=/bin/sh -c 'chrt --pid --fifo 99 $(docker inspect chrony | jq ".[0].State.Pid")'
