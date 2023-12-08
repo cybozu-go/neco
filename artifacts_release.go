@@ -6,12 +6,12 @@ package neco
 var CurrentArtifacts = ArtifactSet{
 	Images: []ContainerImage{
 		{Name: "coil", Repository: "ghcr.io/cybozu-go/coil", Tag: "2.4.0", Private: false},
-		{Name: "bird", Repository: "quay.io/cybozu/bird", Tag: "2.14.0.1", Private: false},
-		{Name: "chrony", Repository: "quay.io/cybozu/chrony", Tag: "4.4.0.2", Private: false},
+		{Name: "bird", Repository: "ghcr.io/cybozu/bird", Tag: "2.14.0.1", Private: false},
+		{Name: "chrony", Repository: "ghcr.io/cybozu/chrony", Tag: "4.4.0.2", Private: false},
 		{Name: "etcd", Repository: "quay.io/cybozu/etcd", Tag: "3.5.10.1", Private: false},
 		{Name: "promtail", Repository: "quay.io/cybozu/promtail", Tag: "2.9.2.1", Private: false},
 		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "3.0.0", Private: false},
-		{Name: "serf", Repository: "quay.io/cybozu/serf", Tag: "0.10.1.4", Private: false},
+		{Name: "serf", Repository: "ghcr.io/cybozu/serf", Tag: "0.10.1.4", Private: false},
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.15.1", Private: true},
 		{Name: "squid", Repository: "quay.io/cybozu/squid", Tag: "6.5.0.1", Private: false},
 		{Name: "vault", Repository: "ghcr.io/cybozu/vault", Tag: "1.15.3.2", Private: false},

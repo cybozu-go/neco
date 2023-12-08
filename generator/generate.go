@@ -20,12 +20,12 @@ import (
 
 var imageRepos = []string{
 	"ghcr.io/cybozu-go/coil",
-	"quay.io/cybozu/bird",
-	"quay.io/cybozu/chrony",
+	"ghcr.io/cybozu/bird",
+	"ghcr.io/cybozu/chrony",
 	"quay.io/cybozu/etcd",
 	"quay.io/cybozu/promtail",
 	"quay.io/cybozu/sabakan",
-	"quay.io/cybozu/serf",
+	"ghcr.io/cybozu/serf",
 	"quay.io/cybozu/setup-hw",
 	"quay.io/cybozu/squid",
 	"ghcr.io/cybozu/vault",
