@@ -593,6 +593,9 @@ data:
   operator-api-serve-addr: 127.0.0.1:9234
   operator-prometheus-serve-addr: :9963
   policy-audit-mode: "false"
+  pprof: "true"
+  pprof-address: 0.0.0.0
+  pprof-port: "6060"
   preallocate-bpf-maps: "false"
   procfs: /host/proc
   prometheus-serve-addr: :9962
@@ -718,7 +721,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 8e9c9baedbea00df309272cc06f76842588a97cec233d9c6f56a3e73ab1fb579
+        cilium.io/cilium-configmap-checksum: d8c88277233c725e9a0b12d6afe95754f59dab2247847aa2bb61677c545716ba
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -983,7 +986,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 8e9c9baedbea00df309272cc06f76842588a97cec233d9c6f56a3e73ab1fb579
+        cilium.io/cilium-configmap-checksum: d8c88277233c725e9a0b12d6afe95754f59dab2247847aa2bb61677c545716ba
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
