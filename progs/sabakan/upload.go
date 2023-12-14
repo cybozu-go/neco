@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -31,7 +32,9 @@ const (
 const retryCount = 40
 
 func imageAssetName(img neco.ContainerImage) string {
-	return fmt.Sprintf("cybozu-%s-%s.img", img.Name, img.Tag)
+	// container image asset names should include registry name
+	// because the images themselves contain registry name info.
+	return fmt.Sprintf("cybozu-%s-%s-%s.img", img.Name, strings.ReplaceAll(img.Repository, "/", "-"), img.Tag)
 }
 
 // UploadContents upload contents to sabakan
