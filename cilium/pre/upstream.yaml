@@ -1215,7 +1215,7 @@ spec:
     spec:
       containers:
       - name: cilium-operator
-        image: "quay.io/cybozu/cilium-operator-generic:1.13.7.2"
+        image: "quay.io/cybozu/cilium-operator-generic:1.13.7.3"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
@@ -1328,7 +1328,7 @@ spec:
     spec:
       containers:
         - name: hubble-relay
-          image: "quay.io/cybozu/hubble-relay:1.13.7.2"
+          image: "quay.io/cybozu/hubble-relay:1.13.7.3"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
@@ -1403,7 +1403,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hubble-generate-certs-52f7318499
+  name: hubble-generate-certs-26fd15e497
   namespace: kube-system
   labels:
     k8s-app: hubble-generate-certs
@@ -1417,7 +1417,7 @@ spec:
     spec:
       containers:
         - name: certgen
-          image: "quay.io/cybozu/cilium-certgen:0.1.9.1"
+          image: "quay.io/cybozu/cilium-certgen:0.1.9.2"
           imagePullPolicy: IfNotPresent
           command:
             - "/usr/bin/cilium-certgen"
@@ -1464,7 +1464,7 @@ spec:
         spec:
           containers:
             - name: certgen
-              image: "quay.io/cybozu/cilium-certgen:0.1.9.1"
+              image: "quay.io/cybozu/cilium-certgen:0.1.9.2"
               imagePullPolicy: IfNotPresent
               command:
                 - "/usr/bin/cilium-certgen"
