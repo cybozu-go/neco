@@ -17,7 +17,7 @@ Internet, and other networks.
 The *operation network* is a network for management of the cluster, it is
 normally used for administrators or SRE of the cluster.  Users can reach only
 boot servers from the operation network.  The *external network* is other
-cluster or service.  It can reach to the cluster via exposed Ingress IP
+cluster or service.  It can reach to the cluster via exposed load balancer IP
 addresses provided by the cluster.
 
 Each rack is separated as an individual L3 network.  Although, nodes in a rack
@@ -79,7 +79,7 @@ spec:
   exposed:
     bastion: 10.72.48.0/26
     loadbalancer: 10.72.32.0/20
-    ingress: 10.72.48.64/26
+    egress: 10.72.48.64/26
     global: 172.19.0.0/26
 ```
 
@@ -178,7 +178,7 @@ example is assigned addresses when `10.0.1.0` is specified:
         - boot-1: 10.72.48.1/32
         - boot-2: 10.72.48.2/32
     - `loadbalancer`: The network addresses used for the load balancer exposed to the external address.
-    - `ingress`: The ingress network addresses from the external address.
+    - `egress`: The egress network addresses to the external address.
     - `global`: The global network addresses to reach Internet.
 
 ### Inventory resource
