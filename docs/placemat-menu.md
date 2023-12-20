@@ -77,9 +77,9 @@ spec:
   ntp: 172.16.4.64/29
   pod: 10.64.0.0/14
   exposed:
-    bastion: 10.72.48.0/26
     loadbalancer: 10.72.32.0/20
-    egress: 10.72.48.64/26
+    bastion: 10.72.48.0/24
+    egress: 10.72.49.0/25
     global: 172.19.0.0/26
 ```
 
@@ -170,14 +170,14 @@ example is assigned addresses when `10.0.1.0` is specified:
 - `pod`: The network address advertised to outside of the cluster. Different from `exposed`, `pod` network will not accept connections from outside.
 
 - `exposed`: The network addresses advertise to outside of the cluster
+    - `loadbalancer`: The network addresses used for the load balancer exposed to the external address.
     - `bastion`: The bastion network addresses, whey are also advertised to the
         external of the cluster.  They are assigned for the boot servers, and they able
         to be accessed from the internet network.  The following example is the
-        assigned addresses when `10.72.48.0/26` is set:
+        assigned addresses when `10.72.48.0/24` is set:
         - boot-0: 10.72.48.0/32
         - boot-1: 10.72.48.1/32
         - boot-2: 10.72.48.2/32
-    - `loadbalancer`: The network addresses used for the load balancer exposed to the external address.
     - `egress`: The egress network addresses to the external address.
     - `global`: The global network addresses to reach Internet.
 
