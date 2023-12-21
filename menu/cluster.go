@@ -76,7 +76,7 @@ type network struct {
 	pod            *net.IPNet
 	bastion        *net.IPNet
 	loadBalancer   *net.IPNet
-	ingress        *net.IPNet
+	egress         *net.IPNet
 	global         *net.IPNet
 }
 

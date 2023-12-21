@@ -126,7 +126,7 @@ func (n *networkMenu) newNetworkMenu(menuFileDir string) (*network, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, network.ingress, err = parseNetworkCIDR(n.Spec.Exposed.Ingress)
+	_, network.egress, err = parseNetworkCIDR(n.Spec.Exposed.Egress)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ type networkSpec struct {
 type exposed struct {
 	Loadbalancer string `json:"loadbalancer"`
 	Bastion      string `json:"bastion"`
-	Ingress      string `json:"ingress"`
+	Egress       string `json:"egress"`
 	Global       string `json:"global"`
 }
 
