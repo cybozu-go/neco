@@ -73,13 +73,13 @@ update-cilium: helm
 		--set image.repository=quay.io/cybozu/cilium \
 		--set image.tag=$(CILIUM_TAG) \
 		--set image.useDigest=false \
-		--set operator.image.repository=quay.io/cybozu/cilium-operator \
+		--set operator.image.repository=ghcr.io/cybozu/cilium-operator \
 		--set operator.image.tag=$(CILIUM_OPERATOR_TAG) \
 		--set operator.image.useDigest=false \
-		--set hubble.relay.image.repository=quay.io/cybozu/hubble-relay \
+		--set hubble.relay.image.repository=ghcr.io/cybozu/hubble-relay \
 		--set hubble.relay.image.tag=$(HUBBLE_RELAY_TAG) \
 		--set hubble.relay.image.useDigest=false \
-		--set certgen.image.repository=quay.io/cybozu/cilium-certgen \
+		--set certgen.image.repository=ghcr.io/cybozu/cilium-certgen \
 		--set certgen.image.tag=$(CILIUM_CERTGEN_TAG) \
 		--set certgen.image.useDigest=false > cilium/$(CILIUM_OVERLAY)/upstream.yaml
 	bin/kustomize build cilium/$(CILIUM_OVERLAY) > etc/cilium$(CILIUM_CONFIG_SUFFIX).yaml

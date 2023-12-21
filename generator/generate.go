@@ -30,9 +30,9 @@ var imageRepos = []string{
 	"ghcr.io/cybozu/squid",
 	"ghcr.io/cybozu/vault",
 	"quay.io/cybozu/cilium",
-	"quay.io/cybozu/cilium-operator-generic",
-	"quay.io/cybozu/hubble-relay",
-	"quay.io/cybozu/cilium-certgen",
+	"ghcr.io/cybozu/cilium-operator-generic",
+	"ghcr.io/cybozu/hubble-relay",
+	"ghcr.io/cybozu/cilium-certgen",
 }
 
 func imageName(repo name.Repository) string {
