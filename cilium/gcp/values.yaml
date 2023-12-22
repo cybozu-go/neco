@@ -30,20 +30,13 @@ hubble:
       server:
         enabled: true
     rollOutPods: true
-    resources:
-      limits:
-        cpu: 2100m
-        memory: 1200Mi
-      requests:
-        cpu: 210m
-        memory: 120Mi
   tls:
     auto:
       method: "cronJob"
 k8sServiceHost: 127.0.0.1
 k8sServicePort: 16443
 kubeProxyReplacement: "partial"
-labels: "k8s:!controller-uid k8s:!job-name k8s:!node k8s:!batch.kubernetes.io/controller-uid k8s:!batch.kubernetes.io/job-name"
+labels: "k8s:!controller-uid k8s:!job-name k8s:!node"
 loadBalancer:
   # We can't enable XDP Acceleration because rolling restart Cilium with XDP enabled disrupts in-cluster connectivity
   acceleration: disabled
@@ -60,13 +53,6 @@ operator:
   rollOutPods: true
   prometheus:
     enabled: true
-  resources:
-    limits:
-      cpu: 250m
-      memory: 3300Mi
-    requests:
-      cpu: 25m
-      memory: 330Mi
 policyAuditMode: false
 policyEnforcementMode: "default"
 pprof:
@@ -77,13 +63,6 @@ prometheus:
   enabled: true
   metrics:
     - +cilium_bpf_map_pressure
-resources:
-  limits:
-    cpu: 22200m
-    memory: 110Gi
-  requests:
-    cpu: 2220m
-    memory: 11Gi
 rollOutCiliumPods: true
 sessionAffinity: true
 socketLB:

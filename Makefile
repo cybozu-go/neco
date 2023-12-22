@@ -4,14 +4,22 @@
 include Makefile.common
 
 COIL_VERSION := $(shell awk '/"coil"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
+COIL_OVERLAY = prod
+ifeq ($(COIL_PRE), true)
+	COIL_CONFIG_SUFFIX = -pre
+	COIL_OVERLAY = pre
+endif
 CILIUM_TAG := $(shell awk '/"cilium"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
 CILIUM_OPERATOR_TAG := $(shell awk '/"cilium-operator-generic"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
 HUBBLE_RELAY_TAG := $(shell awk '/"hubble-relay"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
 CILIUM_CERTGEN_TAG := $(shell awk '/"cilium-certgen"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
 CILIUM_OVERLAY = prod
 ifeq ($(CILIUM_PRE), true)
-        CILIUM_CONFIG_SUFFIX = -pre
-        CILIUM_OVERLAY = pre
+	CILIUM_CONFIG_SUFFIX = -pre
+	CILIUM_OVERLAY = pre
+else ifeq ($(CILIUM_GCP), true)
+	CILIUM_CONFIG_SUFFIX = -gcp
+	CILIUM_OVERLAY = gcp
 endif
 BIN_DIR := $(shell pwd)/bin
 LSB_DISTRIB_RELEASE := $(shell . /etc/lsb-release ; echo $$DISTRIB_RELEASE)
@@ -57,8 +65,8 @@ update-coil:
 	curl -sSfL https://github.com/cybozu-go/coil/archive/v$(COIL_VERSION).tar.gz | tar -C /tmp/work-coil -xzf - --strip-components=1
 	cd /tmp/work-coil/v2; sed -i -E 's,^(- config/default),#\1, ; s,^#(- config/cke),\1, ; s,^#(- config/default/pod_security_policy.yaml),\1, ; s,^#(- config/pod/compat_calico.yaml),\1,' kustomization.yaml
 	cp etc/netconf.json /tmp/work-coil/v2/netconf.json
-	cp coil/* /tmp/work-coil/cke-patch
-	bin/kustomize build /tmp/work-coil/cke-patch > etc/coil.yaml
+	cp -r coil/* /tmp/work-coil/cke-patch
+	bin/kustomize build /tmp/work-coil/cke-patch/$(COIL_OVERLAY) > etc/coil$(COIL_CONFIG_SUFFIX).yaml
 	rm -rf /tmp/work-coil
 
 .PHONY: update-cilium
@@ -116,8 +124,10 @@ test:
 check-generate:
 	$(MAKE) -C ignition-template all
 	$(MAKE) update-coil
+	$(MAKE) update-coil COIL_PRE=true
 	$(MAKE) update-cilium
 	$(MAKE) update-cilium CILIUM_PRE=true
+	$(MAKE) update-cilium CILIUM_GCP=true
 	go mod tidy
 	git diff --exit-code --name-only
 

@@ -46,11 +46,15 @@ func UpdateResources(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 	var ckeUserResourceFiles []string
-	if env == neco.ProdEnv {
+	switch env {
+	case neco.ProdEnv:
 		ckeUserResourceFiles = neco.CKEUserResourceFiles
-	} else {
+	case neco.StagingEnv, neco.DevEnv:
 		ckeUserResourceFiles = neco.CKEUserResourceFilesPre
+	case neco.NoneEnv, neco.TestEnv:
+		ckeUserResourceFiles = neco.CKEUserResourceFilesGcp
 	}
+
 	for _, filename := range ckeUserResourceFiles {
 		content, err := os.ReadFile(filename)
 		if err != nil {

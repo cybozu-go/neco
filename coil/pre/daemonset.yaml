@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: kube-system
+  name: coild
+spec:
+  template:
+    spec:
+      containers:
+        - name: coild
+          resources:
+            requests:
+              cpu: 25m
+              memory: 110Mi
+            limits:
+              cpu: 250m
+              memory: 1100Mi
