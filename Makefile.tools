@@ -59,7 +59,13 @@ NECOPERF_DLDIR := $(DOWNLOADDIR)/necoperf-$(NECOPERF_VERSION)
 NECOPERF_DOWNLOAD := $(NECOPERF_DLDIR)/downloaded
 
 .PHONY: all
-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf
+all: 
+	$(CURDIR)/bin/neco-download-dir-cache.sh fetch
+	$(MAKE) -f Makefile.tools download-all
+	$(CURDIR)/bin/neco-download-dir-cache.sh write
+
+.PHONY: download-all
+download-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf
 	# all binaries in BINDIR and SBINDIR must have executable bits
 	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
