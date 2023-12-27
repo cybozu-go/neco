@@ -46,7 +46,7 @@ This implies reboot of the machine.`,
 			return err
 		}
 
-		_, err = sshSessionOutput(client, "racadm serveraction hardreset")
+		_, err = sshSessionOutput(client, "racadm serveraction powercycle")
 		return err
 	},
 }
