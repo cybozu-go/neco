@@ -180,7 +180,7 @@ func testUpgrade() {
 			By("checking " + img + " is running")
 			Eventually(func() error {
 				switch strings.Split(img, ":")[0] {
-				case "quay.io/cybozu/unbound", "quay.io/cybozu/unbound_exporter", "ghcr.io/cybozu/unbound":
+				case "ghcr.io/cybozu/unbound", "ghcr.io/cybozu/unbound_exporter":
 					if err := checkVersionInDaemonSet("kube-system", "node-dns", img); err != nil {
 						return err
 					}
@@ -188,9 +188,9 @@ func testUpgrade() {
 						return err
 					}
 					return checkVersionInDeployment("internet-egress", "squid", img)
-				case "quay.io/cybozu/coredns":
+				case "ghcr.io/cybozu/coredns":
 					return checkVersionInDeployment("kube-system", "cluster-dns", img)
-				case "quay.io/cybozu/kubernetes":
+				case "ghcr.io/cybozu/kubernetes":
 					for _, node := range cluster.Nodes {
 						if node.ControlPlane {
 							for _, cn := range []string{"kube-apiserver", "kube-scheduler", "kube-controller-manager"} {
@@ -203,7 +203,7 @@ func testUpgrade() {
 							return err
 						}
 					}
-				case "quay.io/cybozu/etcd":
+				case "ghcr.io/cybozu/etcd":
 					for _, node := range cluster.Nodes {
 						if node.ControlPlane {
 							if err := checkVersionByDocker(node.Address, "etcd", img); err != nil {
@@ -211,13 +211,13 @@ func testUpgrade() {
 							}
 						}
 					}
-				case "quay.io/cybozu/cke-tools":
+				case "ghcr.io/cybozu-go/cke-tools":
 					for _, node := range cluster.Nodes {
 						if err := checkVersionByDocker(node.Address, "rivers", img); err != nil {
 							return err
 						}
 					}
-				case "quay.io/cybozu/pause":
+				case "ghcr.io/cybozu/pause":
 					// Skip to check version because newer pause image is loaded after reboot
 					break
 				default:
