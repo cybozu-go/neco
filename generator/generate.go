@@ -28,6 +28,7 @@ var imageRepos = []string{
 	"ghcr.io/cybozu/serf",
 	"quay.io/cybozu/setup-hw",
 	"ghcr.io/cybozu/squid",
+	"ghcr.io/cybozu/squid-exporter",
 	"ghcr.io/cybozu/vault",
 	"quay.io/cybozu/cilium",
 	"ghcr.io/cybozu/cilium-operator-generic",
