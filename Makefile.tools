@@ -308,7 +308,7 @@ $(TELEPORT_DOWNLOAD):
 	for i in $$(seq 10); do \
 		if $(WGET) -O $(TELEPORT_DLDIR)/teleport-darwin-amd64.tar.gz https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-darwin-amd64-bin.tar.gz; then break; fi; \
 	done
-	unzip -j $(TELEPORT_DLDIR)/teleport.zip teleport/tsh.exe -d $(TELEPORT_DLDIR)/teleport-windows-amd64
+	unzip -j $(TELEPORT_DLDIR)/teleport.zip tsh.exe -d $(TELEPORT_DLDIR)/teleport-windows-amd64
 	tar -C $(TELEPORT_DLDIR)/teleport-linux-amd64 --strip-components=1 -xzf $(TELEPORT_DLDIR)/teleport-linux-amd64.tar.gz teleport/tsh teleport/tctl teleport/teleport
 	tar -C $(TELEPORT_DLDIR)/teleport-darwin-amd64 --strip-components=1 -xzf $(TELEPORT_DLDIR)/teleport-darwin-amd64.tar.gz teleport/tsh
 	$(WGET_GITHUB) -O $(TELEPORT_DLDIR)/common/LICENSE https://raw.githubusercontent.com/gravitational/teleport/v$(TELEPORT_VERSION)/LICENSE
