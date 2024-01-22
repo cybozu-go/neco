@@ -249,6 +249,8 @@ func testUpgrade() {
 					return checkVersionInDeployment("kube-system", "coil-controller", newImage)
 				case "squid":
 					return checkVersionInDeployment("internet-egress", "squid", newImage)
+				case "squid-exporter":
+					return checkVersionInDeployment("internet-egress", "squid", newImage)
 				case "cilium":
 					return checkVersionInDaemonSet("kube-system", "cilium", newImage)
 				case "cilium-operator-generic":
