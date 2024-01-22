@@ -287,6 +287,10 @@
           "enabled": true
         },
         {
+          "name": "squid-exporter-image.service",
+          "enabled": true
+        },
+        {
           "name": "squid-image.service",
           "enabled": true
         },

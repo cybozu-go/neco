@@ -108,6 +108,8 @@ systemd:
   - enabled: true
     name: cke-image-unbound_exporter.service
   - enabled: true
+    name: squid-exporter-image.service
+  - enabled: true
     name: squid-image.service
   - enabled: true
     name: coil-image.service

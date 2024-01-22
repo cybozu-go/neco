@@ -312,6 +312,20 @@ spec:
           resources:
             requests:
               cpu: 100m
+        - name: squid-exporter
+          image: {{ index . "squid-exporter" }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9100
+              name: squid-metrics
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - all
+            readOnlyRootFilesystem: true
+            runAsUser: 10000
+            runAsGroup: 10000
       volumes:
         - name: cache
           emptyDir: {}
