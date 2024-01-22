@@ -2,7 +2,9 @@ package dctest
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -44,6 +46,7 @@ func testSquid() {
 		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
 
 		checkUnboundExporter("app.kubernetes.io/name=squid")
+		checkSquidExporter("app.kubernetes.io/name=squid")
 	})
 
 	It("should serve for docker daemon", func() {
@@ -71,4 +74,31 @@ func testSquid() {
 		By("removing the testhttpd pod")
 		execSafeAt(bootServers[0], "kubectl", "delete", "pod/testhttpd")
 	})
+}
+
+func checkSquidExporter(podLabelSelector string) {
+	// should be called in It
+	By("checking squid_exporter")
+	Eventually(func() error {
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod", "-n", "internet-egress", "-l", podLabelSelector, "-o", "json")
+		if err != nil {
+			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+		}
+		podList := new(corev1.PodList)
+		err = json.Unmarshal(stdout, &podList)
+		if err != nil {
+			return fmt.Errorf("data: %s, err: %v", stdout, err)
+		}
+		stdout, stderr, err = execAt(bootServers[0], "curl", "-sSf", "http://"+podList.Items[0].Status.PodIP+":9100/metrics")
+		if err != nil {
+			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+		}
+		if !strings.Contains(string(stdout), "cpu_time_total") {
+			return errors.New("should contain 'cpu_time_total' in the metrics")
+		}
+		if !strings.Contains(string(stdout), `squid_service_times_http_requests_all{percentile="5", duration_minutes="5"}`) {
+			return errors.New(`should contain 'squid_service_times_http_requests_all{percentile="5", duration_minutes="5"}' in the metrics`)
+		}
+		return nil
+	}).Should(Succeed())
 }
