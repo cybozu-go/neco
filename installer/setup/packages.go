@@ -10,10 +10,10 @@ var (
 	purgeList = []string{
 		"apport",
 		"apport-symptoms",
-		"fwupd",
+		//"fwupd",
 		"nano",
 		//"netplan.io",
-		"popularity-contest",
+		//"popularity-contest",
 		"unattended-upgrades",
 		"update-manager-core",
 		"ubuntu-release-upgrader-core",
