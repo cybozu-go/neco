@@ -31,9 +31,11 @@ func purgePackages() error {
 
 	// cloud-init depends on netplan.io, so it can be purged
 	// only from non-virtual machines.
+	// The fwupd and popularity-contest packages are not included in the cloud image, but are included in the iso image.
+	// Therefore, it is necessary to purge them in a non-vm environment.
 	err := exec.Command("systemd-detect-virt", "-v", "-q").Run()
 	if err != nil {
-		args = append(args, "netplan.io")
+		args = append(args, "netplan.io", "fwupd", "popularity-contest")
 	}
 
 	return runCmd("apt-get", args...)
