@@ -411,6 +411,7 @@ workflows:
               ignore:
                 - release
                 - main
+                - relax-ci-workflow
 
   manual-reboot:
     jobs:
@@ -454,13 +455,14 @@ workflows:
       - dctest-functions-release:
           requires:
             - generate-artifacts
-      - dctest-upgrade-release:
+      - hold:
+          type: approval
           requires:
             - generate-artifacts
       - update-release:
           requires:
             - dctest-functions-release
-            - dctest-upgrade-release
+            - hold
 
   # For updating `artifact_release.go` regularly, run the same job as `main` workflow.
   daily:
