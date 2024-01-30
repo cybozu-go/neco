@@ -4,6 +4,7 @@ SUDO = sudo
 
 UBUNTU_VERSION = 22.04.1
 UBUNTU_RELEASE = 22.04
+UBUNTU_RELEASE_DATE = 20240126
 BUILD_DEPS := xorriso qemu-utils qemu-kvm ovmf curl ca-certificates cloud-image-utils gdisk kpartx
 
 ORIGINAL_ISO_NAME = ubuntu-$(UBUNTU_VERSION)-live-server-amd64.iso
@@ -157,7 +158,7 @@ cloud: $(CUSTOM_CLOUD_PATH)
 
 $(ORIGINAL_CLOUD_PATH):
 	mkdir -p build
-	../bin/download-with-blob-cache.sh "curl -fsSL" $@ https://cloud-images.ubuntu.com/releases/$(UBUNTU_RELEASE)/release/$(ORIGINAL_CLOUD_IMAGE)
+	../bin/download-with-blob-cache.sh "curl -fsSL" $@ https://cloud-images.ubuntu.com/releases/$(UBUNTU_RELEASE)/release-$(UBUNTU_RELEASE_DATE)/$(ORIGINAL_CLOUD_IMAGE)
 
 $(CUSTOM_CLOUD_PATH): $(ORIGINAL_CLOUD_PATH) $(DEBS) cluster.json
 	cp $< $@
