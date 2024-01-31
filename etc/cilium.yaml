@@ -513,7 +513,7 @@ data:
   bpf-ct-timeout-service-any: 1h0m0s
   bpf-lb-acceleration: disabled
   bpf-lb-algorithm: maglev
-  bpf-lb-dsr-dispatch: geneve
+  bpf-lb-dsr-dispatch: ipipcni
   bpf-lb-dsr-l4-xlate: backend
   bpf-lb-external-clusterip: "false"
   bpf-lb-maglev-hash-seed: 3HCx6JennjWtot2U
@@ -583,7 +583,8 @@ data:
   ipam: cluster-pool
   kube-proxy-replacement: partial
   kube-proxy-replacement-healthz-bind-address: ""
-  labels: k8s:!controller-uid k8s:!job-name k8s:!node
+  labels: k8s:!controller-uid k8s:!job-name k8s:!node k8s:!batch.kubernetes.io/controller-uid
+    k8s:!batch.kubernetes.io/job-name
   metrics: +cilium_bpf_map_pressure
   monitor-aggregation: medium
   monitor-aggregation-flags: all
@@ -718,7 +719,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 62f18ad29ce726d8e98c492a352f6af49c081e96ec484fdb6c558ee507618187
+        cilium.io/cilium-configmap-checksum: 66cd4e5efcd38c57a3c3a941e8efad6d35dcf172b4ac9ccbd2c20b444b729143
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -983,7 +984,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 62f18ad29ce726d8e98c492a352f6af49c081e96ec484fdb6c558ee507618187
+        cilium.io/cilium-configmap-checksum: 66cd4e5efcd38c57a3c3a941e8efad6d35dcf172b4ac9ccbd2c20b444b729143
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"

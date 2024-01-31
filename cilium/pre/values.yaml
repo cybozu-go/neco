@@ -40,12 +40,12 @@ hubble:
 k8sServiceHost: 127.0.0.1
 k8sServicePort: 16443
 kubeProxyReplacement: "partial"
-labels: "k8s:!controller-uid k8s:!job-name k8s:!node"
+labels: "k8s:!controller-uid k8s:!job-name k8s:!node k8s:!batch.kubernetes.io/controller-uid k8s:!batch.kubernetes.io/job-name"
 loadBalancer:
   # We can't enable XDP Acceleration because rolling restart Cilium with XDP enabled disrupts in-cluster connectivity
   acceleration: disabled
   algorithm: maglev
-  dsrDispatch: geneve
+  dsrDispatch: ipipcni
   dsrL4Translate: backend
   mode: dsr
 maglev:
