@@ -1,0 +1,17 @@
+#!/bin/sh -e
+if [ $# -lt 2 ]; then
+    echo "Usage: $0 IP_ADDRESS STATE [STATE]..." 1>&2
+    exit 2
+fi
+IP_ADDRESS=$1
+shift
+
+JSON=$(sabactl machines get --ipv4 ${IP_ADDRESS} || sabactl machines get --ipv6 ${IP_ADDRESS})
+STATE=$(echo ${JSON} | jq -r '.[].status.state')
+
+for expected in $*; do
+    if [ ${STATE} = ${expected} ]; then
+        exit 0
+    fi
+done
+exit 1
