@@ -62,6 +62,17 @@ func GenerateCKETemplate(ctx context.Context, st storage.Storage, name string, c
 				},
 			}
 		}
+		if r, ok := tmpl["repair"].(map[string]interface{}); ok {
+			r["protected_namespaces"] = map[string]interface{}{
+				"matchExpressions": []interface{}{
+					map[string]interface{}{
+						"key":      "development",
+						"operator": "NotIn",
+						"values":   []string{"true"},
+					},
+				},
+			}
+		}
 	}
 
 	weights, err := st.GetCKEWeight(ctx)
