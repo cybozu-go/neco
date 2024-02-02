@@ -40,7 +40,17 @@ hubble:
 k8sServiceHost: 127.0.0.1
 k8sServicePort: 16443
 kubeProxyReplacement: "partial"
-labels: "k8s:!controller-uid k8s:!job-name k8s:!node k8s:!batch.kubernetes.io/controller-uid k8s:!batch.kubernetes.io/job-name"
+labels: "
+  k8s:app
+  k8s:io\\.cilium\\.k8s\\.namespace\\.labels\\.team
+  k8s:io\\.kubernetes\\.pod\\.namespace
+  k8s:k8s-app 
+  io\\.cilium\\.k8s\\.policy
+  cybozu\\.io/family
+  app\\.cybozu\\.io
+  neco\\.cybozu\\.io\\/registry
+  identity\\.neco\\.cybozu\\.io
+  "
 loadBalancer:
   # We can't enable XDP Acceleration because rolling restart Cilium with XDP enabled disrupts in-cluster connectivity
   acceleration: disabled
