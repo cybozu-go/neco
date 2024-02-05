@@ -31,6 +31,49 @@ reboot:
   command_interval: 60
   evict_retries: 30
   evict_interval: 10
+repair:
+  repair_procedures:
+  - machine_types: ["iDRAC"]
+    repair_operations:
+    - operation: unhealthy
+      repair_steps:
+      - repair_command: ["sh", "-c", "timeout 30 neco bmc repair dell reset-idrac $1 || ckecli ssh $1 -- docker exec setup-hw racadm racreset soft", "reset-idrac"]
+        command_timeout_seconds: 60
+        command_retries: 2
+        command_interval: 30
+        watch_second: 600
+      - repair_command: ["neco", "bmc", "repair", "dell", "discharge"]
+        command_timeout_seconds: 30
+        command_retries: 2
+        command_interval: 30
+        need_drain: true
+        watch_second: 1500
+      health_check_command: ["sh", "-c", "check-machine-state $1 healthy retired", "check-machine-state"]
+      command_timeout_seconds: 10
+    - operation: unreachable
+      repair_steps:
+      - repair_command: ["sh", "-c", "timeout 30 neco bmc repair dell reset-idrac $1 || ckecli ssh $1 -- docker exec setup-hw racadm racreset soft", "reset-idrac"]
+        command_timeout_seconds: 60
+        command_retries: 2
+        command_interval: 30
+        watch_second: 600
+      - repair_command: ["neco", "bmc", "repair", "dell", "discharge"]
+        command_timeout_seconds: 30
+        command_retries: 2
+        command_interval: 30
+        need_drain: false
+        watch_second: 1500
+      - repair_command: ["retire-machine"]
+        command_timeout_seconds: 30
+        command_retries: 2
+        command_interval: 30
+        watch_second: 600
+      health_check_command: ["sh", "-c", "check-machine-state $1 healthy retired", "check-machine-state"]
+      command_timeout_seconds: 10
+  max_concurrent_repairs: 1
+  evict_retries: 30
+  evict_interval: 10
+  eviction_timeout_seconds: 1800
 options:
   kube-api:
     audit_log_enabled: true

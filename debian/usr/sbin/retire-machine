@@ -1,0 +1,10 @@
+#!/bin/sh -e
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 IP_ADDRESS" 1>&2
+    exit 2
+fi
+IP_ADDRESS=$1
+
+JSON=$(sabactl machines get --ipv4 ${IP_ADDRESS} || sabactl machines get --ipv6 ${IP_ADDRESS})
+SERIAL=$(echo ${JSON} | jq -r '.[].spec.serial')
+sabactl machines set-state ${SERIAL} retiring
