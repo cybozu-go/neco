@@ -1,0 +1,56 @@
+#!/bin/bash -e
+set -o pipefail
+
+if [ $# -eq 0 ]; then
+        echo 'necoip <IPADDR>'
+        exit
+fi
+
+if ! echo $1 | grep -E '^([0-9]{1,3}[.]){3}[0-9]{1,3}$' > /dev/null; then
+        echo "Input is not a valid IP"
+        exit
+fi
+
+NODE_JSON=$(kubectl get node $1 -o json 2>/dev/null || true)
+if [ ! -z "${NODE_JSON}" ]; then
+        echo "$1 is a Node"
+        exit
+fi
+
+SVC_JSON=$(kubectl get svc -Ao json)
+SVC_CLUSTER_IP=$(echo $SVC_JSON | jq ".items[] | select(.spec.clusterIP == \"$1\")")
+if [ ! -z "${SVC_CLUSTER_IP}" ]; then
+        SVC_NAMESPACE=$(echo ${SVC_CLUSTER_IP} | jq -r '.metadata.namespace')
+        SVC_NAME=$(echo ${SVC_CLUSTER_IP} | jq -r '.metadata.name')
+        echo "$1 is a Service (ClusterIP): ${SVC_NAMESPACE}/${SVC_NAME}"
+        exit
+fi
+
+SVC_LOAD_BALANCER=$(echo $SVC_JSON | jq ".items[] | select(.status.loadBalancer.ingress[0].ip == \"$1\")")
+if [ ! -z "${SVC_LOAD_BALANCER}" ]; then
+        SVC_NAMESPACE=$(echo ${SVC_LOAD_BALANCER} | jq -r '.metadata.namespace')
+        SVC_NAME=$(echo ${SVC_LOAD_BALANCER} | jq -r '.metadata.name')
+        echo "$1 is a Service (LoadBalancer): ${SVC_NAMESPACE}/${SVC_NAME}"
+        exit
+fi
+
+POD_JSON=$(kubectl get po -Ao json | jq ".items[] | select(.status.podIP == \"$1\")")
+if [ ! -z "${POD_JSON}" ]; then
+        POD_NAMESPACE=$(echo ${POD_JSON} | jq -r '.metadata.namespace')
+        POD_NAME=$(echo ${POD_JSON} | jq -r '.metadata.name')
+        echo "$1 is a Pod: ${POD_NAMESPACE}/${POD_NAME}"
+        exit
+fi
+
+for p in $(kubectl get addresspools -o json | jq -c '.items[]'); do
+        POOL_NAME=$(echo $p | jq -r '.metadata.name')
+        for s in $(echo $p | jq -r '.spec.subnets[].ipv4'); do
+                TEST=$(python3 -c "from ipaddress import *; print(ip_address(\"$1\") in ip_network(\"$s\"))")
+                if [ "${TEST}" = "True" ]; then
+                        echo "$1 is an AddressPool IP: ${POOL_NAME}"
+                        exit
+                fi
+        done
+done
+
+echo "$1 is unknown (maybe a bug in this script)"
