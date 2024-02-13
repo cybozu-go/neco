@@ -48,7 +48,7 @@ type: cs
 spec:
   cpu: 8
   memory: 16G
-  disk-count: 2
+  disk-count: 3
   tpm: true
 ---
 kind: Node
