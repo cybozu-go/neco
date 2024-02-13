@@ -53,4 +53,29 @@ for p in $(kubectl get addresspools -o json | jq -c '.items[]'); do
         done
 done
 
+if which sabactl >/dev/null; then
+        IPV4_JSON=$(sabactl machines get --ipv4 $1 2>/dev/null | jq '.[0]' || true)
+        BMC_JSON=$(sabactl machines get | jq ".[] | select(.spec.bmc.ipv4==\"$1\")")
+        if [ ! -z "${IPV4_JSON}" ]; then
+                MACHINE_JSON=${IPV4_JSON}
+                IPV4_INDEX=$(echo ${IPV4_JSON} | jq ".spec.ipv4 | index(\"$1\")")
+                INPUT_ROLE=$(echo '["VIP", "1st NIC", "2nd NIC"]' | jq -r ".[${IPV4_INDEX}]")
+        elif [ ! -z "${BMC_JSON}" ]; then
+                MACHINE_JSON=${BMC_JSON}
+                INPUT_ROLE="BMC"
+        fi
+        if [ ! -z "${MACHINE_JSON}" ]; then
+                MACHINE_ROLE=$(echo ${MACHINE_JSON} | jq -r '.spec.role')
+                MACHINE_RACK=$(echo ${MACHINE_JSON} | jq -r '.spec.rack')
+                MACHINE_IIR=$(echo ${MACHINE_JSON} | jq -r '.spec["index-in-rack"]')
+                if [ "${MACHINE_ROLE}" = "boot" ]; then
+                        MACHINE_NAME="boot-${MACHINE_RACK}"
+                else
+                        MACHINE_NAME="rack${MACHINE_RACK}-${MACHINE_ROLE}${MACHINE_IIR}"
+                fi
+                echo "$1 is ${MACHINE_NAME} (${INPUT_ROLE})"
+                exit
+        fi
+fi
+
 echo "$1 is unknown (maybe a bug in this script)"
