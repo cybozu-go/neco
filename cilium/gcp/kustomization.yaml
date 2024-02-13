@@ -1,35 +1,29 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../base
-  - bgp_config.yaml
-  - upstream.yaml
+  - ../pre
 patches:
-  - target:
-      group: apps
-      version: v1
-      kind: Deployment
-      name: cilium-operator
-    patch: |-
-      - op: add
-        path: /metadata/annotations
-        value:
-          cke.cybozu.com/rank: "2500"
   - target:
       group: apps
       version: v1
       kind: DaemonSet
       name: cilium
     patch: |-
-      - op: add
-        path: /metadata/annotations
-        value:
-          cke.cybozu.com/rank: "2500"
+      - op: remove
+        path: /spec/template/spec/containers/0/resources
   - target:
-      group: batch
+      group: apps
       version: v1
-      kind: Job
-      name: hubble-generate-certs-52f7318499
+      kind: Deployment
+      name: cilium-operator
     patch: |-
       - op: remove
-        path: /spec/ttlSecondsAfterFinished
+        path: /spec/template/spec/containers/0/resources
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: hubble-relay
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/containers/0/resources

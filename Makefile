@@ -21,6 +21,18 @@ else ifeq ($(CILIUM_GCP), true)
 	CILIUM_CONFIG_SUFFIX = -gcp
 	CILIUM_OVERLAY = gcp
 endif
+SQUID_VERSION := $(shell awk '/"squid"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
+SQUID_EXPORTER_VERSION := $(shell awk '/"squid-exporter"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
+SQUID_OVERLAY = prod
+ifeq ($(SQUID_PRE), true)
+	SQUID_CONFIG_SUFFIX = -pre
+	SQUID_OVERLAY = pre
+endif
+UNBOUND_OVERLAY = prod
+ifeq ($(UNBOUND_PRE), true)
+	UNBOUND_CONFIG_SUFFIX = -pre
+	UNBOUND_OVERLAY = pre
+endif
 BIN_DIR := $(shell pwd)/bin
 LSB_DISTRIB_RELEASE := $(shell . /etc/lsb-release ; echo $$DISTRIB_RELEASE)
 
@@ -93,6 +105,22 @@ update-cilium: helm
 	bin/kustomize build cilium/$(CILIUM_OVERLAY) > etc/cilium$(CILIUM_CONFIG_SUFFIX).yaml
 	rm -rf /tmp/work-cilium
 
+.PHONY: update-squid
+update-squid:
+	$(call get-unbound-version)
+	sed -i -E '/name:.*squid$$/!b;n;s/newTag:.*$$/newTag: $(SQUID_VERSION)/' squid/base/kustomization.yaml
+	sed -i -E '/name:.*squid-exporter$$/!b;n;s/newTag:.*$$/newTag: $(SQUID_EXPORTER_VERSION)/' squid/base/kustomization.yaml
+	sed -i -E '/name:.*unbound$$/!b;n;s/newTag:.*$$/newTag: $(UNBOUND_VERSION)/' squid/base/kustomization.yaml
+	sed -i -E '/name:.*unbound_exporter$$/!b;n;s/newTag:.*$$/newTag: $(UNBOUND_EXPORTER_VERSION)/' squid/base/kustomization.yaml
+	bin/kustomize build squid/$(SQUID_OVERLAY) > etc/squid$(SQUID_CONFIG_SUFFIX).yaml
+
+.PHONY: update-unbound
+update-unbound:
+	$(call get-unbound-version)
+	sed -i -E '/name:.*unbound$$/!b;n;s/newTag:.*$$/newTag: $(UNBOUND_VERSION)/' squid/base/kustomization.yaml
+	sed -i -E '/name:.*unbound_exporter$$/!b;n;s/newTag:.*$$/newTag: $(UNBOUND_EXPORTER_VERSION)/' squid/base/kustomization.yaml
+	bin/kustomize build unbound/$(UNBOUND_OVERLAY) > etc/unbound$(UNBOUND_CONFIG_SUFFIX).yaml
+
 HELM := $(shell pwd)/bin/helm
 .PHONY: helm
 helm: $(HELM) ## Download helm locally if necessary.
@@ -128,6 +156,10 @@ check-generate:
 	$(MAKE) update-cilium
 	$(MAKE) update-cilium CILIUM_PRE=true
 	$(MAKE) update-cilium CILIUM_GCP=true
+	$(MAKE) update-squid
+	$(MAKE) update-squid SQUID_PRE=true
+	$(MAKE) update-unbound
+	$(MAKE) update-unbound UNBOUND_PRE=true
 	go mod tidy
 	git diff --exit-code --name-only
 
@@ -202,3 +234,8 @@ setup:
 clean:
 	$(MAKE) -f Makefile.tools clean
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OPWORKWINDIR) $(OPWORKMACDIR) $(OP_DEB) $(OP_WIN_ZIP) $(OP_MAC_ZIP)
+
+define get-unbound-version
+$(eval UNBOUND_VERSION := $(shell curl -sSfL https://raw.githubusercontent.com/cybozu-go/cke/v$(CKE_VERSION)/images.go | awk -F'"' '/UnboundImage/ {match($$2, /([0-9]+).([0-9]+).([0-9]+).([0-9]+)/); print substr($$2,RSTART,RLENGTH)}'))
+$(eval UNBOUND_EXPORTER_VERSION := $(shell curl -sSfL https://raw.githubusercontent.com/cybozu-go/cke/v$(CKE_VERSION)/images.go | awk -F'"' '/UnboundExporterImage/ {match($$2, /([0-9]+).([0-9]+).([0-9]+).([0-9]+)/); print substr($$2,RSTART,RLENGTH)}'))
+endef

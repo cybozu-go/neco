@@ -234,13 +234,6 @@ spec:
           periodSeconds: 1
           tcpSocket:
             port: 3128
-        resources:
-          limits:
-            cpu: 500m
-            memory: 4400Mi
-          requests:
-            cpu: 50m
-            memory: 440Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -283,11 +276,10 @@ spec:
             port: 53
         resources:
           limits:
-            cpu: 250m
-            memory: 500Mi
+            memory: 1024Mi
           requests:
-            cpu: 25m
-            memory: 50Mi
+            cpu: 100m
+            memory: 256Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

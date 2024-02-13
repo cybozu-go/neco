@@ -180,22 +180,22 @@ var (
 		filepath.Join(NecoDataDir, "namespaces.yml"),
 		filepath.Join(NecoDataDir, "cilium.yaml"),
 		filepath.Join(NecoDataDir, "coil.yaml"),
-		filepath.Join(NecoDataDir, "unbound.yml"),
-		filepath.Join(NecoDataDir, "squid.yml"),
+		filepath.Join(NecoDataDir, "unbound.yaml"),
+		filepath.Join(NecoDataDir, "squid.yaml"),
 	}
 	CKEUserResourceFilesPre = []string{
 		filepath.Join(NecoDataDir, "namespaces.yml"),
 		filepath.Join(NecoDataDir, "cilium-pre.yaml"),
 		filepath.Join(NecoDataDir, "coil-pre.yaml"),
-		filepath.Join(NecoDataDir, "unbound-pre.yml"),
-		filepath.Join(NecoDataDir, "squid-pre.yml"),
+		filepath.Join(NecoDataDir, "unbound-pre.yaml"),
+		filepath.Join(NecoDataDir, "squid-pre.yaml"),
 	}
 	CKEUserResourceFilesGcp = []string{
 		filepath.Join(NecoDataDir, "namespaces.yml"),
 		filepath.Join(NecoDataDir, "cilium-gcp.yaml"),
 		filepath.Join(NecoDataDir, "coil-pre.yaml"),
-		filepath.Join(NecoDataDir, "unbound-pre.yml"),
-		filepath.Join(NecoDataDir, "squid-pre.yml"),
+		filepath.Join(NecoDataDir, "unbound-pre.yaml"),
+		filepath.Join(NecoDataDir, "squid-pre.yaml"),
 	}
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
