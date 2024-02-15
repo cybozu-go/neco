@@ -3,4 +3,4 @@ images:
   versions: ["2.5.0", "2.5.1", "2.5.2"]
 osImage:
 - channel: stable
-  versions: ["3760.2.0"]
+  versions: ["3760.2.0", "3815.2.0"]
