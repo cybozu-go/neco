@@ -34,8 +34,8 @@ OP_MAC_ZIP = neco-operation-cli-mac_$(VERSION)_amd64.zip
 DEBBUILD_FLAGS = -Znone
 BIN_PKGS = ./pkg/neco
 SBIN_PKGS = ./pkg/neco-updater ./pkg/neco-worker
-OPDEB_BINNAMES = argocd hubble jsonnet jsonnetfmt jsonnet-lint kubectl kubeseal kustomize logcli stern tsh kubectl-moco kubectl-accurate amtool yq tempo-cli flamegraph.pl stackcollapse-perf.pl necoperf-cli necoip
-OPDEB_DOCNAMES = argocd hubble jsonnet kubectl kubeseal kustomize logcli stern teleport moco accurate alertmanager yq tempo flamegraph necoperf
+OPDEB_BINNAMES = argocd hubble jsonnet jsonnetfmt jsonnet-lint kubectl kubeseal kustomize logcli stern tsh kubectl-moco kubectl-accurate amtool yq tempo-cli flamegraph.pl stackcollapse-perf.pl necoperf-cli necoip cmctl
+OPDEB_DOCNAMES = argocd hubble jsonnet kubectl kubeseal kustomize logcli stern teleport moco accurate alertmanager yq tempo flamegraph necoperf cmctl
 
 .PHONY: all
 all:
