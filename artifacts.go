@@ -14,7 +14,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "serf", Repository: "ghcr.io/cybozu/serf", Tag: "0.10.1.4", Private: false},
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.15.2", Private: true},
 		{Name: "squid", Repository: "ghcr.io/cybozu/squid", Tag: "6.6.0.1", Private: false},
-		{Name: "squid-exporter", Repository: "ghcr.io/cybozu/squid-exporter", Tag: "1.0.3", Private: false},
+		{Name: "squid-exporter", Repository: "ghcr.io/cybozu/squid-exporter", Tag: "1.0.4", Private: false},
 		{Name: "vault", Repository: "ghcr.io/cybozu/vault", Tag: "1.15.3.2", Private: false},
 		{Name: "cilium", Repository: "quay.io/cybozu/cilium", Tag: "1.13.7.2", Private: false},
 		{Name: "cilium-operator-generic", Repository: "ghcr.io/cybozu/cilium-operator-generic", Tag: "1.13.7.3", Private: false},
