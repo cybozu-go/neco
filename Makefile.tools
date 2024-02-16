@@ -57,6 +57,8 @@ FLAMEGRAPH_DLDIR := $(DOWNLOADDIR)/flamegraph-$(FLAMEGRAPH_COMMIT_HASH)
 FLAMEGRAPH_DOWNLOAD := $(FLAMEGRAPH_DLDIR)/downloaded
 NECOPERF_DLDIR := $(DOWNLOADDIR)/necoperf-$(NECOPERF_VERSION)
 NECOPERF_DOWNLOAD := $(NECOPERF_DLDIR)/downloaded
+CMCTL_DLDIR := $(DOWNLOADDIR)/cmctl-$(CMCTL_VERSION)
+CMCTL_DOWNLOAD := $(CMCTL_DLDIR)/downloaded
 
 .PHONY: all
 all: 
@@ -65,7 +67,7 @@ all:
 	$(CURDIR)/bin/neco-download-dir-cache.sh write
 
 .PHONY: download-all
-download-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf necoip
+download-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf necoip cmctl
 	# all binaries in BINDIR and SBINDIR must have executable bits
 	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
@@ -560,6 +562,23 @@ necoperf: $(NECOPERF_DOWNLOAD)
 necoip:
 	mkdir -p $(BINDIR)
 	cp $(CURDIR)/bin/necoip $(BINDIR)/necoip
+
+$(CMCTL_DOWNLOAD):
+	mkdir -p $(CMCTL_DLDIR)/linux_amd64 $(CMCTL_DLDIR)/windows_amd64 $(CMCTL_DLDIR)/darwin_amd64
+	$(WGET_GITHUB) -O - https://github.com/cert-manager/cert-manager/releases/download/v$(CMCTL_VERSION)/cmctl-linux-amd64.tar.gz | tar xvzf - -C $(CMCTL_DLDIR)/linux_amd64
+	$(WGET_GITHUB) -O - https://github.com/cert-manager/cert-manager/releases/download/v$(CMCTL_VERSION)/cmctl-windows-amd64.tar.gz | tar xvzf - -C $(CMCTL_DLDIR)/windows_amd64
+	$(WGET_GITHUB) -O - https://github.com/cert-manager/cert-manager/releases/download/v$(CMCTL_VERSION)/cmctl-darwin-amd64.tar.gz | tar xvzf - -C $(CMCTL_DLDIR)/darwin_amd64
+	touch $@
+
+.PHONY: cmctl
+cmctl: $(CMCTL_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	$(CP) $(CMCTL_DLDIR)/linux_amd64/cmctl $(BINDIR)
+	$(CP) $(CMCTL_DLDIR)/linux_amd64/LICENSE $(DOCDIR)/$@/
+	$(CP) $(CMCTL_DLDIR)/windows_amd64/cmctl.exe $(WINDOWS_BINDIR)
+	$(CP) $(CMCTL_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/
+	$(CP) $(CMCTL_DLDIR)/darwin_amd64/cmctl $(MAC_BINDIR)
+	$(CP) $(CMCTL_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/
 
 .PHONY: clean
 clean:
