@@ -1,6 +1,4 @@
 images:
-- repository: ghcr.io/cybozu-go/coil
-  versions: ["2.5.0", "2.5.1", "2.5.2"]
 osImage:
 - channel: stable
   versions: ["3760.2.0", "3815.2.0"]
