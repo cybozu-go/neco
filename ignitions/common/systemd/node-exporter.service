@@ -6,7 +6,7 @@ After=setup-node-exporter.service
 [Service]
 Type=simple
 Restart=always
-ExecStart=/opt/sbin/node_exporter --collector.textfile.directory=/var/lib/textfile-collector --no-collector.ipvs
+ExecStart=/opt/sbin/node_exporter --collector.textfile.directory=/var/lib/textfile-collector --collector.network_route --no-collector.ipvs
 
 [Install]
 WantedBy=multi-user.target
