@@ -72,6 +72,7 @@ var bootstrapSuite = func() {
 		testCoil()
 	})
 	Context("cilium", testCilium)
+	Context("cilium bgp cp", testCiliumBGPCP)
 	Context("unbound", testUnbound)
 	Context("squid", testSquid)
 	Context("node DNS", testNodeDNS)

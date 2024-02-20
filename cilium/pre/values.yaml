@@ -1,6 +1,8 @@
 bgp:
   announce:
-    loadbalancerIP: true
+    loadbalancerIP: false 
+  enabled: false
+bgpControlPlane:
   enabled: true
 bpf:
   hostLegacyRouting: true

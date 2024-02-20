@@ -1,0 +1,52 @@
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumBGPPeeringPolicy
+metadata:
+  name: bgp-policy
+spec: # CiliumBGPPeeringPolicySpec
+  nodeSelector:
+    matchLabels:
+      cke.cybozu.com/role: cs
+  virtualRouters: # []CiliumBGPVirtualRouter
+  - localASN: 64698
+    exportPodCIDR: false 
+    neighbors: # []CiliumBGPNeighbor
+    - peerAddress: '127.0.0.1/8'
+      peerASN: 64699
+    serviceSelector:
+      matchExpressions:
+      - {key: dummy, operator: NotIn, values: [dummy]}
+
+  
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: default
+spec:
+  cidrs:
+  - cidr: 10.72.32.0/20
+  serviceSelector:
+    matchExpressions:
+    - {key: dummy, operator: NotIn, values: [dummy]}
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: bastion
+spec:
+  cidrs:
+  - cidr: 10.72.48.48/28
+  serviceSelector:
+    matchLabels:
+      neco.cybozu.io/lb-ipam: bastion
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: internet 
+spec:
+  cidrs:
+  - cidr: 172.19.0.16/28
+  serviceSelector:
+    matchLabels:
+      neco.cybozu.io/lb-ipam: internet

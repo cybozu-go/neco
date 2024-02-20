@@ -65,19 +65,19 @@ update-coil:
 update-cilium: helm
 	rm -rf /tmp/work-cilium
 	mkdir -p /tmp/work-cilium
-	git clone --depth 1 --branch v$(shell echo $(CILIUM_TAG) | cut -d \. -f 1,2,3)-lb-dsr-patch https://github.com/cybozu-go/cilium /tmp/work-cilium
+	git clone --depth 1 --branch v$(shell echo $(CILIUM_TAG) | cut -d \. -f 1,2,3) https://github.com/cilium/cilium /tmp/work-cilium
 	cd /tmp/work-cilium
 	$(HELM) template /tmp/work-cilium/install/kubernetes/cilium/ \
 		--namespace=kube-system \
 		--values cilium/$(CILIUM_OVERLAY)/values.yaml \
-		--set image.repository=quay.io/cybozu/cilium \
-		--set image.tag=$(CILIUM_TAG) \
+		--set image.repository=quay.io/cilium/cilium \
+		--set image.tag=v$(CILIUM_TAG) \
 		--set image.useDigest=false \
-		--set operator.image.repository=ghcr.io/cybozu/cilium-operator \
-		--set operator.image.tag=$(CILIUM_OPERATOR_TAG) \
+		--set operator.image.repository=quay.io/cilium/operator \
+		--set operator.image.tag=v$(CILIUM_OPERATOR_TAG) \
 		--set operator.image.useDigest=false \
-		--set hubble.relay.image.repository=ghcr.io/cybozu/hubble-relay \
-		--set hubble.relay.image.tag=$(HUBBLE_RELAY_TAG) \
+		--set hubble.relay.image.repository=quay.io/cilium/hubble-relay \
+		--set hubble.relay.image.tag=v$(HUBBLE_RELAY_TAG) \
 		--set hubble.relay.image.useDigest=false \
 		--set certgen.image.repository=ghcr.io/cybozu/cilium-certgen \
 		--set certgen.image.tag=$(CILIUM_CERTGEN_TAG) \
