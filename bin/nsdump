@@ -1,0 +1,9 @@
+#!/bin/bash -e
+set -o pipefail
+
+if [ $# -eq 0 ]; then
+        echo 'nsdump <NAMESPACE>'
+        exit
+fi
+
+kubectl get -n "$1" $(kubectl api-resources --namespaced -o name | paste -sd,) -o json 2>/dev/null | jq -S 'reduce .items[] as $i ({}; . * {($i.kind): {($i.metadata.name): 1}}) | with_entries(.value=(.value | keys))'
