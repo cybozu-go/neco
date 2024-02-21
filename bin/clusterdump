@@ -1,0 +1,4 @@
+#!/bin/bash -e
+set -o pipefail
+
+kubectl get $(kubectl api-resources --namespaced=false -o name | paste -sd,) -o json 2>/dev/null | jq -S 'reduce .items[] as $i ({}; . * {($i.kind): {($i.metadata.name): 1}}) | with_entries(.value=(.value | keys))'

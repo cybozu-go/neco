@@ -67,7 +67,7 @@ all:
 	$(CURDIR)/bin/neco-download-dir-cache.sh write
 
 .PHONY: download-all
-download-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf necoip cmctl
+download-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf necoip nsdump clusterdump cmctl
 	# all binaries in BINDIR and SBINDIR must have executable bits
 	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
@@ -562,6 +562,16 @@ necoperf: $(NECOPERF_DOWNLOAD)
 necoip:
 	mkdir -p $(BINDIR)
 	cp $(CURDIR)/bin/necoip $(BINDIR)/necoip
+
+.PHONY: nsdump
+nsdump:
+	mkdir -p $(BINDIR)
+	cp $(CURDIR)/bin/nsdump $(BINDIR)/nsdump
+
+.PHONY: clusterdump
+clusterdump:
+	mkdir -p $(BINDIR)
+	cp $(CURDIR)/bin/clusterdump $(BINDIR)/clusterdump
 
 $(CMCTL_DOWNLOAD):
 	mkdir -p $(CMCTL_DLDIR)/linux_amd64 $(CMCTL_DLDIR)/windows_amd64 $(CMCTL_DLDIR)/darwin_amd64
