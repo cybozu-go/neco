@@ -23,19 +23,20 @@ var configSetCmd = &cobra.Command{
 	Long: `Store a configuration value to etcd.
 
 Possible keys are:
-    env                       - "staging" or "prod".
-    slack                     - Slack WebHook URL.
-    proxy                     - HTTP proxy server URL to access Internet for boot servers.
-    quay-username             - Username to authenticate to quay.io from QUAY_USER.  This does not take VALUE.
-    quay-password             - Password to authenticate to quay.io from QUAY_PASSWORD.  This does not take VALUE.
-    check-update-interval     - Polling interval for checking new neco release.
-    worker-timeout            - Timeout value to wait for workers.
-    github-token              - GitHub personal access token for checking GitHub release.
-    node-proxy                - HTTP proxy server URL to access Internet for worker nodes.
-    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.
-	lb-address-block-default  - LoadBalancer address block for default.
-	lb-address-block-bastion  - LoadBalancer address block for bastion.
-	lb-address-block-internet - LoadBalancer address block for internet.`,
+    env                          - "staging" or "prod".
+    slack                        - Slack WebHook URL.
+    proxy                        - HTTP proxy server URL to access Internet for boot servers.
+    quay-username                - Username to authenticate to quay.io from QUAY_USER.  This does not take VALUE.
+    quay-password                - Password to authenticate to quay.io from QUAY_PASSWORD.  This does not take VALUE.
+    check-update-interval        - Polling interval for checking new neco release.
+    worker-timeout               - Timeout value to wait for workers.
+    github-token                 - GitHub personal access token for checking GitHub release.
+    node-proxy                   - HTTP proxy server URL to access Internet for worker nodes.
+    external-ip-address-block    - IP address block to be assigned to Nodes by LoadBalancer controllers.
+	lb-address-block-default     - LoadBalancer address block for default.
+	lb-address-block-bastion     - LoadBalancer address block for bastion.
+	lb-address-block-internet    - LoadBalancer address block for internet.
+	lb-address-block-internet-cn - LoadBalancer address block for internet-cn.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -175,6 +176,16 @@ Possible keys are:
 					return errors.New("not IPv4 addr: " + value)
 				}
 				return st.PutLBAddressBlockInternet(ctx, block.String())
+			case "lb-address-block-internet-cn":
+				value = args[1]
+				ip, block, err := net.ParseCIDR(value)
+				if err != nil {
+					return err
+				}
+				if ip.To4() == nil {
+					return errors.New("not IPv4 addr: " + value)
+				}
+				return st.PutLBAddressBlockInternetCN(ctx, block.String())
 			}
 			return errors.New("unknown key: " + key)
 		})
