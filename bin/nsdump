@@ -6,4 +6,8 @@ if [ $# -eq 0 ]; then
         exit
 fi
 
-kubectl get -n "$1" $(kubectl api-resources --namespaced -o name | paste -sd,) -o json 2>/dev/null | jq -S 'reduce .items[] as $i ({}; . * {($i.kind): {($i.metadata.name): 1}}) | with_entries(.value=(.value | keys))'
+# The following line returns a non-zero code if it cannot access API server
+KINDS=$(kubectl api-resources --namespaced -o name | paste -sd,)
+
+# The following line returns a non-zero code for most cases (due to access priviledge), so it ignores all the errors
+kubectl get -n "$1" ${KINDS} -o json 2>/dev/null | jq -S 'reduce .items[] as $i ({}; . * {($i.kind): {($i.metadata.name): 1}}) | with_entries(.value=(.value | keys))' || true

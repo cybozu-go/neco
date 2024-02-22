@@ -1,4 +1,9 @@
 #!/bin/bash -e
 set -o pipefail
 
-kubectl get $(kubectl api-resources --namespaced=false -o name | paste -sd,) -o json 2>/dev/null | jq -S 'reduce .items[] as $i ({}; . * {($i.kind): {($i.metadata.name): 1}}) | with_entries(.value=(.value | keys))'
+# The following line returns a non-zero code if it cannot access API server
+KINDS=$(kubectl api-resources --namespaced=false -o name | paste -sd,)
+
+# The following line returns a non-zero code for most cases (due to access priviledge), so it ignores all the errors
+# Some cluster-wide resources do not have .metadata.name
+kubectl get ${KINDS} -o json 2>/dev/null | jq -S '[.items[] | select(.metadata.name != null)] | reduce .[] as $i ({}; . * {($i.kind): {($i.metadata.name): 1}}) | with_entries(.value=(.value | keys))' || true
