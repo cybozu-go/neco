@@ -44,6 +44,9 @@ func testInitData() {
 		By("setting LB address block for internet")
 		execSafeAt(bootServers[0], "neco", "config", "set", "lb-address-block-internet", lbAddressBlockInternet)
 
+		By("setting LB address block for internet-cn")
+		execSafeAt(bootServers[0], "neco", "config", "set", "lb-address-block-internet-cn", lbAddressBlockInternetCN)
+
 		By("initialize data for sabakan and CKE")
 		cs, err := getMachinesSpecifiedRole("cs")
 		Expect(err).NotTo(HaveOccurred())
