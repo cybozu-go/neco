@@ -8,7 +8,7 @@ fi
 
 if ! echo $1 | grep -E '^([0-9]{1,3}[.]){3}[0-9]{1,3}$' > /dev/null; then
         echo "Input is not a valid IP"
-        exit
+        exit 1
 fi
 
 NODE_JSON=$(kubectl get node $1 -o json 2>/dev/null || true)
@@ -79,3 +79,4 @@ if which sabactl >/dev/null; then
 fi
 
 echo "$1 is unknown (maybe a bug in this script)"
+exit 1
