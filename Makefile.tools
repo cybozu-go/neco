@@ -248,7 +248,7 @@ stern: $(STERN_DOWNLOAD)
 $(KUSTOMIZE_DOWNLOAD):
 	mkdir -p $(KUSTOMIZE_DLDIR)/linux_amd64 $(KUSTOMIZE_DLDIR)/windows_amd64 $(KUSTOMIZE_DLDIR)/darwin_amd64
 	$(WGET_GITHUB) -O - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz | tar xvzf - -C $(KUSTOMIZE_DLDIR)/linux_amd64
-	$(WGET_GITHUB) -O - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_windows_amd64.tar.gz | tar xvzf - -C $(KUSTOMIZE_DLDIR)/windows_amd64
+	$(WGET_GITHUB) -O $(KUSTOMIZE_DLDIR)/windows_amd64/kustomize.zip  https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_windows_amd64.zip
 	$(WGET_GITHUB) -O - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_darwin_amd64.tar.gz | tar xvzf - -C $(KUSTOMIZE_DLDIR)/darwin_amd64
 	$(WGET_GITHUB) -O $(KUSTOMIZE_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/LICENSE
 	$(WGET_GITHUB) -O $(KUSTOMIZE_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes-sigs/kustomize/kustomize/v${KUSTOMIZE_VERSION}/README.md
@@ -261,7 +261,8 @@ kustomize: $(KUSTOMIZE_DOWNLOAD)
 	chmod +x $(BINDIR)/kustomize
 	$(CP) $(KUSTOMIZE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	$(CP) $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
-	$(CP) $(KUSTOMIZE_DLDIR)/windows_amd64/kustomize.exe $(WINDOWS_BINDIR)/kustomize.exe
+	unzip -o $(KUSTOMIZE_DLDIR)/windows_amd64/kustomize.zip -d $(KUSTOMIZE_DLDIR)/windows_amd64
+	$(CP) $(KUSTOMIZE_DLDIR)/windows_amd64/kustomize $(WINDOWS_BINDIR)/kustomize.exe
 	$(CP) $(KUSTOMIZE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	$(CP) $(KUSTOMIZE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 	$(CP) $(KUSTOMIZE_DLDIR)/darwin_amd64/kustomize $(MAC_BINDIR)/kustomize
