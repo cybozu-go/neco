@@ -49,6 +49,7 @@ oom_score = -999
     startup_delay = "100ms"
   [plugins."io.containerd.grpc.v1.cri"]
     disable_tcp_service = true
+    image_pull_progress_timeout = "0s"
     stream_server_address = "127.0.0.1"
     stream_server_port = "10010"
     stream_idle_timeout = "4h0m0s"
