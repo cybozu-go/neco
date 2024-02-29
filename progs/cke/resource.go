@@ -15,6 +15,16 @@ import (
 // UpdateResources updates user-defined resources
 func UpdateResources(ctx context.Context, st storage.Storage) error {
 	templateParams := make(map[string]string)
+	for _, img := range neco.CurrentArtifacts.Images {
+		templateParams[img.Name] = img.FullName(false)
+	}
+	images, err := GetCKEImages()
+	if err != nil {
+		return err
+	}
+	for _, img := range images {
+		templateParams["cke-"+img.Name] = img.FullName(false)
+	}
 	lbAddr, err := st.GetLBAddressBlockDefault(ctx)
 	templateParams, err = setLBAddress("lbAddressDefault", lbAddr, templateParams, err)
 	if err != nil {
@@ -36,15 +46,11 @@ func UpdateResources(ctx context.Context, st storage.Storage) error {
 		return err
 	}
 	var ckeUserResourceFiles []string
-	switch env {
-	case neco.ProdEnv:
+	if env == neco.ProdEnv {
 		ckeUserResourceFiles = neco.CKEUserResourceFiles
-	case neco.StagingEnv, neco.DevEnv:
+	} else {
 		ckeUserResourceFiles = neco.CKEUserResourceFilesPre
-	case neco.NoneEnv, neco.TestEnv:
-		ckeUserResourceFiles = neco.CKEUserResourceFilesGcp
 	}
-
 	for _, filename := range ckeUserResourceFiles {
 		content, err := os.ReadFile(filename)
 		if err != nil {
