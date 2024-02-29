@@ -17,9 +17,6 @@ CILIUM_OVERLAY = prod
 ifeq ($(CILIUM_PRE), true)
 	CILIUM_CONFIG_SUFFIX = -pre
 	CILIUM_OVERLAY = pre
-else ifeq ($(CILIUM_GCP), true)
-	CILIUM_CONFIG_SUFFIX = -gcp
-	CILIUM_OVERLAY = gcp
 endif
 SQUID_VERSION := $(shell awk '/"squid"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
 SQUID_EXPORTER_VERSION := $(shell awk '/"squid-exporter"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
@@ -155,7 +152,6 @@ check-generate:
 	$(MAKE) update-coil COIL_PRE=true
 	$(MAKE) update-cilium
 	$(MAKE) update-cilium CILIUM_PRE=true
-	$(MAKE) update-cilium CILIUM_GCP=true
 	$(MAKE) update-squid
 	$(MAKE) update-squid SQUID_PRE=true
 	$(MAKE) update-unbound
