@@ -78,12 +78,9 @@ prometheus:
   metrics:
     - +cilium_bpf_map_pressure
 resources:
-  limits:
-    cpu: 22200m
-    memory: 110Gi
   requests:
-    cpu: 2220m
-    memory: 11Gi
+    cpu: 100m
+    memory: 400Mi
 rollOutCiliumPods: true
 sessionAffinity: true
 socketLB:

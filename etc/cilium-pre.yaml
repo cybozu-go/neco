@@ -1100,12 +1100,9 @@ spec:
           successThreshold: 1
           timeoutSeconds: 5
         resources:
-          limits:
-            cpu: 22200m
-            memory: 110Gi
           requests:
-            cpu: 2220m
-            memory: 11Gi
+            cpu: 100m
+            memory: 400Mi
         securityContext:
           capabilities:
             add:
