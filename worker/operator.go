@@ -113,12 +113,12 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 		return err
 	}
 	if env == neco.TestEnv {
-		return installLocalPackage(ctx, deb)
+		return installLocalPackage(ctx, deb, map[string]string{"HOME": "/home/cybozu"})
 	}
 	if env == neco.DevEnv {
 		deb.Release = "test-" + req.Version
 	}
-	return InstallDebianPackage(ctx, o.proxyClient, o.ghClient, deb, true)
+	return InstallDebianPackage(ctx, o.proxyClient, o.ghClient, deb, true, map[string]string{"HOME": "/home/cybozu"})
 }
 
 func (o *operator) FinalStep() int {
