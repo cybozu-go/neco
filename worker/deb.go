@@ -18,7 +18,8 @@ import (
 // InstallDebianPackage installs a debian package
 // client uses for downloading a debian package.
 // ghClient uses for getting download URL by GitHub API.
-func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *github.Client, pkg *neco.DebianPackage, background bool) error {
+// envvalues uses for giving environment values to systemd-run command when background is true.
+func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *github.Client, pkg *neco.DebianPackage, background bool, envValues map[string]string) error {
 	downloadURL, err := GetGitHubDownloadURL(ctx, ghClient, pkg)
 	if err != nil {
 		return err
@@ -65,15 +66,31 @@ func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *gi
 
 	command := []string{"sh", "-c", "dpkg -i " + f.Name() + " && rm " + f.Name()}
 	if background {
-		command = append([]string{"systemd-run", "-q", "--wait"}, command...)
+		systemdCommand := []string{"systemd-run", "-q", "--wait"}
+		if envValues != nil {
+			for k, v := range envValues {
+				systemdCommand = append(systemdCommand, []string{"-p", fmt.Sprintf("Environment=%s=%s", k, v)}...)
+			}
+			command = append(systemdCommand, command...)
+		}
 	}
+
 	return well.CommandContext(context.Background(), command[0], command[1:]...).Run()
 }
 
-func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage) error {
+func installLocalPackage(ctx context.Context, pkg *neco.DebianPackage, envValues map[string]string) error {
 	debVersion := pkg.Release[len("release-"):]
 	deb := fmt.Sprintf("/tmp/%s_%s_amd64.deb", pkg.Name, debVersion)
-	return well.CommandContext(context.Background(), "systemd-run", "-q", "--wait", "dpkg", "-i", deb).Run()
+	command := []string{"systemd-run", "-q", "--wait"}
+	if envValues != nil {
+		envs := make([]string, 0, len(envValues)*2)
+		for k, v := range envValues {
+			envs = append(envs, []string{"-p", fmt.Sprintf("Environment=%s=%s", k, v)}...)
+		}
+		command = append(command, envs...)
+	}
+	command = append(command, []string{"dpkg", "-i", deb}...)
+	return well.CommandContext(context.Background(), command[0], command[1:]...).Run()
 }
 
 // GetGitHubDownloadURL returns URL of specified Debian package hosted in GitHub releases.
