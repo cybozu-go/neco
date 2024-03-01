@@ -322,7 +322,7 @@ spec:
           readOnlyRootFilesystem: true
           runAsGroup: 10000
           runAsUser: 10000
-      - image: ghcr.io/cybozu/squid-exporter:1.0.2
+      - image: ghcr.io/cybozu/squid-exporter:1.0.4
         imagePullPolicy: IfNotPresent
         name: squid-exporter
         ports:
