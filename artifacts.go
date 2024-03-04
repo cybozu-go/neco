@@ -20,6 +20,8 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "cilium-operator-generic", Repository: "ghcr.io/cybozu/cilium-operator-generic", Tag: "1.13.7.3", Private: false},
 		{Name: "hubble-relay", Repository: "ghcr.io/cybozu/hubble-relay", Tag: "1.13.7.3", Private: false},
 		{Name: "cilium-certgen", Repository: "ghcr.io/cybozu/cilium-certgen", Tag: "0.1.9.2", Private: false},
+		{Name: "metallb-speaker", Repository: "quay.io/metallb/speaker", Tag: "0.14.3", Private: false},
+		{Name: "metallb-controller", Repository: "quay.io/metallb/controller", Tag: "0.14.3", Private: false},
 	},
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.4.5"},

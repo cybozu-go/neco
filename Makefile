@@ -13,6 +13,8 @@ ifeq ($(CILIUM_PRE), true)
         CILIUM_CONFIG_SUFFIX = -pre
         CILIUM_OVERLAY = pre
 endif
+METALLB_SPEAKER_TAG := $(shell awk '/"metallb-speaker"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
+METALLB_CONTROLLER_TAG := $(shell awk '/"metallb-controller"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
 BIN_DIR := $(shell pwd)/bin
 LSB_DISTRIB_RELEASE := $(shell . /etc/lsb-release ; echo $$DISTRIB_RELEASE)
 
@@ -84,6 +86,21 @@ update-cilium: helm
 		--set certgen.image.useDigest=false > cilium/$(CILIUM_OVERLAY)/upstream.yaml
 	bin/kustomize build cilium/$(CILIUM_OVERLAY) > etc/cilium$(CILIUM_CONFIG_SUFFIX).yaml
 	rm -rf /tmp/work-cilium
+
+.PHONY: update-metallb
+update-metallb:
+	rm -rf /tmp/work-metallb
+	mkdir -p /tmp/work-metallb
+	git clone --depth 1 --branch v$(shell echo $(METALLB_SPEAKER_TAG)) https://github.com/metallb/metallb /tmp/work-metallb
+	cd /tmp/work-metallb
+	$(HELM) template /tmp/work-metallb/charts/metallb \
+		--name-template=neco \
+		--namespace=kube-system \
+		--set controller.image.tag=v$(METALLB_CONTROLLER_TAG) \
+		--set speaker.image.tag=v$(METALLB_SPEAKER_TAG) \
+		--set speaker.frr.enabled=false > metallb/upstream.yaml
+	cat metallb/upstream.yaml > etc/metallb.yaml
+	rm -rf /tmp/work-metallb
 
 HELM := $(shell pwd)/bin/helm
 .PHONY: helm

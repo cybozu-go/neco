@@ -1,7 +1,7 @@
 bgp:
   announce:
-    loadbalancerIP: true
-  enabled: true
+    loadbalancerIP: false
+  enabled: false
 bpf:
   hostLegacyRouting: true
   policyMapMax: 65536

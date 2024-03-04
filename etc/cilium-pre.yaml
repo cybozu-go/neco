@@ -508,7 +508,6 @@ data:
   agent-not-ready-taint-key: node.cilium.io/agent-not-ready
   arping-refresh-period: 30s
   auto-direct-node-routes: "false"
-  bgp-announce-lb-ip: "true"
   bpf-ct-timeout-regular-any: 1h0m0s
   bpf-ct-timeout-service-any: 1h0m0s
   bpf-lb-acceleration: disabled
@@ -722,7 +721,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 5698d98e67f50ae0a856ec7f9b5cc53704ba7e99387489ddef2605e2742bfb72
+        cilium.io/cilium-configmap-checksum: ecfdb776280f67f0885c987b593e9b816299e1252cdbc18cf4a5c789019f3f10
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -792,9 +791,6 @@ spec:
         - mountPath: /tmp/cilium/config-map
           name: cilium-config-path
           readOnly: true
-        - mountPath: /var/lib/cilium/bgp
-          name: bgp-config-path
-          readOnly: true
       hostNetwork: true
       nodeSelector:
         kubernetes.io/os: linux
@@ -808,9 +804,6 @@ spec:
       - configMap:
           name: cilium-config
         name: cilium-config-path
-      - configMap:
-          name: bgp-config
-        name: bgp-config-path
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -987,7 +980,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 5698d98e67f50ae0a856ec7f9b5cc53704ba7e99387489ddef2605e2742bfb72
+        cilium.io/cilium-configmap-checksum: ecfdb776280f67f0885c987b593e9b816299e1252cdbc18cf4a5c789019f3f10
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
@@ -1152,9 +1145,6 @@ spec:
           readOnly: true
         - mountPath: /run/xtables.lock
           name: xtables-lock
-        - mountPath: /var/lib/cilium/bgp
-          name: bgp-config-path
-          readOnly: true
         - mountPath: /var/lib/cilium/tls/hubble
           name: hubble-tls
           readOnly: true
@@ -1314,9 +1304,6 @@ spec:
           defaultMode: 256
           optional: true
           secretName: cilium-clustermesh
-      - configMap:
-          name: bgp-config
-        name: bgp-config-path
       - hostPath:
           path: /proc/sys/net
           type: Directory
