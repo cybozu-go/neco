@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: squid
+  namespace: internet-egress
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: squid
+  ports:
+    - protocol: TCP
+      nodePort: 30128
+      port: 3128
+      targetPort: 3128

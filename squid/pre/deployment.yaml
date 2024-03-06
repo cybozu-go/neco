@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: squid
+  namespace: internet-egress
+spec:
+  template:
+    spec:
+      containers:
+        - name: squid
+          resources:
+            requests:
+              cpu: 50m
+              memory: 440Mi
+            limits:
+              cpu: 500m
+              memory: 4400Mi
+        - name: unbound
+          resources:
+            requests:
+              cpu: 25m
+              memory: 50Mi
+            limits:
+              cpu: 250m
+              memory: 500Mi
