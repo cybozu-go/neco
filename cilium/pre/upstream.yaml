@@ -1265,9 +1265,12 @@ spec:
           mountPath: /var/lib/cilium/bgp
           readOnly: true
         resources:
+          limits:
+            cpu: 250m
+            memory: 3300Mi
           requests:
-            cpu: 100m
-            memory: 200Mi
+            cpu: 25m
+            memory: 330Mi
         terminationMessagePolicy: FallbackToLogsOnError
       hostNetwork: true
       restartPolicy: Always
@@ -1344,9 +1347,12 @@ spec:
             tcpSocket:
               port: grpc
           resources:
+            limits:
+              cpu: 2100m
+              memory: 1200Mi
             requests:
-              cpu: 100m
-              memory: 200Mi
+              cpu: 210m
+              memory: 120Mi
           volumeMounts:
           - name: config
             mountPath: /etc/hubble-relay
