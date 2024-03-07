@@ -54,7 +54,7 @@ data:
   # Disable the usage of CiliumEndpoint CRD
   disable-endpoint-crd: "false"
   # To include or exclude matched resources from cilium identity evaluation
-  labels: "k8s:!controller-uid k8s:!job-name k8s:!node k8s:!batch.kubernetes.io/controller-uid k8s:!batch.kubernetes.io/job-name"
+  labels: " k8s:app k8s:io\\.cilium\\.k8s\\.namespace\\.labels\\.team k8s:io\\.kubernetes\\.pod\\.namespace k8s:k8s-app io\\.cilium\\.k8s\\.policy cybozu\\.io/family app\\.cybozu\\.io neco\\.cybozu\\.io\\/registry identity\\.neco\\.cybozu\\.io "
 
   # If you want to run cilium in debug mode change this value to true
   debug: "false"
@@ -793,7 +793,7 @@ spec:
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "b7deb098ebc5ec3b1aba9362866fa0f1dfd1a8c50607cdf65647de7555d05334"
+        cilium.io/cilium-configmap-checksum: "9544eae4b75b0368f5622be10d33372dda03ed6d2df589ee96ac9290afe7f63a"
         # Set app AppArmor's profile to "unconfined". The value of this annotation
         # can be modified as long users know which profiles they have available
         # in AppArmor.
@@ -1201,7 +1201,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "b7deb098ebc5ec3b1aba9362866fa0f1dfd1a8c50607cdf65647de7555d05334"
+        cilium.io/cilium-configmap-checksum: "9544eae4b75b0368f5622be10d33372dda03ed6d2df589ee96ac9290afe7f63a"
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
