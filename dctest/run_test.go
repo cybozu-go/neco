@@ -24,12 +24,12 @@ const (
 	// DefaultRunTimeout is the timeout value for Agent.Run().
 	DefaultRunTimeout = 10 * time.Minute
 
-	proxy                    = "http://10.0.49.3:3128"
-	externalIPBlock          = "172.19.0.16/28"
-	lbAddressBlockDefault    = "10.72.32.0/20"
-	lbAddressBlockBastion    = "10.72.48.48/28"
-	lbAddressBlockInternet   = "172.19.0.16/28"
-	lbAddressBlockInternetCN = "172.19.0.248/29"
+	proxy                  = "http://10.0.49.3:3128"
+	externalIPBlock        = "172.19.0.16/28"
+	lbAddressBlockDefault  = "10.72.32.0/20"
+	lbAddressBlockBastion  = "10.72.48.48/28"
+	lbAddressBlockInternet = "172.19.0.16/28"
+	// lbAddressBlockInternetCN = "172.19.0.248/29"
 )
 
 var (
