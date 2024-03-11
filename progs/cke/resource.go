@@ -40,6 +40,11 @@ func UpdateResources(ctx context.Context, st storage.Storage) error {
 	if err != nil {
 		return err
 	}
+	lbAddr, err = st.GetLBAddressBlockInternetCN(ctx)
+	templateParams, err = setLBAddress("lbAddressInternetCN", lbAddr, templateParams, err)
+	if err != nil {
+		return err
+	}
 
 	env, err := st.GetEnvConfig(ctx)
 	if err != nil {

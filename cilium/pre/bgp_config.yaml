@@ -27,3 +27,10 @@ data:
       addresses:
       - {{ .lbAddressInternet }}
       auto-assign: false
+    {{ if .lbAddressInternetCN }}
+    - name: internet-cn
+      protocol: bgp
+      addresses:
+      - {{ .lbAddressInternetCN }}
+      auto-assign: false
+    {{ end }}

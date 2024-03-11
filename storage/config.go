@@ -174,3 +174,13 @@ func (s Storage) PutLBAddressBlockInternet(ctx context.Context, ipBlock string) 
 func (s Storage) GetLBAddressBlockInternet(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyLBAddressBlockInternet)
 }
+
+// PutLBAddressBlockInternetCN stores LB address block for internet-cn to storage.
+func (s Storage) PutLBAddressBlockInternetCN(ctx context.Context, ipBlock string) error {
+	return s.put(ctx, KeyLBAddressBlockInternetCN, ipBlock)
+}
+
+// GetLBAddressBlockInternetCN returns LB address block for internet-cn from storage.
+func (s Storage) GetLBAddressBlockInternetCN(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyLBAddressBlockInternetCN)
+}
