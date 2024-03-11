@@ -19,18 +19,19 @@ var configGetCmd = &cobra.Command{
 	Long: `Show the current configuration value.
 
 Possible keys are:
-    env                       - "staging" or "prod".  Default is "staging".
-    slack                     - Slack WebHook URL.
-    proxy                     - HTTP proxy server URL to access Internet for boot servers.
-    quay-username             - Username to authenticate to quay.io.
-    check-update-interval     - Polling interval for checking new neco release.
-    worker-timeout            - Timeout value to wait for workers.
-    github-token              - GitHub personal access token for checking GitHub release.
-    node-proxy                - HTTP proxy server URL to access Internet for worker nodes.
-    external-ip-address-block - IP address block to be assigned to Nodes by LoadBalancer controllers.
-    lb-address-block-default  - LoadBalancer address block for default.
-    lb-address-block-bastion  - LoadBalancer address block for bastion.
-    lb-address-block-internet - LoadBalancer address block for internet.`,
+    env                          - "staging" or "prod".  Default is "staging".
+    slack                        - Slack WebHook URL.
+    proxy                        - HTTP proxy server URL to access Internet for boot servers.
+    quay-username                - Username to authenticate to quay.io.
+    check-update-interval        - Polling interval for checking new neco release.
+    worker-timeout               - Timeout value to wait for workers.
+    github-token                 - GitHub personal access token for checking GitHub release.
+    node-proxy                   - HTTP proxy server URL to access Internet for worker nodes.
+    external-ip-address-block    - IP address block to be assigned to Nodes by LoadBalancer controllers.
+    lb-address-block-default     - LoadBalancer address block for default.
+    lb-address-block-bastion     - LoadBalancer address block for bastion.
+    lb-address-block-internet    - LoadBalancer address block for internet.
+    lb-address-block-internet-cn - LoadBalancer address block for internet-cn.`,
 
 	Args: cobra.ExactArgs(1),
 	ValidArgs: []string{
@@ -122,6 +123,12 @@ Possible keys are:
 				fmt.Println(ipBlock)
 			case "lb-address-block-internet":
 				ipBlock, err := st.GetLBAddressBlockInternet(ctx)
+				if err != nil {
+					return err
+				}
+				fmt.Println(ipBlock)
+			case "lb-address-block-internet-cn":
+				ipBlock, err := st.GetLBAddressBlockInternetCN(ctx)
 				if err != nil {
 					return err
 				}
