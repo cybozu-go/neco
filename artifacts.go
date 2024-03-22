@@ -10,7 +10,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "chrony", Repository: "ghcr.io/cybozu/chrony", Tag: "4.5.0.1", Private: false},
 		{Name: "etcd", Repository: "ghcr.io/cybozu/etcd", Tag: "3.5.10.2", Private: false},
 		{Name: "promtail", Repository: "ghcr.io/cybozu/promtail", Tag: "2.9.5.1", Private: false},
-		{Name: "sabakan", Repository: "quay.io/cybozu/sabakan", Tag: "3.0.0", Private: false},
+		{Name: "sabakan", Repository: "ghcr.io/cybozu-go/sabakan", Tag: "3.1.1", Private: false},
 		{Name: "serf", Repository: "ghcr.io/cybozu/serf", Tag: "0.10.1.4", Private: false},
 		{Name: "setup-hw", Repository: "quay.io/cybozu/setup-hw", Tag: "1.15.2", Private: true},
 		{Name: "squid", Repository: "ghcr.io/cybozu/squid", Tag: "6.6.0.1", Private: false},

@@ -24,7 +24,7 @@ var imageRepos = []string{
 	"ghcr.io/cybozu/chrony",
 	"ghcr.io/cybozu/etcd",
 	"ghcr.io/cybozu/promtail",
-	"quay.io/cybozu/sabakan",
+	"ghcr.io/cybozu-go/sabakan",
 	"ghcr.io/cybozu/serf",
 	"quay.io/cybozu/setup-hw",
 	"ghcr.io/cybozu/squid",
