@@ -99,7 +99,7 @@ Synopsis
 
 * `neco join LRN [LRN ...]`
 
-    Prepare certificates and files to add this server to the cluster.
+    Prepare certificates and files to add this server to the cluster.  
     `LRN` are a list of LRNs of the existing boot servers.
 
     To issue certificates, this command asks the user Vault username and password.
