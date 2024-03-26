@@ -25,7 +25,7 @@ TELEPORT_VERSION = 14.3.0
 # kubeseal is a CLI tool for Sealed Secrets
 # https://github.com/bitnami-labs/sealed-secrets
 KUBESEAL_VERSION = 0.19.5
-LOKI_LOGCLI_VERSION = 2.9.2
+LOKI_LOGCLI_VERSION = 2.9.3
 YQ_VERSION = 4.30.8
 KUBECTL_NEAT_VERSION = 2.0.3
 ACCURATE_VERSION = 1.1.0
