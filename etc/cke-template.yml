@@ -37,13 +37,13 @@ repair:
     repair_operations:
     - operation: unhealthy
       repair_steps:
-      - repair_command: ["sh", "-c", "timeout 30 neco bmc repair dell reset-idrac $1 || ckecli ssh $1 -- docker exec setup-hw racadm racreset soft", "reset-idrac"]
-        command_timeout_seconds: 60
+      - repair_command: ["sh", "-c", "exec ckecli ssh $1 -- docker exec setup-hw racadm racreset soft", "reset-idrac"]
+        command_timeout_seconds: 30
         command_retries: 2
         command_interval: 30
         watch_seconds: 600
       - repair_command: ["neco", "bmc", "repair", "dell", "discharge"]
-        command_timeout_seconds: 60
+        command_timeout_seconds: 60 # "discharge" is a compound command and requires a little more time
         command_retries: 2
         command_interval: 30
         need_drain: true
@@ -55,13 +55,13 @@ repair:
       command_timeout_seconds: 10
     - operation: unreachable
       repair_steps:
-      - repair_command: ["sh", "-c", "timeout 30 neco bmc repair dell reset-idrac $1 || ckecli ssh $1 -- docker exec setup-hw racadm racreset soft", "reset-idrac"]
-        command_timeout_seconds: 60
+      - repair_command: ["neco", "bmc", "repair", "dell", "reset-idrac"]
+        command_timeout_seconds: 30
         command_retries: 2
         command_interval: 30
         watch_seconds: 600
       - repair_command: ["neco", "bmc", "repair", "dell", "discharge"]
-        command_timeout_seconds: 60
+        command_timeout_seconds: 60 # "discharge" is a compound command and requires a little more time
         command_retries: 2
         command_interval: 30
         need_drain: false
