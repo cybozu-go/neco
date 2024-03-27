@@ -1,5 +1,4 @@
 [Unit]
-Requires=torcx.target
 Description=Docker Application Container Engine
 Documentation=http://docs.docker.com
 # To start docker.service before bird.service starts, we remove the dependency on network-online.target
@@ -10,8 +9,6 @@ Requires=containerd.service docker.socket
 Requires=var-lib-docker.mount var-lib-kubelet.mount
 
 [Service]
-EnvironmentFile=/run/metadata/torcx
-Environment=TORCX_IMAGEDIR=/docker
 Type=notify
 EnvironmentFile=-/run/flannel/flannel_docker_opts.env
 Environment=DOCKER_SELINUX=--selinux-enabled=true
@@ -30,7 +27,7 @@ LimitMEMLOCK=infinity
 # the default is not to use systemd for cgroups because the delegate issues still
 # exists and systemd currently does not support the cgroup feature set required
 # for containers run by docker
-ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/dockerd --host=fd:// --containerd=/var/run/docker/libcontainerd/docker-containerd.sock $DOCKER_SELINUX $DOCKER_OPTS $DOCKER_CGROUPS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
+ExecStart=/usr/bin/dockerd --host=fd:// --containerd=/var/run/docker/libcontainerd/docker-containerd.sock $DOCKER_SELINUX $DOCKER_OPTS $DOCKER_CGROUPS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
 ExecReload=/bin/kill -s HUP $MAINPID
 LimitNOFILE=1048576
 # Having non-zero Limit*s causes performance problems due to accounting overhead

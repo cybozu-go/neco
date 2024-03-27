@@ -1,3 +1,0 @@
-osImage:
-- channel: stable
-  versions: ["3760.2.0", "3815.2.0", "3815.2.1"]
