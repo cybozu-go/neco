@@ -183,7 +183,5 @@ spec:
             items:
               - key: unbound.conf
                 path: unbound.conf
-              - key: root.hints
-                path: root.hints
         - name: temporary-volume
           emptyDir: {}
