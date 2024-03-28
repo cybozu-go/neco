@@ -23,8 +23,8 @@ Features include:
   - [`env`](#env)
   - [`slack`](#slack)
   - [`proxy`](#proxy)
-  - [`quay-username`](#quay-username)
-  - [`quay-password`](#quay-password)
+  - [`ghcr-username`](#ghcr-username)
+  - [`ghcr-password`](#ghcr-password)
   - [`check-update-interval`](#check-update-interval)
   - [`worker-timeout`](#worker-timeout)
   - [`github-token`](#github-token)
@@ -313,14 +313,14 @@ Specify [Slack WebHook](https://api.slack.com/incoming-webhooks) URL.
 Specify HTTP proxy server to access Internet.
 It will be used by `neco-updater` and `neco-worker`.
 
-### `quay-username`
+### `ghcr-username`
 
-Set username to authenticate to quay.io from `QUAY_USER` envvar.
+Set username to authenticate to ghcr.io from `GHCR_USER` envvar.
 It will be used by `neco-worker`.
 
-### `quay-password`
+### `ghcr-password`
 
-Set password to authenticate to quay.io from `QUAY_PASSWORD` envvar.
+Set password to authenticate to ghcr.io from `GHCR_PASSWORD` envvar.
 It will be used by `neco-worker`.
 
 ### `check-update-interval`

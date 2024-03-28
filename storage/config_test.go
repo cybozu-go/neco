@@ -94,7 +94,7 @@ func testProxyConfig(t *testing.T) {
 	}
 }
 
-func testQuay(t *testing.T) {
+func testGhcr(t *testing.T) {
 	t.Parallel()
 
 	etcd := test.NewEtcdClient(t)
@@ -102,29 +102,29 @@ func testQuay(t *testing.T) {
 	ctx := context.Background()
 	st := NewStorage(etcd)
 
-	_, err := st.GetQuayUsername(ctx)
+	_, err := st.GetGhcrUsername(ctx)
 	if err != ErrNotFound {
-		t.Error("quay username should not be found")
+		t.Error("ghcr username should not be found")
 	}
-	_, err = st.GetQuayPassword(ctx)
+	_, err = st.GetGhcrPassword(ctx)
 	if err != ErrNotFound {
-		t.Error("quay password should not be found")
+		t.Error("ghcr password should not be found")
 	}
 
-	err = st.PutQuayUsername(ctx, "fooUser")
+	err = st.PutGhcrUsername(ctx, "fooUser")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = st.PutQuayPassword(ctx, "fooPassword")
+	err = st.PutGhcrPassword(ctx, "fooPassword")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	username, err := st.GetQuayUsername(ctx)
+	username, err := st.GetGhcrUsername(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	password, err := st.GetQuayPassword(ctx)
+	password, err := st.GetGhcrPassword(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -201,7 +201,7 @@ func TestConfig(t *testing.T) {
 	t.Run("EnvConfig", testEnvConfig)
 	t.Run("SlackNotification", testSlackNotification)
 	t.Run("ProxyConfig", testProxyConfig)
-	t.Run("Quay", testQuay)
+	t.Run("Ghcr", testGhcr)
 	t.Run("CheckUpdateIntervalConfig", testCheckUpdateIntervalConfig)
 	t.Run("WorkerTimeout", testWorkerTimeout)
 }

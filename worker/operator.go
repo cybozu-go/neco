@@ -62,11 +62,11 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 		return nil, err
 	}
 
-	username, err := st.GetQuayUsername(ctx)
+	username, err := st.GetGhcrUsername(ctx)
 	if err != nil && err != storage.ErrNotFound {
 		return nil, err
 	}
-	password, err := st.GetQuayPassword(ctx)
+	password, err := st.GetGhcrPassword(ctx)
 	if err != nil && err != storage.ErrNotFound {
 		return nil, err
 	}
