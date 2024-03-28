@@ -194,6 +194,7 @@ options:
       containerLogMaxSize: 10Mi
       containerLogMaxFiles: 10
       cpuManagerPolicy: static
+      maxPods: 150
       topologyManagerPolicy: best-effort
       systemReserved:
         cpu: "1"
