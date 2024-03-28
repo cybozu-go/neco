@@ -37,7 +37,7 @@ repair:
     repair_operations:
     - operation: unhealthy
       repair_steps:
-      - repair_command: ["sh", "-c", "exec ckecli ssh $1 -- docker exec setup-hw racadm racreset soft", "reset-idrac"]
+      - repair_command: ["sh", "-c", "exec ckecli ssh cybozu@$1 -- docker exec setup-hw racadm racreset soft", "reset-idrac"]
         command_timeout_seconds: 30
         command_retries: 2
         command_interval: 30
@@ -47,7 +47,10 @@ repair:
         command_retries: 2
         command_interval: 30
         need_drain: true
-        watch_seconds: 300 # too short watch for discharging; this is to power on machine 5 minutes after
+        watch_seconds: 360 # too short watch for discharging; this is to power on machine 6 minutes after
+      - repair_command: ["sh", "-c", "neco power start $1 || true", "power-start"]
+        command_timeout_seconds: 30
+        watch_seconds: 240 # power on again 4 minutes after
       - repair_command: ["sh", "-c", "neco power start $1 || true", "power-start"]
         command_timeout_seconds: 30
         watch_seconds: 1500
@@ -65,7 +68,10 @@ repair:
         command_retries: 2
         command_interval: 30
         need_drain: false
-        watch_seconds: 300 # too short watch for discharging; this is to power on machine 5 minutes after
+        watch_seconds: 360 # too short watch for discharging; this is to power on machine 6 minutes after
+      - repair_command: ["sh", "-c", "neco power start $1 || true", "power-start"]
+        command_timeout_seconds: 30
+        watch_seconds: 240 # power on again 4 minutes after
       - repair_command: ["sh", "-c", "neco power start $1 || true", "power-start"]
         command_timeout_seconds: 30
         watch_seconds: 1500
