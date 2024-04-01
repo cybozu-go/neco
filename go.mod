@@ -17,7 +17,7 @@ require (
 	github.com/cybozu-go/well v1.11.2
 	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.6.0
-	github.com/google/go-containerregistry v0.19.0
+	github.com/google/go-containerregistry v0.19.1
 	github.com/google/go-github/v50 v50.2.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/serf v0.10.1
