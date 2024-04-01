@@ -120,13 +120,13 @@ The notification config to slack URL such as `https://hooks.slack.com/services/T
 
 HTTP proxy url to access Internet such as `https://squid.slack.com:3128`
 
-## `<prefix>/config/ghcr-username`
+## `<prefix>/config/quay-username`
 
-User name to authenticate ghcr.io.
+User name to authenticate quay.io.
 
-## `<prefix>/config/ghcr-password`
+## `<prefix>/config/quay-password`
 
-Password to authenticate ghcr.io.
+Password to authenticate quay.io.
 
 ## `<prefix>/config/check-update-interval`
 

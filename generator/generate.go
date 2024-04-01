@@ -26,7 +26,7 @@ var imageRepos = []string{
 	"ghcr.io/cybozu/promtail",
 	"ghcr.io/cybozu-go/sabakan",
 	"ghcr.io/cybozu/serf",
-	"ghcr.io/cybozu-go/setup-hw",
+	"quay.io/cybozu/setup-hw",
 	"ghcr.io/cybozu/squid",
 	"ghcr.io/cybozu/squid-exporter",
 	"ghcr.io/cybozu/vault",
@@ -42,7 +42,7 @@ func imageName(repo name.Repository) string {
 }
 
 var privateImages = map[string]bool{
-	"ghcr.io/cybozu-go/setup-hw": true,
+	"quay.io/cybozu/setup-hw": true,
 }
 
 var debRepos = []string{
