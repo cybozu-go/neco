@@ -47,11 +47,11 @@ func initData(ctx context.Context, st storage.Storage) error {
 		transport = t
 	}
 
-	username, err := st.GetQuayUsername(ctx)
+	username, err := st.GetGhcrUsername(ctx)
 	if err != nil && err != storage.ErrNotFound {
 		return err
 	}
-	password, err := st.GetQuayPassword(ctx)
+	password, err := st.GetGhcrPassword(ctx)
 	if err != nil && err != storage.ErrNotFound {
 		return err
 	}
