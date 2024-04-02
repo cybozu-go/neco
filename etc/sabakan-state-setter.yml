@@ -86,7 +86,35 @@ machine-types:
           label-prefix:
             device: Disk.Bay.
         minimum-healthy-count: 3
+  - name: r6525-cs-2
+    grace-period: 2h
+    metrics:
+      - name: hw_systems_processors_status_health
+      - name: hw_systems_memorysummary_status_health
+      - name: hw_chassis_power_voltages_status_health
+      - name: hw_systems_storage_drives_status_health
+        selector:
+          label-prefix:
+            device: Disk.Bay.
+        minimum-healthy-count: 2
   - name: r7525-ss-1
+    grace-period: 2h
+    metrics:
+      - name: hw_systems_processors_status_health
+      - name: hw_systems_memorysummary_status_health
+      - name: hw_chassis_power_voltages_status_health
+      - name: hw_systems_storage_drives_status_health
+        selector:
+          label-prefix:
+            storage: NonRAID.
+            device: Disk.Bay.
+        minimum-healthy-count: 7
+      - name: hw_systems_storage_drives_status_health
+        selector:
+          label-prefix:
+            device: Disk.Direct.
+        minimum-healthy-count: 2
+  - name: r7525-ss-2
     grace-period: 2h
     metrics:
       - name: hw_systems_processors_status_health
