@@ -22,7 +22,7 @@ Possible keys are:
     env                          - "staging" or "prod".  Default is "staging".
     slack                        - Slack WebHook URL.
     proxy                        - HTTP proxy server URL to access Internet for boot servers.
-    ghcr-username                - Username to authenticate to ghcr.io.
+    quay-username                - Username to authenticate to quay.io.
     check-update-interval        - Polling interval for checking new neco release.
     worker-timeout               - Timeout value to wait for workers.
     github-token                 - GitHub personal access token for checking GitHub release.
@@ -38,7 +38,7 @@ Possible keys are:
 		"env",
 		"slack",
 		"proxy",
-		"ghcr-username",
+		"quay-username",
 		"check-update-interval",
 		"worker-timeout",
 		"github-token",
@@ -73,8 +73,8 @@ Possible keys are:
 					return err
 				}
 				fmt.Println(proxy)
-			case "ghcr-username":
-				username, err := st.GetGhcrUsername(ctx)
+			case "quay-username":
+				username, err := st.GetQuayUsername(ctx)
 				if err != nil {
 					return err
 				}

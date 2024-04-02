@@ -49,24 +49,24 @@ func (s Storage) GetProxyConfig(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyProxy)
 }
 
-// PutGhcrUsername stores proxy config to storage.
-func (s Storage) PutGhcrUsername(ctx context.Context, username string) error {
-	return s.put(ctx, KeyGhcrUsername, username)
+// PutQuayUsername stores proxy config to storage.
+func (s Storage) PutQuayUsername(ctx context.Context, username string) error {
+	return s.put(ctx, KeyQuayUsername, username)
 }
 
-// GetGhcrUsername returns proxy config from storage.
-func (s Storage) GetGhcrUsername(ctx context.Context) (string, error) {
-	return s.get(ctx, KeyGhcrUsername)
+// GetQuayUsername returns proxy config from storage.
+func (s Storage) GetQuayUsername(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyQuayUsername)
 }
 
-// PutGhcrPassword stores proxy config to storage.
-func (s Storage) PutGhcrPassword(ctx context.Context, passwd string) error {
-	return s.put(ctx, KeyGhcrPassword, passwd)
+// PutQuayPassword stores proxy config to storage.
+func (s Storage) PutQuayPassword(ctx context.Context, passwd string) error {
+	return s.put(ctx, KeyQuayPassword, passwd)
 }
 
-// GetGhcrPassword returns proxy config from storage.
-func (s Storage) GetGhcrPassword(ctx context.Context) (string, error) {
-	return s.get(ctx, KeyGhcrPassword)
+// GetQuayPassword returns proxy config from storage.
+func (s Storage) GetQuayPassword(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyQuayPassword)
 }
 
 // PutCheckUpdateInterval stores check-update-interval config to storage.
