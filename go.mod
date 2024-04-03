@@ -8,7 +8,7 @@ toolchain go1.21.1
 replace k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f
 
 require (
-	github.com/cybozu-go/cke v1.27.9
+	github.com/cybozu-go/cke v1.27.10
 	github.com/cybozu-go/etcdutil v1.6.6
 	github.com/cybozu-go/log v1.7.0
 	github.com/cybozu-go/netutil v1.4.6
