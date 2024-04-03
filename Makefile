@@ -114,8 +114,8 @@ update-squid:
 .PHONY: update-unbound
 update-unbound:
 	$(call get-unbound-version)
-	sed -i -E '/name:.*unbound$$/!b;n;s/newTag:.*$$/newTag: $(UNBOUND_VERSION)/' squid/base/kustomization.yaml
-	sed -i -E '/name:.*unbound_exporter$$/!b;n;s/newTag:.*$$/newTag: $(UNBOUND_EXPORTER_VERSION)/' squid/base/kustomization.yaml
+	sed -i -E '/name:.*unbound$$/!b;n;s/newTag:.*$$/newTag: $(UNBOUND_VERSION)/' unbound/base/kustomization.yaml
+	sed -i -E '/name:.*unbound_exporter$$/!b;n;s/newTag:.*$$/newTag: $(UNBOUND_EXPORTER_VERSION)/' unbound/base/kustomization.yaml
 	bin/kustomize build unbound/$(UNBOUND_OVERLAY) > etc/unbound$(UNBOUND_CONFIG_SUFFIX).yaml
 
 HELM := $(shell pwd)/bin/helm
