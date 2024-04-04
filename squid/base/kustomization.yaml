@@ -9,7 +9,7 @@ images:
   - name: ghcr.io/cybozu/squid
     newTag: 6.6.0.1
   - name: ghcr.io/cybozu/squid-exporter
-    newTag: 1.0.4
+    newTag: 1.0.5
   - name: ghcr.io/cybozu/unbound
     newTag: 1.18.0.4
   - name: ghcr.io/cybozu/unbound_exporter
