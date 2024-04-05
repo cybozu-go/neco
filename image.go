@@ -35,11 +35,7 @@ func (f ImageFetcher) GetTarball(ctx context.Context, img ContainerImage, w io.W
 		return err
 	}
 
-	auth := f.auth
-	if auth == nil || !img.Private {
-		auth = authn.Anonymous
-	}
-	rimg, err := remote.Image(ref, remote.WithAuth(auth), remote.WithContext(ctx), remote.WithJobs(1), remote.WithTransport(f.transport))
+	rimg, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithContext(ctx), remote.WithJobs(1), remote.WithTransport(f.transport))
 	if err != nil {
 		return fmt.Errorf("failed to create remote image for %s: %w", img.Name, err)
 	}
