@@ -39,6 +39,7 @@ NECOPERF_VERSION = 0.1.0
 # Be careful when upgrading, as cmctl will be independent of cert-manager in versions after 1.14.
 # https://cert-manager.io/docs/reference/cmctl/
 CMCTL_VERSION = 1.13.2
+VICTORIAMETRICS_VERSION = 1.100.0
 
 SUDO = sudo
 

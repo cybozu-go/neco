@@ -59,6 +59,8 @@ NECOPERF_DLDIR := $(DOWNLOADDIR)/necoperf-$(NECOPERF_VERSION)
 NECOPERF_DOWNLOAD := $(NECOPERF_DLDIR)/downloaded
 CMCTL_DLDIR := $(DOWNLOADDIR)/cmctl-$(CMCTL_VERSION)
 CMCTL_DOWNLOAD := $(CMCTL_DLDIR)/downloaded
+VMALERT_TOOL_DLDIR := $(DOWNLOADDIR)/vmalert-tool-$(VICTORIAMETRICS_VERSION)
+VMALERT_TOOL_DOWNLOAD := $(VMALERT_TOOL_DLDIR)/downloaded
 
 .PHONY: all
 all: 
@@ -67,7 +69,7 @@ all:
 	$(CURDIR)/bin/neco-download-dir-cache.sh write
 
 .PHONY: download-all
-download-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf necoip nsdump clusterdump cmctl
+download-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf necoip nsdump clusterdump cmctl vmalert-tool
 	# all binaries in BINDIR and SBINDIR must have executable bits
 	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
@@ -590,6 +592,31 @@ cmctl: $(CMCTL_DOWNLOAD)
 	$(CP) $(CMCTL_DLDIR)/windows_amd64/LICENSE $(WINDOWS_DOCDIR)/$@/
 	$(CP) $(CMCTL_DLDIR)/darwin_amd64/cmctl $(MAC_BINDIR)
 	$(CP) $(CMCTL_DLDIR)/darwin_amd64/LICENSE $(MAC_DOCDIR)/$@/
+
+$(VMALERT_TOOL_DOWNLOAD):
+	mkdir -p $(VMALERT_TOOL_DLDIR)
+	$(WGET_GITHUB) -O $(VMALERT_TOOL_DLDIR)/linux-amd64.tar.gz  https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download/v$(VICTORIAMETRICS_VERSION)/vmutils-linux-amd64-v$(VICTORIAMETRICS_VERSION).tar.gz
+	$(WGET_GITHUB) -O $(VMALERT_TOOL_DLDIR)/windows-amd64.zip   https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download/v$(VICTORIAMETRICS_VERSION)/vmutils-windows-amd64-v$(VICTORIAMETRICS_VERSION).zip
+	$(WGET_GITHUB) -O $(VMALERT_TOOL_DLDIR)/darwin-amd64.tar.gz https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download/v$(VICTORIAMETRICS_VERSION)/vmutils-darwin-amd64-v$(VICTORIAMETRICS_VERSION).tar.gz
+	$(WGET_GITHUB) -O $(VMALERT_TOOL_DLDIR)/README.md https://raw.githubusercontent.com/VictoriaMetrics/VictoriaMetrics/v$(VICTORIAMETRICS_VERSION)/README.md
+	$(WGET_GITHUB) -O $(VMALERT_TOOL_DLDIR)/LICENSE https://raw.githubusercontent.com/VictoriaMetrics/VictoriaMetrics/v$(VICTORIAMETRICS_VERSION)/LICENSE
+	touch $@
+
+.PHONY: vmalert-tool
+vmalert-tool: $(VMALERT_TOOL_DOWNLOAD)
+	mkdir -p $(BINDIR) $(DOCDIR)/$@/ $(WINDOWS_BINDIR) $(WINDOWS_DOCDIR)/$@/ $(MAC_BINDIR) $(MAC_DOCDIR)/$@/
+	tar xvf $(VMALERT_TOOL_DLDIR)/linux-amd64.tar.gz -C $(BINDIR) vmalert-tool-prod
+	mv $(BINDIR)/vmalert-tool-prod $(BINDIR)/vmalert-tool
+	$(CP) $(VMALERT_TOOL_DLDIR)/README.md $(DOCDIR)/$@/
+	$(CP) $(VMALERT_TOOL_DLDIR)/LICENSE $(DOCDIR)/$@/
+	unzip -o $(VMALERT_TOOL_DLDIR)/windows-amd64.zip -d $(WINDOWS_BINDIR) vmalert-tool-windows-amd64-prod.exe
+	mv $(WINDOWS_BINDIR)/vmalert-tool-windows-amd64-prod.exe $(WINDOWS_BINDIR)/vmalert-tool.exe
+	$(CP) $(VMALERT_TOOL_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/
+	$(CP) $(VMALERT_TOOL_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/
+	tar xvf $(VMALERT_TOOL_DLDIR)/darwin-amd64.tar.gz -C $(MAC_BINDIR) vmalert-tool-prod
+	mv $(MAC_BINDIR)/vmalert-tool-prod $(MAC_BINDIR)/vmalert-tool
+	$(CP) $(VMALERT_TOOL_DLDIR)/README.md $(MAC_DOCDIR)/$@/
+	$(CP) $(VMALERT_TOOL_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/
 
 .PHONY: clean
 clean:
