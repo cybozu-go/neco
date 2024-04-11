@@ -12,7 +12,7 @@ STERN_VERSION = 1.27.0
 
 
 ## These should be updated regularly
-ARGOCD_VERSION = 2.10.1
+ARGOCD_VERSION = 2.10.2
 # Follow Argo CD installed kustomize version
 # https://github.com/cybozu/neco-containers/blob/main/argocd/Dockerfile#L10
 KUSTOMIZE_VERSION = 5.2.1
@@ -21,20 +21,20 @@ KUSTOMIZE_VERSION = 5.2.1
 JSONNET_VERSION = 0.20.0
 MOCO_VERSION = 0.18.1
 NODE_EXPORTER_VERSION = 1.5.0
-TELEPORT_VERSION = 14.3.0
+TELEPORT_VERSION = 15.1.10
 # kubeseal is a CLI tool for Sealed Secrets
 # https://github.com/bitnami-labs/sealed-secrets
-KUBESEAL_VERSION = 0.19.5
-LOKI_LOGCLI_VERSION = 2.9.2
+KUBESEAL_VERSION = 0.26.0
+LOKI_LOGCLI_VERSION = 2.9.5
 YQ_VERSION = 4.30.8
 KUBECTL_NEAT_VERSION = 2.0.3
 ACCURATE_VERSION = 1.1.0
-ALERTMANAGER_VERSION = 0.26.0
+ALERTMANAGER_VERSION = 0.27.1
 CILIUM_CLI_VERSION = 0.13.2
 HUBBLE_VERSION = 0.11.3
-TEMPO_VERSION = 2.3.0
+TEMPO_VERSION = 2.4.0
 FLAMEGRAPH_COMMIT_HASH = 7991019ca55b8e7d35de1fae9fe8a84b54dda75f
-NECOPERF_VERSION = 0.1.0
+NECOPERF_VERSION = 0.1.1
 # The version is aligned with the cert-manager used.
 # Be careful when upgrading, as cmctl will be independent of cert-manager in versions after 1.14.
 # https://cert-manager.io/docs/reference/cmctl/
