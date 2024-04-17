@@ -52,7 +52,8 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 		github.SetTagPrefix("test-")
 		c.check = github.GetLatestPublishedTag
 	case neco.StagingEnv:
-		c.check = github.GetLatestPublishedTag
+		github.SetTagPrefix("test-")
+		c.check = github.GetLatestReleaseTag
 	case neco.ProdEnv:
 		c.check = github.GetLatestReleaseTag
 	default:

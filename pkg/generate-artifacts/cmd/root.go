@@ -85,6 +85,6 @@ var (
 )
 
 func init() {
-	flagRelease = rootCmd.Flags().Bool("release", false, "Generate artifacts_release.go")
+	flagRelease = rootCmd.Flags().Bool("release", false, "Generate artifacts_prod.go")
 	ignoreFile = rootCmd.Flags().String("ignore-file", defaultIgnoreFile, "Filename to ignore artifacts")
 }

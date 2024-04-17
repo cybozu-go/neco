@@ -3,7 +3,7 @@ generate-artifacts
 
 `generate-artifacts` is a command-line tool to generate `artifacts.go`
 which is a collection of latest components. This is used while
-development or CI before build neco binaries.
+development or CI checks for differences between the latest release and the artefact in use.
 
 See [artifacts.md](artifacts.md) about `artifacts.go`.
 
@@ -14,9 +14,9 @@ Usage
 $ generate-artifacts [OPTIONS]
 ```
 
-| Option      | Default value | Description                         |
-| ----------- | ------------- | ----------------------------------- |
-| `--release` | false         | Generate for `artifacts_release.go` |
+| Option      | Default value | Description                      |
+| ----------- | ------------- | -------------------------------- |
+| `--release` | false         | Generate for `artifacts_prod.go` |
 
 Environment variables
 ---------------------

@@ -16,11 +16,10 @@ CI flow
 
 ### After `main` merge
 
-1. Run `generate-artifacts` to retrieve latest version of components, then generate `artifacts_release.go`.
-2. Check out `main` branch then merge changes into `release` branch.
-3. Run [dctest][] but fewer test cases from regular dctest.
-4. If dctest is passed, [cybozu-neco][] pushes changes to `release` branch to remote branch in [github.com/cybozu-go/neco](https://github.com/cybozu-go/neco).
-5. Also, [cybozu-neco][] also applies and pushes a tag `test-YYYY.MM.DD-UNIQUE_ID` to the remote.
+1. Check out `main` branch then merge changes into `release` branch.
+2. Run [dctest][] but fewer test cases from regular dctest.
+3. If dctest is passed, [cybozu-neco][] pushes changes to `release` branch to remote branch in [github.com/cybozu-go/neco](https://github.com/cybozu-go/neco).
+4. Also, [cybozu-neco][] also applies and pushes a tag `test-YYYY.MM.DD-UNIQUE_ID` to the remote.
 
 Regular test cases of dctest are also run in parallel.
 

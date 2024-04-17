@@ -139,7 +139,7 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 			return err
 		}
 
-		img, err := getLatestImage(ctx, repo, cfg.Release, cfg.Ignored.getImageVersions(repoStr))
+		img, err := getLatestImage(ctx, repo, cfg.Ignored.getImageVersions(repoStr))
 		if err != nil {
 			return err
 		}
@@ -166,7 +166,7 @@ func Generate(ctx context.Context, cfg Config, out io.Writer) error {
 	return render(out, cfg.Release, images, debs, osImage)
 }
 
-func getLatestImage(ctx context.Context, repo name.Repository, release bool, ignoreVersions []string) (*neco.ContainerImage, error) {
+func getLatestImage(ctx context.Context, repo name.Repository, ignoreVersions []string) (*neco.ContainerImage, error) {
 	tags, err := remote.List(repo)
 	if err != nil {
 		return nil, err
@@ -188,28 +188,20 @@ OUTER:
 		if err != nil {
 			continue
 		}
-		if release && v.Prerelease() != "" {
+		if v.Prerelease() != "" {
 			continue
 		}
 		versions = append(versions, v)
 	}
 
-	name := imageName(repo)
-	if release {
-		current, err := neco.CurrentArtifacts.FindContainerImage(name)
-		if err != nil {
-			return nil, err
-		}
-		major := current.MajorVersion()
-		filteredVersions := make([]*version.Version, 0, len(versions))
-		for _, ver := range versions {
-			if ver.Segments()[0] == major {
-				filteredVersions = append(filteredVersions, ver)
-			}
-		}
-		versions = filteredVersions
+	if len(versions) == 0 {
+		log.Error("no available version", map[string]interface{}{
+			"repository": repo.Name(),
+		})
+		return nil, errors.New(repo.Name() + ": no available version was found")
 	}
 
+	name := imageName(repo)
 	sort.Sort(sort.Reverse(version.Collection(versions)))
 	return &neco.ContainerImage{
 		Name:       name,

@@ -133,15 +133,12 @@ jobs:
       - setup-tools
       - run: time make deb SUDO="" FAKEROOT=
       - run: time make tools SUDO="" FAKEROOT=
-      - run:
-          command: |
-            if [ "${CIRCLE_BRANCH}" != "main" ]; then
-              go install ./pkg/generate-artifacts/
-              generate-artifacts > /tmp/artifacts.go
-              diff -u artifacts.go /tmp/artifacts.go
-            fi
 
   build_release:
+    parameters:
+      tags:
+        type: string
+        default: ""
     docker:
       - image: ghcr.io/cybozu/golang:1.22-jammy
       - image: ghcr.io/cybozu/etcd:3.5
@@ -156,12 +153,12 @@ jobs:
           name: Build deb package
           command: |
             VERSION=$(echo $CIRCLE_TAG | sed 's/^[^-]*-//')
-            time make deb SUDO="" DEBBUILD_FLAGS="-Zxz" VERSION="$VERSION" TAGS=release FAKEROOT=
+            time make deb SUDO="" DEBBUILD_FLAGS="-Zxz" VERSION="$VERSION" TAGS=<< parameters.tags >> FAKEROOT=
       - run:
           name: Build neco-operation-cli packages
           command: |
             VERSION=$(echo $CIRCLE_TAG | sed 's/^[^-]*-//')
-            time make tools SUDO="" DEBBUILD_FLAGS="-Zxz" VERSION="$VERSION" TAGS=release FAKEROOT=
+            time make tools SUDO="" DEBBUILD_FLAGS="-Zxz" VERSION="$VERSION" TAGS=<< parameters.tags >> FAKEROOT=
       - persist_to_workspace:
           root: .
           paths:
@@ -262,17 +259,17 @@ jobs:
             . ./bin/env
             $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE}
 
-  generate-artifacts:
+  check-new-artifacts:
     docker:
       - image: ghcr.io/cybozu/golang:1.22-jammy
     steps:
       - checkout
-      - run: go install ./pkg/generate-artifacts/
-      - run: generate-artifacts --release > artifacts_release.go
-      - persist_to_workspace:
-          root: .
-          paths:
-            - "artifacts_release.go"
+      - run: make update-artifacts
+      - run: 
+          name: Compare artifacts
+          command: |
+            diffs=$(git diff --name-only main)
+            if [ "$diffs" = "" ]; then printf "%s\n" "$diffs"; exit 0; fi
 
   dctest-functions-release:
     docker:
@@ -280,17 +277,9 @@ jobs:
     working_directory: /work
     steps:
       - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: Configure GIT
-          command: |
-            git config --global user.email "neco@cybozu.com"
-            git config --global user.name "cybozu-neco"
-      # Check difference between [`release` branch] and [`main` branch + `artifacts_release.go`]
+      # Check difference between [`release` branch] and [`main` branch ]
       - run: git checkout release
       - run: git merge --no-commit origin/main
-      - run: cp /tmp/workspace/artifacts_release.go .
       - run:
           name: Check diff
           command: |
@@ -328,17 +317,9 @@ jobs:
     working_directory: /work
     steps:
       - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: Configure GIT
-          command: |
-            git config --global user.email "neco@cybozu.com"
-            git config --global user.name "cybozu-neco"
       # For testing on equal terms with "dctest-functions-release", check out in the same way as it.
       - run: git checkout release
       - run: git merge --no-commit origin/main
-      - run: cp /tmp/workspace/artifacts_release.go .
       - restore-tools
       - run-dctest-bootstrap:
           tag: release
@@ -369,17 +350,14 @@ jobs:
           fingerprints:
             - "1d:a7:0e:6e:a6:aa:9c:5e:d7:be:e1:59:3f:ed:68:f3"
       - checkout
-      - attach_workspace:
-          at: /tmp/workspace
       - run:
           name: Configure GIT
           command: |
             git config --global user.email "neco@cybozu.com"
             git config --global user.name "cybozu-neco"
-      # Check difference between [`release` branch] and [`main` branch + `artifacts_release.go`]
+      # Check difference between [`release` branch] and [`main` branch ]
       - run: git checkout release
       - run: git merge --no-commit origin/main
-      - run: cp /tmp/workspace/artifacts_release.go .
       - run:
           name: Check diff
           command: |
@@ -429,11 +407,12 @@ workflows:
   release:
     jobs:
       - build_release:
+          tags: ""
           filters:
             branches:
               ignore: /.*/
             tags:
-              only: /^(release|test)-.*/
+              only: /^test-.*/
       - deploy_github:
           requires:
             - build_release
@@ -441,28 +420,47 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^(release|test)-.*/
+              only: /^test-.*/
+      - build_release:
+          tags: "release"
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^(release)-.*/
+      - deploy_github:
+          requires:
+            - build_release
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^(release)-.*/
 
   # Testing `main` branch and update "release" branch.
   update-release:
     jobs:
-      - generate-artifacts:
-          filters:
-            branches:
-              only:
-                - main
-      - dctest-functions-release:
-          requires:
-            - generate-artifacts
-      - dctest-upgrade-release:
-          requires:
-            - generate-artifacts
+      - dctest-functions-release
+      - dctest-upgrade-release
       - update-release:
           requires:
             - dctest-functions-release
             - dctest-upgrade-release
 
-  # For updating `artifact_release.go` regularly, run the same job as `main` workflow.
+  # triggered weekdays at 15:00 UTC(00:00 UTC+9) on the main branch, 
+  # check if a new artefact has been released. 
+  daily-check-new-artifacts:
+    triggers:
+      - schedule:
+          cron: "0 15 * * 1-5"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - check-new-artifacts
+
+  # Run daily tests for the `main` branch.
   daily:
     triggers:
       - schedule:
@@ -472,17 +470,6 @@ workflows:
               only:
                 - main
     jobs:
-      - generate-artifacts
-      - dctest-functions-release:
-          requires:
-            - generate-artifacts
-      - dctest-upgrade-release:
-          requires:
-            - generate-artifacts
-      - dctest-reboot-worker:
-          requires:
-            - generate-artifacts
-      - update-release:
-          requires:
-            - dctest-functions-release
-            - dctest-upgrade-release
+      - dctest-functions-release
+      - dctest-upgrade-release
+      - dctest-reboot-worker
