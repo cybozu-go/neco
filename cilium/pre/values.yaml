@@ -18,6 +18,8 @@ enableIPv4Masquerade: false
 enableIdentityMark: false
 externalIPs:
   enabled: true
+extraArgs:
+  - --kvstore-connectivity-timeout=1s
 extraConfig:
   bpf-ct-timeout-regular-any: 1h0m0s
   bpf-ct-timeout-service-any: 1h0m0s

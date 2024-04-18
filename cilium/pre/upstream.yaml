@@ -815,6 +815,7 @@ spec:
         - cilium-agent
         args:
         - --config-dir=/tmp/cilium/config-map
+        - --kvstore-connectivity-timeout=1s
         startupProbe:
           httpGet:
             host: "127.0.0.1"
