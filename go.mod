@@ -39,9 +39,9 @@ require (
 	github.com/vishvananda/netlink v1.2.1-beta.2
 	go.etcd.io/etcd/api/v3 v3.5.12
 	go.etcd.io/etcd/client/v3 v3.5.12
-	golang.org/x/crypto v0.20.0
+	golang.org/x/crypto v0.21.0
 	golang.org/x/oauth2 v0.17.0
-	golang.org/x/term v0.17.0
+	golang.org/x/term v0.18.0
 	k8s.io/api v0.27.10
 	k8s.io/apimachinery v0.27.10
 	sigs.k8s.io/yaml v1.4.0
@@ -131,7 +131,7 @@ require (
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
