@@ -10,7 +10,6 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/ext"
 	"github.com/cybozu-go/neco/storage"
-	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-github/v50/github"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -62,23 +61,11 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 		return nil, err
 	}
 
-	username, err := st.GetQuayUsername(ctx)
-	if err != nil && err != storage.ErrNotFound {
+	env, err := st.GetEnvConfig(ctx)
+	if err != nil {
 		return nil, err
 	}
-	password, err := st.GetQuayPassword(ctx)
-	if err != nil && err != storage.ErrNotFound {
-		return nil, err
-	}
-
-	var auth authn.Authenticator
-	if len(username) != 0 && len(password) != 0 {
-		auth = &authn.Basic{
-			Username: username,
-			Password: password,
-		}
-	}
-	fetcher := neco.NewImageFetcher(proxyClient.Transport, auth)
+	fetcher := neco.NewImageFetcher(proxyClient.Transport, env)
 
 	rt, err := neco.GetContainerRuntime(proxy)
 	if err != nil {

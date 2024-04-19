@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"os"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -26,8 +25,6 @@ Possible keys are:
     env                          - "staging" or "prod".
     slack                        - Slack WebHook URL.
     proxy                        - HTTP proxy server URL to access Internet for boot servers.
-    quay-username                - Username to authenticate to quay.io from QUAY_USER.  This does not take VALUE.
-    quay-password                - Password to authenticate to quay.io from QUAY_PASSWORD.  This does not take VALUE.
     check-update-interval        - Polling interval for checking new neco release.
     worker-timeout               - Timeout value to wait for workers.
     github-token                 - GitHub personal access token for checking GitHub release.
@@ -47,10 +44,6 @@ Possible keys are:
 			if len(args) != 2 {
 				return fmt.Errorf("accepts %d arg(s), received %d", 2, len(args))
 			}
-		case "quay-password", "quay-username":
-			if len(args) != 1 {
-				return fmt.Errorf("accepts %d arg(s), received %d", 1, len(args))
-			}
 		}
 		return nil
 	},
@@ -58,8 +51,6 @@ Possible keys are:
 		"env",
 		"slack",
 		"proxy",
-		"quay-username",
-		"quay-password",
 		"check-update-interval",
 		"worker-timeout",
 		"github-token",
@@ -103,12 +94,6 @@ Possible keys are:
 					return errors.New("invalid URL")
 				}
 				return st.PutProxyConfig(ctx, value)
-			case "quay-username":
-				value = os.Getenv("QUAY_USER")
-				return st.PutQuayUsername(ctx, value)
-			case "quay-password":
-				value = os.Getenv("QUAY_PASSWORD")
-				return st.PutQuayPassword(ctx, value)
 			case "check-update-interval":
 				value = args[1]
 				duration, err := time.ParseDuration(value)

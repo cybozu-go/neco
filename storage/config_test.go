@@ -94,49 +94,6 @@ func testProxyConfig(t *testing.T) {
 	}
 }
 
-func testQuay(t *testing.T) {
-	t.Parallel()
-
-	etcd := test.NewEtcdClient(t)
-	defer etcd.Close()
-	ctx := context.Background()
-	st := NewStorage(etcd)
-
-	_, err := st.GetQuayUsername(ctx)
-	if err != ErrNotFound {
-		t.Error("quay username should not be found")
-	}
-	_, err = st.GetQuayPassword(ctx)
-	if err != ErrNotFound {
-		t.Error("quay password should not be found")
-	}
-
-	err = st.PutQuayUsername(ctx, "fooUser")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = st.PutQuayPassword(ctx, "fooPassword")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	username, err := st.GetQuayUsername(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	password, err := st.GetQuayPassword(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if username != "fooUser" {
-		t.Error(`username != "fooUser"`, username)
-	}
-	if password != "fooPassword" {
-		t.Error(`password != "fooPassword"`, password)
-	}
-}
-
 func testCheckUpdateIntervalConfig(t *testing.T) {
 	t.Parallel()
 
@@ -201,7 +158,6 @@ func TestConfig(t *testing.T) {
 	t.Run("EnvConfig", testEnvConfig)
 	t.Run("SlackNotification", testSlackNotification)
 	t.Run("ProxyConfig", testProxyConfig)
-	t.Run("Quay", testQuay)
 	t.Run("CheckUpdateIntervalConfig", testCheckUpdateIntervalConfig)
 	t.Run("WorkerTimeout", testWorkerTimeout)
 }

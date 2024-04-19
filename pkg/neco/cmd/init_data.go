@@ -12,7 +12,6 @@ import (
 	"github.com/cybozu-go/neco/progs/sabakan"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
-	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/spf13/cobra"
 )
 
@@ -47,24 +46,11 @@ func initData(ctx context.Context, st storage.Storage) error {
 		transport = t
 	}
 
-	username, err := st.GetQuayUsername(ctx)
-	if err != nil && err != storage.ErrNotFound {
+	necoEnv, err := st.GetEnvConfig(ctx)
+	if err != nil {
 		return err
 	}
-	password, err := st.GetQuayPassword(ctx)
-	if err != nil && err != storage.ErrNotFound {
-		return err
-	}
-
-	var auth authn.Authenticator
-	if len(username) != 0 && len(password) != 0 {
-		auth = &authn.Basic{
-			Username: username,
-			Password: password,
-		}
-	}
-
-	fetcher := neco.NewImageFetcher(transport, auth)
+	fetcher := neco.NewImageFetcher(transport, necoEnv)
 
 	if ignitionsOnly {
 		return sabakan.UploadIgnitions(ctx, localClient, version, st)

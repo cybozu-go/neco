@@ -15,22 +15,22 @@ import (
 // ImageFetcher retrieves Docker image from registries.
 type ImageFetcher struct {
 	transport http.RoundTripper
-	auth      authn.Authenticator
+	env       string
 }
 
 // NewImageFetcher creates a new ImageFetcher.
-// `transport` must not be nil.  `auth` can be nil for public repositories.
-func NewImageFetcher(transport http.RoundTripper, auth authn.Authenticator) ImageFetcher {
+// `transport` must not be nil.  `env` must not be nil.
+func NewImageFetcher(transport http.RoundTripper, env string) ImageFetcher {
 	return ImageFetcher{
 		transport: transport,
-		auth:      auth,
+		env:       env,
 	}
 }
 
 // GetTarball fetches an image from the registry and write it as a tarball.
 // The tarball can be loaded into Docker with `docker load`.
 func (f ImageFetcher) GetTarball(ctx context.Context, img ContainerImage, w io.Writer) error {
-	ref, err := name.ParseReference(img.FullName(f.auth != nil))
+	ref, err := name.ParseReference(img.FullName(f.env == DevEnv || f.env == StagingEnv || f.env == ProdEnv))
 	if err != nil {
 		return err
 	}
