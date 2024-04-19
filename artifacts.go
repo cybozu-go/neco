@@ -13,7 +13,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "sabakan", Repository: "ghcr.io/cybozu-go/sabakan", Tag: "3.1.1", Private: false},
 		{Name: "serf", Repository: "ghcr.io/cybozu/serf", Tag: "0.10.1.5", Private: false},
 		{Name: "setup-hw", Repository: "ghcr.io/cybozu-go/setup-hw", Tag: "1.16.1", Private: true},
-		{Name: "squid", Repository: "ghcr.io/cybozu/squid", Tag: "6.6.0.1", Private: false},
+		{Name: "squid", Repository: "ghcr.io/cybozu/squid", Tag: "6.9.0.1", Private: false},
 		{Name: "squid-exporter", Repository: "ghcr.io/cybozu/squid-exporter", Tag: "1.0.5", Private: false},
 		{Name: "vault", Repository: "ghcr.io/cybozu/vault", Tag: "1.16.0.1", Private: false},
 		{Name: "cilium", Repository: "quay.io/cybozu/cilium", Tag: "1.13.7.2", Private: false},
@@ -24,5 +24,5 @@ var CurrentArtifacts = ArtifactSet{
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.4.7"},
 	},
-	OSImage: OSImage{Channel: "stable", Version: "3815.2.1"},
+	OSImage: OSImage{Channel: "stable", Version: "3815.2.2"},
 }
