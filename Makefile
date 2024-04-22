@@ -176,6 +176,7 @@ setup-files-for-deb: setup-tools
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
 	GOBIN=$(BINDIR) CGO_ENABLED=0 go install -ldflags="-s -w" -tags='$(GOTAGS)' $(BIN_PKGS)
 	CGO_ENABLED=0 go build -o $(BINDIR)/sabakan-state-setter -ldflags="-s -w" -tags='$(GOTAGS)' ./pkg/sabakan-state-setter/cmd
+	CGO_ENABLED=0 go build -o $(BINDIR)/neco-rebooter -ldflags="-s -w" -tags='$(GOTAGS)' ./pkg/neco-rebooter/cmd
 	GOBIN=$(SBINDIR) CGO_ENABLED=0 go install -ldflags="-s -w" -tags='$(GOTAGS)' $(SBIN_PKGS)
 	tar -c -f $(LIBEXECDIR)/neco-operation-cli.tgz -z -C $(BINDIR) $(OPDEB_BINNAMES)
 	cp etc/* $(SHAREDIR)
