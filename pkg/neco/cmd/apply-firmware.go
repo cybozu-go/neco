@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"path/filepath"
 	"sort"
 	"sync"
@@ -54,7 +55,7 @@ func uploadAssetsAndRunCommandOnWorkers(ctx context.Context, getOpts *sabakanMac
 	machines = machinesWithoutBootServers
 	fmt.Printf("Applying to %d machines.\n", len(machines))
 
-	sabakanClient, err := client.NewClient(neco.SabakanLocalEndpoint, httpClient.Client)
+	sabakanClient, err := client.NewClient(neco.SabakanLocalEndpoint, &http.Client{})
 	if err != nil {
 		log.ErrorExit(err)
 	}
@@ -136,7 +137,7 @@ Failed:    %d %v
 		return
 	}
 
-	err = rebootMachines(succeededMachines)
+	err = rebootMachines(ctx, succeededMachines)
 	if err != nil {
 		log.ErrorExit(err)
 	}
