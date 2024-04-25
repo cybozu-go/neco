@@ -65,7 +65,10 @@ func NewOperator(ctx context.Context, ec *clientv3.Client, mylrn int) (Operator,
 	if err != nil {
 		return nil, err
 	}
-	fetcher := neco.NewImageFetcher(proxyClient.Transport, env)
+	fetcher, err := neco.NewImageFetcher(proxyClient.Transport, env)
+	if err != nil {
+		return nil, err
+	}
 
 	rt, err := neco.GetContainerRuntime(proxy)
 	if err != nil {

@@ -50,7 +50,11 @@ func initData(ctx context.Context, st storage.Storage) error {
 	if err != nil {
 		return err
 	}
-	fetcher := neco.NewImageFetcher(transport, necoEnv)
+
+	fetcher, err := neco.NewImageFetcher(transport, necoEnv)
+	if err != nil {
+		return err
+	}
 
 	if ignitionsOnly {
 		return sabakan.UploadIgnitions(ctx, localClient, version, st)
