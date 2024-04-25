@@ -19,7 +19,7 @@ type ImageFetcher struct {
 }
 
 // NewImageFetcher creates a new ImageFetcher.
-// `transport` must not be nil.  `env` must not empty string.
+// `transport` must not be nil.  `env` must not be empty string.
 func NewImageFetcher(transport http.RoundTripper, env string) (ImageFetcher, error) {
 	if env == "" {
 		return ImageFetcher{}, fmt.Errorf("env has no value set")
