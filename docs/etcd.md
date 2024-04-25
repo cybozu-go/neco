@@ -120,14 +120,6 @@ The notification config to slack URL such as `https://hooks.slack.com/services/T
 
 HTTP proxy url to access Internet such as `https://squid.slack.com:3128`
 
-## `<prefix>/config/quay-username`
-
-User name to authenticate quay.io.
-
-## `<prefix>/config/quay-password`
-
-Password to authenticate quay.io.
-
 ## `<prefix>/config/check-update-interval`
 
 Polling interval for checking new neco release in nanoseconds.

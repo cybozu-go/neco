@@ -49,26 +49,6 @@ func (s Storage) GetProxyConfig(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyProxy)
 }
 
-// PutQuayUsername stores proxy config to storage.
-func (s Storage) PutQuayUsername(ctx context.Context, username string) error {
-	return s.put(ctx, KeyQuayUsername, username)
-}
-
-// GetQuayUsername returns proxy config from storage.
-func (s Storage) GetQuayUsername(ctx context.Context) (string, error) {
-	return s.get(ctx, KeyQuayUsername)
-}
-
-// PutQuayPassword stores proxy config to storage.
-func (s Storage) PutQuayPassword(ctx context.Context, passwd string) error {
-	return s.put(ctx, KeyQuayPassword, passwd)
-}
-
-// GetQuayPassword returns proxy config from storage.
-func (s Storage) GetQuayPassword(ctx context.Context) (string, error) {
-	return s.get(ctx, KeyQuayPassword)
-}
-
 // PutCheckUpdateInterval stores check-update-interval config to storage.
 func (s Storage) PutCheckUpdateInterval(ctx context.Context, d time.Duration) error {
 	data := strconv.FormatInt(int64(d), 10)
