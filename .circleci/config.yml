@@ -407,6 +407,7 @@ workflows:
   release:
     jobs:
       - build_release:
+          name: "build release with test prefix"
           tags: ""
           filters:
             branches:
@@ -414,14 +415,16 @@ workflows:
             tags:
               only: /^test-.*/
       - deploy_github:
+          name: deploy release with test prefix
           requires:
-            - build_release
+            - "build release with test prefix"
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^test-.*/
       - build_release:
+          name: "build release with release prefix"
           tags: "release"
           filters:
             branches:
@@ -429,8 +432,9 @@ workflows:
             tags:
               only: /^(release)-.*/
       - deploy_github:
+          name: "build release with release prefix"
           requires:
-            - build_release
+            - "build release with release prefix"
           filters:
             branches:
               ignore: /.*/
