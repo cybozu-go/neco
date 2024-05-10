@@ -142,6 +142,7 @@ options:
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
       - "--kube-api-qps=50"
+      - "--node-monitor-grace-period=15s"
   kube-proxy:
     disable: true
     # For local-proxy running on boot servers
@@ -206,6 +207,7 @@ options:
         cpu: "1"
       imageGCHighThresholdPercent: 65
       imageGCLowThresholdPercent: 60
+      nodeStatusUpdateFrequency: 3s
     cri_endpoint: unix:///var/run/k8s-containerd.sock
     extra_args:
       - "--containerd=/var/run/k8s-containerd.sock"
