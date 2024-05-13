@@ -142,6 +142,7 @@ options:
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
       - "--kube-api-qps=50"
+      - "--node-monitor-grace-period=120s"
   kube-proxy:
     disable: true
     # For local-proxy running on boot servers
