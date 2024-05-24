@@ -3,7 +3,7 @@ module github.com/cybozu-go/neco
 go 1.22.2
 
 require (
-	github.com/cybozu-go/cke v1.28.0
+	github.com/cybozu-go/cke v1.28.1
 	github.com/cybozu-go/etcdutil v1.6.7
 	github.com/cybozu-go/log v1.7.0
 	github.com/cybozu-go/netutil v1.4.7
