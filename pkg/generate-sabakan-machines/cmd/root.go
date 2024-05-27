@@ -80,7 +80,7 @@ Example:
 				return err
 			}
 
-			supportDate, err := time.Parse("2006/1/02", supportDateString)
+			supportDate, err := time.Parse("2006/1/2", supportDateString)
 			if err != nil {
 				return err
 			}
