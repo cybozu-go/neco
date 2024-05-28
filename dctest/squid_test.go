@@ -30,8 +30,8 @@ func testSquid() {
 				return err
 			}
 
-			if int(deployment.Status.AvailableReplicas) != 2 {
-				return fmt.Errorf("AvailableReplicas is not 2: %d", int(deployment.Status.AvailableReplicas))
+			if int(deployment.Status.AvailableReplicas) != 3 {
+				return fmt.Errorf("AvailableReplicas is not 3: %d", int(deployment.Status.AvailableReplicas))
 			}
 			return nil
 		}).Should(Succeed())
@@ -43,7 +43,7 @@ func testSquid() {
 		}
 		err = json.Unmarshal(stdout, &pdb)
 		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
-		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
+		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(3)))
 
 		checkUnboundExporter("app.kubernetes.io/name=squid")
 		checkSquidExporter("app.kubernetes.io/name=squid")

@@ -174,7 +174,7 @@ metadata:
   name: squid
   namespace: internet-egress
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: squid
@@ -236,7 +236,7 @@ spec:
             port: 3128
         resources:
           limits:
-            cpu: 500m
+            cpu: 1000m
             memory: 4400Mi
           requests:
             cpu: 50m
