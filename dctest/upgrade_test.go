@@ -308,6 +308,7 @@ func testUpgrade() {
 
 	It("should SHA1 veth name is attached when container restarts with newer coil", func() {
 		By("stopping a squid pod")
+		const squidNum = 3
 		var podName, notTarget string
 		Eventually(func() error {
 			stdout, stderr, err := execAt(bootServers[0], "kubectl", "-n=internet-egress", "get", "pods", "--selector=app.kubernetes.io/name=squid", "-o=json")
@@ -319,7 +320,7 @@ func testUpgrade() {
 			if err != nil {
 				return err
 			}
-			if len(podList.Items) < 2 {
+			if len(podList.Items) < squidNum {
 				return fmt.Errorf("len(podList.Items) < 2, actual: %d", len(podList.Items))
 			}
 			podName = podList.Items[0].Name
@@ -349,8 +350,8 @@ func testUpgrade() {
 				return err
 			}
 
-			if int(deployment.Status.AvailableReplicas) != 2 {
-				return errors.New("AvailableReplicas is not 2")
+			if int(deployment.Status.AvailableReplicas) != squidNum {
+				return fmt.Errorf("AvailableReplicas is not %d but %d", squidNum, deployment.Status.AvailableReplicas)
 			}
 			return nil
 		}).Should(Succeed())
