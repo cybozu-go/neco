@@ -131,7 +131,7 @@ options:
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
       - "--audit-log-maxbackup=10"
-      - "--runtime-config=admissionregistration.k8s.io/v1alpha1=true"
+      - "--runtime-config=admissionregistration.k8s.io/v1beta1=true"
     extra_binds:
       - source: /var/log/audit
         destination: /var/log/audit
