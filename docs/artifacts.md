@@ -4,7 +4,7 @@ Artifacts
 [Artifacts](../artifacts.go) is the collection of components tested in [dctest](../dctest/), which consists of container images, debian package, and Flatcar image.
 
 There are two artifacts files.  When generating neco binaries and the neco deb package, `artifacts.go` is used
-by default.  `artifacts_release.go` is used only when `release` build tag is given.
+by default.  `artifacts_prod.go` is used only when `release` build tag is given.
 
 - [artifacts.go](../artifacts.go)
 
@@ -12,15 +12,13 @@ by default.  `artifacts_release.go` is used only when `release` build tag is giv
     It should be updated with `generate-artifacts` command.
     You may edit the file **ONLY IF** you would like to test different combination of components.
 
-- [artifacts_release.go](../artifacts.go)
+- [artifacts_prod.go](../artifacts.go)
 
-    This file is for CI.  The CI job updates this file by using
-    `generate-artifacts --release`.
+    This file describes artifacts to be tested in production.
+    It should be updated with `generate-artifacts --release` command.
 
     The developers are PROHIBITED to modify this file.  This is to prevent
     merge conflicts in CI flow.
-
-    This file exists only in the `release` branch.
 
 ## How to handle prerelease versions
 
@@ -30,9 +28,6 @@ to prepare for the update of the component.
 A component with prerelease version information, i.e. x.y.z-\<prerelease\>,
 does not get included in artifacts files by `generate-artifacts`.
 So if you want to use such a component, include it manually.
-Though you can edit `artifacts.go` in this case, you must not merge it into
-the main branch anyway, because that component does not get included in
-`artifacts_release.go` and CI on `release` branch will fail.
 Instead, after you confirm that neco can accept a component of x.y.z-\<prerelease\>,
 release the component as x.y.z and include it in artifacts files by `generate-artifacts`.
 

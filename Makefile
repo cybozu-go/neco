@@ -217,6 +217,17 @@ gcp-deb: setup-files-for-deb
 .PHONY: git-neco
 git-neco:
 	go install ./pkg/git-neco
+	
+.PHONY: setup-generate-artifacts
+setup-generate-artifacts:
+	GOBIN=$(BIN_DIR) go install ./pkg/generate-artifacts
+
+.PHONY: update-artifacts
+update-artifacts: setup-generate-artifacts
+	$(BIN_DIR)/generate-artifacts --ignore-file artifacts_ignore.yaml > /tmp/artifacts.go
+	cp /tmp/artifacts.go artifacts.go
+	$(BIN_DIR)/generate-artifacts --release --ignore-file artifacts_prod_ignore.yaml > /tmp/artifacts_prod.go
+	cp /tmp/artifacts_prod.go artifacts_prod.go
 
 .PHONY: setup
 setup:
