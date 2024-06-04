@@ -3,7 +3,7 @@ module github.com/cybozu-go/neco
 go 1.22.2
 
 require (
-	github.com/cybozu-go/cke v1.28.3
+	github.com/cybozu-go/cke v1.28.4
 	github.com/cybozu-go/etcdutil v1.6.7
 	github.com/cybozu-go/log v1.7.0
 	github.com/cybozu-go/netutil v1.4.7
@@ -32,8 +32,8 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.11
 	github.com/vincent-petithory/dataurl v1.0.0
 	github.com/vishvananda/netlink v1.2.1-beta.2
-	go.etcd.io/etcd/api/v3 v3.5.13
-	go.etcd.io/etcd/client/v3 v3.5.13
+	go.etcd.io/etcd/api/v3 v3.5.14
+	go.etcd.io/etcd/client/v3 v3.5.14
 	golang.org/x/crypto v0.23.0
 	golang.org/x/oauth2 v0.20.0
 	golang.org/x/term v0.20.0
@@ -121,7 +121,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/vbatts/tar-split v0.11.3 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
-	go.etcd.io/etcd/client/pkg/v3 v3.5.13 // indirect
+	go.etcd.io/etcd/client/pkg/v3 v3.5.14 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
