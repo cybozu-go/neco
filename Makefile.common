@@ -1,7 +1,7 @@
 # tool versions used for both local bin and deb/zip packages
 
 ## These should be updated when Kubernetes is updated
-CKE_VERSION = 1.28.3
+CKE_VERSION = 1.28.4
 CONTAINERD_VERSION = 1.7.13
 NERDCTL_VERSION = 1.7.6
 CRITOOLS_VERSION = 1.30.0
@@ -21,7 +21,7 @@ KUSTOMIZE_VERSION = 5.2.1
 JSONNET_VERSION = 0.20.0
 MOCO_VERSION = 0.18.1
 NODE_EXPORTER_VERSION = 1.7.0
-TELEPORT_VERSION = 15.1.10
+TELEPORT_VERSION = 15.3.7
 # kubeseal is a CLI tool for Sealed Secrets
 # https://github.com/bitnami-labs/sealed-secrets
 KUBESEAL_VERSION = 0.26.0
