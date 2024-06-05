@@ -1,10 +1,8 @@
 package dctest
 
 import (
-	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -33,13 +31,6 @@ var _ = BeforeSuite(func() {
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
 var _ = Describe("Neco", func() {
-	BeforeEach(func() {
-		fmt.Printf("START: %s\n", time.Now().Format(time.RFC3339))
-	})
-	AfterEach(func() {
-		fmt.Printf("END: %s\n", time.Now().Format(time.RFC3339))
-	})
-
 	switch testSuite {
 	case "bootstrap":
 		bootstrapSuite()
