@@ -1,4 +1,6 @@
 images:
+- repository: ghcr.io/cybozu-go/coil
+  versions: ["2.7.0"]
 - repository: ghcr.io/cybozu/cilium-operator-generic
   versions: ["1.13.16.1"]
 - repository: ghcr.io/cybozu/cilium-certgen
