@@ -5,6 +5,7 @@ bgp:
 bpf:
   hostLegacyRouting: true
   policyMapMax: 65536
+  mapDynamicSizeRatio:  0.005
 cgroup:
   autoMount:
     enabled: false
