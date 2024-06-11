@@ -114,7 +114,7 @@ data:
   monitor-aggregation-flags: all
   # Specifies the ratio (0.0-1.0] of total system memory to use for dynamic
   # sizing of the TCP CT, non-TCP CT, NAT and policy BPF maps.
-  bpf-map-dynamic-size-ratio: "0.0025"
+  bpf-map-dynamic-size-ratio: "0.005"
   enable-host-legacy-routing: "true"
   # bpf-policy-map-max specifies the maximum number of entries in endpoint
   # policy map (per endpoint)
@@ -796,7 +796,7 @@ spec:
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "497b978fead720b12575f287cf56eb73c58cccdc3258804c312ea4323a3460a7"
+        cilium.io/cilium-configmap-checksum: "fe121f30b675abe564f63cbaa4ba558cb513e07282fe8a60e2db39519b4da8d5"
         # Set app AppArmor's profile to "unconfined". The value of this annotation
         # can be modified as long users know which profiles they have available
         # in AppArmor.
@@ -1204,7 +1204,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "497b978fead720b12575f287cf56eb73c58cccdc3258804c312ea4323a3460a7"
+        cilium.io/cilium-configmap-checksum: "fe121f30b675abe564f63cbaa4ba558cb513e07282fe8a60e2db39519b4da8d5"
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
