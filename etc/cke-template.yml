@@ -113,10 +113,6 @@ options:
             - group: ""
               resources: ["events"]
         - level: RequestResponse
-          verbs: ["create"]
-          resources:
-            - group: "cilium.io"
-        - level: RequestResponse
           userGroups:
             - system:serviceaccounts:teleport
         - level: None
