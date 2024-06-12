@@ -29,7 +29,7 @@ require (
 	github.com/spf13/viper v1.18.2
 	github.com/stmcginnis/gofish v0.17.0
 	github.com/tcnksm/go-input v0.0.0-20180404061846-548a7d7a8ee8
-	github.com/vektah/gqlparser/v2 v2.5.11
+	github.com/vektah/gqlparser/v2 v2.5.14
 	github.com/vincent-petithory/dataurl v1.0.0
 	github.com/vishvananda/netlink v1.2.1-beta.2
 	go.etcd.io/etcd/api/v3 v3.5.14
