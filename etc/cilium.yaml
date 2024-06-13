@@ -521,7 +521,7 @@ data:
   bpf-lb-mode: dsr
   bpf-lb-sock: "true"
   bpf-lb-sock-hostns-only: "true"
-  bpf-map-dynamic-size-ratio: "0.005"
+  bpf-map-dynamic-size-ratio: "0.0025"
   bpf-policy-map-max: "65536"
   bpf-root: /sys/fs/bpf
   cgroup-root: /sys/fs/cgroup
@@ -720,7 +720,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 604113879d707e36938fe8078247de69dce6703aec1aa91904ab4f2a9b6f321b
+        cilium.io/cilium-configmap-checksum: 9544eae4b75b0368f5622be10d33372dda03ed6d2df589ee96ac9290afe7f63a
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -985,7 +985,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 604113879d707e36938fe8078247de69dce6703aec1aa91904ab4f2a9b6f321b
+        cilium.io/cilium-configmap-checksum: 9544eae4b75b0368f5622be10d33372dda03ed6d2df589ee96ac9290afe7f63a
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
