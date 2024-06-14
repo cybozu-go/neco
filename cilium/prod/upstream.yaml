@@ -784,9 +784,7 @@ spec:
     matchLabels:
       k8s-app: cilium
   updateStrategy:
-    rollingUpdate:
-      maxUnavailable: 2
-    type: RollingUpdate
+    type: OnDelete
   template:
     metadata:
       annotations:

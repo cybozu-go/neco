@@ -88,4 +88,7 @@ socketLB:
   enabled: true
   hostNamespaceOnly: true
 tunnel: "disabled"
+updateStrategy:
+  rollingUpdate: null
+  type: OnDelete
 upgradeCompatibility: "1.12"
