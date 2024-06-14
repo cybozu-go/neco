@@ -1339,7 +1339,7 @@ spec:
               optional: true
   updateStrategy:
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: 2
     type: RollingUpdate
 ---
 apiVersion: batch/v1
