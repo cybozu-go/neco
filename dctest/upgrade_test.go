@@ -156,6 +156,26 @@ func testUpgrade() {
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 	})
 
+	It("should wait for completed phase", func() {
+		Eventually(func(g Gomega) {
+			stdout, stderr, err := execAt(bootServers[0], "ckecli", "status")
+			g.Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+			stdout, stderr, err = execAtWithInput(bootServers[0], stdout, "jq", "-r", ".phase")
+			g.Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+			if strings.TrimSpace(string(stdout)) != "completed" {
+				err := errors.New("CKE should complete operations")
+				g.Expect(err).ShouldNot(HaveOccurred())
+			}
+		}).Should(Succeed())
+	})
+
+	It("should update cilium-agent", func() {
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "delete", "pod", "-n=kube-system", "-l=app.kubernetes.io/name=cilium-agent")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+	})
+
 	It("should running newer cke desired image version", func() {
 		stdout, stderr, err := execAt(bootServers[0], "ckecli", "cluster", "get")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)

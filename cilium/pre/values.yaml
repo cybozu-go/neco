@@ -5,6 +5,7 @@ bgp:
 bpf:
   hostLegacyRouting: true
   policyMapMax: 65536
+  mapDynamicSizeRatio: 0.005
 cgroup:
   autoMount:
     enabled: false
@@ -97,4 +98,7 @@ socketLB:
   enabled: true
   hostNamespaceOnly: true
 tunnel: "disabled"
+updateStrategy:
+  rollingUpdate: null
+  type: OnDelete
 upgradeCompatibility: "1.12"

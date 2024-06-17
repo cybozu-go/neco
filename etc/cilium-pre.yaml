@@ -528,7 +528,7 @@ data:
   bpf-lb-mode: dsr
   bpf-lb-sock: "true"
   bpf-lb-sock-hostns-only: "true"
-  bpf-map-dynamic-size-ratio: "0.0025"
+  bpf-map-dynamic-size-ratio: "0.005"
   bpf-policy-map-max: "65536"
   bpf-root: /sys/fs/bpf
   cgroup-root: /sys/fs/cgroup
@@ -730,7 +730,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 497b978fead720b12575f287cf56eb73c58cccdc3258804c312ea4323a3460a7
+        cilium.io/cilium-configmap-checksum: fe121f30b675abe564f63cbaa4ba558cb513e07282fe8a60e2db39519b4da8d5
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -1001,7 +1001,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 497b978fead720b12575f287cf56eb73c58cccdc3258804c312ea4323a3460a7
+        cilium.io/cilium-configmap-checksum: fe121f30b675abe564f63cbaa4ba558cb513e07282fe8a60e2db39519b4da8d5
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
@@ -1354,9 +1354,7 @@ spec:
               name: hubble-server-certs
               optional: true
   updateStrategy:
-    rollingUpdate:
-      maxUnavailable: 1
-    type: RollingUpdate
+    type: OnDelete
 ---
 apiVersion: batch/v1
 kind: Job
