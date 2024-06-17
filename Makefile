@@ -87,7 +87,7 @@ update-cilium: helm
 	$(HELM) template /tmp/work-cilium/install/kubernetes/cilium/ \
 		--namespace=kube-system \
 		--values cilium/$(CILIUM_OVERLAY)/values.yaml \
-		--set image.repository=quay.io/cybozu/cilium \
+		--set image.repository=ghcr.io/cybozu/cilium \
 		--set image.tag=$(CILIUM_TAG) \
 		--set image.useDigest=false \
 		--set operator.image.repository=ghcr.io/cybozu/cilium-operator \
