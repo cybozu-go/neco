@@ -805,7 +805,7 @@ spec:
     spec:
       containers:
       - name: cilium-agent
-        image: "ghcr.io/cybozu/cilium:1.13.16.3"
+        image: "ghcr.io/cybozu/cilium:1.13.16.4"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
@@ -970,7 +970,7 @@ spec:
           mountPath: /tmp
       initContainers:
       - name: config
-        image: "ghcr.io/cybozu/cilium:1.13.16.3"
+        image: "ghcr.io/cybozu/cilium:1.13.16.4"
         imagePullPolicy: IfNotPresent
         command:
         - cilium
@@ -998,7 +998,7 @@ spec:
       # from a privileged container because the mount propagation bidirectional
       # only works from privileged containers.
       - name: mount-bpf-fs
-        image: "ghcr.io/cybozu/cilium:1.13.16.3"
+        image: "ghcr.io/cybozu/cilium:1.13.16.4"
         imagePullPolicy: IfNotPresent
         args:
         - 'mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf'
@@ -1014,7 +1014,7 @@ spec:
           mountPath: /sys/fs/bpf
           mountPropagation: Bidirectional
       - name: clean-cilium-state
-        image: "ghcr.io/cybozu/cilium:1.13.16.3"
+        image: "ghcr.io/cybozu/cilium:1.13.16.4"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
@@ -1059,7 +1059,7 @@ spec:
           mountPath: /var/run/cilium # wait-for-kube-proxy
       # Install the CNI binaries in an InitContainer so we don't have a writable host mount in the agent
       - name: install-cni-binaries
-        image: "ghcr.io/cybozu/cilium:1.13.16.3"
+        image: "ghcr.io/cybozu/cilium:1.13.16.4"
         imagePullPolicy: IfNotPresent
         command:
           - "/install-plugin.sh"
@@ -1207,7 +1207,7 @@ spec:
     spec:
       containers:
       - name: cilium-operator
-        image: "ghcr.io/cybozu/cilium-operator-generic:1.13.7.3"
+        image: "ghcr.io/cybozu/cilium-operator-generic:1.13.16.1"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
@@ -1320,7 +1320,7 @@ spec:
     spec:
       containers:
         - name: hubble-relay
-          image: "ghcr.io/cybozu/hubble-relay:1.13.7.3"
+          image: "ghcr.io/cybozu/hubble-relay:1.13.16.1"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
@@ -1395,7 +1395,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hubble-generate-certs-d2ace88411
+  name: hubble-generate-certs-4b23ed05ea
   namespace: kube-system
   labels:
     k8s-app: hubble-generate-certs
@@ -1409,7 +1409,7 @@ spec:
     spec:
       containers:
         - name: certgen
-          image: "ghcr.io/cybozu/cilium-certgen:0.1.9.2"
+          image: "ghcr.io/cybozu/cilium-certgen:0.1.11.1"
           imagePullPolicy: IfNotPresent
           command:
             - "/usr/bin/cilium-certgen"
@@ -1456,7 +1456,7 @@ spec:
         spec:
           containers:
             - name: certgen
-              image: "ghcr.io/cybozu/cilium-certgen:0.1.9.2"
+              image: "ghcr.io/cybozu/cilium-certgen:0.1.11.1"
               imagePullPolicy: IfNotPresent
               command:
                 - "/usr/bin/cilium-certgen"
