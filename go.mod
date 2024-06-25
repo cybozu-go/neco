@@ -3,7 +3,7 @@ module github.com/cybozu-go/neco
 go 1.22.2
 
 require (
-	github.com/cybozu-go/cke v1.28.4
+	github.com/cybozu-go/cke v1.28.5
 	github.com/cybozu-go/etcdutil v1.6.7
 	github.com/cybozu-go/log v1.7.0
 	github.com/cybozu-go/netutil v1.4.7
@@ -82,7 +82,7 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-msgpack v0.5.3 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.7 // indirect
 	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect
