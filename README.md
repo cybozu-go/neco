@@ -44,7 +44,6 @@ Resources
 The project consists of a lot of repositories including:
 
 - [cybozu-go/neco][neco]: The main repository.
-- [cybozu-go/neco-apps][neco-apps]: Kubernetes application manifests for Argo CD.
 - [cybozu/neco-containers][neco-containers]: Dockerfiles to build container images.
 - [cybozu-go/sabakan][Sabakan]: Versatile network boot server.
 - [cybozu-go/cke][CKE]: Cybozu Kubernetes Engine.
@@ -90,8 +89,7 @@ Read [docs/cicd.md](docs/cicd.md) for details.
 
 A Kubernetes cluster created with CKE is a vanilla installation; it almost has nothing useful.
 
-We have selected a set of applications such as [MetalLB][], [Calico][], or [Teleport][] to make the vanilla Kubernetes fully featured.
-The manifests of the applications are maintained in [neco-apps][] repository and continuously delivered by [Argo CD][ArgoCD].
+We have selected a set of applications such as [Cilium][], [Teleport][] to make the vanilla Kubernetes fully featured.
 
 Network
 -------
@@ -198,11 +196,10 @@ Other than Go packages, this repository has the following directories:
 
 [releases]: https://github.com/cybozu-go/neco/releases
 [godoc]: https://godoc.org/github.com/cybozu-go/neco
-[ArgoCD]: https://argoproj.github.io/argo-cd/
 [BFD]: https://en.wikipedia.org/wiki/Bidirectional_Forwarding_Detection
 [BGP]: https://en.wikipedia.org/wiki/Border_Gateway_Protocol
 [BIRD]: https://bird.network.cz/
-[Calico]: https://www.projectcalico.org/
+[Cilium]: https://cilium.io
 [CKE]: https://github.com/cybozu-go/cke
 [CNCF]: https://www.cncf.io
 [CNI]: https://github.com/containernetworking/cni
@@ -215,9 +212,7 @@ Other than Go packages, this repository has the following directories:
 [Ignition]: https://www.flatcar.org/docs/latest/provisioning/ignition/
 [Kintone]: https://www.kintone.com
 [Kubernetes]: https://kubernetes.io
-[MetalLB]: https://metallb.universe.tf
 [neco]: https://github.com/cybozu-go/neco
-[neco-apps]: https://github.com/cybozu-go/neco-apps
 [neco-containers]: https://github.com/cybozu/neco-containers
 [placemat]: https://github.com/cybozu-go/placemat
 [Sabakan]: https://github.com/cybozu-go/sabakan
