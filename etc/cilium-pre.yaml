@@ -521,7 +521,6 @@ data:
   bpf-lb-acceleration: disabled
   bpf-lb-algorithm: maglev
   bpf-lb-dsr-dispatch: geneve
-  bpf-lb-dsr-l4-xlate: backend
   bpf-lb-external-clusterip: "false"
   bpf-lb-maglev-hash-seed: 3HCx6JennjWtot2U
   bpf-lb-map-max: "65536"
@@ -546,6 +545,7 @@ data:
   direct-routing-device: e+
   disable-cnp-status-updates: "true"
   disable-endpoint-crd: "false"
+  dnsproxy-enable-transparent-mode: "true"
   enable-auto-protect-node-port-range: "true"
   enable-bgp-control-plane: "false"
   enable-bpf-clock-probe: "false"
@@ -730,7 +730,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: fe121f30b675abe564f63cbaa4ba558cb513e07282fe8a60e2db39519b4da8d5
+        cilium.io/cilium-configmap-checksum: 89029740a4242a661efaec2ce058760e9d1e323c603534509c54902ef6891b1e
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -774,7 +774,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: ghcr.io/cybozu/cilium-operator-generic:1.13.7.3
+        image: ghcr.io/cybozu/cilium-operator-generic:1.13.16.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -863,7 +863,7 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: ghcr.io/cybozu/hubble-relay:1.13.7.3
+        image: ghcr.io/cybozu/hubble-relay:1.13.16.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
@@ -958,7 +958,7 @@ spec:
             - --hubble-relay-server-cert-validity-duration=94608000s
             command:
             - /usr/bin/cilium-certgen
-            image: ghcr.io/cybozu/cilium-certgen:0.1.9.2
+            image: ghcr.io/cybozu/cilium-certgen:0.1.11.1
             imagePullPolicy: IfNotPresent
             name: certgen
           hostNetwork: true
@@ -1001,7 +1001,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: fe121f30b675abe564f63cbaa4ba558cb513e07282fe8a60e2db39519b4da8d5
+        cilium.io/cilium-configmap-checksum: 89029740a4242a661efaec2ce058760e9d1e323c603534509c54902ef6891b1e
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
@@ -1053,7 +1053,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.13.7.2
+        image: ghcr.io/cybozu/cilium:1.13.16.4
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -1194,7 +1194,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.13.7.2
+        image: ghcr.io/cybozu/cilium:1.13.16.4
         imagePullPolicy: IfNotPresent
         name: config
         terminationMessagePolicy: FallbackToLogsOnError
@@ -1207,7 +1207,7 @@ spec:
         - /bin/bash
         - -c
         - --
-        image: quay.io/cybozu/cilium:1.13.7.2
+        image: ghcr.io/cybozu/cilium:1.13.16.4
         imagePullPolicy: IfNotPresent
         name: mount-bpf-fs
         securityContext:
@@ -1236,13 +1236,9 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: quay.io/cybozu/cilium:1.13.7.2
+        image: ghcr.io/cybozu/cilium:1.13.16.4
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
-        resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
         securityContext:
           capabilities:
             add:
@@ -1266,7 +1262,7 @@ spec:
           name: cilium-run
       - command:
         - /install-plugin.sh
-        image: quay.io/cybozu/cilium:1.13.7.2
+        image: ghcr.io/cybozu/cilium:1.13.16.4
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
@@ -1363,7 +1359,7 @@ metadata:
     app.kubernetes.io/name: hubble-generate-certs
     app.kubernetes.io/part-of: cilium
     k8s-app: hubble-generate-certs
-  name: hubble-generate-certs-d2ace88411
+  name: hubble-generate-certs-4b23ed05ea
   namespace: kube-system
 spec:
   template:
@@ -1386,7 +1382,7 @@ spec:
         - --hubble-relay-server-cert-validity-duration=94608000s
         command:
         - /usr/bin/cilium-certgen
-        image: ghcr.io/cybozu/cilium-certgen:0.1.9.2
+        image: ghcr.io/cybozu/cilium-certgen:0.1.11.1
         imagePullPolicy: IfNotPresent
         name: certgen
       hostNetwork: true
