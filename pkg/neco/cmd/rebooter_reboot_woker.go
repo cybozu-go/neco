@@ -126,12 +126,9 @@ RETRY:
 		if !ok {
 			return fmt.Errorf("node has no groupKey label (%s)", config.GroupLabelKey)
 		}
-		if !ok {
-			return fmt.Errorf("node has no %s label", config.GroupLabelKey)
-		}
 		rt := matchRebootTimes(node, config.RebootTimes)
 		if rt == nil {
-			return fmt.Errorf("node: %s does not match any reboot time\n", node.Name)
+			return fmt.Errorf("node: %s does not match any reboot time", node.Name)
 		}
 		fmt.Printf("adding a node to reboot list node=%s  group=%s reboot_time=%s\n", node.Name, group, rt.Name)
 		newEntry := neco.RebootListEntry{
@@ -175,15 +172,6 @@ RETRY:
 		return fmt.Errorf("failed to reboot on some nodes: %s", strings.Join(errorNodes, ","))
 	}
 	return nil
-}
-
-func all(s []bool) bool {
-	for _, b := range s {
-		if !b {
-			return false
-		}
-	}
-	return true
 }
 
 func addSabakanMachinesGetOpts(cmd *cobra.Command, opts *sabakanMachinesGetOpts) {

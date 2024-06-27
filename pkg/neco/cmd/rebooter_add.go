@@ -60,11 +60,11 @@ var addCmd = &cobra.Command{
 			}
 			group, ok := kubeNode.ObjectMeta.Labels[config.GroupLabelKey]
 			if !ok {
-				return fmt.Errorf("node has no %s label", config.GroupLabelKey)
+				return fmt.Errorf("node has no groupKey label (%s)", config.GroupLabelKey)
 			}
 			rt := matchRebootTimes(*kubeNode, config.RebootTimes)
 			if rt == nil {
-				return fmt.Errorf("node: %s does not match any reboot time\n", kubeNode.Name)
+				return fmt.Errorf("node: %s does not match any reboot time", kubeNode.Name)
 			}
 			fmt.Printf("adding a node to reboot list node=%s  group=%s reboot_time=%s\n", kubeNode.Name, group, rt.Name)
 			newEntry := neco.RebootListEntry{
