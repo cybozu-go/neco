@@ -26,7 +26,7 @@ func testNecoRebooter() {
 			return nil
 		}).Should(Succeed())
 
-		By("restarting neco-rebooterr on " + leaderNodeBefore)
+		By("restarting neco-rebooter on " + leaderNodeBefore)
 		index, err := strconv.Atoi(leaderNodeBefore[len(leaderNodeBefore)-1:])
 		Expect(err).ShouldNot(HaveOccurred(), "data=%s", leaderNodeBefore[len(leaderNodeBefore)-1:])
 		stdout, stderr, err := execAt(bootServers[index], "sudo", "systemctl", "restart", "neco-rebooter.service")

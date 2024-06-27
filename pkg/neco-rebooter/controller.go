@@ -34,14 +34,14 @@ type RebootArgs struct {
 	processingGroup    string
 }
 
-func NewController(config *Config, rt *map[string]RebootTime, ckeStorage *cke.Storage, etcdClient *clientv3.Client, necoStorage *storage.Storage, electionValue string) (*Controller, error) {
+func NewController(config *Config, rt map[string]RebootTime, ckeStorage *cke.Storage, etcdClient *clientv3.Client, necoStorage *storage.Storage, electionValue string) (*Controller, error) {
 	tz, err := time.LoadLocation(config.TimeZone)
 	if err != nil {
 		return nil, err
 	}
 	return &Controller{
 		config:        *config,
-		rebootTimes:   *rt,
+		rebootTimes:   rt,
 		etcdClient:    *etcdClient,
 		ckeStorage:    *ckeStorage,
 		necoStorage:   *necoStorage,
@@ -166,7 +166,7 @@ func (c *Controller) addRebootListEntry(ctx context.Context, rebootArgs RebootAr
 	return nil
 }
 
-func (c *Controller) moveNextGroup(ctx context.Context, rebootArgs RebootArgs) (string, error) {
+func (c *Controller) moveToNextGroup(ctx context.Context, rebootArgs RebootArgs) (string, error) {
 	groups := getAllGroups(rebootArgs.rebootListEntries)
 	if len(groups) < 1 {
 		rand.Shuffle(len(groups), func(i, j int) { groups[i], groups[j] = groups[j], groups[i] })
@@ -261,7 +261,7 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	}
 
 	if enabled {
-		nextGroup, err := c.moveNextGroup(ctx, rebootArgs)
+		nextGroup, err := c.moveToNextGroup(ctx, rebootArgs)
 		if err != nil {
 			return err
 		}

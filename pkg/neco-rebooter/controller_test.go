@@ -271,10 +271,10 @@ groupLabelKey: topology.kubernetes.io/zone
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(*rt) != 2 {
-		t.Error("number of rebootTimes is not expected, actual ", len(*rt))
+	if len(rt) != 2 {
+		t.Error("number of rebootTimes is not expected, actual ", len(rt))
 	}
-	c.rebootTimes = *rt
+	c.rebootTimes = rt
 
 	rebootListEntries := []*neco.RebootListEntry{
 		// node1 is not in rebootTimes
@@ -506,10 +506,10 @@ groupLabelKey: topology.kubernetes.io/zone
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(*rt) != 2 {
-		t.Error("number of rebootTimes is not expected, actual ", len(*rt))
+	if len(rt) != 2 {
+		t.Error("number of rebootTimes is not expected, actual ", len(rt))
 	}
-	c.rebootTimes = *rt
+	c.rebootTimes = rt
 
 	rebootListEntries := []*neco.RebootListEntry{
 		{
@@ -611,7 +611,7 @@ groupLabelKey: topology.kubernetes.io/zone
 	}
 }
 
-func TestMoveNextGroup(t *testing.T) {
+func TestMoveToNextGroup(t *testing.T) {
 	c, err := newTestController()
 	if err != nil {
 		t.Fatal(err)
@@ -650,10 +650,10 @@ groupLabelKey: topology.kubernetes.io/zone
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(*rt) != 2 {
-		t.Error("number of rebootTimes is not expected, actual ", len(*rt))
+	if len(rt) != 2 {
+		t.Error("number of rebootTimes is not expected, actual ", len(rt))
 	}
-	c.rebootTimes = *rt
+	c.rebootTimes = rt
 
 	rebootListEntries := []*neco.RebootListEntry{
 		{
@@ -689,7 +689,7 @@ groupLabelKey: topology.kubernetes.io/zone
 		rebootQueueEntries: rebootQueueEntries,
 		processingGroup:    "group3",
 	}
-	next, err := c.moveNextGroup(context.Background(), rebootArgs)
+	next, err := c.moveToNextGroup(context.Background(), rebootArgs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -744,10 +744,10 @@ groupLabelKey: topology.kubernetes.io/zone
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(*rt) != 2 {
-		t.Error("number of rebootTimes is not expected, actual ", len(*rt))
+	if len(rt) != 2 {
+		t.Error("number of rebootTimes is not expected, actual ", len(rt))
 	}
-	c.rebootTimes = *rt
+	c.rebootTimes = rt
 	rebootListEntries := []*neco.RebootListEntry{
 		{
 			Node:       "node1",
@@ -824,10 +824,10 @@ groupLabelKey: topology.kubernetes.io/zone
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(*rt) != 2 {
-		t.Error("number of rebootTimes is not expected, actual ", len(*rt))
+	if len(rt) != 2 {
+		t.Error("number of rebootTimes is not expected, actual ", len(rt))
 	}
-	c.rebootTimes = *rt
+	c.rebootTimes = rt
 	rebootListEntries := []*neco.RebootListEntry{
 		{
 			Node:       "node1",

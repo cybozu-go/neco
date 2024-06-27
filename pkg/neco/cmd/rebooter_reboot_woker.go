@@ -118,7 +118,6 @@ RETRY:
 	}
 
 	//reboot kubernetes nodes
-OUTER:
 	for _, node := range kubernetesNodeMachine {
 		if !machineAddrs[node.Name] {
 			continue
@@ -127,33 +126,26 @@ OUTER:
 		if !ok {
 			return fmt.Errorf("node has no groupKey label (%s)", config.GroupLabelKey)
 		}
-		for _, rt := range config.RebootTimes {
-			matches := make([]bool, 0)
-			for key, value := range rt.LabelSelector.MatchLabels {
-				if node.ObjectMeta.Labels[key] == value {
-					matches = append(matches, true)
-				} else {
-					matches = append(matches, false)
-				}
-			}
-			if all(matches) {
-				fmt.Printf("adding a node to reboot-list node=%s  group=%s rebootTimes=%s\n", node.Name, group, rt.Name)
-				newEntry := neco.RebootListEntry{
-					Node:       node.Name,
-					Group:      group,
-					RebootTime: rt.Name,
-					Status:     neco.RebootListEntryStatusPending,
-				}
-				if !flagDryRun {
-					err := necoStorage.RegisterRebootListEntry(ctx, &newEntry)
-					if err != nil {
-						return err
-					}
-				}
-				continue OUTER
+		if !ok {
+			return fmt.Errorf("node has no %s label", config.GroupLabelKey)
+		}
+		rt := matchRebootTimes(node, config.RebootTimes)
+		if rt == nil {
+			return fmt.Errorf("node: %s does not match any reboot time\n", node.Name)
+		}
+		fmt.Printf("adding a node to reboot list node=%s  group=%s reboot_time=%s\n", node.Name, group, rt.Name)
+		newEntry := neco.RebootListEntry{
+			Node:       node.Name,
+			Group:      group,
+			RebootTime: rt.Name,
+			Status:     neco.RebootListEntryStatusPending,
+		}
+		if !flagDryRun {
+			err := necoStorage.RegisterRebootListEntry(ctx, &newEntry)
+			if err != nil {
+				return err
 			}
 		}
-		fmt.Printf("node: %s does not match any reboot time\n", node.Name)
 	}
 	// reboot non-kubernetes nodes immediately
 	var errorNodes []string

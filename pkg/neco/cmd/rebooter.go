@@ -11,6 +11,7 @@ import (
 	necorebooter "github.com/cybozu-go/neco/pkg/neco-rebooter"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/spf13/cobra"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
@@ -33,21 +34,21 @@ var rebooterCmd = &cobra.Command{
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		var err error
-		f, err := os.Open(flagConfigFile)
+		configFile, err := os.Open(flagConfigFile)
 		if err != nil {
 			return err
 		}
-		defer f.Close()
-		config, err = necorebooter.LoadConfig(f)
+		defer configFile.Close()
+		config, err = necorebooter.LoadConfig(configFile)
 		if err != nil {
 			return err
 		}
-		f2, err := os.Open(flagCKEConfig)
+		ckeConfigFile, err := os.Open(flagCKEConfig)
 		if err != nil {
 			return err
 		}
-		defer f.Close()
-		cs, err := necorebooter.NewCKEStorage(f2)
+		defer configFile.Close()
+		cs, err := necorebooter.NewCKEStorage(ckeConfigFile)
 		if err != nil {
 			return err
 		}
@@ -99,9 +100,19 @@ func renewKubeConfig() error {
 	return nil
 }
 
-func init() {
+func matchRebootTimes(node v1.Node, rebootTimes []necorebooter.RebootTimes) *necorebooter.RebootTimes {
+	for _, rt := range rebootTimes {
+		for key, value := range rt.LabelSelector.MatchLabels {
+			if node.ObjectMeta.Labels[key] != value {
+				continue
+			}
+		}
+		return &rt
+	}
+	return nil
+}
 
-	rebooterCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+func init() {
 	rebooterCmd.PersistentFlags().StringVar(&flagCKEConfig, "cke-config", neco.CKEConfFile, "cke config file")
 	rebooterCmd.PersistentFlags().StringVar(&flagConfigFile, "config", neco.NecoRebooterConfFile, "neco-rebooter config file")
 	var DefaultKubeconfig string

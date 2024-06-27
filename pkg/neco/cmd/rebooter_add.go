@@ -11,7 +11,7 @@ import (
 
 	"github.com/cybozu-go/neco"
 	"github.com/spf13/cobra"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -53,7 +53,6 @@ var addCmd = &cobra.Command{
 			goto RETRY
 		}
 
-	OUTER:
 		for _, node := range nodes {
 			kubeNode, err := validateNode(node, *kubernetesNodes)
 			if err != nil {
@@ -63,30 +62,21 @@ var addCmd = &cobra.Command{
 			if !ok {
 				return fmt.Errorf("node has no %s label", config.GroupLabelKey)
 			}
-			for _, rt := range config.RebootTimes {
-				matches := make([]bool, 0)
-				for key, value := range rt.LabelSelector.MatchLabels {
-					if kubeNode.ObjectMeta.Labels[key] == value {
-						matches = append(matches, true)
-					} else {
-						matches = append(matches, false)
-					}
-				}
-				if all(matches) {
-					fmt.Printf("adding a node to RebootListEntry node=%s  group=%s reboot_time=%s\n", kubeNode.Name, group, rt.Name)
-					newEntry := neco.RebootListEntry{
-						Node:       kubeNode.Name,
-						Group:      group,
-						RebootTime: rt.Name,
-						Status:     neco.RebootListEntryStatusPending,
-					}
-					if !flagDryRun {
-						err := necoStorage.RegisterRebootListEntry(ctx, &newEntry)
-						if err != nil {
-							return err
-						}
-					}
-					continue OUTER
+			rt := matchRebootTimes(*kubeNode, config.RebootTimes)
+			if rt == nil {
+				return fmt.Errorf("node: %s does not match any reboot time\n", kubeNode.Name)
+			}
+			fmt.Printf("adding a node to reboot list node=%s  group=%s reboot_time=%s\n", kubeNode.Name, group, rt.Name)
+			newEntry := neco.RebootListEntry{
+				Node:       kubeNode.Name,
+				Group:      group,
+				RebootTime: rt.Name,
+				Status:     neco.RebootListEntryStatusPending,
+			}
+			if !flagDryRun {
+				err := necoStorage.RegisterRebootListEntry(ctx, &newEntry)
+				if err != nil {
+					return err
 				}
 			}
 		}
@@ -94,7 +84,7 @@ var addCmd = &cobra.Command{
 	},
 }
 
-func validateNode(node string, kubeNode v1.NodeList) (*v1.Node, error) {
+func validateNode(node string, kubeNode corev1.NodeList) (*corev1.Node, error) {
 	for _, n := range kubeNode.Items {
 		if n.Name == node {
 			return &n, nil

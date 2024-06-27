@@ -220,33 +220,23 @@ func testNecoRebooterRebootGracefully() {
 			RebootTimes: []necorebooter.RebootTimes{
 				{
 					Name: "cs",
-					LabelSelector: struct {
-						MatchLabels map[string]string `json:"matchLabels"`
-					}{
-						MatchLabels: map[string]string{
+					LabelSelector: necorebooter.LabelSelector{
+						MatchLabels: necorebooter.MatchLabels{
 							"cke.cybozu.com/role": "cs",
 						},
 					},
-					Times: struct {
-						Deny  []string `json:"deny"`
-						Allow []string `json:"allow"`
-					}{
+					Times: necorebooter.Times{
 						Allow: []string{"* * * * *"},
 					},
 				},
 				{
 					Name: "ss",
-					LabelSelector: struct {
-						MatchLabels map[string]string `json:"matchLabels"`
-					}{
-						MatchLabels: map[string]string{
+					LabelSelector: necorebooter.LabelSelector{
+						MatchLabels: necorebooter.MatchLabels{
 							"cke.cybozu.com/role": "ss",
 						},
 					},
-					Times: struct {
-						Deny  []string `json:"deny"`
-						Allow []string `json:"allow"`
-					}{
+					Times: necorebooter.Times{
 						Allow: []string{"* * * * *"},
 					},
 				},

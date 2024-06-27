@@ -19,14 +19,19 @@ type Config struct {
 }
 
 type RebootTimes struct {
-	Name          string `json:"name"`
-	LabelSelector struct {
-		MatchLabels map[string]string `json:"matchLabels"`
-	} `json:"labelSelector"`
-	Times struct {
-		Deny  []string `json:"deny"`
-		Allow []string `json:"allow"`
-	} `json:"times"`
+	Name          string        `json:"name"`
+	LabelSelector LabelSelector `json:"labelSelector"`
+	Times         Times         `json:"times"`
+}
+
+type LabelSelector struct {
+	MatchLabels MatchLabels `json:"matchLabels"`
+}
+type MatchLabels map[string]string
+
+type Times struct {
+	Deny  []string `json:"deny"`
+	Allow []string `json:"allow"`
 }
 
 type RebootTime struct {
@@ -49,7 +54,7 @@ func LoadConfig(reader io.Reader) (*Config, error) {
 	return config, nil
 }
 
-func (c *Config) GetRebootTime() (*map[string]RebootTime, error) {
+func (c *Config) GetRebootTime() (map[string]RebootTime, error) {
 	rebootTime := map[string]RebootTime{}
 	for _, rt := range c.RebootTimes {
 		deny := []cron.Schedule{}
@@ -73,7 +78,7 @@ func (c *Config) GetRebootTime() (*map[string]RebootTime, error) {
 			Allow: allow,
 		}
 	}
-	return &rebootTime, nil
+	return rebootTime, nil
 }
 
 func NewCKEStorage(ckeConfig io.Reader) (*cke.Storage, error) {

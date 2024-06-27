@@ -73,7 +73,7 @@ rebootTimes:
   - name: test1
     labelSelector:
       matchLabels:
-      cke.cybozu.com/role: test1
+        cke.cybozu.com/role: test1
     times:
       deny:
         - "* 0-23 1 * *"
@@ -87,7 +87,7 @@ rebootTimes:
     times:
       allow:
         - "* 0-23 * * 1-5"
-groupLabelKey: topology.kubernetes.io/zon
+groupLabelKey: topology.kubernetes.io/zone
 `
 	config, err := LoadConfig(strings.NewReader(fileContent))
 	if err != nil {
@@ -100,31 +100,31 @@ groupLabelKey: topology.kubernetes.io/zon
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(*rt) != 2 {
-		t.Error("len(rt) != 2, actual ", len(*rt))
+	if len(rt) != 2 {
+		t.Error("len(rt) != 2, actual ", len(rt))
 	}
-	if len((*rt)["test1"].Deny) != 1 {
-		t.Error("len(rt[test1].Deny) != 1, actual ", len((*rt)["test1"].Deny))
+	if len((rt)["test1"].Deny) != 1 {
+		t.Error("len(rt[test1].Deny) != 1, actual ", len((rt)["test1"].Deny))
 	}
-	if len((*rt)["test1"].Allow) != 2 {
-		t.Error("len(rt[test1].Allow) != 2, actual ", len((*rt)["test1"].Allow))
+	if len((rt)["test1"].Allow) != 2 {
+		t.Error("len(rt[test1].Allow) != 2, actual ", len((rt)["test1"].Allow))
 	}
-	if len((*rt)["test2"].Deny) != 0 {
-		t.Error("len(rt[test2].Deny) != 0, actual ", len((*rt)["test2"].Deny))
+	if len((rt)["test2"].Deny) != 0 {
+		t.Error("len(rt[test2].Deny) != 0, actual ", len((rt)["test2"].Deny))
 	}
-	if len((*rt)["test2"].Allow) != 1 {
-		t.Error("len(rt[test2].Allow) != 1, actual ", len((*rt)["test2"].Allow))
+	if len((rt)["test2"].Allow) != 1 {
+		t.Error("len(rt[test2].Allow) != 1, actual ", len((rt)["test2"].Allow))
 	}
 	fileContent2 := `
 rebootTimes:
   - name: test1
     labelSelector:
       matchLabels:
-      cke.cybozu.com/role: test1
+        cke.cybozu.com/role: test1
     times:
       deny:
         - "* hoge 1a * *"
-groupLabelKey: topology.kubernetes.io/zon
+groupLabelKey: topology.kubernetes.io/zone
 `
 	config, err = LoadConfig(strings.NewReader(fileContent2))
 	if err != nil {
