@@ -47,7 +47,7 @@ var rebooterCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer configFile.Close()
+		defer ckeConfigFile.Close()
 		cs, err := necorebooter.NewCKEStorage(ckeConfigFile)
 		if err != nil {
 			return err

@@ -25,9 +25,8 @@ type RebootTimes struct {
 }
 
 type LabelSelector struct {
-	MatchLabels MatchLabels `json:"matchLabels"`
+	MatchLabels map[string]string `json:"matchLabels"`
 }
-type MatchLabels map[string]string
 
 type Times struct {
 	Deny  []string `json:"deny"`

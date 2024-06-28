@@ -221,7 +221,7 @@ func testNecoRebooterRebootGracefully() {
 				{
 					Name: "cs",
 					LabelSelector: necorebooter.LabelSelector{
-						MatchLabels: necorebooter.MatchLabels{
+						MatchLabels: map[string]string{
 							"cke.cybozu.com/role": "cs",
 						},
 					},
@@ -232,7 +232,7 @@ func testNecoRebooterRebootGracefully() {
 				{
 					Name: "ss",
 					LabelSelector: necorebooter.LabelSelector{
-						MatchLabels: necorebooter.MatchLabels{
+						MatchLabels: map[string]string{
 							"cke.cybozu.com/role": "ss",
 						},
 					},
