@@ -107,7 +107,7 @@ options:
         - level: None
           verbs: ["get", "watch", "list"]
         - level: Metadata
-          verbs: ["delete", "deletecollection"]
+          verbs: ["create", "delete", "deletecollection"]
         - level: RequestResponse
           resources:
             - group: ""
