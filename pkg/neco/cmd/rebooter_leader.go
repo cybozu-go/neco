@@ -15,7 +15,7 @@ var leaderCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		well.Go(func(ctx context.Context) error {
-			leader, err := necoStorage.GetLeaderHostname(ctx)
+			leader, err := necoStorage.GetNecoRebooterLeader(ctx)
 			if err != nil {
 				return err
 			}

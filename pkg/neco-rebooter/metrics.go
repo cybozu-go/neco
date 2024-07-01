@@ -98,7 +98,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 }
 
 func (c *collector) updateLeader(ch chan<- prometheus.Metric, ctx context.Context) {
-	leaderHostName, err := c.storage.GetLeaderHostname(ctx)
+	leaderHostName, err := c.storage.GetNecoRebooterLeader(ctx)
 	if err != nil {
 		slog.Error("failed to get leader hostname", "err", err)
 	}

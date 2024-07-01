@@ -11,6 +11,7 @@ import (
 	"github.com/cybozu-go/neco"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/client/v3/clientv3util"
+	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
 func (s Storage) IsNecoRebooterEnabled(ctx context.Context) (bool, error) {
@@ -219,16 +220,27 @@ RETRY:
 	return nil
 }
 
-func (s Storage) GetLeaderHostname(ctx context.Context) (string, error) {
-	opts := []clientv3.OpOption{clientv3.WithPrefix()}
-	opts = append(opts, clientv3.WithFirstCreate()...)
-	resp, err := s.etcd.Get(ctx, KeyNecoRebooterLeader, opts...)
+func (s Storage) GetNecoRebooterLeader(ctx context.Context) (string, error) {
+	session, err := concurrency.NewSession(s.etcd)
 	if err != nil {
 		return "", err
 	}
-
-	if len(resp.Kvs) == 0 {
+	defer func() {
+		// Checking the session to avoid an error caused by duplicated closing.
+		select {
+		case <-session.Done():
+			return
+		default:
+			session.Close()
+		}
+	}()
+	e := concurrency.NewElection(session, KeyNecoRebooterLeader)
+	leader, err := e.Leader(ctx)
+	if err != nil {
+		return "", err
+	}
+	if len(leader.Kvs) == 0 {
 		return "", errors.New("no leader")
 	}
-	return string(resp.Kvs[0].Value), nil
+	return string(leader.Kvs[0].Value), nil
 }
