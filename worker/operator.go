@@ -153,6 +153,8 @@ func (o *operator) RunStep(ctx context.Context, req *neco.UpdateRequest, step in
 	case 17:
 		return o.UpdateUserResources(ctx, req)
 	case 18:
+		return o.UpdateNecoRebooter(ctx, req)
+	case 19:
 		// THIS MUST BE THE FINAL STEP!!!!!
 		// to synchronize before restarting etcd.
 		return nil

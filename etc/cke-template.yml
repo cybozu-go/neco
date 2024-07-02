@@ -24,7 +24,7 @@ control_plane_tolerations: ["node.cilium.io/agent-not-ready"]
 reboot:
   reboot_command: ["/usr/bin/neco", "power", "restart", "--wait-for-stop"]
   boot_check_command: ["/usr/bin/neco", "reboot-check"]
-  max_concurrent_reboots: 1
+  max_concurrent_reboots: 28
   eviction_timeout_seconds: 1800
   command_timeout_seconds: 30
   command_retries: 5

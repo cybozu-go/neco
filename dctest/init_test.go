@@ -145,6 +145,17 @@ func testInit() {
 		Expect(stdout).To(ContainSubstring("boot-"))
 	})
 
+	It("should success initialize neco-rebooter", func() {
+		for _, host := range bootServers {
+			Eventually(func(g Gomega) {
+				stdout, stderr, err := execAt(host, "test", "-f", neco.NecoRebooterConfFile)
+				g.Expect(err).NotTo(HaveOccurred(), "host=%s, stdout=%s, stderr=%s", host, stdout, stderr)
+				stdout, stderr, err = execAt(host, "systemctl", "-q", "is-active", "neco-rebooter.service")
+				g.Expect(err).NotTo(HaveOccurred(), "host=%s, stdout=%s, stderr=%s", host, stdout, stderr)
+			}).Should(Succeed())
+		}
+	})
+
 	It("should generate SSH key for worker nodes", func() {
 		execSafeAt(bootServers[0], "neco", "ssh", "generate")
 	})

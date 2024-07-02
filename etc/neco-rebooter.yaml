@@ -1,0 +1,22 @@
+rebootTimes:
+  - name: cs
+    labelSelector:
+      matchLabels:
+        cke.cybozu.com/role: cs
+    times:
+      deny:
+        - "* 0-23 1 * *"
+      allow:
+        - "* 0-7 * * 1-5"
+        - "0-30 7 * * 1-5"
+        - "30-59 19 * * 1-5"
+        - "* 20-23 * * 1-5"
+  - name: ss
+    labelSelector:
+      matchLabels:
+        cke.cybozu.com/role: ss
+    times:
+      allow:
+        - "* 0-23 * * 1-5"
+timeZone: Asia/Tokyo
+groupLabelKey: topology.kubernetes.io/zone
