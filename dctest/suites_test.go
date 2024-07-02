@@ -52,13 +52,13 @@ var bootstrapSuite = func() {
 	Context("init-data", testInitData)
 	Context("etcdpasswd", testEtcdpasswd)
 	Context("sabakan-state-setter", testSabakanStateSetter)
-	Context("neco-rebooter", testNecoRebooter)
 	Context("ignitions", testIgnitions)
 	Context("cke", func() {
 		testCKESetup()
 		testCKE()
 		testCKEBackupMetrics()
 	})
+	Context("neco-rebooter", testNecoRebooter)
 	Context("coil", func() {
 		testCoilSetup()
 		testCoil()
