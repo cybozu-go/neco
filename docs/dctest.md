@@ -61,14 +61,14 @@ as the base of upgrade.
 There are two types of data center environments to be reproduced: `production`
 and `staging`.  Upgrading test decides which version of a deb package to use
 by the data center environment with the same logic as
-[automatic update](update#tag-name-and-release-flow).
+[automatic update](update.md#tag-name-and-release-flow).
 
 The test environment must keep backward compatibility to run old Neco packages.
 
 Synopsis
 --------
 
-[`Makefile`](Makefile) setup virtual data center environment and runs dctest.
+[`Makefile`](../Makefile) setup virtual data center environment and runs dctest.
 
 * `make setup`
 
