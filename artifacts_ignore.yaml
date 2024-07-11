@@ -1,3 +1,0 @@
-images:
-- repository: ghcr.io/cybozu-go/coil
-  versions: ["2.7.0"]
