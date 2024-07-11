@@ -178,7 +178,6 @@ options:
           score:
             disabled:
             - name: PodTopologySpread
-            - name: SelectorSpread
             enabled:
             - name: PodTopologySpread
               weight: 500
