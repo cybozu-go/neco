@@ -214,10 +214,6 @@ gcp-deb: setup-files-for-deb
 	sed -i -e "s/TimeoutStartSec=infinity/TimeoutStartSec=1200/g" $(SHAREDIR)/ignitions/common/systemd/setup-var.service
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(WORKDIR) $(DEST)
 
-.PHONY: git-neco
-git-neco:
-	go install ./pkg/git-neco
-
 .PHONY: setup
 setup:
 	$(SUDO) apt-get update
