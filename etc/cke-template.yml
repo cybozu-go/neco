@@ -97,14 +97,14 @@ options:
         - RequestReceived
       omitManagedFields: true
       # Rules are evaluated in order, and the first matching rule is applied. Our rules and purpose are as follows:
-      # - Logging all requests to secrets and sealedsecrets at Metadata level. The reason why Metadata level is used is that we want to avoid logging the value of secrets.
+      # - Logging all requests to secrets and sealedsecrets at Metadata level. Read operation is also targeted in order to record invalid access to secret. The reason why Metadata level is used is that we want to avoid logging the value of secrets.
       # - Do not log get, watch, list requests to any resources. This aims to reduce log volume from read-only operations that are less critical to audit.
-      # - Log create requests to any resources at RequestResponse level.
-      # - Log delete, deletecollection requests to any resources at Metadata level.
-      # - Log requests to events resources at RequestResponse level.
-      # - Log requests to any resources from teleport service accounts at RequestResponse level. system:serviceaccounts:teleport is used when users access the cluster via teleport-node.
+      # - Log create requests to any resources at RequestResponse level for fault investigation.
+      # - Log delete, deletecollection requests to any resources at Metadata level for fault investigation.
+      # - Log requests to events resources at RequestResponse level in order to store timestamp and messages in events to Loki for fault investigation.
+      # - Log requests to any resources from teleport service accounts at RequestResponse level for recording user's manual operations. system:serviceaccounts:teleport is used when users access the cluster via teleport-node.
       # - Do not log requests from nodes and service accounts, and kuberenetes components.
-      # - Log all requests that do not match any rules above at RequestResponse level. This includes requests from boot servers, custom controllers...and others.
+      # - Log all requests that do not match any rules above at RequestResponse level for recording user's manual operations. and unexpected requests. This includes requests from boot servers.
       rules:
         - level: Metadata
           resources:
