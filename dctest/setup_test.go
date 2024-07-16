@@ -108,6 +108,7 @@ WantedBy=multi-user.target`
 			execSafeAt(h, "test", "-f", "/lib/systemd/system/neco-updater.service")
 			execSafeAt(h, "test", "-f", "/lib/systemd/system/neco-worker.service")
 			execSafeAt(h, "test", "-f", "/lib/systemd/system/node-exporter.service")
+			execSafeAt(h, "test", "-f", "/lib/systemd/system/neco-rebooter.service")
 			execSafeAt(h, "test", "-f", "/lib/systemd/system/sabakan-state-setter.service")
 		}
 	})

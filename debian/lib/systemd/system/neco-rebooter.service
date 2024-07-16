@@ -1,0 +1,15 @@
+[Unit]
+Description=neco-rebooter
+Wants=network-online.target cke.service sabakan.service
+After=network-online.target cke.service sabakan.service
+StartLimitIntervalSec=600s
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+RestartSec=30s
+ExecStart=/usr/bin/neco-rebooter --config=/usr/share/neco/neco-rebooter.yaml --cke-config=/etc/cke/config.yml
+
+[Install]
+WantedBy=multi-user.target
