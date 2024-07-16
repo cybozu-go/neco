@@ -91,6 +91,10 @@ RETRY:
 		if err != nil {
 			return err
 		}
+		err = loadKubeConfig()
+		if err != nil {
+			return err
+		}
 		retryCount++
 		goto RETRY
 	}
