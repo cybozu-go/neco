@@ -48,6 +48,7 @@ func testJoinRemove() {
 
 		execSafeAt(allBootServers[3], "test", "-f", "/lib/systemd/system/neco-updater.service")
 		execSafeAt(allBootServers[3], "test", "-f", "/lib/systemd/system/neco-worker.service")
+		execSafeAt(allBootServers[3], "test", "-f", "/lib/systemd/system/neco-rebooter.service")
 		execSafeAt(allBootServers[3], "test", "-f", "/lib/systemd/system/node-exporter.service")
 		execSafeAt(allBootServers[3], "test", "-f", "/lib/systemd/system/sabakan-state-setter.service")
 
@@ -87,6 +88,30 @@ func testJoinRemove() {
 
 		execSafeAt(allBootServers[3], "systemctl", "-q", "is-active", "sabakan.service")
 		execSafeAt(allBootServers[3], "systemctl", "-q", "is-active", "sabakan-state-setter.service")
+	})
+
+	It("should setup cke on boot-3", func() {
+		token := getVaultToken()
+
+		stdout, stderr, err := execAt(
+			allBootServers[3], "sudo", "env", "VAULT_TOKEN="+token, "neco", "init-local", "cke")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		execSafeAt(allBootServers[3], "test", "-f", neco.CKEConfFile)
+		execSafeAt(allBootServers[3], "test", "-f", neco.CKEKeyFile)
+		execSafeAt(allBootServers[3], "test", "-f", neco.CKECertFile)
+
+		execSafeAt(allBootServers[3], "systemctl", "-q", "is-active", "cke.service")
+	})
+
+	It("should run neco-rebooter on boot-3", func() {
+		Eventually(func(g Gomega) {
+			stdout, stderr, err := execAt(allBootServers[3], "test", "-f", neco.NecoRebooterConfFile)
+			g.Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+			stdout, stderr, err = execAt(allBootServers[3], "systemctl", "-q", "is-active", "neco-rebooter.service")
+			g.Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		}).Should(Succeed())
 	})
 
 	It("should setup boot-3 hardware", func() {

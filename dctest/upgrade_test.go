@@ -99,6 +99,7 @@ func testUpgrade() {
 		for _, h := range bootServers {
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-updater.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "neco-worker.service")
+			execSafeAt(h, "systemctl", "-q", "is-active", "neco-rebooter.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "node-exporter.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "sabakan-state-setter.service")
 			execSafeAt(h, "systemctl", "-q", "is-active", "cke.service")

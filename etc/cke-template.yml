@@ -24,7 +24,7 @@ control_plane_tolerations: ["node.cilium.io/agent-not-ready"]
 reboot:
   reboot_command: ["/usr/bin/neco", "power", "restart", "--wait-for-stop"]
   boot_check_command: ["/usr/bin/neco", "reboot-check"]
-  max_concurrent_reboots: 1
+  max_concurrent_reboots: 28
   eviction_timeout_seconds: 1800
   command_timeout_seconds: 30
   command_retries: 5
@@ -96,8 +96,16 @@ options:
       omitStages:
         - RequestReceived
       omitManagedFields: true
+      # Rules are evaluated in order, and the first matching rule is applied. Our rules and purpose are as follows:
+      # - Logging all requests to secrets and sealedsecrets at Metadata level. Read operation is also targeted in order to record invalid access to secret. The reason why Metadata level is used is that we want to avoid logging the value of secrets.
+      # - Do not log get, watch, list requests to any resources. This aims to reduce log volume from read-only operations that are less critical to audit.
+      # - Log create requests to any resources at RequestResponse level for fault investigation.
+      # - Log delete, deletecollection requests to any resources at Metadata level for fault investigation.
+      # - Log requests to events resources at RequestResponse level in order to store timestamp and messages in events to Loki for fault investigation.
+      # - Log requests to any resources from teleport service accounts at RequestResponse level for recording user's manual operations. system:serviceaccounts:teleport is used when users access the cluster via teleport-node.
+      # - Do not log requests from nodes and service accounts, and kuberenetes components.
+      # - Log all requests that do not match any rules above at RequestResponse level for recording user's manual operations. and unexpected requests. This includes requests from boot servers.
       rules:
-        # Avoid logging secret values
         - level: Metadata
           resources:
             - group: ""
@@ -106,8 +114,10 @@ options:
               resources: ["sealedsecrets"]
         - level: None
           verbs: ["get", "watch", "list"]
+        - level: RequestResponse
+          verbs: ["create"]
         - level: Metadata
-          verbs: ["create", "delete", "deletecollection"]
+          verbs: ["delete", "deletecollection"]
         - level: RequestResponse
           resources:
             - group: ""

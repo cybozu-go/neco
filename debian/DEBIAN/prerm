@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-SERVICES="neco-updater neco-worker node-exporter sabakan-state-setter cke cke-localproxy teleport-node"
+SERVICES="neco-updater neco-worker node-exporter sabakan-state-setter neco-rebooter cke cke-localproxy teleport-node"
 TIMERS="docker-prune kill-old-login-sessions backup-cke-etcd export-unit-status"
 
 prerm() {
