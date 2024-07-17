@@ -50,6 +50,10 @@ var rebooterAddCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
+			err = loadKubeConfig()
+			if err != nil {
+				return err
+			}
 			retryCount++
 			goto RETRY
 		}
