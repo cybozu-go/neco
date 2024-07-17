@@ -63,7 +63,7 @@ var rebooterCmd = &cobra.Command{
 
 		retryCount := 0
 	RETRY:
-		config, err := clientcmd.BuildConfigFromFlags("", flagKubeconfig)
+		err = loadKubeConfig()
 		if err != nil {
 			if retryCount > 2 {
 				return err
@@ -75,12 +75,6 @@ var rebooterCmd = &cobra.Command{
 			retryCount++
 			goto RETRY
 		}
-
-		clientset, err := kubernetes.NewForConfig(config)
-		if err != nil {
-			return err
-		}
-		KubeClient = *clientset
 		return nil
 	},
 }
@@ -98,6 +92,19 @@ func renewKubeConfig() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func loadKubeConfig() error {
+	config, err := clientcmd.BuildConfigFromFlags("", flagKubeconfig)
+	if err != nil {
+		return err
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return err
+	}
+	KubeClient = *clientset
 	return nil
 }
 
