@@ -9,7 +9,7 @@ img="$1"
 tag="$2"
 filename=/tmp/$(basename "$img")
 
-if /opt/bin/ctr --address=/var/run/k8s-containerd.sock --namespace k8s.io image inspect "$tag" >/dev/null 2>&1; then
+if /opt/bin/ctr --address=/var/run/k8s-containerd.sock --namespace k8s.io images list | grep "$tag" >/dev/null 2>&1; then
     exit 0
 fi
 
