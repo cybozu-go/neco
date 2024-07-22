@@ -506,6 +506,7 @@ metadata:
 apiVersion: v1
 data:
   agent-not-ready-taint-key: node.cilium.io/agent-not-ready
+  api-rate-limit: endpoint-create=auto-adjust:true,mean-over:10,max-parallel-requests:4,min-parallel-requests:2
   arping-refresh-period: 30s
   auto-direct-node-routes: "false"
   bgp-announce-lb-ip: "true"
