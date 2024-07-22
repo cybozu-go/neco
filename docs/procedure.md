@@ -23,7 +23,9 @@ Create branch.
 ```console
 $ VERSION=x.y.z
 $ echo $VERSION
-$ git neco dev "bump-$VERSION"
+$ git switch main
+$ git pull origin main
+$ git switch -c "bump-$VERSION"
 ```
 
 Build `generate-artifacs` and update `artifacts.go`.
@@ -38,7 +40,7 @@ Create a PR.
 
 ```console
 $ git commit -s -m "Update artifacts"
-$ git neco review
+$ gh pr create --fill
 ```
 
 After CI is finished, merge it.
