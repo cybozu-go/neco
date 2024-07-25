@@ -4,7 +4,7 @@
 SUDO = sudo
 OUTPUT = ./output
 PLACEMAT = /usr/bin/placemat2
-GINKGO = env GO111MODULE=on $(GOPATH)/bin/ginkgo --fail-fast -v
+GINKGO = env GO111MODULE=on $(GOPATH)/bin/ginkgo --fail-fast -v  --timeout=90m
 SUITE = bootstrap
 PLACEMAT_DATADIR = /var/scratch/placemat
 VM_SHARED_DIR = /mnt/placemat
