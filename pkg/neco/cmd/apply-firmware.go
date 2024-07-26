@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -34,14 +35,15 @@ If some nodes are already powered off, this command does not do anything to thos
 
 var applyFirmwareGetOpts sabakanMachinesGetOpts
 var applyFirmwareRebootOption bool
+var applyFirmwareTimeoutOption time.Duration
 
 func applyFirmwareRun(cmd *cobra.Command, args []string) {
 	ctx := context.Background()
 
-	uploadAssetsAndRunCommandOnWorkers(ctx, &applyFirmwareGetOpts, args, []string{"docker", "exec", "setup-hw", "setup-apply-firmware"}, applyFirmwareRebootOption)
+	uploadAssetsAndRunCommandOnWorkers(ctx, &applyFirmwareGetOpts, args, []string{"docker", "exec", "setup-hw", "setup-apply-firmware"}, applyFirmwareTimeoutOption, applyFirmwareRebootOption)
 }
 
-func uploadAssetsAndRunCommandOnWorkers(ctx context.Context, getOpts *sabakanMachinesGetOpts, filenames []string, cmdline []string, needReboot bool) {
+func uploadAssetsAndRunCommandOnWorkers(ctx context.Context, getOpts *sabakanMachinesGetOpts, filenames []string, cmdline []string, timeout time.Duration, needReboot bool) {
 	machines, err := sabakanMachinesGet(ctx, getOpts)
 	if err != nil {
 		log.ErrorExit(err)
@@ -94,6 +96,9 @@ func uploadAssetsAndRunCommandOnWorkers(ctx context.Context, getOpts *sabakanMac
 			cmdArgs := []string{"ssh", addr}
 			cmdArgs = append(cmdArgs, cmdline...)
 			cmdArgs = append(cmdArgs, assetUrls...)
+
+			ctx, cancel := context.WithTimeout(ctx, timeout)
+			defer cancel()
 			output, err := well.CommandContext(ctx, neco.CKECLIBin, cmdArgs...).Output()
 
 			mtx.Lock()
@@ -159,4 +164,5 @@ func init() {
 	rootCmd.AddCommand(applyFirmwareCmd)
 	addSabakanMachinesGetOpts(applyFirmwareCmd, &applyFirmwareGetOpts)
 	applyFirmwareCmd.Flags().BoolVar(&applyFirmwareRebootOption, "reboot", false, "Schedule reboot")
+	applyFirmwareCmd.Flags().DurationVar(&applyFirmwareTimeoutOption, "timeout", 5*time.Minute, "timeout")
 }
