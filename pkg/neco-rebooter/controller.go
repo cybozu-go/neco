@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"math/rand"
 	"time"
 
 	"github.com/cybozu-go/cke"
@@ -40,6 +39,10 @@ type EntriesCollection struct {
 	CancelledEntry []EntrySet
 	QueuedEntry    []EntrySet
 }
+
+var (
+	allGroups []string
+)
 
 func NewController(config *Config, rt map[string]RebootTime, ckeStorage *cke.Storage, etcdClient *clientv3.Client, necoStorage *storage.Storage, electionValue string) (*Controller, error) {
 	tz, err := time.LoadLocation(config.TimeZone)
@@ -125,7 +128,6 @@ func (c *Controller) addRebootListEntry(ctx context.Context, entries []*neco.Reb
 }
 
 func (c *Controller) moveToNextGroup(ctx context.Context, candidate []string, processingGroup string) (string, error) {
-	rand.Shuffle(len(candidate), func(i, j int) { candidate[i], candidate[j] = candidate[j], candidate[i] })
 	for _, group := range candidate {
 		if group != processingGroup {
 			err := c.necoStorage.UpdateProcessingGroup(ctx, group)
@@ -220,8 +222,14 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// this logic is implemented to perist shuffuled groups between runOnce calls
+	currnetAllGroups := getAllGroups(rebootListEntries)
+	if !isEqualContents(allGroups, currnetAllGroups) {
+		slog.Info("groups changed, updating allGroups", slog.String("new", fmt.Sprintf("%v", currnetAllGroups)))
+		allGroups = currnetAllGroups
+	}
+
 	candidate := []string{}
-	allGroups := getAllGroups(rebootListEntries)
 	for _, group := range allGroups {
 		rebootableEntries := c.findRebootableNodeInGroup(rebootListEntries, group)
 		if len(rebootableEntries) > 0 {
@@ -229,7 +237,26 @@ func (c *Controller) runOnce(ctx context.Context) error {
 		}
 	}
 	if len(candidate) != 0 && enabled {
-		if len(rebootQueueEntries) == 0 {
+		if len(rebootQueueEntries) != 0 {
+			isStuck := true
+			for _, rq := range rebootQueueEntries {
+				if rq.Status == cke.RebootStatusRebooting || rq.DrainBackOffCount == 0 {
+					isStuck = false
+				}
+			}
+			if isStuck {
+				slog.Info("rebootQueue is stuck, moving to next group")
+				collection := c.collectEntries(rebootListEntries, rebootQueueEntries, processingGroup)
+				err = c.dequeueAndCancelEntry(ctx, collection.QueuedEntry)
+				if err != nil {
+					return err
+				}
+				processingGroup, err = c.moveToNextGroup(ctx, candidate, processingGroup)
+				if err != nil {
+					return err
+				}
+			}
+		} else {
 			processingGroup, err = c.moveToNextGroup(ctx, candidate, processingGroup)
 			if err != nil {
 				return err

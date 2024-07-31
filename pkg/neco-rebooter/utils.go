@@ -1,6 +1,7 @@
 package necorebooter
 
 import (
+	"math/rand/v2"
 	"slices"
 	"time"
 
@@ -37,5 +38,18 @@ func getAllGroups(rebootListEntries []*neco.RebootListEntry) []string {
 		groups = append(groups, entry.Group)
 	}
 	slices.Sort(groups)
-	return slices.Compact(groups)
+	compacted := slices.Compact(groups)
+	rand.Shuffle(len(compacted), func(i, j int) { compacted[i], compacted[j] = compacted[j], compacted[i] })
+	return compacted
+}
+
+func isEqualContents(slice1, slice2 []string) bool {
+	if len(slice1) != len(slice2) {
+		return false
+	}
+	tmp1 := slices.Clone(slice1)
+	tmp2 := slices.Clone(slice2)
+	slices.Sort(tmp1)
+	slices.Sort(tmp2)
+	return slices.Equal(tmp1, tmp2)
 }

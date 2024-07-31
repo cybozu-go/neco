@@ -11,6 +11,9 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/yaml"
 )
 
@@ -188,7 +191,7 @@ func testNecoRebooterRebootGracefully() {
 			return nil
 		}, 30*time.Minute).Should(Succeed())
 
-		By("waiting for reboot-list removed")
+		By("waiting for reboot-queue removed")
 		Eventually(func() error {
 			stdout, stderr, err := execAt(bootServers[0], "ckecli", "rq", "list")
 
@@ -216,7 +219,7 @@ func testNecoRebooterRebootGracefully() {
 		}).Should(Succeed())
 	})
 
-	It("can reboot all workers gracefully", func() {
+	It("can move group when reboot-queue is stuck", func() {
 		By("generating kubeconfig for cluster admin")
 		Eventually(func() error {
 			_, stderr, err := execAt(bootServers[0], "ckecli", "kubernetes", "issue", ">", ".kube/config")
@@ -226,11 +229,7 @@ func testNecoRebooterRebootGracefully() {
 			return nil
 		}).Should(Succeed())
 
-		workersBefore, err := getSerfWorkerMembers()
-		Expect(err).NotTo(HaveOccurred())
-
 		By("changing neco-rebooter config")
-
 		config := necorebooter.Config{
 			RebootTimes: []necorebooter.RebootTimes{
 				{
@@ -265,6 +264,149 @@ func testNecoRebooterRebootGracefully() {
 			Expect(err).NotTo(HaveOccurred())
 			execSafeAt(boot, "sudo", "systemctl", "restart", "neco-rebooter")
 		}
+
+		pod := corev1.Pod{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Pod",
+				APIVersion: "v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-pod",
+				Namespace: "default",
+				Labels: map[string]string{
+					"app": "test-pod",
+				},
+			},
+			Spec: corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Name:    "test-container",
+						Image:   "ghcr.io/cybozu/ubuntu:22.04",
+						Command: []string{"pause"},
+					},
+				},
+				NodeSelector: map[string]string{
+					"topology.kubernetes.io/zone": "rack1",
+				},
+			},
+		}
+		pdb := policyv1.PodDisruptionBudget{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "PodDisruptionBudget",
+				APIVersion: "policy/v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-pdb",
+				Namespace: "default",
+			},
+			Spec: policyv1.PodDisruptionBudgetSpec{
+				MaxUnavailable: &intstr.IntOrString{
+					Type:   intstr.Int,
+					IntVal: 0,
+				},
+				Selector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{
+						"app": "test-pod",
+					},
+				},
+			},
+		}
+		podYaml, err := json.Marshal(pod)
+		Expect(err).NotTo(HaveOccurred())
+		pdbYaml, err := json.Marshal(pdb)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("creating a pod")
+		stdout, stderr, err := execAtWithInput(bootServers[0], podYaml, "kubectl", "apply", "-f", "-")
+		if err != nil {
+			Fail(fmt.Sprintf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err))
+		}
+		By("creating a pdb")
+		stdout, stderr, err = execAtWithInput(bootServers[0], pdbYaml, "kubectl", "apply", "-f", "-")
+		if err != nil {
+			Fail(fmt.Sprintf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err))
+		}
+
+		By("adding rack1 nodes to reboot-list")
+		execSafeAt(bootServers[0], "sh", "-c", "yes | neco rebooter reboot-worker --rack=1")
+
+		By("enable rebooting")
+		execSafeAt(bootServers[0], "ckecli", "rq", "enable")
+		execSafeAt(bootServers[0], "neco", "rebooter", "enable")
+
+		By("waiting for reboot-list to be enqueued")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(bootServers[0], "ckecli", "rq", "list")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			if string(stdout) == "null\n" {
+				return fmt.Errorf("reboot-queue is not processed")
+			}
+			return nil
+		}).Should(Succeed())
+
+		By("adding rack2 nodes to reboot-list")
+		execSafeAt(bootServers[0], "sh", "-c", "yes | neco rebooter reboot-worker --rack=2")
+
+		By("waiting for skipping rack1 and moving to rack2")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(bootServers[0], "neco", "rebooter", "show-processing-group")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			if string(stdout) != "rack2\n" {
+				return fmt.Errorf("reboot-queue is not processed")
+			}
+			return nil
+		}).Should(Succeed())
+
+		By("canceling all reboot-list entries")
+		execSafeAt(bootServers[0], "neco", "rebooter", "cancel-all")
+
+		By("delete the pod and pdb")
+		execSafeAt(bootServers[0], "kubectl", "delete", "pod", "test-pod")
+		execSafeAt(bootServers[0], "kubectl", "delete", "pdb", "test-pdb")
+
+		By("waiting for all reboot-list removed")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(bootServers[0], "neco", "rebooter", "list")
+
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			if string(stdout) != "null\n" {
+				return fmt.Errorf("reboot-list is not processed")
+			}
+			return nil
+		}, 30*time.Minute).Should(Succeed())
+
+		By("waiting for reboot-queue removed")
+		Eventually(func() error {
+			stdout, stderr, err := execAt(bootServers[0], "ckecli", "rq", "list")
+
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			if string(stdout) != "null\n" {
+				return fmt.Errorf("reboot-queue is not processed")
+			}
+			return nil
+		}, 30*time.Minute).Should(Succeed())
+	})
+
+	It("can reboot all workers gracefully", func() {
+		By("generating kubeconfig for cluster admin")
+		Eventually(func() error {
+			_, stderr, err := execAt(bootServers[0], "ckecli", "kubernetes", "issue", ">", ".kube/config")
+			if err != nil {
+				return fmt.Errorf("err: %v, stderr: %s", err, stderr)
+			}
+			return nil
+		}).Should(Succeed())
+
+		workersBefore, err := getSerfWorkerMembers()
+		Expect(err).NotTo(HaveOccurred())
 
 		By("rebooting all workers")
 		execSafeAt(bootServers[0], "ckecli", "rq", "enable")
