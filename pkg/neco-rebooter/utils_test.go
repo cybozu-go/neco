@@ -162,3 +162,16 @@ func TestGetAllGroups(t *testing.T) {
 		}
 	}
 }
+
+func TestIsEqualContents(t *testing.T) {
+	slices1 := []string{"a", "b", "c"}
+	slices2 := []string{"b", "a", "c"}
+	slices3 := []string{"a", "b", "c", "d"}
+
+	if isEqualContents(slices1, slices2) != true {
+		t.Errorf("unexpected result: want=true, got=false")
+	}
+	if isEqualContents(slices1, slices3) != false {
+		t.Errorf("unexpected result: want=false, got=true")
+	}
+}
