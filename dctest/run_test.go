@@ -42,6 +42,8 @@ var (
 	}
 )
 
+type retryHandler func(stdout, stderr string, err error) bool
+
 type sshAgent struct {
 	client *ssh.Client
 	conn   net.Conn
@@ -170,6 +172,23 @@ func doExec(agent *sshAgent, input io.Reader, args ...string) ([]byte, []byte, e
 func execSafeAt(host string, args ...string) []byte {
 	stdout, stderr, err := execAt(host, args...)
 	ExpectWithOffset(1, err).To(Succeed(), "[%s] %v: %s", host, args, stderr)
+	return stdout
+}
+
+func execRetryAt(host string, handler retryHandler, args ...string) []byte {
+	var stdout, stderr []byte
+	var err error
+	EventuallyWithOffset(1, func(g Gomega) {
+		stdout, stderr, err = execAt(host, args...)
+		if err != nil {
+			msg := fmt.Sprintf("stdout: %s, stderr: %s, err: %v", string(stdout), string(stderr), err)
+			if !handler(string(stdout), string(stderr), err) {
+				StopTrying("retry skipped. " + msg).Wrap(err)
+			}
+			fmt.Printf("retrying... %v", args)
+			g.Expect(err).NotTo(BeNil(), "retry failed. "+msg)
+		}
+	}).Should(Succeed())
 	return stdout
 }
 

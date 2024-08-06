@@ -2,16 +2,21 @@ package dctest
 
 import (
 	"fmt"
+	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
+func handleBMCRetry(stdout, stderr string, err error) bool {
+	return strings.Contains(stderr, "missing HTTP content-type")
+}
+
 // testMachines tests machine control functions.
 func testMachines() {
 	It("should put BMC/IPMI settings", func() {
 		// test set/get functions
-		execSafeAt(bootServers[0], "neco", "bmc", "config", "set", "bmc-user", "/mnt/bmc-user.json")
+		execRetryAt(bootServers[0], handleBMCRetry, "neco", "bmc", "config", "set", "bmc-user", "/mnt/bmc-user.json")
 
 		execSafeAt(bootServers[0], "neco", "bmc", "config", "set", "ipmi-user", "cybozu1")
 		ipmiUser := execSafeAt(bootServers[0], "neco", "bmc", "config", "get", "ipmi-user")
