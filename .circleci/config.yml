@@ -431,7 +431,11 @@ workflows:
   # Testing `main` branch and update "release" branch.
   update-release:
     jobs:
-      - dctest-functions-release
+      - dctest-functions-release:
+          filters:
+            branches:
+              only:
+                - main
       - dctest-upgrade-release
       - update-release:
           requires:
