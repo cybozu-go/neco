@@ -2,8 +2,10 @@ package neco
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/cybozu-go/well"
 )
@@ -39,8 +41,37 @@ func RestartService(ctx context.Context, name string) error {
 	return well.CommandContext(ctx, "systemctl", "restart", name+".service").Run()
 }
 
+// waitServiceStateChange waits until a service finishes its transient state.
+func waitServiceStateChange(ctx context.Context, name string) error {
+	var state []byte
+	var err error
+	// wait for a minute
+	for i := 0; i < 60; i++ {
+		state, err = well.CommandContext(ctx, "systemctl", "show", "-p", "ActiveState", "--value", name+".service").Output()
+		if err != nil {
+			return err
+		}
+		switch strings.TrimSpace(string(state)) {
+		case "activating":
+		case "deactivating":
+		default:
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(1 * time.Second):
+		}
+	}
+	return fmt.Errorf("%s.service sticks at state: %s", name, string(state))
+}
+
 // StopService stops the service.
 func StopService(ctx context.Context, name string) error {
+	err := waitServiceStateChange(ctx, name)
+	if err != nil {
+		return err
+	}
 	return well.CommandContext(ctx, "systemctl", "stop", name+".service").Run()
 }
 
