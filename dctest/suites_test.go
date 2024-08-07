@@ -58,6 +58,7 @@ var bootstrapSuite = func() {
 		testCKE()
 		testCKEBackupMetrics()
 	})
+	Context("neco-rebooter", testNecoRebooter)
 	Context("coil", func() {
 		testCoilSetup()
 		testCoil()
@@ -79,13 +80,15 @@ var functionsSuite = func() {
 
 // rebootWorkerSuite is a test suite that tests neco reboot-worker command
 var rebootWorkerSuite = func() {
-	Context("reboot-gracefully", testRebootGracefully)
+	Context("cke-reboot-gracefully", testCKERebootGracefully)
+	Context("neco-rebooter-reboot-gracefully", testNecoRebooterRebootGracefully)
 }
 
 // upgradeSuite is a test suite that tests upgrading process works correctry
 var upgradeSuite = func() {
 	Context("upgrade", testUpgrade)
 	Context("upgrade sabakan-state-setter", testSabakanStateSetter)
+	Context("neco-rebooter", testNecoRebooter)
 	Context("upgraded cke", testCKE)
 	Context("upgraded coil", testCoil)
 	Context("upgraded cilium", testCilium)

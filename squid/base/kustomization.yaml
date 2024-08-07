@@ -7,9 +7,9 @@ resources:
   - service.yaml
 images:
   - name: ghcr.io/cybozu/squid
-    newTag: 6.9.0.1
+    newTag: 6.10.0.1
   - name: ghcr.io/cybozu/squid-exporter
-    newTag: 1.0.5
+    newTag: 1.0.6
   - name: ghcr.io/cybozu/unbound
     newTag: 1.19.3.1
   - name: ghcr.io/cybozu/unbound_exporter

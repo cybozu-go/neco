@@ -87,7 +87,7 @@ update-cilium: helm
 	$(HELM) template /tmp/work-cilium/install/kubernetes/cilium/ \
 		--namespace=kube-system \
 		--values cilium/$(CILIUM_OVERLAY)/values.yaml \
-		--set image.repository=quay.io/cybozu/cilium \
+		--set image.repository=ghcr.io/cybozu/cilium \
 		--set image.tag=$(CILIUM_TAG) \
 		--set image.useDigest=false \
 		--set operator.image.repository=ghcr.io/cybozu/cilium-operator \
@@ -176,6 +176,7 @@ setup-files-for-deb: setup-tools
 	sed 's/@VERSION@/$(patsubst v%,%,$(VERSION))/' debian/DEBIAN/control > $(CONTROL)
 	GOBIN=$(BINDIR) CGO_ENABLED=0 go install -ldflags="-s -w" -tags='$(GOTAGS)' $(BIN_PKGS)
 	CGO_ENABLED=0 go build -o $(BINDIR)/sabakan-state-setter -ldflags="-s -w" -tags='$(GOTAGS)' ./pkg/sabakan-state-setter/cmd
+	CGO_ENABLED=0 go build -o $(BINDIR)/neco-rebooter -ldflags="-s -w" -tags='$(GOTAGS)' ./pkg/neco-rebooter/cmd
 	GOBIN=$(SBINDIR) CGO_ENABLED=0 go install -ldflags="-s -w" -tags='$(GOTAGS)' $(SBIN_PKGS)
 	tar -c -f $(LIBEXECDIR)/neco-operation-cli.tgz -z -C $(BINDIR) $(OPDEB_BINNAMES)
 	cp etc/* $(SHAREDIR)
@@ -213,10 +214,6 @@ gcp-deb: setup-files-for-deb
 	cp dctest/passwd.yml $(SHAREDIR)/ignitions/common/passwd.yml
 	sed -i -e "s/TimeoutStartSec=infinity/TimeoutStartSec=1200/g" $(SHAREDIR)/ignitions/common/systemd/setup-var.service
 	$(FAKEROOT) dpkg-deb --build $(DEBBUILD_FLAGS) $(WORKDIR) $(DEST)
-
-.PHONY: git-neco
-git-neco:
-	go install ./pkg/git-neco
 
 .PHONY: setup
 setup:

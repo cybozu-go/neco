@@ -1,7 +1,7 @@
 Data Center Test (dctest)
 =========================
 
-[dctest](dctest/) directory contains test suites to run integration
+[dctest](../dctest/) directory contains test suites to run integration
 tests in a virtual data center environment.
 
 Generating deb Package

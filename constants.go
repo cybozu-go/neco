@@ -128,6 +128,11 @@ const (
 	SourceslistDir = "/etc/apt/sources.list.d/"
 )
 
+// neco-rebooter params
+const (
+	NecoRebooterService = "neco-rebooter"
+)
+
 // File locations
 var (
 	RackFile        = filepath.Join(NecoDir, "rack")
@@ -202,4 +207,6 @@ var (
 
 	DockerKeyringFile    = filepath.Join(KeyringsDir, "docker-key.asc")
 	DockerSourceListFile = filepath.Join(SourceslistDir, "docker.list")
+
+	NecoRebooterConfFile = filepath.Join(NecoDataDir, "neco-rebooter.yaml")
 )
