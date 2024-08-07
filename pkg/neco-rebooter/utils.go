@@ -53,3 +53,17 @@ func isEqualContents(slice1, slice2 []string) bool {
 	slices.Sort(tmp2)
 	return slices.Equal(tmp1, tmp2)
 }
+
+func cycleSlices(slice []string, offset int) []string {
+	if offset == 0 {
+		return slice
+	}
+	length := len(slice)
+	if length == 0 {
+		return slice
+	}
+	if offset >= length {
+		return slice
+	}
+	return append(slice[offset:], slice[:offset]...)
+}
