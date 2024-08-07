@@ -188,6 +188,14 @@ func execRetryAt(host string, handler retryHandler, args ...string) []byte {
 		stdout, stderr, err = execAt(host, args...)
 		if err != nil {
 			msg := fmt.Sprintf("stdout: %s, stderr: %s, err: %v", string(stdout), string(stderr), err)
+			if handler(string(stdout), string(stderr), err) {
+				stdout := execSafeGomegaAt(g, host, "docker", "ps")
+				fmt.Println(string(stdout))
+				stdout = execSafeGomegaAt(g, host, "docker", "inspect", "etcd")
+				fmt.Println(string(stdout))
+
+				StopTrying("retry aborted. " + msg).Wrap(err).Now()
+			}
 			if !handler(string(stdout), string(stderr), err) {
 				StopTrying("retry skipped. " + msg).Wrap(err).Now()
 			}

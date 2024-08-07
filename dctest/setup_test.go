@@ -36,6 +36,8 @@ WantedBy=multi-user.target`
 		mountServicePath := "/lib/systemd/system/home-cybozu-.kube.mount"
 
 		for _, v := range bootServers {
+			execSafeAt(v, "sudo", "systemd-analyze", "set-log-level", "debug")
+
 			stdout, stderr, err := execAtWithInput(v, []byte(mountUnit), "sudo", "tee", mountServicePath)
 			Expect(err).NotTo(HaveOccurred(), "host=%s, stdout=%s, stderr=%s, err=%v", v, stdout, stderr, err)
 			execSafeAt(v, "test", "-f", mountServicePath)

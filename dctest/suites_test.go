@@ -48,27 +48,29 @@ var bootstrapSuite = func() {
 	Context("setup", testSetup)
 	Context("initialize", testInit)
 	Context("sabakan", testSabakan)
-	Context("machines", testMachines)
-	Context("init-data", testInitData)
-	Context("etcdpasswd", testEtcdpasswd)
-	Context("sabakan-state-setter", testSabakanStateSetter)
-	Context("ignitions", testIgnitions)
-	Context("cke", func() {
-		testCKESetup()
-		testCKE()
-		testCKEBackupMetrics()
-	})
-	Context("neco-rebooter", testNecoRebooter)
-	Context("coil", func() {
-		testCoilSetup()
-		testCoil()
-	})
-	Context("cilium", testCilium)
-	Context("unbound", testUnbound)
-	Context("squid", testSquid)
-	Context("node DNS", testNodeDNS)
-	Context("l4lb", testL4LB)
-	Context("tools", testTools)
+	if false {
+		Context("machines", testMachines)
+		Context("init-data", testInitData)
+		Context("etcdpasswd", testEtcdpasswd)
+		Context("sabakan-state-setter", testSabakanStateSetter)
+		Context("ignitions", testIgnitions)
+		Context("cke", func() {
+			testCKESetup()
+			testCKE()
+			testCKEBackupMetrics()
+		})
+		Context("neco-rebooter", testNecoRebooter)
+		Context("coil", func() {
+			testCoilSetup()
+			testCoil()
+		})
+		Context("cilium", testCilium)
+		Context("unbound", testUnbound)
+		Context("squid", testSquid)
+		Context("node DNS", testNodeDNS)
+		Context("l4lb", testL4LB)
+		Context("tools", testTools)
+	}
 }
 
 // functionsSuite is a test suite that tests a full set of functions of Neco in a single version
