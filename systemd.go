@@ -103,13 +103,17 @@ func StartTimer(ctx context.Context, name string) error {
 func startUnit(ctx context.Context, name, unit string) error {
 	err := well.CommandContext(ctx, "systemctl", "daemon-reload").Run()
 	if err != nil {
-		return err
+		return fmt.Errorf("systemctl daemon-reload failed(%s, %s): %v", name, unit, err)
 	}
 	err = well.CommandContext(ctx, "systemctl", "enable", name+"."+unit).Run()
 	if err != nil {
-		return err
+		return fmt.Errorf("systemctl enable failed(%s, %s): %v", name, unit, err)
 	}
-	return well.CommandContext(ctx, "systemctl", "start", name+"."+unit).Run()
+	err = well.CommandContext(ctx, "systemctl", "start", name+"."+unit).Run()
+	if err != nil {
+		return fmt.Errorf("systemctl start failed(%s, %s): %v", name, unit, err)
+	}
+	return nil
 }
 
 // StopTimer stops the timer.
