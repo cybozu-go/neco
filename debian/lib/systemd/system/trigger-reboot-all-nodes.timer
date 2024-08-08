@@ -1,0 +1,11 @@
+[Unit]
+Description=Trigger reboot all nodes every night on dev environment
+After=network-online.target cke.service sabakan.service neco-rebooter.service
+
+[Timer]
+# Every day at 18:00:00 (JST)
+OnCalendar=*-*-* 09:00:00 
+Persistent=true
+
+[Install]
+WantedBy=timers.target
