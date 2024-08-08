@@ -2,8 +2,10 @@ package neco
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/cybozu-go/well"
 )
@@ -39,8 +41,34 @@ func RestartService(ctx context.Context, name string) error {
 	return well.CommandContext(ctx, "systemctl", "restart", name+".service").Run()
 }
 
+// waitServiceJob waits until a service finishes its transient state.
+func waitServiceJob(ctx context.Context, name string) error {
+	var state []byte
+	var err error
+	// wait for a minute
+	for i := 0; i < 60; i++ {
+		state, err = well.CommandContext(ctx, "systemctl", "list-jobs", name+".service", "--legend=false").Output()
+		if err != nil {
+			return err
+		}
+		if !strings.Contains(string(state), name+".service") {
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(1 * time.Second):
+		}
+	}
+	return fmt.Errorf("%s.service sticks at state: %s", name, string(state))
+}
+
 // StopService stops the service.
 func StopService(ctx context.Context, name string) error {
+	err := waitServiceJob(ctx, name)
+	if err != nil {
+		return err
+	}
 	return well.CommandContext(ctx, "systemctl", "stop", name+".service").Run()
 }
 
@@ -72,13 +100,17 @@ func StartTimer(ctx context.Context, name string) error {
 func startUnit(ctx context.Context, name, unit string) error {
 	err := well.CommandContext(ctx, "systemctl", "daemon-reload").Run()
 	if err != nil {
-		return err
+		return fmt.Errorf("systemctl daemon-reload failed(%s, %s): %v", name, unit, err)
 	}
 	err = well.CommandContext(ctx, "systemctl", "enable", name+"."+unit).Run()
 	if err != nil {
-		return err
+		return fmt.Errorf("systemctl enable failed(%s, %s): %v", name, unit, err)
 	}
-	return well.CommandContext(ctx, "systemctl", "start", name+"."+unit).Run()
+	err = well.CommandContext(ctx, "systemctl", "start", name+"."+unit).Run()
+	if err != nil {
+		return fmt.Errorf("systemctl start failed(%s, %s): %v", name, unit, err)
+	}
+	return nil
 }
 
 // StopTimer stops the timer.

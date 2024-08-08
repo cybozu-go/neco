@@ -110,6 +110,12 @@ run-placemat-inside-container: $(PLACEMAT_DEPS)
 	$(SUDO) cp $(OUTPUT)/bird*.conf /etc/bird
 	$(SUDO) cp $(OUTPUT)/squid.conf /etc/squid
 	$(SUDO) sh -c "$(PLACEMAT) $(abspath $(OUTPUT)/cluster.yml) > /var/log/placemat.log  2>&1" &
+	for i in $$(seq 60); do \
+		if ! pgrep --exact placemat2 > /dev/null; then \
+			break; \
+		fi; \
+		sleep 1; \
+	done
 	@echo 'Placemat is running.  To kill it, do "make stop-placemat-inside-container".'
 
 .PHONY: stop-placemat-inside-container
