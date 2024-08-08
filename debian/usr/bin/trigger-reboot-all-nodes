@@ -1,0 +1,23 @@
+#!/bin/sh
+NECO_COMMAND="/usr/bin/neco"
+CKECLI_COMMAND="/usr/bin/ckecli"
+YES_COMMAND="/usr/bin/yes"
+
+ENVIROMENT=$(${NECO_COMMAND} config get env)
+if [ "$ENVIROMENT" = "dev" ]; then
+    REBOOT_LIST=$(${NECO_COMMAND} rebooter list)
+    REBOOT_QUEUE=$(${CKECLI_COMMAND} rq list)
+   
+    # Confirm that the reboot list and reboot queue are empty
+    if [ "$REBOOT_LIST" = "null" ] && [ "$REBOOT_QUEUE" = "null" ]; then 
+        $NECO_COMMAND rebooter disable
+        sh -c $YES_COMMAND | $NECO_COMMAND rebooter reboot-worker --without-state retiring,retired
+        $NECO_COMMAND rebooter enable
+    else
+        echo "The reboot list or reboot queueu is not empty. Skipping reboot all nodes"
+        exit 0
+    fi
+else
+    echo "This script is only for dev environment"
+    exit 0
+fi
