@@ -55,7 +55,7 @@ func isEqualContents(slice1, slice2 []string) bool {
 }
 
 func cycleSlices(slice []string, offset int) []string {
-	if offset == 0 {
+	if offset < 0 {
 		return slice
 	}
 	length := len(slice)

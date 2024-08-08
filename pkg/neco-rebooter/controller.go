@@ -231,14 +231,15 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	}
 
 	currentIndex := slices.Index(allGroups, processingGroup)
-	candidate := cycleSlices(allGroups, currentIndex)
-	for index, group := range candidate {
-		if len(c.findRebootableNodeInGroup(rebootListEntries, group)) == 0 {
-			candidate = slices.Delete(candidate, index, index+1)
+	allGroupsCycled := cycleSlices(allGroups, currentIndex)
+	candidate := []string{}
+	for _, group := range allGroupsCycled {
+		if len(c.findRebootableNodeInGroup(rebootListEntries, group)) != 0 {
+			candidate = append(candidate, group)
 		}
 	}
-	if enabled {
-		if len(candidate) != 0 && enabled {
+	if len(candidate) != 0 && enabled {
+		if len(rebootQueueEntries) != 0 {
 			isStuck := true
 			for _, rq := range rebootQueueEntries {
 				if rq.Status == cke.RebootStatusRebooting || rq.DrainBackOffCount == 0 {
