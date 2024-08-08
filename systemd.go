@@ -41,20 +41,17 @@ func RestartService(ctx context.Context, name string) error {
 	return well.CommandContext(ctx, "systemctl", "restart", name+".service").Run()
 }
 
-// waitServiceStateChange waits until a service finishes its transient state.
-func waitServiceStateChange(ctx context.Context, name string) error {
+// waitServiceJob waits until a service finishes its transient state.
+func waitServiceJob(ctx context.Context, name string) error {
 	var state []byte
 	var err error
 	// wait for a minute
 	for i := 0; i < 60; i++ {
-		state, err = well.CommandContext(ctx, "systemctl", "show", "-p", "ActiveState", "--value", name+".service").Output()
+		state, err = well.CommandContext(ctx, "systemctl", "list-jobs", name+".service", "--legend=false").Output()
 		if err != nil {
 			return err
 		}
-		switch strings.TrimSpace(string(state)) {
-		case "activating":
-		case "deactivating":
-		default:
+		if !strings.Contains(string(state), name+".service") {
 			return nil
 		}
 		select {
@@ -68,7 +65,7 @@ func waitServiceStateChange(ctx context.Context, name string) error {
 
 // StopService stops the service.
 func StopService(ctx context.Context, name string) error {
-	err := waitServiceStateChange(ctx, name)
+	err := waitServiceJob(ctx, name)
 	if err != nil {
 		return err
 	}
