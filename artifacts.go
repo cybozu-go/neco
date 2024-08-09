@@ -24,5 +24,5 @@ var CurrentArtifacts = ArtifactSet{
 	Debs: []DebianPackage{
 		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.4.7"},
 	},
-	OSImage: OSImage{Channel: "stable", Version: "3815.2.5"},
+	OSImage: OSImage{Channel: "stable", Version: "3975.2.0"},
 }
