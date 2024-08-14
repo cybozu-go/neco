@@ -25,7 +25,61 @@ commands:
           name: Watch console on boot-0
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/watch_boot0
+            ./bin/watch_console boot-0
+          background: true
+      - run:
+          name: Watch console on boot-1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console boot-1
+          background: true
+      - run:
+          name: Watch console on boot-2
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console boot-2
+          background: true
+      - run:
+          name: Watch console on rack0-cs1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack0-cs1
+          background: true
+      - run:
+          name: Watch console on rack0-cs2
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack0-cs2
+          background: true
+      - run:
+          name: Watch console on rack0-ss1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack0-ss1
+          background: true
+      - run:
+          name: Watch console on rack1-cs1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack1-cs1
+          background: true
+      - run:
+          name: Watch console on rack1-cs2
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack1-cs2
+          background: true
+      - run:
+          name: Watch console on rack2-cs1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack2-cs1
+          background: true
+      - run:
+          name: Watch console on rack3-cs1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack3-cs1
           background: true
       - run:
           name: Watch neco-updater logs

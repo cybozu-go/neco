@@ -2,17 +2,19 @@
 
 . $(dirname $0)/env
 
+NODE=$1
+
 # Run multi-host test
 for i in $(seq 300); do
-  if $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- test -S /tmp/boot-0.socket >/dev/null; then
+  if $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- test -S /tmp/${NODE}.socket >/dev/null; then
     break
   fi
   sleep 1
 done
 if [ i = 100 ]; then
-  echo &>2 "Timed-out for launching boot-0..."
+  echo &>2 "Timed-out for launching ${NODE}..."
   exit 1
 fi
 
 $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
-  sudo pmctl2 node enter boot-0
+  sudo pmctl2 node enter ${NODE}
