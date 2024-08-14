@@ -1,8 +1,10 @@
 #!/bin/bash -e
 set -o pipefail
 
-if [ $# -eq 0 ]; then
-        echo 'nsdump <NAMESPACE>'
+if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+        echo '* nsdump <NAMESPACE>'
+        echo '# nsdump shows all the resources in a namespace in a JSON format.'
+        echo '# show implementation: cat $(which nsdump)'
         exit
 fi
 

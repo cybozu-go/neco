@@ -1,8 +1,10 @@
 #!/bin/bash -e
 set -o pipefail
 
-if [ $# -eq 0 ]; then
-        echo 'necoip <IPADDR>'
+if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+        echo '* necoip <IPADDR>'
+        echo '# necoip shows the detail of an IP, how it is used in the cluster.'
+        echo '# to see implementation: cat $(which necoip)'
         exit
 fi
 
