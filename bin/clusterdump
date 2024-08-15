@@ -1,6 +1,13 @@
 #!/bin/bash -e
 set -o pipefail
 
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+        echo '* clusterdump'
+        echo '# clusterdump shows all the cluster-scoped resources in a JSON format.'
+        echo '# to see implementation: cat $(which clusterdump)'
+        exit
+fi
+
 # The following line returns a non-zero code if it cannot access API server
 KINDS=$(kubectl api-resources --namespaced=false -o name | paste -sd,)
 
