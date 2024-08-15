@@ -9,7 +9,8 @@ import (
 )
 
 func handleBMCRetry(stdout, stderr string, err error) bool {
-	return strings.Contains(stderr, "missing HTTP content-type")
+	return strings.Contains(stderr, "missing HTTP content-type") ||
+		strings.Contains(stderr, "etcdserver: request timed out")
 }
 
 // testMachines tests machine control functions.
@@ -18,23 +19,23 @@ func testMachines() {
 		// test set/get functions
 		execRetryAt(bootServers[0], handleBMCRetry, "neco", "bmc", "config", "set", "bmc-user", "/mnt/bmc-user.json")
 
-		execSafeAt(bootServers[0], "neco", "bmc", "config", "set", "ipmi-user", "cybozu1")
+		execRetryAt(bootServers[0], handleBMCRetry, "neco", "bmc", "config", "set", "ipmi-user", "cybozu1")
 		ipmiUser := execSafeAt(bootServers[0], "neco", "bmc", "config", "get", "ipmi-user")
 		Expect(string(ipmiUser)).To(Equal("cybozu1\n"))
-		execSafeAt(bootServers[0], "neco", "bmc", "config", "set", "ipmi-password", "cybozu2")
+		execRetryAt(bootServers[0], handleBMCRetry, "neco", "bmc", "config", "set", "ipmi-password", "cybozu2")
 		ipmiPassword := execSafeAt(bootServers[0], "neco", "bmc", "config", "get", "ipmi-password")
 		Expect(string(ipmiPassword)).To(Equal("cybozu2\n"))
 
-		execSafeAt(bootServers[0], "neco", "bmc", "config", "set", "repair-user", "cybozu3")
+		execRetryAt(bootServers[0], handleBMCRetry, "neco", "bmc", "config", "set", "repair-user", "cybozu3")
 		repairUser := execSafeAt(bootServers[0], "neco", "bmc", "config", "get", "repair-user")
 		Expect(string(repairUser)).To(Equal("cybozu3\n"))
-		execSafeAt(bootServers[0], "neco", "bmc", "config", "set", "repair-password", "cybozu4")
+		execRetryAt(bootServers[0], handleBMCRetry, "neco", "bmc", "config", "set", "repair-password", "cybozu4")
 		repairPassword := execSafeAt(bootServers[0], "neco", "bmc", "config", "get", "repair-password")
 		Expect(string(repairPassword)).To(Equal("cybozu4\n"))
 
 		// finally set user/password hard-coded in underlying virtual BMCs
-		execSafeAt(bootServers[0], "neco", "bmc", "config", "set", "ipmi-user", "cybozu")
-		execSafeAt(bootServers[0], "neco", "bmc", "config", "set", "ipmi-password", "cybozu")
+		execRetryAt(bootServers[0], handleBMCRetry, "neco", "bmc", "config", "set", "ipmi-user", "cybozu")
+		execRetryAt(bootServers[0], handleBMCRetry, "neco", "bmc", "config", "set", "ipmi-password", "cybozu")
 	})
 
 	It("should setup boot server hardware", func() {
