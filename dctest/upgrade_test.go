@@ -173,7 +173,14 @@ func testUpgrade() {
 	})
 
 	It("should update cilium-agent", func() {
-		stdout, stderr, err := execAt(bootServers[0], "kubectl", "delete", "pod", "-n=kube-system", "-l=app.kubernetes.io/name=cilium-agent")
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "-n=kube-system", "get", "pods", "-l=app.kubernetes.io/name=cilium-agent", "-o=json")
+		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		podList := new(corev1.PodList)
+		err = json.Unmarshal(stdout, podList)
+		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
+		Expect(len(podList.Items)).To(BeNumerically(">", 0))
+		podName := podList.Items[0].Name
+		stdout, stderr, err = execAt(bootServers[0], "kubectl", "delete", "pod", "-n=kube-system", podName)
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 	})
 
@@ -273,7 +280,7 @@ func testUpgrade() {
 				case "squid-exporter":
 					return checkVersionInDeployment("internet-egress", "squid", newImage)
 				case "cilium":
-					return checkVersionInDaemonSet("kube-system", "cilium", newImage)
+					return checkVersionInDaemonSetPartial("kube-system", "cilium", newImage, 1)
 				case "cilium-operator-generic":
 					return checkVersionInDeployment("kube-system", "cilium-operator", newImage)
 				case "hubble-relay":
@@ -439,6 +446,36 @@ func checkVersionInDaemonSet(namespace, dsName, image string) error {
 	if ds.Status.DesiredNumberScheduled != ds.Status.UpdatedNumberScheduled {
 		return fmt.Errorf("%s %s is not updated completely. desired number scheduled is %d, but actual updated is %d",
 			dsName, image, ds.Status.DesiredNumberScheduled, ds.Status.UpdatedNumberScheduled)
+	}
+	return nil
+}
+
+func checkVersionInDaemonSetPartial(namespace, dsName, image string, desiredNumber int32) error {
+	stdout, _, err := execAt(bootServers[0], "kubectl", "get", "ds", "-n", namespace, dsName, "-o", "json")
+	if err != nil {
+		return err
+	}
+	ds := new(appsv1.DaemonSet)
+	err = json.Unmarshal(stdout, ds)
+	if err != nil {
+		return err
+	}
+	found := false
+	for _, c := range ds.Spec.Template.Spec.Containers {
+		if c.Image == image {
+			found = true
+		}
+	}
+	if !found {
+		return fmt.Errorf("%s not found in %s", image, dsName)
+	}
+	if ds.Status.DesiredNumberScheduled != ds.Status.NumberAvailable {
+		return fmt.Errorf("%s %s is not updated completely. desired number scheduled is %d, but actual available is %d",
+			dsName, image, ds.Status.DesiredNumberScheduled, ds.Status.NumberAvailable)
+	}
+	if desiredNumber != ds.Status.UpdatedNumberScheduled {
+		return fmt.Errorf("%s %s is not updated completely. desired number scheduled is %d, but actual updated is %d",
+			dsName, image, desiredNumber, ds.Status.UpdatedNumberScheduled)
 	}
 	return nil
 }
