@@ -22,6 +22,8 @@ func runBeforeSuite() {
 
 	SetDefaultEventuallyPollingInterval(time.Second)
 	SetDefaultEventuallyTimeout(10 * time.Minute)
+	SetDefaultConsistentlyDuration(time.Second)
+	SetDefaultConsistentlyPollingInterval(100 * time.Millisecond)
 
 	data, err := os.ReadFile(machinesFile)
 	Expect(err).NotTo(HaveOccurred())
