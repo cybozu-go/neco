@@ -20,7 +20,7 @@ KUSTOMIZE_VERSION = 5.2.1
 # https://github.com/argoproj/argo-cd/blob/v${ARGOCD_VERSION}/go.mod
 JSONNET_VERSION = 0.20.0
 MOCO_VERSION = 0.23.2
-NODE_EXPORTER_VERSION = 1.7.0
+NODE_EXPORTER_VERSION = 1.8.2
 TELEPORT_VERSION = 15.3.7
 # kubeseal is a CLI tool for Sealed Secrets
 # https://github.com/bitnami-labs/sealed-secrets
