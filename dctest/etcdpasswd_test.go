@@ -13,12 +13,12 @@ func testEtcdpasswd() {
 		By("initialize etcdpasswd")
 		user := "bob"
 
-		execSafeAt(bootServers[0], "etcdpasswd", "set", "start-uid", "2000")
-		execSafeAt(bootServers[0], "etcdpasswd", "set", "start-gid", "2000")
-		execSafeAt(bootServers[0], "etcdpasswd", "set", "default-group", "cybozu")
-		execSafeAt(bootServers[0], "etcdpasswd", "set", "default-groups", "sudo,adm")
+		execRetryAt(bootServers[0], handleNetworkRetry, "etcdpasswd", "set", "start-uid", "2000")
+		execRetryAt(bootServers[0], handleNetworkRetry, "etcdpasswd", "set", "start-gid", "2000")
+		execRetryAt(bootServers[0], handleNetworkRetry, "etcdpasswd", "set", "default-group", "cybozu")
+		execRetryAt(bootServers[0], handleNetworkRetry, "etcdpasswd", "set", "default-groups", "sudo,adm")
 		execSafeAt(bootServers[0], "etcdpasswd", "user", "add", user)
-		execSafeAt(bootServers[0], "etcdpasswd", "user", "get", user)
+		execRetryAt(bootServers[0], handleNetworkRetry, "etcdpasswd", "user", "get", user)
 
 		keyBytes, err := os.ReadFile(bobPublicKey)
 
@@ -28,12 +28,13 @@ func testEtcdpasswd() {
 
 		By("executing command with sudo at boot servers")
 		sshKey, err := parsePrivateKey(bobPrivateKey)
-
 		Expect(err).ShouldNot(HaveOccurred())
+
 		Eventually(func(g Gomega) error {
 			for _, h := range bootServers {
 				agent, err := sshTo(h, sshKey, user)
 				g.Expect(err).ShouldNot(HaveOccurred(), "agent=%v", agent)
+
 				stdout, stderr, err = doExec(agent, nil, "sudo", "ls")
 				g.Expect(err).ShouldNot(HaveOccurred(), "agent=%v stdout=%s, stderr=%s", agent, stdout, stderr)
 			}
