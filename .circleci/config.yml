@@ -25,7 +25,61 @@ commands:
           name: Watch console on boot-0
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/watch_boot0
+            ./bin/watch_console boot-0
+          background: true
+      - run:
+          name: Watch console on boot-1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console boot-1
+          background: true
+      - run:
+          name: Watch console on boot-2
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console boot-2
+          background: true
+      - run:
+          name: Watch console on rack0-cs1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack0-cs1
+          background: true
+      - run:
+          name: Watch console on rack0-cs2
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack0-cs2
+          background: true
+      - run:
+          name: Watch console on rack0-ss1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack0-ss1
+          background: true
+      - run:
+          name: Watch console on rack1-cs1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack1-cs1
+          background: true
+      - run:
+          name: Watch console on rack1-cs2
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack1-cs2
+          background: true
+      - run:
+          name: Watch console on rack2-cs1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack2-cs1
+          background: true
+      - run:
+          name: Watch console on rack3-cs1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_console rack3-cs1
           background: true
       - run:
           name: Watch neco-updater logs
@@ -156,7 +210,7 @@ jobs:
           name: Build deb package
           command: |
             VERSION=$(echo $CIRCLE_TAG | sed 's/^[^-]*-//')
-            time make deb SUDO="" DEBBUILD_FLAGS="-Zxz" VERSION="$VERSION" TAGS=release FAKEROOT=
+            time make deb SUDO="" DEBBUILD_FLAGS="-Zxz" VERSION="$VERSION" TAGS= FAKEROOT=
       - run:
           name: Build neco-operation-cli packages
           command: |
@@ -262,18 +316,6 @@ jobs:
             . ./bin/env
             $GCLOUD compute instances delete ${INSTANCE_NAME} --zone ${ZONE}
 
-  generate-artifacts:
-    docker:
-      - image: ghcr.io/cybozu/golang:1.22-jammy
-    steps:
-      - checkout
-      - run: go install ./pkg/generate-artifacts/
-      - run: generate-artifacts --release > artifacts_release.go
-      - persist_to_workspace:
-          root: .
-          paths:
-            - "artifacts_release.go"
-
   dctest-functions-release:
     docker:
       - image: google/cloud-sdk
@@ -287,10 +329,9 @@ jobs:
           command: |
             git config --global user.email "neco@cybozu.com"
             git config --global user.name "cybozu-neco"
-      # Check difference between [`release` branch] and [`main` branch + `artifacts_release.go`]
+      # Check difference between [`release` branch] and [`main` branch]
       - run: git checkout release
       - run: git merge --no-commit origin/main
-      - run: cp /tmp/workspace/artifacts_release.go .
       - run:
           name: Check diff
           command: |
@@ -338,7 +379,6 @@ jobs:
       # For testing on equal terms with "dctest-functions-release", check out in the same way as it.
       - run: git checkout release
       - run: git merge --no-commit origin/main
-      - run: cp /tmp/workspace/artifacts_release.go .
       - restore-tools
       - run-dctest-bootstrap:
           tag: release
@@ -376,10 +416,9 @@ jobs:
           command: |
             git config --global user.email "neco@cybozu.com"
             git config --global user.name "cybozu-neco"
-      # Check difference between [`release` branch] and [`main` branch + `artifacts_release.go`]
+      # Check difference between [`release` branch] and [`main` branch ]
       - run: git checkout release
       - run: git merge --no-commit origin/main
-      - run: cp /tmp/workspace/artifacts_release.go .
       - run:
           name: Check diff
           command: |
@@ -446,17 +485,16 @@ workflows:
   # Testing `main` branch and update "release" branch.
   update-release:
     jobs:
-      - generate-artifacts:
+      - dctest-functions-release:
           filters:
             branches:
               only:
                 - main
-      - dctest-functions-release:
-          requires:
-            - generate-artifacts
       - dctest-upgrade-release:
-          requires:
-            - generate-artifacts
+          filters:
+            branches:
+              only:
+                - main       
       - update-release:
           requires:
             - dctest-functions-release
@@ -472,16 +510,9 @@ workflows:
               only:
                 - main
     jobs:
-      - generate-artifacts
-      - dctest-functions-release:
-          requires:
-            - generate-artifacts
-      - dctest-upgrade-release:
-          requires:
-            - generate-artifacts
-      - dctest-reboot-worker:
-          requires:
-            - generate-artifacts
+      - dctest-functions-release
+      - dctest-upgrade-release
+      - dctest-reboot-worker
       - update-release:
           requires:
             - dctest-functions-release

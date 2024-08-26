@@ -2,8 +2,11 @@ module github.com/cybozu-go/neco
 
 go 1.22.5
 
+// github.com/hashicorp/serf v0.10.1 (latest) still uses github.com/armon/go-metrics
+replace github.com/armon/go-metrics v0.5.3 => github.com/hashicorp/go-metrics v0.5.3
+
 require (
-	github.com/cybozu-go/cke v1.28.7
+	github.com/cybozu-go/cke v1.29.0
 	github.com/cybozu-go/etcdutil v1.6.7
 	github.com/cybozu-go/log v1.7.0
 	github.com/cybozu-go/netutil v1.4.8
@@ -58,7 +61,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/docker/cli v24.0.0+incompatible // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
-	github.com/docker/docker v26.1.4+incompatible // indirect
+	github.com/docker/docker v26.1.5+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
@@ -141,12 +144,12 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/component-base v0.28.8 // indirect
+	k8s.io/component-base v0.29.7 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
-	k8s.io/kube-proxy v0.28.8 // indirect
-	k8s.io/kube-scheduler v0.28.8 // indirect
-	k8s.io/kubelet v0.28.8 // indirect
+	k8s.io/kube-proxy v0.29.7 // indirect
+	k8s.io/kube-scheduler v0.29.7 // indirect
+	k8s.io/kubelet v0.29.7 // indirect
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect

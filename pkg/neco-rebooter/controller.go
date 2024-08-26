@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 	"time"
 
 	"github.com/cybozu-go/cke"
@@ -229,10 +230,11 @@ func (c *Controller) runOnce(ctx context.Context) error {
 		allGroups = currnetAllGroups
 	}
 
+	currentIndex := slices.Index(allGroups, processingGroup)
+	allGroupsCycled := cycleSlices(allGroups, currentIndex)
 	candidate := []string{}
-	for _, group := range allGroups {
-		rebootableEntries := c.findRebootableNodeInGroup(rebootListEntries, group)
-		if len(rebootableEntries) > 0 {
+	for _, group := range allGroupsCycled {
+		if len(c.findRebootableNodeInGroup(rebootListEntries, group)) != 0 {
 			candidate = append(candidate, group)
 		}
 	}

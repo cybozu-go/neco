@@ -1,6 +1,7 @@
 package necorebooter
 
 import (
+	"slices"
 	"sort"
 	"testing"
 	"time"
@@ -173,5 +174,30 @@ func TestIsEqualContents(t *testing.T) {
 	}
 	if isEqualContents(slices1, slices3) != false {
 		t.Errorf("unexpected result: want=false, got=true")
+	}
+}
+
+func TestCycleSlices(t *testing.T) {
+	slices1 := []string{"a", "b", "c", "d"}
+	expected1 := []string{"c", "d", "a", "b"}
+	expected2 := []string{"a", "b", "c", "d"}
+	expected3 := []string{"a", "b", "c", "d"}
+	expected4 := []string{"d", "a", "b", "c"}
+
+	actual := cycleSlices(slices1, 2)
+	if !slices.Equal(expected1, actual) {
+		t.Errorf("unexpected result: want=%v, got=%v", expected1, actual)
+	}
+	actual = cycleSlices(slices1, 0)
+	if !slices.Equal(expected2, actual) {
+		t.Errorf("unexpected result: want=%v, got=%v", expected2, actual)
+	}
+	actual = cycleSlices(slices1, 4)
+	if !slices.Equal(expected3, actual) {
+		t.Errorf("unexpected result: want=%v, got=%v", expected3, actual)
+	}
+	actual = cycleSlices(slices1, 3)
+	if !slices.Equal(expected4, actual) {
+		t.Errorf("unexpected result: want=%v, got=%v", expected4, actual)
 	}
 }
