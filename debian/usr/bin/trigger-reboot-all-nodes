@@ -21,7 +21,7 @@ fi
 REBOOT_LIST=$(${NECO_COMMAND} rebooter list)
 REBOOT_QUEUE=$(${CKECLI_COMMAND} rq list)
 # Confirm that the reboot list and reboot queue are empty
-if [ "$REBOOT_LIST" != "null" ] && [ "$REBOOT_QUEUE" != "null" ]; then 
+if [ "$REBOOT_LIST" != "null" ] || [ "$REBOOT_QUEUE" != "null" ]; then 
     echo "The reboot list or reboot queueu is not empty. Skipping reboot all nodes"
     exit 0
 fi
