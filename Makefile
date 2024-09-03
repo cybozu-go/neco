@@ -82,7 +82,7 @@ update-coil:
 update-cilium: helm
 	rm -rf /tmp/work-cilium
 	mkdir -p /tmp/work-cilium
-	git clone --depth 1 --branch v$(shell echo $(CILIUM_TAG) | cut -d \. -f 1,2,3)-lb-dsr-patch https://github.com/cybozu-go/cilium /tmp/work-cilium
+	git clone --depth 1 --branch v$(shell echo $(CILIUM_TAG) | cut -d \. -f 1,2,3) https://github.com/cilium/cilium /tmp/work-cilium
 	cd /tmp/work-cilium
 	$(HELM) template /tmp/work-cilium/install/kubernetes/cilium/ \
 		--namespace=kube-system \
