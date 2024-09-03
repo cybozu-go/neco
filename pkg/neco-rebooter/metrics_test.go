@@ -108,4 +108,23 @@ func TestMetrics(t *testing.T) {
 			t.Errorf("number of %s is expected to 1 %s, but got %d", metrics, tc.expect, strings.Count(metrics, tc.expect))
 		}
 	}
+
+	// Remove all entries
+	entries, err := c.necoStorage.GetRebootListEntries(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		err = c.necoStorage.RemoveRebootListEntry(context.Background(), c.leaderKey, entry)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	req = httptest.NewRequest("GET", "/metrics", nil)
+	rec = httptest.NewRecorder()
+	ts.Config.Handler.ServeHTTP(rec, req)
+	metrics = rec.Body.String()
+	if strings.Contains(metrics, "neco_rebooter_processing_group") {
+		t.Errorf("unexpected metrics: %s", metrics)
+	}
 }

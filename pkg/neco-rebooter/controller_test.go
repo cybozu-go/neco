@@ -232,6 +232,77 @@ func TestDequeueAndCancelEntry(t *testing.T) {
 	}
 }
 
+func TestRemoveOrphanedEntry(t *testing.T) {
+	c, err := newTestController()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		err := cleanupEtcd()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	rebootListEntry := neco.RebootListEntry{
+		Node:       "node1",
+		Group:      "group1",
+		RebootTime: "test1",
+		Status:     neco.RebootListEntryStatusPending,
+	}
+	rebootQueueEntry := []*cke.RebootQueueEntry{
+		{
+			Node:   "node1",
+			Status: cke.RebootStatusQueued,
+		},
+		{
+			Node:   "node2",
+			Status: cke.RebootStatusQueued,
+		},
+	}
+	entrySet := []EntrySet{
+		{
+			rebootListEntry:  &rebootListEntry,
+			rebootQueueEntry: rebootQueueEntry[0],
+		},
+		{
+			rebootQueueEntry: rebootQueueEntry[1],
+		},
+	}
+
+	err = c.necoStorage.RegisterRebootListEntry(context.Background(), &rebootListEntry)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range rebootQueueEntry {
+		err = c.ckeStorage.RegisterRebootsEntry(context.Background(), entry)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	err = c.RemoveOrphanedEntry(context.Background(), entrySet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rlEntries, err := c.necoStorage.GetRebootListEntries(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	rqEntries, err := c.ckeStorage.GetRebootsEntries(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rlEntries) != 1 {
+		t.Error("RemoveOrphanedEntry failed")
+	}
+	for _, entry := range rqEntries {
+		if entry.Status != cke.RebootStatusCancelled {
+			t.Error("RemoveOrphanedEntry failed")
+		}
+	}
+}
+
 func TestAddRebootListEntry(t *testing.T) {
 	c, err := newTestController()
 	if err != nil {
@@ -455,6 +526,12 @@ groupLabelKey: topology.kubernetes.io/zone
 			RebootTime: "test1",
 			Status:     neco.RebootListEntryStatusQueued,
 		},
+		{ // orphaned node
+			Node:       "node6",
+			Group:      "group1",
+			RebootTime: "test1",
+			Status:     neco.RebootListEntryStatusPending,
+		},
 	}
 	rebootQueueEntry := []*cke.RebootQueueEntry{
 		{
@@ -467,6 +544,14 @@ groupLabelKey: topology.kubernetes.io/zone
 		},
 		{
 			Node:   "node5",
+			Status: cke.RebootStatusQueued,
+		},
+		{ // orphaned node
+			Node:   "node6",
+			Status: cke.RebootStatusQueued,
+		},
+		{ // orphaned node
+			Node:   "node7",
 			Status: cke.RebootStatusQueued,
 		},
 	}
@@ -532,6 +617,15 @@ groupLabelKey: topology.kubernetes.io/zone
 		}
 		if es.rebootListEntry.Node != es.rebootQueueEntry.Node {
 			t.Error("QueuedEntry is not expected value")
+		}
+	}
+
+	if len(collection.OrphanedEntry) != 2 {
+		t.Error("number of OrphanedEntry is not expected value, actual ", len(collection.OrphanedEntry))
+	}
+	for _, es := range collection.OrphanedEntry {
+		if es.rebootQueueEntry.Node != "node6" && es.rebootQueueEntry.Node != "node7" {
+			t.Error("OrphanedEntry is not expected value, actual ", es.rebootQueueEntry.Node)
 		}
 	}
 }
