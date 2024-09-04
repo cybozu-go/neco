@@ -346,7 +346,7 @@ jobs:
           name: Run dctest functions release
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/run-dctest-suite.sh functions release
+            ./bin/run-dctest-suite.sh functions
           no_output_timeout: 20m
       - run:
           name: Set the instance lifetime
@@ -385,7 +385,7 @@ jobs:
           datacenter: staging
       - run:
           name: Run dctest upgrade release
-          command: ./bin/run-dctest-suite.sh upgrade release
+          command: ./bin/run-dctest-suite.sh upgrade
           no_output_timeout: 20m
       - run:
           name: Set the instance lifetime
