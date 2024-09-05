@@ -31,6 +31,14 @@ func findRebootQueueEntryFromRebootListEntry(rebootQueueEntries []*cke.RebootQue
 	}
 	return nil
 }
+func findRebootListEntryFromRebootQueueEntry(rebootListEntries []*neco.RebootListEntry, rebootQueueEntry cke.RebootQueueEntry) *neco.RebootListEntry {
+	for _, entry := range rebootListEntries {
+		if entry.Node == rebootQueueEntry.Node {
+			return entry
+		}
+	}
+	return nil
+}
 
 func getAllGroups(rebootListEntries []*neco.RebootListEntry) []string {
 	groups := make([]string, 0)

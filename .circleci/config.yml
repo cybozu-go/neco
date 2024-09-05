@@ -340,13 +340,12 @@ jobs:
             printf "%s\n" "$diffs"
       # Skip the following steps if there is no difference.
       - restore-tools
-      - run-dctest-bootstrap:
-          tag: release
+      - run-dctest-bootstrap
       - run:
           name: Run dctest functions release
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/run-dctest-suite.sh functions release
+            ./bin/run-dctest-suite.sh functions
           no_output_timeout: 20m
       - run:
           name: Set the instance lifetime
@@ -381,11 +380,10 @@ jobs:
       - run: git merge --no-commit origin/main
       - restore-tools
       - run-dctest-bootstrap:
-          tag: release
           datacenter: staging
       - run:
           name: Run dctest upgrade release
-          command: ./bin/run-dctest-suite.sh upgrade release
+          command: ./bin/run-dctest-suite.sh upgrade
           no_output_timeout: 20m
       - run:
           name: Set the instance lifetime

@@ -139,6 +139,14 @@ func (c *collector) updateProcessingGroup(ch chan<- prometheus.Metric, ctx conte
 		slog.Error("failed to get processing group", "err", err)
 		return
 	}
+	entries, err := c.storage.GetRebootListEntries(ctx)
+	if err != nil {
+		slog.Error("failed to get reboot list", "err", err)
+		return
+	}
+	if len(entries) == 0 {
+		return
+	}
 	ch <- prometheus.MustNewConstMetric(c.processingGroup, prometheus.GaugeValue, 1, group)
 }
 

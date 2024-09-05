@@ -39,6 +39,7 @@ type EntriesCollection struct {
 	NewEntry       []*neco.RebootListEntry
 	CancelledEntry []EntrySet
 	QueuedEntry    []EntrySet
+	OrphanedEntry  []EntrySet
 }
 
 var (
@@ -112,6 +113,20 @@ func (c *Controller) dequeueAndCancelEntry(ctx context.Context, entries []EntryS
 	return nil
 }
 
+func (c *Controller) RemoveOrphanedEntry(ctx context.Context, entries []EntrySet) error {
+	for _, entry := range entries {
+		if entry.rebootQueueEntry != nil {
+			entry.rebootQueueEntry.Status = cke.RebootStatusCancelled
+			err := c.ckeStorage.UpdateRebootsEntry(ctx, entry.rebootQueueEntry)
+			if err != nil {
+				return err
+			}
+			slog.With(slog.String("operation", "RemoveOrphanedEntry")).Info("rebootQueueEntry cancelled", slog.String("node", entry.rebootQueueEntry.Node))
+		}
+	}
+	return nil
+}
+
 func (c *Controller) addRebootListEntry(ctx context.Context, entries []*neco.RebootListEntry) error {
 	for _, entry := range entries {
 		entry.Status = neco.RebootListEntryStatusQueued
@@ -177,12 +192,17 @@ func (c *Controller) collectEntries(rebootListEntries []*neco.RebootListEntry, r
 	newEntry := []*neco.RebootListEntry{}
 	cancelledEntry := []EntrySet{}
 	queuedEntry := []EntrySet{}
+	orphanedEntry := []EntrySet{}
 	for _, entry := range rebootListEntries {
 		rqEntry := findRebootQueueEntryFromRebootListEntry(rebootQueueEntries, *entry)
 		switch entry.Status {
 		case neco.RebootListEntryStatusCancelled:
 			cancelledEntry = append(cancelledEntry, EntrySet{entry, rqEntry})
 		case neco.RebootListEntryStatusPending:
+			// avoid the duplicating of entry
+			if rqEntry != nil {
+				break
+			}
 			if entry.Group == processingGroup && c.isRebootable(entry) {
 				newEntry = append(newEntry, entry)
 			}
@@ -197,12 +217,21 @@ func (c *Controller) collectEntries(rebootListEntries []*neco.RebootListEntry, r
 			}
 		}
 	}
+	for _, rqEntry := range rebootQueueEntries {
+		rlEntry := findRebootListEntryFromRebootQueueEntry(rebootListEntries, *rqEntry)
+		if rlEntry == nil {
+			orphanedEntry = append(orphanedEntry, EntrySet{nil, rqEntry})
+		} else if rlEntry.Status == neco.RebootListEntryStatusPending {
+			orphanedEntry = append(orphanedEntry, EntrySet{rlEntry, rqEntry})
+		}
+	}
 	return EntriesCollection{
 		CompletedEntry: completedEntry,
 		TimedOutEntry:  timedOutEntry,
 		NewEntry:       newEntry,
 		CancelledEntry: cancelledEntry,
 		QueuedEntry:    queuedEntry,
+		OrphanedEntry:  orphanedEntry,
 	}
 }
 
@@ -274,6 +303,13 @@ func (c *Controller) runOnce(ctx context.Context) error {
 
 	if len(collection.CancelledEntry) > 0 {
 		err = c.removeCancelledEntry(ctx, collection.CancelledEntry)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	if len(collection.OrphanedEntry) > 0 {
+		err = c.RemoveOrphanedEntry(ctx, collection.OrphanedEntry)
 		if err != nil {
 			return err
 		}
