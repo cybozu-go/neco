@@ -340,8 +340,7 @@ jobs:
             printf "%s\n" "$diffs"
       # Skip the following steps if there is no difference.
       - restore-tools
-      - run-dctest-bootstrap:
-          tag: release
+      - run-dctest-bootstrap
       - run:
           name: Run dctest functions release
           command: |
@@ -381,7 +380,6 @@ jobs:
       - run: git merge --no-commit origin/main
       - restore-tools
       - run-dctest-bootstrap:
-          tag: release
           datacenter: staging
       - run:
           name: Run dctest upgrade release
