@@ -9,5 +9,10 @@
             "hash": "hashed_secret",
             "salt": "salt for hash"
         }
+    },
+    "support": {
+        "password": {
+            "raw": "raw password for support user"
+        }
     }
 }
