@@ -554,6 +554,10 @@ groupLabelKey: topology.kubernetes.io/zone
 			Node:   "node7",
 			Status: cke.RebootStatusQueued,
 		},
+		{ // orphaned but cancelled node
+			Node:   "node8",
+			Status: cke.RebootStatusCancelled,
+		},
 	}
 	collection := c.collectEntries(rebootListEntries, rebootQueueEntry, "group1")
 	if len(collection.CancelledEntry) != 1 {
