@@ -1,0 +1,31 @@
+#!/bin/sh
+CKECLI_COMMAND="/usr/bin/ckecli"
+NECO_COMMAND="/usr/bin/neco"
+UNAME_COMMAND="/usr/bin/uname"
+YES_COMMAND="/usr/bin/yes"
+
+ENVIROMENT=$(${NECO_COMMAND} config get env)
+if [ "$ENVIROMENT" != "dev" ]; then
+    echo "This script is only for dev environment"
+    exit 0
+fi
+
+# Confirm that host is a learder
+HOSTNAME=$(${UNAME_COMMAND} -n)
+LEADER=$(${NECO_COMMAND} rebooter leader)
+if [ "$HOSTNAME" != "$LEADER" ]; then
+    echo "This host is not a leader. Skipping reboot all nodes"
+    exit 0
+fi
+
+REBOOT_LIST=$(${NECO_COMMAND} rebooter list)
+REBOOT_QUEUE=$(${CKECLI_COMMAND} rq list)
+# Confirm that the reboot list and reboot queue are empty
+if [ "$REBOOT_LIST" != "null" ] || [ "$REBOOT_QUEUE" != "null" ]; then 
+    echo "The reboot list or reboot queueu is not empty. Skipping reboot all nodes"
+    exit 0
+fi
+
+$NECO_COMMAND rebooter disable
+sh -c $YES_COMMAND | $NECO_COMMAND rebooter reboot-worker --without-state retiring,retired
+$NECO_COMMAND rebooter enable
