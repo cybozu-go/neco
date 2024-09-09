@@ -16,7 +16,7 @@ spec:
       containers:
         - args:
             - pause
-          image: quay.io/cybozu/ubuntu-debug:22.04
+          image: ghcr.io/cybozu/ubuntu-debug:22.04
           name: ubuntu
       nodeSelector:
         kubernetes.io/hostname: {{.Node}}
