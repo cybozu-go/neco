@@ -1,0 +1,15 @@
+[Unit]
+Description=Trigger reboot all nodes every night on dev environment
+Wants=network-online.target cke.service sabakan.service neco-rebooter.service
+After=network-online.target cke.service sabakan.service neco-rebooter.service
+StartLimitIntervalSec=600s
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+RestartSec=30s
+ExecStart=/usr/bin/trigger-reboot-all-nodes
+
+[Install]
+WantedBy=multi-user.target
