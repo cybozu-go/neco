@@ -22,7 +22,7 @@ var CurrentArtifacts = ArtifactSet{
 		{Name: "cilium-certgen", Repository: "ghcr.io/cybozu/cilium-certgen", Tag: "0.1.11.1", Private: false},
 	},
 	Debs: []DebianPackage{
-		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.4.7"},
+		{Name: "etcdpasswd", Owner: "cybozu-go", Repository: "etcdpasswd", Release: "v1.4.8"},
 	},
 	OSImage: OSImage{Channel: "stable", Version: "3815.2.5"},
 }
