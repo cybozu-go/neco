@@ -2,14 +2,14 @@
 
 . $(dirname $0)/env
 
+test $# -eq 1
+NODE="$1"
+
 tail_once() {
   host="$1"
   $GCLOUD 2>/dev/null compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
     sudo ip netns exec operation ssh -F ssh_config \
-     ${host} "test -f .kube/config" || return
-  $GCLOUD 2>/dev/null compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} -- \
-    sudo ip netns exec operation ssh -F ssh_config \
-     ${host} "stern --timestamps --max-log-requests=9999 --all-namespaces '\\.\\*'"
+     ${host} journalctl -f
 }
 
 tail_forever() {
@@ -26,4 +26,4 @@ while ! $GCLOUD 2>/dev/null compute scp --zone=${ZONE} ./dctest/dctest_key ./dct
     sleep 1
 done
 
-tail_forever boot-0
+tail_forever ${NODE}

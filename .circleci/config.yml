@@ -94,10 +94,22 @@ commands:
             ./bin/watch_service neco-worker
           background: true
       - run:
-          name: Watch ep-agent logs
+          name: Watch systemd logs on boot-0
           command: |
             if [ -f .skip ]; then exit 0; fi
-            ./bin/watch_service ep-agent
+            ./bin/watch_systemdlogs boot-0
+          background: true
+      - run:
+          name: Watch systemd logs on boot-1
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_systemdlogs boot-1
+          background: true
+      - run:
+          name: Watch systemd logs on boot-2
+          command: |
+            if [ -f .skip ]; then exit 0; fi
+            ./bin/watch_systemdlogs boot-2
           background: true
       - run:
           name: Watch all pod logs
