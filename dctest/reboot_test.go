@@ -231,15 +231,11 @@ func testNecoRebooterRebootGracefully() {
 		}).Should(Succeed())
 
 		By("getting available racks")
-		stdout, stderr, err := execAt(bootServers[0], "kubectl get nodes -o json")
-		if err != nil {
-			Fail(fmt.Sprintf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err))
-		}
+		stdout, _, err := execAt(bootServers[0], "kubectl", "get", "nodes", "-o", "json")
+		Expect(err).NotTo(HaveOccurred())
 		nodes := corev1.NodeList{}
 		err = json.Unmarshal(stdout, &nodes)
-		if err != nil {
-			Fail(fmt.Sprintf("failed to unmarshal json: %v", err))
-		}
+		Expect(err).NotTo(HaveOccurred())
 		racksTmp := []string{}
 		for _, node := range nodes.Items {
 			rack := node.Labels["topology.kubernetes.io/zone"]
@@ -342,15 +338,11 @@ func testNecoRebooterRebootGracefully() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("creating a pod")
-		stdout, stderr, err = execAtWithInput(bootServers[0], podYaml, "kubectl", "apply", "-f", "-")
-		if err != nil {
-			Fail(fmt.Sprintf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err))
-		}
+		_, _, err = execAtWithInput(bootServers[0], podYaml, "kubectl", "apply", "-f", "-")
+		Expect(err).NotTo(HaveOccurred())
 		By("creating a pdb")
-		stdout, stderr, err = execAtWithInput(bootServers[0], pdbYaml, "kubectl", "apply", "-f", "-")
-		if err != nil {
-			Fail(fmt.Sprintf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err))
-		}
+		_, _, err = execAtWithInput(bootServers[0], pdbYaml, "kubectl", "apply", "-f", "-")
+		Expect(err).NotTo(HaveOccurred())
 
 		By(fmt.Sprintf("adding rack%s nodes to reboot-list", racks[0]))
 		execSafeAt(bootServers[0], "sh", "-c", fmt.Sprintf("yes | neco rebooter reboot-worker --rack=%s", racks[0]))
