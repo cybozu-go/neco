@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 SERVICES="node-exporter neco-updater neco-worker sabakan-state-setter neco-rebooter cke cke-localproxy teleport-node"
-TIMERS="docker-prune kill-old-login-sessions backup-cke-etcd export-unit-status"
+TIMERS="docker-prune kill-old-login-sessions backup-cke-etcd export-unit-status trigger-reboot-all-nodes"
 
 configure() {
     # temporary code for transition
