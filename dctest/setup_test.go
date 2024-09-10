@@ -137,7 +137,7 @@ WantedBy=multi-user.target`
 
 	It("should complete updates", func() {
 		By("Waiting for request to complete")
-		waitRequestComplete("")
+		waitRequestCompleteWithRecover("", 3)
 
 		By("Installing sshd_config and sudoers")
 		for _, h := range bootServers {
