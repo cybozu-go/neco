@@ -205,6 +205,11 @@ func waitRequestComplete(check string, recover ...bool) {
 		}
 		out := string(stdout)
 
+		fmt.Println("--------------------------------------------------------------")
+		fmt.Println(out)
+		fmt.Println("--------------------------------------------------------------")
+
+
 		// Sometimes, neco-worker aborts the update process. Detect it and recover if it is necessary.
 		if len(recover) != 0 && recover[0] && strings.Contains(out, "status: aborted") {
 			execAt(bootServers[0], "neco", "recover")
