@@ -343,7 +343,7 @@ func testNecoRebooterRebootGracefully() {
 		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 
 		By(fmt.Sprintf("adding %s nodes to reboot-list", racks[0]))
-		// [:4] is number of "rack"
+		// racks[0][:4] represents the rack number
 		execSafeAt(bootServers[0], "yes", "|", "neco", "rebooter", "reboot-worker", "--rack="+racks[0][4:])
 
 		By("enable rebooting")
@@ -363,7 +363,7 @@ func testNecoRebooterRebootGracefully() {
 		}).Should(Succeed())
 
 		By(fmt.Sprintf("adding %s nodes to reboot-list", racks[1]))
-		// [:4] is number of "rack"
+		// racks[0][:4] represents the rack number
 		execSafeAt(bootServers[0], "yes", "|", "neco", "rebooter", "reboot-worker", "--rack="+racks[1][4:])
 
 		By(fmt.Sprintf("waiting for skipping %s and moving to %s", racks[0], racks[1]))
