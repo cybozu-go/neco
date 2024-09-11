@@ -183,7 +183,7 @@ func execRetryAt(host string, handler retryHandler, args ...string) []byte {
 		if err != nil {
 			msg := fmt.Sprintf("stdout: %s, stderr: %s, err: %v", string(stdout), string(stderr), err)
 			if !handler(string(stdout), string(stderr), err) {
-				StopTrying("retry skipped. " + msg).Wrap(err)
+				StopTrying("retry skipped. " + msg).Wrap(err).Now()
 			}
 			fmt.Printf("retrying... %v", args)
 			g.Expect(err).NotTo(BeNil(), "retry failed. "+msg)
