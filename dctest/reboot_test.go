@@ -236,19 +236,17 @@ func testNecoRebooterRebootGracefully() {
 		nodes := corev1.NodeList{}
 		err = json.Unmarshal(stdout, &nodes)
 		Expect(err).NotTo(HaveOccurred())
-		racksTmp := []string{}
+		racks := []string{}
 		for _, node := range nodes.Items {
 			rack := node.Labels["topology.kubernetes.io/zone"]
 			if len(rack) == 0 {
 				continue
 			}
-			racksTmp = append(racksTmp, rack[len(rack)-1:])
+			racks = append(racks, rack)
 		}
-		slices.Sort(racksTmp)
-		racks := slices.Compact(racksTmp)
-		if len(racks) < 2 {
-			Fail("less than 2 racks are available")
-		}
+		slices.Sort(racks)
+		racks = slices.Compact(racks)
+		Expect(len(racks)).To(BeNumerically(">", 1))
 
 		By("changing neco-rebooter config")
 		config := necorebooter.Config{
@@ -307,7 +305,7 @@ func testNecoRebooterRebootGracefully() {
 					},
 				},
 				NodeSelector: map[string]string{
-					"topology.kubernetes.io/zone": fmt.Sprintf("rack%s", racks[0]),
+					"topology.kubernetes.io/zone": racks[0],
 				},
 			},
 		}
@@ -344,8 +342,8 @@ func testNecoRebooterRebootGracefully() {
 		_, _, err = execAtWithInput(bootServers[0], pdbYaml, "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred())
 
-		By(fmt.Sprintf("adding rack%s nodes to reboot-list", racks[0]))
-		execSafeAt(bootServers[0], "sh", "-c", fmt.Sprintf("yes | neco rebooter reboot-worker --rack=%s", racks[0]))
+		By(fmt.Sprintf("adding %s nodes to reboot-list", racks[0]))
+		execSafeAt(bootServers[0], "sh", "-c", fmt.Sprintf("yes | neco rebooter reboot-worker --rack=%s", racks[0][4:]))
 
 		By("enable rebooting")
 		execSafeAt(bootServers[0], "ckecli", "rq", "enable")
@@ -363,16 +361,16 @@ func testNecoRebooterRebootGracefully() {
 			return nil
 		}).Should(Succeed())
 
-		By(fmt.Sprintf("adding rack%s nodes to reboot-list", racks[1]))
-		execSafeAt(bootServers[0], "sh", "-c", fmt.Sprintf("yes | neco rebooter reboot-worker --rack=%s", racks[1]))
+		By(fmt.Sprintf("adding %s nodes to reboot-list", racks[1]))
+		execSafeAt(bootServers[0], "sh", "-c", fmt.Sprintf("yes | neco rebooter reboot-worker --rack=%s", racks[1][4:]))
 
-		By(fmt.Sprintf("waiting for skipping rack%s and moving to rack%s", racks[0], racks[1]))
+		By(fmt.Sprintf("waiting for skipping %s and moving to %s", racks[0], racks[1]))
 		Eventually(func() error {
 			stdout, stderr, err := execAt(bootServers[0], "neco", "rebooter", "show-processing-group")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			if string(stdout) != fmt.Sprintf("rack%s\n", racks[1]) {
+			if strings.Contains(string(stdout), racks[1]) {
 				return fmt.Errorf("reboot-queue is not processed")
 			}
 			return nil
