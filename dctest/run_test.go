@@ -175,6 +175,12 @@ func execSafeAt(host string, args ...string) []byte {
 	return stdout
 }
 
+func execSafeGomegaAt(g Gomega, host string, args ...string) []byte {
+	stdout, stderr, err := execAt(host, args...)
+	g.ExpectWithOffset(1, err).To(Succeed(), "[%s] %v, stdout: %s, stderr: %s", host, args, stdout, stderr)
+	return stdout
+}
+
 func execRetryAt(host string, handler retryHandler, args ...string) []byte {
 	var stdout, stderr []byte
 	var err error
