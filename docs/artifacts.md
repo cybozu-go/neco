@@ -43,7 +43,7 @@ Use this, for example, if you have a bug in the latest versions and do not want 
 
 ```yaml
 images:
-- repository: ghcr.io/cybozu/cke
+- repository: ghcr.io/cybozu-go/cke
   versions: ["1.2.3", "1.2.4", "1.2.5"]
 - repository: ghcr.io/cybozu/etcd
   versions: ["1.2.3.4"]
