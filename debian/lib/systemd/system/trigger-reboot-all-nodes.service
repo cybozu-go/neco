@@ -5,6 +5,7 @@ After=network-online.target cke.service sabakan.service neco-rebooter.service
 StartLimitIntervalSec=600s
 
 [Service]
+User=cybozu
 Type=simple
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
