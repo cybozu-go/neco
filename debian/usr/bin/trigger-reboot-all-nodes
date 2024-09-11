@@ -12,7 +12,7 @@ fi
 
 # Confirm that host is a learder
 HOSTNAME=$(${UNAME_COMMAND} -n)
-LEADER=$(${NECO_COMMAND} rebooter leader)
+LEADER=$(${CKECLI_COMMAND} leader)
 if [ "$HOSTNAME" != "$LEADER" ]; then
     echo "This host is not a leader. Skipping reboot all nodes"
     exit 0
