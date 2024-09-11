@@ -33,6 +33,15 @@ patches:
     patch: |-
       - op: remove
         path: /spec/ttlSecondsAfterFinished
+  - target:
+      group: apps
+      version: v1
+      kind: DaemonSet
+      name: cilium
+    patch: |-
+      - op: replace
+        path: /spec/updateStrategy/rollingUpdate/maxUnavailable
+        value: 1
 configMapGenerator:
 - name: cilium-config
   namespace: kube-system

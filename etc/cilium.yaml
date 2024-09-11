@@ -1445,7 +1445,9 @@ spec:
               name: hubble-server-certs
               optional: true
   updateStrategy:
-    type: OnDelete
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
 ---
 apiVersion: batch/v1
 kind: Job
