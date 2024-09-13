@@ -43,9 +43,9 @@ Use this, for example, if you have a bug in the latest versions and do not want 
 
 ```yaml
 images:
-- repository: quay.io/cybozu/cke
+- repository: ghcr.io/cybozu-go/cke
   versions: ["1.2.3", "1.2.4", "1.2.5"]
-- repository: quay.io/cybozu/etcd
+- repository: ghcr.io/cybozu/etcd
   versions: ["1.2.3.4"]
 debs:
 - name: etcdpasswd
