@@ -297,7 +297,7 @@ func testUpgrade() {
 
 	It("should SHA1 veth name is attached with newer coil", func() {
 		By("deploying testhttpd")
-		execSafeAt(bootServers[0], "kubectl", "run", "testhttpd", "--image=quay.io/cybozu/testhttpd:0")
+		execSafeAt(bootServers[0], "kubectl", "run", "testhttpd", "--image=ghcr.io/cybozu/testhttpd:0")
 		Eventually(func() error {
 			stdout, _, err := execAt(bootServers[0], "kubectl", "get", "pod/testhttpd", "-o=json")
 			if err != nil {

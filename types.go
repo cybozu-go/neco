@@ -56,7 +56,7 @@ type ContainerImage struct {
 	Private bool
 }
 
-// ParseContainerImageName parses image name like "quay.io/cybozu/etcd:3.3.9-4"
+// ParseContainerImageName parses image name like "ghcr.io/cybozu/etcd:3.3.9-4"
 func ParseContainerImageName(name string) (ContainerImage, error) {
 	nametag := strings.Split(name, ":")
 	if len(nametag) != 2 {

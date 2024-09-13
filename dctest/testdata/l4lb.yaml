@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: testhttpd
-          image: quay.io/cybozu/testhttpd:0
+          image: ghcr.io/cybozu/testhttpd:0
 ---
 kind: Service
 apiVersion: v1
