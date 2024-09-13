@@ -193,14 +193,12 @@ func execRetryAt(host string, handler retryHandler, args ...string) []byte {
 }
 
 // waitRequestComplete waits for the current request to be completed.
-// If the requests is aborted, it try to recover a specified number of times.
 // If check is not "", the contents is also checked against the output from "neco status".
-func waitRequestCompleteWithRecover(check string, recoverMax int) {
+func waitRequestComplete(check string, recover ...bool) {
 	// wait a moment for neco-updater to put a new request.
 	time.Sleep(time.Second * 2)
 
-	recoverCount := 0
-	Eventually(func() error {
+	EventuallyWithOffset(1, func() error {
 		stdout, stderr, err := execAt(bootServers[0], "neco", "status")
 		if err != nil {
 			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
@@ -209,10 +207,9 @@ func waitRequestCompleteWithRecover(check string, recoverMax int) {
 
 		// Sometimes, neco-worker aborts the update process. Detect it and recover if it is necessary.
 		if strings.Contains(out, "status: aborted") {
-			if recoverCount >= recoverMax {
+			if len(recover) == 0 || !recover[0] {
 				return StopTrying("update process is aborted: " + out)
 			}
-			recoverCount++
 			fmt.Println(out)
 			fmt.Println("update request is aborted, try to recover...")
 			execAt(bootServers[0], "neco", "recover")
@@ -228,12 +225,6 @@ func waitRequestCompleteWithRecover(check string, recoverMax int) {
 		return nil
 
 	}).Should(Succeed())
-}
-
-// waitRequestComplete waits for the current request to be completed.
-// If check is not "", the contents is also checked against the output from "neco status".
-func waitRequestComplete(check string) {
-	waitRequestCompleteWithRecover(check, 0)
 }
 
 func getVaultToken() string {
