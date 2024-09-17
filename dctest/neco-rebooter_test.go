@@ -21,7 +21,7 @@ func testNecoRebooter() {
 			if len(stdout) == 0 {
 				return errors.New("no leader")
 			}
-			leaderNodeBefore = strings.TrimSuffix(string(stdout), "\n")
+			leaderNodeBefore = strings.TrimSpace(string(stdout))
 			return nil
 		}).Should(Succeed())
 
@@ -40,7 +40,7 @@ func testNecoRebooter() {
 			if len(stdout) == 0 {
 				return errors.New("no leader")
 			}
-			leaderNodeAfter := strings.TrimSuffix(string(stdout), "\n")
+			leaderNodeAfter := strings.TrimSpace(string(stdout))
 			if leaderNodeAfter == leaderNodeBefore {
 				return errors.New("leader is not changed")
 			}

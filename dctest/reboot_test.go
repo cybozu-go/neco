@@ -3,6 +3,7 @@ package dctest
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -79,7 +80,7 @@ func testCKERebootGracefully() {
 		Expect(err).NotTo(HaveOccurred())
 		execSafeAt(bootServers[0], "ckecli", "rq", "enable")
 		for _, node := range nodeList.Items {
-			_, stderr, err := execAtWithInput(bootServers[0], []byte(strings.Split(node.Name, ":")[0]), "ckecli rq add -")
+			_, stderr, err := execAtWithInput(bootServers[0], []byte(strings.Split(node.Name, ":")[0]), "ckecli", "rq", "add", "-")
 			Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 		}
 
@@ -89,7 +90,7 @@ func testCKERebootGracefully() {
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			if string(stdout) != "null\n" {
+			if strings.TrimSpace(string(stdout)) != "null" {
 				return fmt.Errorf("reboot-queue is not processed")
 			}
 			return nil
@@ -154,10 +155,10 @@ func testNecoRebooterRebootGracefully() {
 			}
 
 			By("Adding reboot-list entry for " + role + " nodes")
-			execSafeAt(bootServers[0], "sh", "-c", "yes | neco rebooter reboot-worker "+necoRebootWorkerOptions)
+			execSafeAt(bootServers[0], "yes", "|", "neco", "rebooter", "reboot-worker "+necoRebootWorkerOptions)
 			rle := []neco.RebootListEntry{}
 			rleJson := execSafeAt(bootServers[0], "neco", "rebooter", "list")
-			Expect(string(rleJson)).NotTo(Equal("null"))
+			Expect(strings.TrimSpace(string(rleJson))).NotTo(Equal("null"))
 			err = json.Unmarshal(rleJson, &rle)
 			Expect(err).NotTo(HaveOccurred())
 			// Every target kubernetes nodes are pushed to reboot list exactly once.
@@ -185,7 +186,7 @@ func testNecoRebooterRebootGracefully() {
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			if string(stdout) != "null\n" {
+			if strings.TrimSpace(string(stdout)) != "null" {
 				return fmt.Errorf("reboot-list is not processed")
 			}
 			return nil
@@ -198,7 +199,7 @@ func testNecoRebooterRebootGracefully() {
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			if string(stdout) != "null\n" {
+			if strings.TrimSpace(string(stdout)) != "null" {
 				return fmt.Errorf("reboot-queue is not processed")
 			}
 			return nil
@@ -228,6 +229,24 @@ func testNecoRebooterRebootGracefully() {
 			}
 			return nil
 		}).Should(Succeed())
+
+		By("getting available racks")
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "nodes", "-o", "json")
+		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
+		nodes := corev1.NodeList{}
+		err = json.Unmarshal(stdout, &nodes)
+		Expect(err).NotTo(HaveOccurred())
+		racks := []string{}
+		for _, node := range nodes.Items {
+			rack := node.Labels["topology.kubernetes.io/zone"]
+			if len(rack) == 0 {
+				continue
+			}
+			racks = append(racks, rack)
+		}
+		slices.Sort(racks)
+		racks = slices.Compact(racks)
+		Expect(len(racks)).To(BeNumerically(">", 1))
 
 		By("changing neco-rebooter config")
 		config := necorebooter.Config{
@@ -260,8 +279,8 @@ func testNecoRebooterRebootGracefully() {
 		configYaml, err := yaml.Marshal(config)
 		Expect(err).NotTo(HaveOccurred())
 		for _, boot := range bootServers {
-			_, _, err := execAtWithInput(boot, configYaml, "sudo", "tee", "/usr/share/neco/neco-rebooter.yaml")
-			Expect(err).NotTo(HaveOccurred())
+			stdout, stderr, err := execAtWithInput(boot, configYaml, "sudo", "tee", "/usr/share/neco/neco-rebooter.yaml")
+			Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 			execSafeAt(boot, "sudo", "systemctl", "restart", "neco-rebooter")
 		}
 
@@ -286,7 +305,7 @@ func testNecoRebooterRebootGracefully() {
 					},
 				},
 				NodeSelector: map[string]string{
-					"topology.kubernetes.io/zone": "rack1",
+					"topology.kubernetes.io/zone": racks[0],
 				},
 			},
 		}
@@ -317,18 +336,15 @@ func testNecoRebooterRebootGracefully() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("creating a pod")
-		stdout, stderr, err := execAtWithInput(bootServers[0], podYaml, "kubectl", "apply", "-f", "-")
-		if err != nil {
-			Fail(fmt.Sprintf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err))
-		}
+		stdout, stderr, err = execAtWithInput(bootServers[0], podYaml, "kubectl", "apply", "-f", "-")
+		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 		By("creating a pdb")
 		stdout, stderr, err = execAtWithInput(bootServers[0], pdbYaml, "kubectl", "apply", "-f", "-")
-		if err != nil {
-			Fail(fmt.Sprintf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err))
-		}
+		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 
-		By("adding rack1 nodes to reboot-list")
-		execSafeAt(bootServers[0], "sh", "-c", "yes | neco rebooter reboot-worker --rack=1")
+		By(fmt.Sprintf("adding %s nodes to reboot-list", racks[0]))
+		// racks[0][:4] represents the rack number
+		execSafeAt(bootServers[0], "yes", "|", "neco", "rebooter", "reboot-worker", "--rack="+racks[0][4:])
 
 		By("enable rebooting")
 		execSafeAt(bootServers[0], "ckecli", "rq", "enable")
@@ -340,22 +356,23 @@ func testNecoRebooterRebootGracefully() {
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			if string(stdout) == "null\n" {
+			if strings.TrimSpace(string(stdout)) == "null" {
 				return fmt.Errorf("reboot-queue is not processed")
 			}
 			return nil
 		}).Should(Succeed())
 
-		By("adding rack2 nodes to reboot-list")
-		execSafeAt(bootServers[0], "sh", "-c", "yes | neco rebooter reboot-worker --rack=2")
+		By(fmt.Sprintf("adding %s nodes to reboot-list", racks[1]))
+		// racks[0][:4] represents the rack number
+		execSafeAt(bootServers[0], "yes", "|", "neco", "rebooter", "reboot-worker", "--rack="+racks[1][4:])
 
-		By("waiting for skipping rack1 and moving to rack2")
+		By(fmt.Sprintf("waiting for skipping %s and moving to %s", racks[0], racks[1]))
 		Eventually(func() error {
 			stdout, stderr, err := execAt(bootServers[0], "neco", "rebooter", "show-processing-group")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			if string(stdout) != "rack2\n" {
+			if strings.TrimSpace(string(stdout)) != racks[1] {
 				return fmt.Errorf("reboot-queue is not processed")
 			}
 			return nil
@@ -375,7 +392,7 @@ func testNecoRebooterRebootGracefully() {
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			if string(stdout) != "null\n" {
+			if strings.TrimSpace(string(stdout)) != "null" {
 				return fmt.Errorf("reboot-list is not processed")
 			}
 			return nil
@@ -388,7 +405,7 @@ func testNecoRebooterRebootGracefully() {
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			if string(stdout) != "null\n" {
+			if strings.TrimSpace(string(stdout)) != "null" {
 				return fmt.Errorf("reboot-queue is not processed")
 			}
 			return nil
@@ -411,7 +428,7 @@ func testNecoRebooterRebootGracefully() {
 		By("rebooting all workers")
 		execSafeAt(bootServers[0], "ckecli", "rq", "enable")
 		execSafeAt(bootServers[0], "neco", "rebooter", "enable")
-		execSafeAt(bootServers[0], "sh", "-c", "yes | neco rebooter reboot-worker")
+		execSafeAt(bootServers[0], "yes", "|", "neco", "rebooter", "reboot-worker")
 
 		By("waiting for reboot-list to be processed")
 		Eventually(func() error {
@@ -419,7 +436,7 @@ func testNecoRebooterRebootGracefully() {
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			if string(stdout) != "null\n" {
+			if strings.TrimSpace(string(stdout)) != "null" {
 				return fmt.Errorf("reboot-queue is not processed")
 			}
 			return nil
