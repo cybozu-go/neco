@@ -218,6 +218,9 @@ func (c *Controller) collectEntries(rebootListEntries []*neco.RebootListEntry, r
 		}
 	}
 	for _, rqEntry := range rebootQueueEntries {
+		if rqEntry.Status == cke.RebootStatusCancelled {
+			continue
+		}
 		rlEntry := findRebootListEntryFromRebootQueueEntry(rebootListEntries, *rqEntry)
 		if rlEntry == nil {
 			orphanedEntry = append(orphanedEntry, EntrySet{nil, rqEntry})
