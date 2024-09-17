@@ -35,6 +35,11 @@ hubble:
       requests:
         cpu: 100m
         memory: 200Mi
+    podSecurityContext:
+      fsGroup: 10000
+    securityContext:
+      runAsUser: 10000
+      runAsGroup: 10000
   tls:
     auto:
       method: "cronJob"
@@ -88,7 +93,4 @@ socketLB:
   enabled: true
   hostNamespaceOnly: true
 tunnel: "disabled"
-updateStrategy:
-  rollingUpdate: null
-  type: OnDelete
 upgradeCompatibility: "1.12"
