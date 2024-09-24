@@ -50,9 +50,6 @@ rules:
   - ciliumexternalworkloads
   - ciliumexternalworkloads/finalizers
   - ciliumexternalworkloads/status
-  - ciliumcidrgroups
-  - ciliumcidrgroups/finalizers
-  - ciliumcidrgroups/status
   verbs:
   - "get"
   - "list"
