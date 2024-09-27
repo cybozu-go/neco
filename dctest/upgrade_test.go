@@ -283,7 +283,7 @@ func testUpgrade() {
 				case "squid-exporter":
 					return checkVersionInDeployment("internet-egress", "squid", newImage)
 				case "cilium":
-					return checkVersionInDaemonSetPartial("kube-system", "cilium", newImage, 1)
+					return checkVersionInDaemonSetPartial("kube-system", "cilium", newImage, 4)
 				case "cilium-operator-generic":
 					return checkVersionInDeployment("kube-system", "cilium-operator", newImage)
 				case "hubble-relay":
