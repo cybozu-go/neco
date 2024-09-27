@@ -37,7 +37,7 @@ func testCKESetup() {
 	It("should generates cluster.yml automatically", func() {
 		By("setting configurations")
 		execSafeAt(bootServers[0], "ckecli", "constraints", "set", "control-plane-count", "3")
-		execSafeAt(bootServers[0], "ckecli", "constraints", "set", "minimum-workers", "2")
+		execSafeAt(bootServers[0], "ckecli", "constraints", "set", "minimum-workers", "6")
 		execSafeAt(bootServers[0], "ckecli", "sabakan", "set-url", "http://localhost:10080")
 
 		By("waiting for cluster.yml generation")
@@ -128,9 +128,9 @@ func testCKE() {
 				return err
 			}
 
-			// control-plane-count + minimum-workers = 5
+			// control-plane-count + minimum-workers = 9
 			// https://github.com/cybozu-go/cke/blob/main/docs/sabakan-integration.md#initialization
-			if len(nl.Items) != 5 {
+			if len(nl.Items) != 9 {
 				return fmt.Errorf("too few nodes: %d", len(nl.Items))
 			}
 			return nil
