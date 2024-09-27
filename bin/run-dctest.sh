@@ -39,9 +39,15 @@ $GCLOUD compute instances create ${INSTANCE_NAME} \
   --labels=${LABEL_REPO},${LABEL_REF},${LABEL_JOB}
 
 # Wait for boot of GCE instance
+count=0
 for i in $(seq 300); do
   if $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command=date 2>/dev/null; then
-    break
+    count=$(expr $count + 1)
+    if [ $count -ge 5 ]; then
+      break
+    fi
+  else
+    count=0
   fi
   sleep 1
 done
