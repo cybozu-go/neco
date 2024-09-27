@@ -179,9 +179,12 @@ func testUpgrade() {
 		err = json.Unmarshal(stdout, podList)
 		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
 		Expect(len(podList.Items)).To(BeNumerically(">", 0))
-		podName := podList.Items[0].Name
-		stdout, stderr, err = execAt(bootServers[0], "kubectl", "delete", "pod", "-n=kube-system", podName)
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		podNumToKill := len(podList.Items) / 2
+		for i := 0; i < podNumToKill; i++ {
+			podName := podList.Items[i].Name
+			stdout, stderr, err = execAt(bootServers[0], "kubectl", "delete", "pod", "-n=kube-system", podName)
+			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		}
 	})
 
 	It("should running newer cke desired image version", func() {
