@@ -78,11 +78,27 @@ func testL4LB() {
 
 			return exec.Command("ip", "netns", "exec", "external", "curl", targetIPForLocal, "-m", "5").Run()
 		}).Should(Succeed())
+		Consistently(func() error {
+			err := exec.Command("ip", "netns", "exec", "external", "curl", targetIP, "-m", "5").Run()
+			if err != nil {
+				return err
+			}
+
+			return exec.Command("ip", "netns", "exec", "external", "curl", targetIPForLocal, "-m", "5").Run()
+		}).Should(Succeed())
 
 		By("access service from external(Inbound packets have the tos)")
 		Expect(exec.Command("ip", "netns", "exec", "external",
 			"iptables", "-t", "mangle", "-A", "OUTPUT", "-p", "TCP", "--dport", "80", "-j", "TOS", "--set-tos", "0x20").Run()).ShouldNot(HaveOccurred())
 		Eventually(func() error {
+			err := exec.Command("ip", "netns", "exec", "external", "curl", targetIP, "-m", "5").Run()
+			if err != nil {
+				return err
+			}
+
+			return exec.Command("ip", "netns", "exec", "external", "curl", targetIPForLocal, "-m", "5").Run()
+		}).Should(Succeed())
+		Consistently(func() error {
 			err := exec.Command("ip", "netns", "exec", "external", "curl", targetIP, "-m", "5").Run()
 			if err != nil {
 				return err
@@ -131,20 +147,26 @@ func testL4LB() {
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 
 		By("access service from a Pod")
+		stdout, stderr, err = execAt(bootServers[0], "kubectl", "-n", ns, "get", "pods", "-l", "app.kubernetes.io/name=ubuntu-l4lb-client", "-o", "json")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		podList = &corev1.PodList{}
+		err = json.Unmarshal(stdout, podList)
+		Expect(err).ShouldNot(HaveOccurred())
+		Expect(len(podList.Items)).To(Equal(1))
+		podName := podList.Items[0].Name
+
 		Eventually(func() error {
-			stdout, stderr, err := execAt(bootServers[0], "kubectl", "-n", ns, "get", "pods", "-l", "app.kubernetes.io/name=ubuntu-l4lb-client", "-o", "json")
+			stdout, stderr, err = execAt(bootServers[0], "kubectl", "exec", "-n", ns, podName, "--", "curl", targetIP, "-m", "5")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			podList := &corev1.PodList{}
-			if err := json.Unmarshal(stdout, podList); err != nil {
-				return err
+			stdout, stderr, err = execAt(bootServers[0], "kubectl", "exec", "-n", ns, podName, "--", "curl", targetIPForLocal, "-m", "5")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
-			if len(podList.Items) != 1 {
-				return fmt.Errorf("podList length is not 1: %d", len(podList.Items))
-			}
-			podName := podList.Items[0].Name
-
+			return nil
+		}).Should(Succeed())
+		Consistently(func() error {
 			stdout, stderr, err = execAt(bootServers[0], "kubectl", "exec", "-n", ns, podName, "--", "curl", targetIP, "-m", "5")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
