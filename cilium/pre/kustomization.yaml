@@ -38,4 +38,4 @@ configMapGenerator:
   namespace: kube-system
   behavior: merge
   literals:
-  - api-rate-limit=endpoint-create=auto-adjust:true,mean-over:10,max-parallel-requests:4,min-parallel-requests:2
+  - api-rate-limit=endpoint-create=auto-adjust:true,log:true,estimated-processing-duration:5s,max-parallel-requests:16
