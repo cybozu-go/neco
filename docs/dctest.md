@@ -116,7 +116,6 @@ This variable makes sense only when `SUITE=bootstrap` is specified.
 You can choose the list of artifacts by specifying `TAGS` make variable,
 though non-default value is only for CI.
 The default is to use `artifacts.go`.
-Specify `TAGS=release` in the release branch to use `artifacts_release.go`.
 
 `make test` accepts this variable.
 
