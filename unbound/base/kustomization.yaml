@@ -8,6 +8,6 @@ resources:
   - service.yaml
 images:
   - name: ghcr.io/cybozu/unbound
-    newTag: 1.21.0.1
+    newTag: 1.21.1.1
   - name: ghcr.io/cybozu/unbound_exporter
     newTag: 0.4.6.2
