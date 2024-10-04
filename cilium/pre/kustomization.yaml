@@ -29,7 +29,7 @@ patches:
       group: batch
       version: v1
       kind: Job
-      name: hubble-generate-certs-52f7318499
+      name: hubble-generate-certs
     patch: |-
       - op: remove
         path: /spec/ttlSecondsAfterFinished
