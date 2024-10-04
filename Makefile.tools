@@ -578,9 +578,9 @@ clusterdump:
 
 $(CMCTL_DOWNLOAD):
 	mkdir -p $(CMCTL_DLDIR)/linux_amd64 $(CMCTL_DLDIR)/windows_amd64 $(CMCTL_DLDIR)/darwin_amd64
-	$(WGET_GITHUB) -O - https://github.com/cert-manager/cert-manager/releases/download/v$(CMCTL_VERSION)/cmctl-linux-amd64.tar.gz | tar xvzf - -C $(CMCTL_DLDIR)/linux_amd64
-	$(WGET_GITHUB) -O - https://github.com/cert-manager/cert-manager/releases/download/v$(CMCTL_VERSION)/cmctl-windows-amd64.tar.gz | tar xvzf - -C $(CMCTL_DLDIR)/windows_amd64
-	$(WGET_GITHUB) -O - https://github.com/cert-manager/cert-manager/releases/download/v$(CMCTL_VERSION)/cmctl-darwin-amd64.tar.gz | tar xvzf - -C $(CMCTL_DLDIR)/darwin_amd64
+	$(WGET_GITHUB) -O - https://github.com/cert-manager/cmctl/releases/download/v$(CMCTL_VERSION)/cmctl_linux_amd64.tar.gz | tar xvzf - -C $(CMCTL_DLDIR)/linux_amd64
+	$(WGET_GITHUB) -O - https://github.com/cert-manager/cmctl/releases/download/v$(CMCTL_VERSION)/cmctl_windows_amd64.tar.gz | tar xvzf - -C $(CMCTL_DLDIR)/windows_amd64
+	$(WGET_GITHUB) -O - https://github.com/cert-manager/cmctl/releases/download/v$(CMCTL_VERSION)/cmctl_darwin_amd64.tar.gz | tar xvzf - -C $(CMCTL_DLDIR)/darwin_amd64
 	touch $@
 
 .PHONY: cmctl
