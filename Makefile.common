@@ -35,10 +35,7 @@ HUBBLE_VERSION = 0.11.6
 TEMPO_VERSION = 2.5.0
 FLAMEGRAPH_COMMIT_HASH = cd9ee4c4449775a2f867acf31c84b7fe4b132ad5
 NECOPERF_VERSION = 0.1.1
-# The version is aligned with the cert-manager used.
-# Be careful when upgrading, as cmctl will be independent of cert-manager in versions after 1.14.
-# https://cert-manager.io/docs/reference/cmctl/
-CMCTL_VERSION = 1.14.4
+CMCTL_VERSION = 2.1.1
 VICTORIAMETRICS_VERSION = 1.100.1
 
 SUDO = sudo
