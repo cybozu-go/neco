@@ -192,7 +192,7 @@ func execRetryAt(host string, handler retryHandler, args ...string) []byte {
 				StopTrying("retry skipped. " + msg).Wrap(err).Now()
 			}
 			fmt.Printf("retrying... %v", args)
-			g.Expect(err).NotTo(BeNil(), "retry failed. "+msg)
+			g.Expect(err).NotTo(HaveOccurred(), "retry failed. "+msg)
 		}
 	}).Should(Succeed())
 	return stdout
