@@ -1,6 +1,4 @@
 images:
-- repository: ghcr.io/cybozu/etcd
-  versions: ["3.5.15.1"]
 - repository: ghcr.io/cybozu/squid
   versions: ["6.12.0.1","6.12.0.2"]
 - repository: ghcr.io/cybozu/squid-exporter
