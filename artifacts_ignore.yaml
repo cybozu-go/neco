@@ -4,3 +4,5 @@ images:
 osImage:
 - channel: stable
   versions: ["3975.2.0","3975.2.1"]
+- channel: alpha
+  versions: ["3941.0.0","3975.0.0", "4012.0.0","4012.0.1","4054.0.0","4081.0.0"]

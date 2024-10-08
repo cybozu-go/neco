@@ -51,7 +51,7 @@ var debRepos = []string{
 
 var templ = template.Must(template.New("").Parse(artifactSetTemplate))
 
-const osImageFeed = "https://www.flatcar.org/releases-json/releases-stable.json"
+const osImageFeed = "https://www.flatcar.org/releases-json/releases-alpha.json"
 
 func render(w io.Writer, release bool, images []*neco.ContainerImage, debs []*neco.DebianPackage, osImage *neco.OSImage) error {
 	var data struct {
@@ -123,7 +123,7 @@ func (c *IgnoreConfig) getDebVersions(name string) []string {
 
 func (c *IgnoreConfig) getOSImageVersions() []string {
 	for _, core := range c.OSImage {
-		if core.Channel == "stable" {
+		if core.Channel == "alpha" {
 			return core.Versions
 		}
 	}
@@ -302,7 +302,7 @@ OUTER:
 	}
 	sort.Sort(sort.Reverse(version.Collection(versions)))
 	return &neco.OSImage{
-		Channel: "stable",
+		Channel: "alpha",
 		Version: versions[0].Original(),
 	}, nil
 }
