@@ -5,7 +5,6 @@ files:
   - /etc/bird/bird.conf
   - /etc/chrony.conf
   - /etc/crictl.yaml
-  - /etc/flatcar/enabled-sysext.conf
   - /etc/fstab
   - /etc/hostname
   - /etc/k8s-containerd/config.toml
