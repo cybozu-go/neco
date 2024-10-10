@@ -61,6 +61,8 @@ CMCTL_DLDIR := $(DOWNLOADDIR)/cmctl-$(CMCTL_VERSION)
 CMCTL_DOWNLOAD := $(CMCTL_DLDIR)/downloaded
 VMALERT_TOOL_DLDIR := $(DOWNLOADDIR)/vmalert-tool-$(VICTORIAMETRICS_VERSION)
 VMALERT_TOOL_DOWNLOAD := $(VMALERT_TOOL_DLDIR)/downloaded
+NPV_DLDIR := $(DOWNLOADDIR)/npv-$(NPV_VERSION)
+NPV_DOWNLOAD := $(NPV_DLDIR)/downloaded
 
 .PHONY: all
 all: 
@@ -69,7 +71,7 @@ all:
 	$(CURDIR)/bin/neco-download-dir-cache.sh write
 
 .PHONY: download-all
-download-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf necoip nsdump clusterdump cmctl vmalert-tool
+download-all: node_exporter containerd nerdctl crictl runc argocd kubectl kubeseal stern kustomize jsonnet teleport cke moco logcli yq kubectl-neat accurate alertmanager cilium-cli hubble tempo helm flamegraph necoperf necoip nsdump clusterdump cmctl vmalert-tool npv
 	# all binaries in BINDIR and SBINDIR must have executable bits
 	test -z "$$(find $(BINDIR) $(SBINDIR) -type f -a \( \! -perm -111 \) | tee /dev/stderr)"
 	mkdir -p $(DOWNLOADDIR)
@@ -617,6 +619,16 @@ vmalert-tool: $(VMALERT_TOOL_DOWNLOAD)
 	mv $(MAC_BINDIR)/vmalert-tool-prod $(MAC_BINDIR)/vmalert-tool
 	$(CP) $(VMALERT_TOOL_DLDIR)/README.md $(MAC_DOCDIR)/$@/
 	$(CP) $(VMALERT_TOOL_DLDIR)/LICENSE $(MAC_DOCDIR)/$@/
+
+$(NPV_DOWNLOAD):
+	mkdir -p $(NPV_DLDIR)
+	$(WGET_GITHUB) -O $(NPV_DLDIR)/linux-amd64.tar.gz https://github.com/cybozu-go/network-policy-viewer/releases/download/v$(NPV_VERSION)/npv_v$(NPV_VERSION)_amd64.tar.gz
+	touch $@
+
+.PHONY: npv
+npv: $(NPV_DOWNLOAD)
+	mkdir -p $(BINDIR)
+	tar xvf $(NPV_DLDIR)/linux-amd64.tar.gz -C $(BINDIR)
 
 .PHONY: clean
 clean:
