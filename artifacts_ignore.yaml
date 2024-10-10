@@ -1,6 +1,3 @@
 images:
 - repository: ghcr.io/cybozu/etcd
   versions: ["3.5.15.1"]
-osImage:
-- channel: stable
-  versions: ["3975.2.0","3975.2.1"]
