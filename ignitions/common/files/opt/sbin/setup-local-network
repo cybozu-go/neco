@@ -84,6 +84,7 @@ wait_network() {
             fi
         done
         echo waiting for network ${DESC}...
+        ip addr show
         sleep 5
     done
 }
