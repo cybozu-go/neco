@@ -11,6 +11,7 @@ import (
 	necorebooter "github.com/cybozu-go/neco/pkg/neco-rebooter"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -284,28 +285,61 @@ func testNecoRebooterRebootGracefully() {
 			execSafeAt(boot, "sudo", "systemctl", "restart", "neco-rebooter")
 		}
 
-		pod := corev1.Pod{
+		By("counting cs nodes in racks[0]")
+		stdout, stderr, err = execAt(bootServers[0], "kubectl", "get", "nodes", "-l", "cke.cybozu.com/role=cs,topology.kubernetes.io/zone="+racks[0], "-o", "json")
+		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
+		nodes = corev1.NodeList{}
+		err = json.Unmarshal(stdout, &nodes)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(len(nodes.Items)).To(BeNumerically(">", 0))
+		numNodes := int32(len(nodes.Items))
+
+		deployment := appsv1.Deployment{
 			TypeMeta: metav1.TypeMeta{
-				Kind:       "Pod",
-				APIVersion: "v1",
+				Kind:       "Deployment",
+				APIVersion: "apps/v1",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "test-pod",
+				Name:      "test-deployment",
 				Namespace: "default",
-				Labels: map[string]string{
-					"app": "test-pod",
-				},
 			},
-			Spec: corev1.PodSpec{
-				Containers: []corev1.Container{
-					{
-						Name:    "test-container",
-						Image:   "ghcr.io/cybozu/ubuntu:22.04",
-						Command: []string{"pause"},
+			Spec: appsv1.DeploymentSpec{
+				Replicas: &numNodes,
+				Selector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{
+						"app": "test-deployment",
 					},
 				},
-				NodeSelector: map[string]string{
-					"topology.kubernetes.io/zone": racks[0],
+				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"app": "test-deployment",
+						},
+					},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:    "test-container",
+								Image:   "ghcr.io/cybozu/ubuntu:22.04",
+								Command: []string{"pause"},
+							},
+						},
+						NodeSelector: map[string]string{
+							"topology.kubernetes.io/zone": racks[0],
+						},
+						TopologySpreadConstraints: []corev1.TopologySpreadConstraint{
+							{
+								MaxSkew:           1,
+								TopologyKey:       "kubernetes.io/hostname",
+								WhenUnsatisfiable: corev1.DoNotSchedule,
+								LabelSelector: &metav1.LabelSelector{
+									MatchLabels: map[string]string{
+										"app": "test-deployment",
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		}
@@ -325,26 +359,26 @@ func testNecoRebooterRebootGracefully() {
 				},
 				Selector: &metav1.LabelSelector{
 					MatchLabels: map[string]string{
-						"app": "test-pod",
+						"app": "test-deployment",
 					},
 				},
 			},
 		}
-		podYaml, err := json.Marshal(pod)
+		deploymentYaml, err := json.Marshal(deployment)
 		Expect(err).NotTo(HaveOccurred())
 		pdbYaml, err := json.Marshal(pdb)
 		Expect(err).NotTo(HaveOccurred())
 
-		By("creating a pod")
-		stdout, stderr, err = execAtWithInput(bootServers[0], podYaml, "kubectl", "apply", "-f", "-")
+		By("creating a deployment")
+		stdout, stderr, err = execAtWithInput(bootServers[0], deploymentYaml, "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 		By("creating a pdb")
 		stdout, stderr, err = execAtWithInput(bootServers[0], pdbYaml, "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 
-		By(fmt.Sprintf("adding %s nodes to reboot-list", racks[0]))
+		By(fmt.Sprintf("adding %s cs nodes to reboot-list", racks[0]))
 		// racks[0][:4] represents the rack number
-		execSafeAt(bootServers[0], "yes", "|", "neco", "rebooter", "reboot-worker", "--rack="+racks[0][4:])
+		execSafeAt(bootServers[0], "yes", "|", "neco", "rebooter", "reboot-worker", "--rack="+racks[0][4:], "--role=cs")
 
 		By("enable rebooting")
 		execSafeAt(bootServers[0], "ckecli", "rq", "enable")
@@ -363,7 +397,7 @@ func testNecoRebooterRebootGracefully() {
 		}).Should(Succeed())
 
 		By(fmt.Sprintf("adding %s nodes to reboot-list", racks[1]))
-		// racks[0][:4] represents the rack number
+		// racks[1][:4] represents the rack number
 		execSafeAt(bootServers[0], "yes", "|", "neco", "rebooter", "reboot-worker", "--rack="+racks[1][4:])
 
 		By(fmt.Sprintf("waiting for skipping %s and moving to %s", racks[0], racks[1]))
@@ -382,7 +416,7 @@ func testNecoRebooterRebootGracefully() {
 		execSafeAt(bootServers[0], "neco", "rebooter", "cancel-all")
 
 		By("delete the pod and pdb")
-		execSafeAt(bootServers[0], "kubectl", "delete", "pod", "test-pod")
+		execSafeAt(bootServers[0], "kubectl", "delete", "deployment", "test-deployment")
 		execSafeAt(bootServers[0], "kubectl", "delete", "pdb", "test-pdb")
 
 		By("waiting for all reboot-list removed")
