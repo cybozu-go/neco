@@ -3,10 +3,16 @@ CKECLI_COMMAND="/usr/bin/ckecli"
 NECO_COMMAND="/usr/bin/neco"
 UNAME_COMMAND="/usr/bin/uname"
 YES_COMMAND="/usr/bin/yes"
+NOREBOOT_FILE="/tmp/no-reboot"
 
 ENVIROMENT=$(${NECO_COMMAND} config get env)
 if [ "$ENVIROMENT" != "dev" ]; then
     echo "This script is only for dev environment"
+    exit 0
+fi
+
+if [ -f ${NOREBOOT_FILE} ]; then
+    echo "The no-reboot file exists. Skipping reboot all nodes"
     exit 0
 fi
 
