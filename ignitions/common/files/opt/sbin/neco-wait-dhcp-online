@@ -2,7 +2,7 @@
 
 wait_for_address() {
     for i in $(seq 500); do
-        ip -o -4 address | grep -w "eth0\|eth1\|eno1\|eno2\|eno12399\|eno12409" >/dev/null
+        ip -o -4 address | grep -w "eth0\|eth1\|eno1\|eno2\|eno12399\|eno12399np0\|eno12409\|eno12409np1" >/dev/null
         [ "$?" -eq 0 ] && return
         sleep 1
     done

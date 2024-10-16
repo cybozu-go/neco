@@ -1,5 +1,5 @@
 [Match]
-Name=eth1 eno2 eno12409
+Name=eth1 eno2 eno12409 eno12409np1
 
 [Network]
 DHCP=yes
