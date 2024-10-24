@@ -51,11 +51,15 @@ repair:
         command_retries: 2
         command_interval: 30
         watch_seconds: 600
+      - repair_command: ["sh", "neco nonGracefulNodeShutdown shutdown $1", "nonGracefulNodeShutdown"]
+        command_timeout_seconds: 300
+        command_retries: 3
+        command_interval: 30
+        need_drain: true
       - repair_command: ["neco", "bmc", "repair", "dell", "discharge"]
         command_timeout_seconds: 60 # "discharge" is a compound command and requires a little more time
         command_retries: 2
         command_interval: 30
-        need_drain: true
         watch_seconds: 360 # too short watch for discharging; this is to power on machine 6 minutes after
       - repair_command: ["sh", "-c", "neco power start $1 || true", "power-start"]
         command_timeout_seconds: 30
@@ -65,18 +69,19 @@ repair:
         watch_seconds: 1500
       health_check_command: ["sh", "-c", "check-machine-state $1 healthy retired", "check-machine-state"]
       command_timeout_seconds: 10
+      success_command: ["sh", "-c", "neco nonGracefulNodeShutdown cleanup $1", "nonGracefulNodeShutdown"]
+      success_timeout_seconds: 300
     - operation: unreachable
       repair_steps:
-      - repair_command: ["neco", "bmc", "repair", "dell", "reset-idrac"]
-        command_timeout_seconds: 30
-        command_retries: 2
+      - repair_command: ["sh", "neco nonGracefulNodeShutdown shutdown $1", "nonGracefulNodeShutdown"]
+        command_timeout_seconds: 300
+        command_retries: 3
         command_interval: 30
-        watch_seconds: 600
+        need_drain: false
       - repair_command: ["neco", "bmc", "repair", "dell", "discharge"]
         command_timeout_seconds: 60 # "discharge" is a compound command and requires a little more time
         command_retries: 2
         command_interval: 30
-        need_drain: false
         watch_seconds: 360 # too short watch for discharging; this is to power on machine 6 minutes after
       - repair_command: ["sh", "-c", "neco power start $1 || true", "power-start"]
         command_timeout_seconds: 30
@@ -91,6 +96,8 @@ repair:
         watch_seconds: 600
       health_check_command: ["sh", "-c", "check-machine-state $1 healthy retired", "check-machine-state"]
       command_timeout_seconds: 10
+      success_command: ["sh", "-c", "neco nonGracefulNodeShutdown cleanup $1", "nonGracefulNodeShutdown"]
+      success_timeout_seconds: 300
   max_concurrent_repairs: 1
   evict_retries: 30
   evict_interval: 10
@@ -161,6 +168,7 @@ options:
       - "--leader-elect-renew-deadline=15s"
       - "--leader-elect-lease-duration=20s"
       - "--kube-api-qps=50"
+      - "--disable-force-detach-on-timeout=true"
   kube-proxy:
     disable: true
     # For local-proxy running on boot servers
