@@ -296,7 +296,6 @@ jobs:
       - checkout
       - restore-tools
       - run-dctest-bootstrap:
-          tag: release
           datacenter: staging
       - run:
           name: Run dctest upgrade
