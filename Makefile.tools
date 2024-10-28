@@ -31,7 +31,7 @@ JSONNET_DLDIR := $(DOWNLOADDIR)/jsonnet-v$(JSONNET_VERSION)
 JSONNET_DOWNLOAD := $(JSONNET_DLDIR)/downloaded
 TELEPORT_DLDIR := $(DOWNLOADDIR)/teleport-v$(TELEPORT_VERSION)
 TELEPORT_DOWNLOAD := $(TELEPORT_DLDIR)/downloaded
-CKE_DLDIR := $(DOWNLOADDIR)/cke-v$(CKE_VERSION)
+CKE_DLDIR := $(DOWNLOADDIR)/cke-$(CKE_VERSION)
 CKE_DOWNLOAD := $(CKE_DLDIR)/downloaded
 MOCO_DLDIR := $(DOWNLOADDIR)/moco-v$(MOCO_VERSION)
 MOCO_DOWNLOAD := $(MOCO_DLDIR)/downloaded
@@ -339,7 +339,7 @@ teleport: $(TELEPORT_DOWNLOAD)
 
 $(CKE_DOWNLOAD):
 	mkdir -p $(CKE_DLDIR)
-	git clone --depth 1 -b v$(CKE_VERSION) https://github.com/cybozu-go/cke $(CKE_DLDIR)/source
+	git clone --depth 1 -b $(CKE_VERSION) https://github.com/cybozu-go/cke $(CKE_DLDIR)/source
 	cd $(CKE_DLDIR)/source; CGO_ENABLED=0 go build -ldflags="-w -s" ./pkg/cke
 	cd $(CKE_DLDIR)/source; CGO_ENABLED=0 go build -ldflags="-w -s" ./pkg/cke-localproxy
 	cd $(CKE_DLDIR)/source; CGO_ENABLED=0 go build -ldflags="-w -s" ./pkg/ckecli
