@@ -113,9 +113,7 @@ This variable makes sense only when `SUITE=bootstrap` is specified.
 
 ### `TAGS`
 
-You can choose the list of artifacts by specifying `TAGS` make variable,
-though non-default value is only for CI.
-The default is to use `artifacts.go`.
+This variable is not currently in use.
 
 `make test` accepts this variable.
 

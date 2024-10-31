@@ -7,7 +7,7 @@ There is one artifacts file.  When generating neco binaries and the neco deb pac
 
 - [artifacts.go](../artifacts.go)
 
-    This file describes artifacts to be tested in development.
+    This file describes artifacts which is used while development or CI before build neco binaries.
     It should be updated with `generate-artifacts` command.
     You may edit the file **ONLY IF** you would like to test different combination of components.
 
@@ -20,7 +20,7 @@ A component with prerelease version information, i.e. x.y.z-\<prerelease\>,
 does not get included in artifacts files by `generate-artifacts`.
 So if you want to use such a component, include it manually.
 Though you can edit `artifacts.go` in this case, you must not merge it into
-the main branch anyway.
+the main branch because prerelease version is unstable and may not be compatible with other the associated regular versions.
 Instead, after you confirm that neco can accept a component of x.y.z-\<prerelease\>,
 release the component as x.y.z and include it in artifacts files by `generate-artifacts`.
 
