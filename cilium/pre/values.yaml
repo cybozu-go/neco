@@ -13,6 +13,7 @@ cgroup:
 cni:
   chainingMode: "generic-veth"
   customConf: true
+conntrackGCMaxInterval: 30m
 datapathMode: "veth"
 devices: "eth+ eno1+ eno2+"
 enableIPv4Masquerade: false
