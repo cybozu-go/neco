@@ -147,5 +147,5 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 }
 
 func init() {
-	nonGracefulShutdownCmd.AddCommand(nonGracefulShutdownCleanupCmd)
+	nonGracefulNodeShutdownCmd.AddCommand(nonGracefulShutdownCleanupCmd)
 }

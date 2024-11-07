@@ -22,12 +22,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var nonGracefulShutdownCmd = &cobra.Command{
-	Use:   "nonGracefulShutdown IP_ADDRESS",
-	Short: "nonGracefulShutdown related commands",
-	Long:  `nonGracefulShutdown related commands.`,
+var nonGracefulNodeShutdownCmd = &cobra.Command{
+	Use:   "nonGracefulNodeShutdown IP_ADDRESS",
+	Short: "nonGracefulNodeShutdown related commands",
+	Long:  `nonGracefulNodeShutdown related commands.`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		node := args[0]
+
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer stop()
 
@@ -53,54 +55,60 @@ var nonGracefulShutdownCmd = &cobra.Command{
 			return err
 		}
 
+		// Get the node
+		kubernetesNode := &corev1.Node{}
+		err = kubeClient.Get(ctx, client.ObjectKey{Name: node}, kubernetesNode)
+		if err != nil {
+			return err
+		}
+
 		// Shutdown the node
 		fmt.Println("Shutting down the node")
-		node := args[0]
 		powerCheckCmd := exec.Command("neco", "power", "status", node)
 		var out bytes.Buffer
 		powerCheckCmd.Stdout = &out
 		err = powerCheckCmd.Run()
 		if err != nil {
-			return err
-		}
-		if strings.TrimSpace(out.String()) == "On" {
-			poweroffCmd := exec.Command("neco", "power", "stop", node)
-			err = poweroffCmd.Run()
-			if err != nil {
+			if kubernetesNode.Labels["node.cybozu.io/reserved-for"] == "rbd" {
+				fmt.Println("The node is dedicated. Skip the shutdown.")
+			} else {
 				return err
 			}
-			//wait for the node to be down
-			fmt.Printf("Waiting for the node %s to be down\n", node)
-			timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Minute)
-			defer cancel()
-		L:
-			for {
-				select {
-				case <-timeoutCtx.Done():
-					return errors.New("power check timeout")
-				default:
-					out.Reset()
-					powerCheckCmd := exec.Command("neco", "power", "status", node)
-					powerCheckCmd.Stdout = &out
-					err = powerCheckCmd.Run()
-					if err != nil {
-						return err
+		} else {
+			if strings.TrimSpace(out.String()) == "On" {
+				poweroffCmd := exec.Command("neco", "power", "stop", node)
+				err = poweroffCmd.Run()
+				if err != nil {
+					return err
+				}
+				//wait for the node to be down
+				fmt.Printf("Waiting for the node %s to be down\n", node)
+				timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+				defer cancel()
+			L:
+				for {
+					select {
+					case <-timeoutCtx.Done():
+						return errors.New("power check timeout")
+					default:
+						out.Reset()
+						powerCheckCmd := exec.Command("neco", "power", "status", node)
+						powerCheckCmd.Stdout = &out
+						err = powerCheckCmd.Run()
+						if err != nil {
+							return err
+						}
+						if strings.TrimSpace(out.String()) == "Off" {
+							break L
+						}
+						time.Sleep(5 * time.Second)
 					}
-					if strings.TrimSpace(out.String()) == "Off" {
-						break L
-					}
-					time.Sleep(5 * time.Second)
 				}
 			}
 		}
 
 		// Add taint to the node
 		fmt.Println("Adding taint to the node")
-		kubernetesNode := &corev1.Node{}
-		err = kubeClient.Get(ctx, client.ObjectKey{Name: node}, kubernetesNode)
-		if err != nil {
-			return err
-		}
 		tainted := false
 		for _, taint := range kubernetesNode.Spec.Taints {
 			if taint.Key == "node.kubernetes.io/out-of-service" {
@@ -167,5 +175,5 @@ var nonGracefulShutdownCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(nonGracefulShutdownCmd)
+	rootCmd.AddCommand(nonGracefulNodeShutdownCmd)
 }
