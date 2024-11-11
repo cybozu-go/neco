@@ -37,20 +37,9 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 		clientgoscheme.AddToScheme(scheme)
 		csiaddonsv1alpha1.AddToScheme(scheme)
 
-		//get sabakan status
-		opt := sabakanMachinesGetOpts{}
-		opt.params = map[string]*string{
-			"ipv4": &node,
-		}
-		machines, err := sabakanMachinesGet(ctx, &opt)
-		if err != nil {
-			return err
-		}
-		sabakanStatus := machines[0].Status.State
-
 		//issue kubeconfig
 		issueCmd := exec.Command("sh", "-c", "ckecli kubernetes issue > /home/cybozu/.kube/shutdown-config")
-		err = issueCmd.Run()
+		err := issueCmd.Run()
 		if err != nil {
 			fmt.Println("Failed to issue kubeconfig")
 			os.Exit(1)
@@ -66,8 +55,18 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 			return err
 		}
 
+		//get sabakan status
+		opt := sabakanMachinesGetOpts{}
+		opt.params = map[string]*string{
+			"ipv4": &node,
+		}
+		machines, err := sabakanMachinesGet(ctx, &opt)
+		if err != nil {
+			return err
+		}
+		sabakanStatus := machines[0].Status.State
+
 		// remove networkfence
-		cephClusters := []string{"ceph-canary-block", "ceph-dotcom-block-0", "ceph-poc", "ceph-ssd"}
 		for _, cephCluster := range cephClusters {
 			//check cephCluster exists
 			nameSpace := &corev1.Namespace{}
@@ -80,8 +79,7 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 					return err
 				}
 			}
-			fenceName := strings.Replace(node, ".", "-", -1) + "-" + cephCluster
-			//get networkfence
+			fenceName := cephCluster + "-" + strings.Replace(node, ".", "-", -1)
 			networkFence := &csiaddonsv1alpha1.NetworkFence{}
 			err = kubeClient.Get(ctx, client.ObjectKey{Name: fenceName}, networkFence)
 			if err != nil {
@@ -98,6 +96,7 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
+
 			// wait for unfense of networkfence to be Succeeded
 			timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 			defer cancel()
@@ -115,7 +114,6 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 						break L
 					}
 					time.Sleep(5 * time.Second)
-					// break L
 				}
 			}
 			err = kubeClient.Delete(ctx, networkFence)
@@ -124,9 +122,7 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 			}
 		}
 
-		//run this command if node is Healthy
 		if sabakanStatus == sabakan.StateHealthy {
-			// remove out-of-service taint
 			kubernetesNode := &corev1.Node{}
 			err = kubeClient.Get(ctx, client.ObjectKey{Name: node}, kubernetesNode)
 			if err != nil {

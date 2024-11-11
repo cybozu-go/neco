@@ -22,6 +22,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var (
+	cephClusters = []string{"ceph-canary-block", "ceph-dotcom-block-0", "ceph-poc", "ceph-ssd"}
+)
+
 var nonGracefulNodeShutdownCmd = &cobra.Command{
 	Use:   "nonGracefulNodeShutdown IP_ADDRESS",
 	Short: "nonGracefulNodeShutdown related commands",
@@ -69,68 +73,41 @@ var nonGracefulNodeShutdownCmd = &cobra.Command{
 		powerCheckCmd.Stdout = &out
 		err = powerCheckCmd.Run()
 		if err != nil {
-			if kubernetesNode.Labels["node.cybozu.io/reserved-for"] == "rbd" {
-				fmt.Println("The node is dedicated. Skip the shutdown.")
-			} else {
-				return err
-			}
-		} else {
-			if strings.TrimSpace(out.String()) == "On" {
-				poweroffCmd := exec.Command("neco", "power", "stop", node)
-				err = poweroffCmd.Run()
-				if err != nil {
-					return err
-				}
-				//wait for the node to be down
-				fmt.Printf("Waiting for the node %s to be down\n", node)
-				timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Minute)
-				defer cancel()
-			L:
-				for {
-					select {
-					case <-timeoutCtx.Done():
-						return errors.New("power check timeout")
-					default:
-						out.Reset()
-						powerCheckCmd := exec.Command("neco", "power", "status", node)
-						powerCheckCmd.Stdout = &out
-						err = powerCheckCmd.Run()
-						if err != nil {
-							return err
-						}
-						if strings.TrimSpace(out.String()) == "Off" {
-							break L
-						}
-						time.Sleep(5 * time.Second)
-					}
-				}
-			}
+			return err
 		}
-
-		// Add taint to the node
-		fmt.Println("Adding taint to the node")
-		tainted := false
-		for _, taint := range kubernetesNode.Spec.Taints {
-			if taint.Key == "node.kubernetes.io/out-of-service" {
-				tainted = true
-				break
-			}
-		}
-		if !tainted {
-			kubernetesNode.Spec.Taints = append(kubernetesNode.Spec.Taints, corev1.Taint{
-				Key:    "node.kubernetes.io/out-of-service",
-				Value:  "nodeshutdown",
-				Effect: "NoExecute",
-			})
-			err = kubeClient.Update(ctx, kubernetesNode)
+		if strings.TrimSpace(out.String()) == "On" {
+			poweroffCmd := exec.Command("neco", "power", "stop", node)
+			err = poweroffCmd.Run()
 			if err != nil {
 				return err
+			}
+			//wait for the node to be down
+			fmt.Printf("Waiting for the node %s to be down\n", node)
+			timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+			defer cancel()
+		L:
+			for {
+				select {
+				case <-timeoutCtx.Done():
+					return errors.New("power check timeout")
+				default:
+					out.Reset()
+					powerCheckCmd := exec.Command("neco", "power", "status", node)
+					powerCheckCmd.Stdout = &out
+					err = powerCheckCmd.Run()
+					if err != nil {
+						return err
+					}
+					if strings.TrimSpace(out.String()) == "Off" {
+						break L
+					}
+					time.Sleep(5 * time.Second)
+				}
 			}
 		}
 
 		// Create NetworkFence for ceph clusters
 		fmt.Println("Creating NetworkFence for ceph clusters")
-		cephClusters := []string{"ceph-canary-block", "ceph-dotcom-block-0", "ceph-poc", "ceph-ssd"}
 		for _, cephCluster := range cephClusters {
 			//check cephCluster exists
 			nameSpace := &corev1.Namespace{}
@@ -143,9 +120,10 @@ var nonGracefulNodeShutdownCmd = &cobra.Command{
 					return err
 				}
 			}
+			fenceName := cephCluster + "-" + strings.Replace(node, ".", "-", -1)
 			networkFence := csiaddonsv1alpha1.NetworkFence{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      strings.Replace(node, ".", "-", -1) + "-" + cephCluster,
+					Name:      fenceName,
 					Namespace: cephCluster,
 				},
 				Spec: csiaddonsv1alpha1.NetworkFenceSpec{
@@ -168,6 +146,47 @@ var nonGracefulNodeShutdownCmd = &cobra.Command{
 				} else {
 					return err
 				}
+			}
+			// wait for fence of networkfence to be Succeeded
+			timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+			defer cancel()
+			networkFence = csiaddonsv1alpha1.NetworkFence{}
+		L2:
+			for {
+				select {
+				case <-timeoutCtx.Done():
+					return errors.New("timeout waiting for networkfence to be fenced")
+				default:
+					err := kubeClient.Get(ctx, client.ObjectKey{Name: fenceName}, &networkFence)
+					if err != nil {
+						return err
+					}
+					if networkFence.Status.Result == csiaddonsv1alpha1.FencingOperationResultSucceeded {
+						break L2
+					}
+					time.Sleep(5 * time.Second)
+				}
+			}
+		}
+
+		// Add taint to the node
+		fmt.Println("Adding taint to the node")
+		tainted := false
+		for _, taint := range kubernetesNode.Spec.Taints {
+			if taint.Key == "node.kubernetes.io/out-of-service" {
+				tainted = true
+				break
+			}
+		}
+		if !tainted {
+			kubernetesNode.Spec.Taints = append(kubernetesNode.Spec.Taints, corev1.Taint{
+				Key:    "node.kubernetes.io/out-of-service",
+				Value:  "nodeshutdown",
+				Effect: "NoExecute",
+			})
+			err = kubeClient.Update(ctx, kubernetesNode)
+			if err != nil {
+				return err
 			}
 		}
 		return nil
