@@ -98,7 +98,7 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 			}
 
 			// wait for unfense of networkfence to be Succeeded
-			timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+			timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 			defer cancel()
 		L:
 			for {
