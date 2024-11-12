@@ -555,6 +555,7 @@ data:
   cluster-pool-ipv4-mask-size: "24"
   cni-chaining-mode: generic-veth
   cnp-node-status-gc-interval: 0s
+  conntrack-gc-max-interval: 30m
   custom-cni-conf: "true"
   debug: "false"
   debug-verbose: ""
@@ -760,7 +761,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: d5a6358f3358cdc61bf73eddd0be4f8a5b8909d0f95d0236cd095e308678a1a0
+        cilium.io/cilium-configmap-checksum: 7188fd0419596c94ed545f61231bf8ad68dfbdb39bc79447cb2d063a0c4c6a50
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -1044,7 +1045,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: d5a6358f3358cdc61bf73eddd0be4f8a5b8909d0f95d0236cd095e308678a1a0
+        cilium.io/cilium-configmap-checksum: 7188fd0419596c94ed545f61231bf8ad68dfbdb39bc79447cb2d063a0c4c6a50
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
