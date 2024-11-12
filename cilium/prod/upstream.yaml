@@ -34,6 +34,7 @@ metadata:
   name: cilium-config
   namespace: kube-system
 data:
+  conntrack-gc-max-interval: "30m"
 
   # Identity allocation mode selects how identities are shared between cilium
   # nodes by setting how they are stored. The options are "crd" or "kvstore".
@@ -824,7 +825,7 @@ spec:
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "d5a6358f3358cdc61bf73eddd0be4f8a5b8909d0f95d0236cd095e308678a1a0"
+        cilium.io/cilium-configmap-checksum: "7188fd0419596c94ed545f61231bf8ad68dfbdb39bc79447cb2d063a0c4c6a50"
         # Set app AppArmor's profile to "unconfined". The value of this annotation
         # can be modified as long users know which profiles they have available
         # in AppArmor.
@@ -1295,7 +1296,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "d5a6358f3358cdc61bf73eddd0be4f8a5b8909d0f95d0236cd095e308678a1a0"
+        cilium.io/cilium-configmap-checksum: "7188fd0419596c94ed545f61231bf8ad68dfbdb39bc79447cb2d063a0c4c6a50"
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
