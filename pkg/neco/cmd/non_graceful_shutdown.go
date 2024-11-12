@@ -148,7 +148,7 @@ var nonGracefulNodeShutdownCmd = &cobra.Command{
 				}
 			}
 			// wait for fence of networkfence to be Succeeded
-			timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+			timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 			defer cancel()
 			networkFence = csiaddonsv1alpha1.NetworkFence{}
 		L2:
