@@ -128,7 +128,7 @@ var nonGracefulNodeShutdownCmd = &cobra.Command{
 				},
 				Spec: csiaddonsv1alpha1.NetworkFenceSpec{
 					FenceState: csiaddonsv1alpha1.Fenced,
-					Driver:     "ceph-ssd.rbd.csi.ceph.com",
+					Driver:     cephCluster + ".rbd.csi.ceph.com",
 					Cidrs:      []string{node + "/32"},
 					Secret: csiaddonsv1alpha1.SecretSpec{
 						Name:      "rook-csi-rbd-provisioner",
