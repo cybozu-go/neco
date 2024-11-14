@@ -4487,6 +4487,12 @@ data:
         },
         {
           "type": "cilium-cni"
+        },
+        {
+          "type": "bandwidth",
+          "capabilities": {
+            "bandwidth": true
+          }
         }
       ]
     }
@@ -4494,7 +4500,7 @@ kind: ConfigMap
 metadata:
   labels:
     app.kubernetes.io/name: coil
-  name: coil-config-tc2gh94mfh
+  name: coil-config-g2d28474kg
   namespace: kube-system
 ---
 apiVersion: v1
@@ -4700,7 +4706,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: cni_netconf
-              name: coil-config-tc2gh94mfh
+              name: coil-config-g2d28474kg
         image: ghcr.io/cybozu-go/coil:2.7.2
         name: coil-installer
         securityContext:
