@@ -175,7 +175,7 @@ commands:
 jobs:
   build:
     docker:
-      - image: ghcr.io/cybozu/golang:1.22-jammy
+      - image: ghcr.io/cybozu/golang:1.23-jammy
       - image: ghcr.io/cybozu/etcd:3.5
     working_directory: /work
     resource_class: xlarge
@@ -197,7 +197,7 @@ jobs:
 
   build_release:
     docker:
-      - image: ghcr.io/cybozu/golang:1.22-jammy
+      - image: ghcr.io/cybozu/golang:1.23-jammy
       - image: ghcr.io/cybozu/etcd:3.5
     working_directory: /work
     resource_class: xlarge
@@ -224,7 +224,7 @@ jobs:
 
   deploy_github:
     docker:
-      - image: ghcr.io/cybozu/golang:1.22-jammy
+      - image: ghcr.io/cybozu/golang:1.23-jammy
     steps:
       - attach_workspace:
           at: ./artifacts
@@ -400,7 +400,7 @@ jobs:
 
   update-release:
     docker:
-      - image: ghcr.io/cybozu/golang:1.22-jammy
+      - image: ghcr.io/cybozu/golang:1.23-jammy
     steps:
       - add_ssh_keys:
           fingerprints:
