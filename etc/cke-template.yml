@@ -33,22 +33,6 @@ reboot:
   evict_interval: 10
 repair:
   repair_procedures:
-  - machine_types: ["IPMI-2.0"]
-    repair_operations:
-    - operation: unreachable
-      repair_steps:
-      - repair_command: ["sh", "-c", "neco nonGracefulNodeShutdown $1", "nonGracefulNodeShutdown"]
-        command_timeout_seconds: 300
-        watch_seconds: 600
-      - repair_command: ["retire-machine"]
-        command_timeout_seconds: 30
-        command_retries: 2
-        command_interval: 30
-        watch_seconds: 600
-      health_check_command: ["sh", "-c", "check-machine-state $1 healthy retired", "check-machine-state"]
-      command_timeout_seconds: 10
-      success_command: ["sh", "-c", "neco nonGracefulNodeShutdown cleanup $1", "nonGracefulNodeShutdown"]
-      success_command_timeout: 300
   - machine_types: ["iDRAC"]
     repair_operations:
     - operation: unhealthy
