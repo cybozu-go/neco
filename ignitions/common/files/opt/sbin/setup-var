@@ -83,31 +83,21 @@ if ls /dev/mapper/crypt-vd* >/dev/null 2>&1; then
     # See https://github.com/cybozu-go/neco/blob/cf1fbc99aeb62d37e37c5c2c69f12e319622b6cd/ignitions/roles/ss/files/etc/udev/rules.d/99-neco.rules#L4
     PVS=$(ls /dev/mapper/crypt-vd[abc])
     prepare_lv
-elif ls /dev/mapper/crypt-nvme* >/dev/null 2>&1; then
-    if [-n "$(find_boss)"]; then
-        # for ss2 node
-        PVS=$(find_boss)
-        CONTAINERD_SIZE=50g
-        DOCKER_SIZE=50g
-        KUBELET_SIZE=10g
-        COREDUMP_SIZE=20g
-        prepare_lv
-    else
-        # for compute node
-        PVS=$(ls /dev/mapper/crypt-nvme*)
-        CONTAINERD_SIZE=1t
-        DOCKER_SIZE=50g
-        KUBELET_SIZE=100g
-        COREDUMP_SIZE=50g
-        prepare_lv
-    fi
-else
-    # for ss1 node
+elif [ -n "$(find_boss)" ]; then
+    # for ss, ss2 node
     PVS=$(find_boss)
     CONTAINERD_SIZE=50g
     DOCKER_SIZE=50g
     KUBELET_SIZE=10g
     COREDUMP_SIZE=20g
+    prepare_lv
+else
+    # for cs node
+    PVS=$(ls /dev/mapper/crypt-nvme*)
+    CONTAINERD_SIZE=1t
+    DOCKER_SIZE=50g
+    KUBELET_SIZE=100g
+    COREDUMP_SIZE=50g
     prepare_lv
 fi
 
