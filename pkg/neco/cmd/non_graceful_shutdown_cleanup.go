@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"os/signal"
 	"slices"
 	"strings"
@@ -16,16 +15,13 @@ import (
 	"github.com/cybozu-go/sabakan/v3"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var nonGracefulShutdownCleanupCmd = &cobra.Command{
 	Use:   "cleanup IP_ADDRESS",
-	Short: "nonGracefulShutdown cleanup related commands",
-	Long:  `nonGracefulShutdown cleanup related commands.`,
+	Short: "Cleanup non-graceful shutdowned node",
+	Long:  `Remove NetworkFence and remove taint from the node if it is healthy`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		node := args[0]
@@ -33,24 +29,7 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer stop()
 
-		scheme := runtime.NewScheme()
-		clientgoscheme.AddToScheme(scheme)
-		csiaddonsv1alpha1.AddToScheme(scheme)
-
-		//issue kubeconfig
-		issueCmd := exec.Command("sh", "-c", "ckecli kubernetes issue > /home/cybozu/.kube/shutdown-config")
-		err := issueCmd.Run()
-		if err != nil {
-			fmt.Println("Failed to issue kubeconfig")
-			os.Exit(1)
-		}
-
-		// Load kubeconfig
-		config, err := clientcmd.BuildConfigFromFlags("", "/home/cybozu/.kube/shutdown-config")
-		if err != nil {
-			return err
-		}
-		kubeClient, err := client.New(config, client.Options{Scheme: scheme})
+		kubeClient, err := IssueAndLoadKubeconfigForNonGracefulNodeShutdown()
 		if err != nil {
 			return err
 		}
@@ -100,21 +79,20 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 			// wait for unfense of networkfence to be Succeeded
 			timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 			defer cancel()
-		L:
 			for {
 				select {
 				case <-timeoutCtx.Done():
 					return errors.New("timeout waiting for networkfence to be unfenced")
 				default:
-					err := kubeClient.Get(ctx, client.ObjectKey{Name: fenceName}, networkFence)
-					if err != nil {
-						return err
-					}
-					if networkFence.Status.Result == csiaddonsv1alpha1.FencingOperationResultSucceeded {
-						break L
-					}
-					time.Sleep(5 * time.Second)
 				}
+				err := kubeClient.Get(ctx, client.ObjectKey{Name: fenceName}, networkFence)
+				if err != nil {
+					return err
+				}
+				if networkFence.Status.Result == csiaddonsv1alpha1.FencingOperationResultSucceeded {
+					break
+				}
+				time.Sleep(5 * time.Second)
 			}
 			err = kubeClient.Delete(ctx, networkFence)
 			if err != nil {
