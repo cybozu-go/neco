@@ -18,15 +18,6 @@ nodes:
   - key: cke.cybozu.com/role
     value: storage
     effect: NoSchedule
-- user: cybozu
-  control_plane: false
-  labels:
-    cke.cybozu.com/role: "ss2"
-    cke.cybozu.com/weight: "1"
-  taints:
-  - key: cke.cybozu.com/role
-    value: storage
-    effect: NoSchedule
 service_subnet: 10.68.0.0/16
 dns_service: internet-egress/unbound
 control_plane_tolerations: ["node.cilium.io/agent-not-ready"]
