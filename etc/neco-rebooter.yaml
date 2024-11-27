@@ -17,5 +17,12 @@ rebootTimes:
     times:
       allow:
         - "* 0-23 * * 1-5"
+  - name: ss2
+    labelSelector:
+      matchLabels:
+        cke.cybozu.com/role: ss2
+    times:
+      allow:
+        - "* 0-23 * * 1-5"
 timeZone: Asia/Tokyo
 groupLabelKey: topology.kubernetes.io/zone

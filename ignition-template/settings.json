@@ -109,6 +109,36 @@
       ]
     }
   },
+  "ss2": {
+    "base": {
+      "include": "../../common/common.yml",
+      "files": [
+        "/etc/udev/crypt-base-path",
+        "/etc/udev/rules.d/99-neco.rules"
+      ]
+    },
+    "gcp0": {
+      "include": "../../common/common-gcp0.yml",
+      "files": [
+        "/etc/udev/crypt-base-path",
+        "/etc/udev/rules.d/99-neco.rules"
+      ]
+    },
+    "stage0": {
+      "include": "../../common/common-stage0.yml",
+      "files": [
+        "/etc/udev/crypt-base-path",
+        "/etc/udev/rules.d/99-neco.rules"
+      ]
+    },
+    "stage1": {
+      "include": "../../common/common-stage1.yml",
+      "files": [
+        "/etc/udev/crypt-base-path",
+        "/etc/udev/rules.d/99-neco.rules"
+      ]
+    }
+  },
   "common": {
     "common": {
       "passwd": "passwd.yml",

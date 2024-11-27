@@ -49,6 +49,10 @@
   // get_ss retrives the array of ss from settings.
   get_ss(settings)::
     std.objectFields(settings.ss),
+  
+  // get_ss2 retrives the array of ss2 from settings.
+  get_ss2(settings)::
+    std.objectFields(settings.ss2),
 
   // get_common retrives the array of common from settings.
   get_common(settings)::
