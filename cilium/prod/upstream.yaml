@@ -844,6 +844,7 @@ spec:
         - cilium-agent
         args:
         - --config-dir=/tmp/cilium/config-map
+        - --endpoint-gc-interval=0
         startupProbe:
           httpGet:
             host: "127.0.0.1"

@@ -20,6 +20,8 @@ enableIPv4Masquerade: false
 enableIdentityMark: false
 externalIPs:
   enabled: true
+extraArgs:
+  - "--endpoint-gc-interval=0"
 extraConfig:
   bpf-ct-timeout-regular-any: 1h0m0s
   bpf-ct-timeout-service-any: 1h0m0s
