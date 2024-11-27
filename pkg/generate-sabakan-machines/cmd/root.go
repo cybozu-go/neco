@@ -19,7 +19,7 @@ var rootCmd = &cobra.Command{
 	Short:        "generate machines.json",
 	Long: `Generate machines.json from the CSV file for use with the 'sabactl create' command.
 Example:
-  generate-sabakan-machines input.csv --machine-type-boot=r6525-boot-1 --machine-type-cs=r6525-cs-1 --machine-type-ss=r7525-ss-1
+  generate-sabakan-machines input.csv --machine-type-boot=r6525-boot-1 --machine-type-cs=r6525-cs-1 --machine-type-ss=r7525-ss-1 --machine-type-ss2=r7525-ss-2
 	`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -66,6 +66,8 @@ Example:
 				machineType = *machineTypeCS
 			case "ss":
 				machineType = *machineTypeSS
+			case "ss2":
+				machineType = *machineTypeSS2
 			default:
 				return errors.New("unknown role " + role)
 			}
@@ -124,16 +126,19 @@ var (
 	machineTypeBoot *string
 	machineTypeCS   *string
 	machineTypeSS   *string
+	machineTypeSS2  *string
 	bmcType         *string
 )
 
 func init() {
-	machineTypeBoot = rootCmd.Flags().StringP("machine-type-boot", "b", "", "The machine-type name of Boot")
-	machineTypeCS = rootCmd.Flags().StringP("machine-type-cs", "c", "", "The machine-type name of CS")
-	machineTypeSS = rootCmd.Flags().StringP("machine-type-ss", "s", "", "The machine-type name of SS")
+	machineTypeBoot = rootCmd.Flags().String("machine-type-boot", "", "The machine-type name of Boot")
+	machineTypeCS = rootCmd.Flags().String("machine-type-cs", "", "The machine-type name of CS")
+	machineTypeSS = rootCmd.Flags().String("machine-type-ss", "", "The machine-type name of SS")
+	machineTypeSS2 = rootCmd.Flags().String("machine-type-ss2", "", "The machine-type name of SS2")
 	bmcType = rootCmd.Flags().String("bmc-type", "iDRAC", "The name of BMC")
 
 	rootCmd.MarkFlagRequired("machine-type-boot")
 	rootCmd.MarkFlagRequired("machine-type-cs")
 	rootCmd.MarkFlagRequired("machine-type-ss")
+	rootCmd.MarkFlagRequired("machine-type-ss2")
 }

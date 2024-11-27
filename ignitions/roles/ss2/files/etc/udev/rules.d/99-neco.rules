@@ -1,0 +1,8 @@
+KERNEL!="dm-*", GOTO="neco_end"
+ENV{DM_NAME}!="crypt-*", GOTO="neco_end"
+# Skip the qemu's system disks
+ENV{DM_NAME}=="crypt-vda|crypt-vdb|crypt-vdc", GOTO="neco_end"
+
+IMPORT{program}="/etc/udev/crypt-base-path $name $env{DM_UUID}", SYMLINK+="crypt-disk/by-path/$env{CRYPT_BASE_PATH}"
+
+LABEL="neco_end"
