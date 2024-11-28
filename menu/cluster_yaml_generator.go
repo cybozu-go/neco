@@ -229,6 +229,9 @@ func (c *Cluster) appendNodes(spec *types.ClusterSpec, sabakanDir string) {
 		for _, ss := range rack.ssList {
 			spec.Nodes = append(spec.Nodes, createWorkerNode(rack, ss, ss.spec))
 		}
+		for _, ss2 := range rack.ss2List {
+			spec.Nodes = append(spec.Nodes, createWorkerNode(rack, ss2, ss2.spec))
+		}
 	}
 
 	spec.Nodes = append(spec.Nodes, createChronyNode())
