@@ -492,7 +492,7 @@ func (c *Cluster) createToRNetNs(rack *rack, tor *tor, torIdx int) *types.NetNSS
 			continue
 		}
 		dnsmasqCommand = append(dnsmasqCommand, "--dhcp-relay")
-		dnsmasqCommand = append(dnsmasqCommand, fmt.Sprintf("%s,%s", tor.nodeAddress.IP.String(), r.bootNode.node0Address.IP.String()))
+		dnsmasqCommand = append(dnsmasqCommand, fmt.Sprintf("%s,%s", tor.nodeAddress.IP.String(), "10.71.0.0"))
 	}
 	torNs.Apps = append(torNs.Apps, &types.NetNSAppSpec{
 		Name:    "dnsmasq",
