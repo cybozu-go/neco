@@ -5,6 +5,3 @@ images:
   versions: ["6.12.0.1","6.12.0.2"]
 - repository: ghcr.io/cybozu/squid-exporter
   versions: ["1.0.7"]
-osImage:
-- channel: stable
-  versions: ["4081.2.0"]
