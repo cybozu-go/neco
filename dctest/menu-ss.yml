@@ -63,7 +63,7 @@ spec:
   tpm: true
 ---
 kind: Node
-type: ss
+type: ss2
 spec:
   cpu: 4
   memory: 10G
