@@ -275,7 +275,7 @@ func NewCluster(menu *menu) (*Cluster, error) {
 		}
 
 		for csIdx := 0; csIdx < rackMenu.Cs; csIdx++ {
-			name := fmt.Sprintf("cs%d", csIdx+1)
+			name := fmt.Sprintf("cs-%d", csIdx+1)
 			fullName := fmt.Sprintf("%s-%s", rack.name, name)
 			node := &node{
 				name:         name,
@@ -292,7 +292,7 @@ func NewCluster(menu *menu) (*Cluster, error) {
 		}
 
 		for ssIdx := 0; ssIdx < rackMenu.Ss; ssIdx++ {
-			name := fmt.Sprintf("ss%d", ssIdx+1)
+			name := fmt.Sprintf("ss-%d", ssIdx+1)
 			fullName := fmt.Sprintf("%s-%s", rack.name, name)
 			node := &node{
 				name:         name,
@@ -309,7 +309,7 @@ func NewCluster(menu *menu) (*Cluster, error) {
 		}
 
 		for ss2Idx := 0; ss2Idx < rackMenu.Ss2; ss2Idx++ {
-			name := fmt.Sprintf("ss2%d", ss2Idx+1)
+			name := fmt.Sprintf("ss2-%d", ss2Idx+1)
 			fullName := fmt.Sprintf("%s-%s", rack.name, name)
 			node := &node{
 				name:         name,
