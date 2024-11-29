@@ -33,13 +33,16 @@ func setupNetwork(lrn int) error {
 	if err := writeDummyNetworkConf("node0", node0); err != nil {
 		return err
 	}
+	if err := writeDummyNetworkConf("bastion", bastion); err != nil {
+		return err
+	}
+	if err := writeDummyNetworkConf("test", net.IPv4(10, 71, 0, 0)); err != nil {
+		return err
+	}
 	if err := writePhysNetworkConf(eth0, node1); err != nil {
 		return err
 	}
 	if err := writePhysNetworkConf(eth1, node2); err != nil {
-		return err
-	}
-	if err := writeDummyNetworkConf("bastion", bastion); err != nil {
 		return err
 	}
 
@@ -47,7 +50,7 @@ func setupNetwork(lrn int) error {
 		return err
 	}
 
-	if err := waitNetwork("node0", "bastion", eth0, eth1); err != nil {
+	if err := waitNetwork("node0", "bastion", "test", eth0, eth1); err != nil {
 		return err
 	}
 
