@@ -1,1 +1,1 @@
-rack{{ .Spec.Rack }}-{{ .Spec.Role }}{{ .Spec.IndexInRack }}
+rack{{ .Spec.Rack }}-{{ .Spec.Role }}-{{ .Spec.IndexInRack }}
