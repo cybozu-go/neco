@@ -34,13 +34,13 @@ func bastionIP() (net.IP, error) {
 }
 
 var bootIPList = []string{
-	"10.71.0.0",
 	"10.71.0.1",
 	"10.71.0.2",
 	"10.71.0.3",
 	"10.71.0.4",
 	"10.71.0.5",
 	"10.71.0.6",
+	"10.71.0.7",
 }
 
 func setupBootIP(ctx context.Context, mylrn int, lrns []int) error {
