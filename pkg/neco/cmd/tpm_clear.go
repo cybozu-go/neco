@@ -36,6 +36,9 @@ var supportedMachineTypes = map[string]int{
 	"r6525-cs-2":   tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
 	"r7525-ss-1":   tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
 	"r7525-ss-2":   tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
+	"r6615-cs-1":   tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
+	"r7615-ss-1":   tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
+	"r7615-ss-2":   tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
 }
 
 // Redfish API endpoints used for clearing TPM device on Dell equipment.
