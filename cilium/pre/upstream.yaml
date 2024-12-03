@@ -936,8 +936,8 @@ spec:
               - /cni-uninstall.sh
         resources:
           requests:
-            cpu: 100m
-            memory: 400Mi
+            cpu: 510m
+            memory: 10Gi
         ports:
         - name: peer-service
           containerPort: 4244
@@ -1373,10 +1373,10 @@ spec:
         resources:
           limits:
             cpu: 250m
-            memory: 3300Mi
+            memory: 2300Mi
           requests:
             cpu: 25m
-            memory: 330Mi
+            memory: 230Mi
         terminationMessagePolicy: FallbackToLogsOnError
       hostNetwork: true
       restartPolicy: Always
