@@ -1075,6 +1075,7 @@ spec:
       containers:
       - args:
         - --config-dir=/tmp/cilium/config-map
+        - --endpoint-gc-interval=0
         command:
         - cilium-agent
         env:
