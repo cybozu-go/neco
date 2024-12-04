@@ -23,6 +23,7 @@ spec:
   rack:
     - cs: 2
       ss: 1
+      ss2: 1
     - cs: 2
       ss: 1
     - cs: 2
@@ -55,6 +56,14 @@ spec:
 ---
 kind: Node
 type: ss
+spec:
+  cpu: 4
+  memory: 10G
+  disk-count: 10
+  tpm: true
+---
+kind: Node
+type: ss2
 spec:
   cpu: 4
   memory: 10G
