@@ -272,6 +272,16 @@ func Setup(ctx context.Context, lrns []int, revoke bool, proxy, ghToken string) 
 		return err
 	}
 
+	err = setupBootIP(ctx, mylrn, lrns)
+	if err != nil {
+		return err
+	}
+	err = neco.RestartService(ctx, "systemd-networkd")
+	if err != nil {
+		return err
+	}
+	// TODO: Wait for the boot netdev to be ready?
+
 	log.Info("setup: completed", nil)
 
 	return nil
@@ -311,6 +321,16 @@ func Join(ctx context.Context, vc *api.Client, mylrn int, lrns []int) error {
 	if err != nil {
 		return err
 	}
+
+	err = setupBootIP(ctx, mylrn, lrns)
+	if err != nil {
+		return err
+	}
+	err = neco.RestartService(ctx, "systemd-networkd")
+	if err != nil {
+		return err
+	}
+	// TODO: Wait for the boot netdev to be ready?
 
 	return st.RegisterBootserver(ctx, mylrn)
 }

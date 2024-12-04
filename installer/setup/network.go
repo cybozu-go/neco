@@ -30,16 +30,19 @@ func setupNetwork(lrn int) error {
 		return err
 	}
 
-	if err := writeDummyNetworkConf("node0", node0); err != nil {
+	if err := writeDummyNetworkConf("node0", &node0); err != nil {
+		return err
+	}
+	if err := writeDummyNetworkConf("bastion", &bastion); err != nil {
+		return err
+	}
+	if err := writeDummyNetworkConf("boot", nil); err != nil {
 		return err
 	}
 	if err := writePhysNetworkConf(eth0, node1); err != nil {
 		return err
 	}
 	if err := writePhysNetworkConf(eth1, node2); err != nil {
-		return err
-	}
-	if err := writeDummyNetworkConf("bastion", bastion); err != nil {
 		return err
 	}
 
@@ -66,7 +69,7 @@ func setupNetwork(lrn int) error {
 	return nil
 }
 
-func writeDummyNetworkConf(name string, addr net.IP) error {
+func writeDummyNetworkConf(name string, addr *net.IP) error {
 	s := fmt.Sprintf(`[NetDev]
 Name=%s
 Kind=dummy
@@ -74,6 +77,10 @@ Kind=dummy
 	err := os.WriteFile(fmt.Sprintf("/etc/systemd/network/%s.netdev", name), []byte(s), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create netdev file for %s: %w", name, err)
+	}
+
+	if addr == nil {
+		return nil
 	}
 
 	s = fmt.Sprintf(`[Match]
