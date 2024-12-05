@@ -155,6 +155,12 @@ func testUpgrade() {
 
 	It("should wait for completed phase", func() {
 		Eventually(func(g Gomega) {
+			job := kubectlGetSafe[batchv1.Job](g, "job", "-n=kube-system", "hubble-generate-certs")
+			g.Expect(job.Spec.Template.Spec.Containers).To(HaveLen(1))
+			if strings.Contains(job.Spec.Template.Spec.Containers[0].Image, "0.1.14.1") {
+				execSafeGomegaAt(g, bootServers[0], "kubectl", "delete", "job", "-n=kube-system", "hubble-generate-certs")
+			}
+
 			stdout, stderr, err := execAt(bootServers[0], "ckecli", "status")
 			g.Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
@@ -175,10 +181,10 @@ func testUpgrade() {
 		}).Should(Succeed())
 	})
 
-	It("should update cilium-agent", func() {
-		stdout, stderr, err := execAt(bootServers[0], "kubectl", "delete", "pod", "-n=kube-system", "-l=app.kubernetes.io/name=cilium-agent")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-	})
+	// It("should update cilium-agent", func() {
+	// 	stdout, stderr, err := execAt(bootServers[0], "kubectl", "delete", "pod", "-n=kube-system", "-l=app.kubernetes.io/name=cilium-agent")
+	// 	Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+	// })
 
 	It("should running newer cke desired image version", func() {
 		stdout, stderr, err := execAt(bootServers[0], "ckecli", "cluster", "get")
@@ -276,7 +282,7 @@ func testUpgrade() {
 				case "squid-exporter":
 					return checkVersionInDeployment("internet-egress", "squid", newImage)
 				case "cilium":
-					return checkVersionInDaemonSet("kube-system", "cilium", newImage)
+					return checkVersionInDaemonSetPartial("kube-system", "cilium", newImage, 0)
 				case "cilium-operator-generic":
 					return checkVersionInDeployment("kube-system", "cilium-operator", newImage)
 				case "hubble-relay":
@@ -442,6 +448,36 @@ func checkVersionInDaemonSet(namespace, dsName, image string) error {
 	if ds.Status.DesiredNumberScheduled != ds.Status.UpdatedNumberScheduled {
 		return fmt.Errorf("%s %s is not updated completely. desired number scheduled is %d, but actual updated is %d",
 			dsName, image, ds.Status.DesiredNumberScheduled, ds.Status.UpdatedNumberScheduled)
+	}
+	return nil
+}
+
+func checkVersionInDaemonSetPartial(namespace, dsName, image string, desiredNumber int32) error {
+	stdout, _, err := execAt(bootServers[0], "kubectl", "get", "ds", "-n", namespace, dsName, "-o", "json")
+	if err != nil {
+		return err
+	}
+	ds := new(appsv1.DaemonSet)
+	err = json.Unmarshal(stdout, ds)
+	if err != nil {
+		return err
+	}
+	found := false
+	for _, c := range ds.Spec.Template.Spec.Containers {
+		if c.Image == image {
+			found = true
+		}
+	}
+	if !found {
+		return fmt.Errorf("%s not found in %s", image, dsName)
+	}
+	if ds.Status.DesiredNumberScheduled != ds.Status.NumberAvailable {
+		return fmt.Errorf("%s %s is not updated completely. desired number scheduled is %d, but actual available is %d",
+			dsName, image, ds.Status.DesiredNumberScheduled, ds.Status.NumberAvailable)
+	}
+	if desiredNumber != ds.Status.UpdatedNumberScheduled {
+		return fmt.Errorf("%s %s is not updated completely. desired number scheduled is %d, but actual updated is %d",
+			dsName, image, desiredNumber, ds.Status.UpdatedNumberScheduled)
 	}
 	return nil
 }
