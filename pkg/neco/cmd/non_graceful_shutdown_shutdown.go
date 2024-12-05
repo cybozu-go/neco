@@ -17,6 +17,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -84,36 +85,38 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 		// Create NetworkFence for ceph clusters
 		fmt.Println("Creating NetworkFence for ceph clusters")
 		g := errgroup.Group{}
-		for _, cephCluster := range cephClusters {
-			cephCluster := cephCluster
+		for _, cephClusterName := range cephClusters {
+			cephClusterName := cephClusterName
 			//check cephCluster exists
-			nameSpace := &corev1.Namespace{}
-			err := kubeClient.Get(ctx, client.ObjectKey{Name: cephCluster}, nameSpace)
+			cephCluster := &unstructured.Unstructured{}
+			cephCluster.SetAPIVersion("ceph.rook.io/v1")
+			cephCluster.SetKind("CephCluster")
+			err := kubeClient.Get(ctx, client.ObjectKey{Name: cephClusterName, Namespace: cephClusterName}, cephCluster)
 			if err != nil {
 				if client.IgnoreNotFound(err) == nil {
-					fmt.Printf("Namespace %s does not found\n", nameSpace.Name)
+					fmt.Printf("CephCluster %s does not found\n", cephClusterName)
 					continue
 				} else {
 					return err
 				}
 			}
 			g.Go(func() error {
-				fenceName := cephCluster + "-" + strings.Replace(node, ".", "-", -1)
+				fenceName := cephClusterName + "-" + strings.Replace(node, ".", "-", -1)
 				networkFence := csiaddonsv1alpha1.NetworkFence{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      fenceName,
-						Namespace: cephCluster,
+						Namespace: cephClusterName,
 					},
 					Spec: csiaddonsv1alpha1.NetworkFenceSpec{
 						FenceState: csiaddonsv1alpha1.Fenced,
-						Driver:     cephCluster + ".rbd.csi.ceph.com",
+						Driver:     cephClusterName + ".rbd.csi.ceph.com",
 						Cidrs:      []string{node + "/32"},
 						Secret: csiaddonsv1alpha1.SecretSpec{
 							Name:      "rook-csi-rbd-provisioner",
-							Namespace: cephCluster,
+							Namespace: cephClusterName,
 						},
 						Parameters: map[string]string{
-							"clusterID": cephCluster,
+							"clusterID": cephClusterName,
 						},
 					},
 				}
