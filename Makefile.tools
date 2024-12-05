@@ -183,9 +183,9 @@ argocd: $(ARGOCD_DOWNLOAD)
 
 $(KUBECTL_DOWNLOAD):
 	mkdir -p $(KUBECTL_DLDIR)
-	$(WGET) -O $(KUBECTL_DLDIR)/kubectl-linux-amd64 https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
-	$(WGET) -O $(KUBECTL_DLDIR)/kubectl.exe https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/windows/amd64/kubectl.exe
-	$(WGET) -O $(KUBECTL_DLDIR)/kubectl-darwin-amd64 https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/darwin/amd64/kubectl
+	$(WGET) -O $(KUBECTL_DLDIR)/kubectl-linux-amd64 https://dl.k8s.io/v$(K8S_VERSION)/bin/linux/amd64/kubectl
+	$(WGET) -O $(KUBECTL_DLDIR)/kubectl.exe https://dl.k8s.io/v$(K8S_VERSION)/bin/windows/amd64/kubectl.exe
+	$(WGET) -O $(KUBECTL_DLDIR)/kubectl-darwin-amd64 https://dl.k8s.io/v$(K8S_VERSION)/bin/darwin/amd64/kubectl
 	$(WGET_GITHUB) -O $(KUBECTL_DLDIR)/LICENSE   https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/LICENSE
 	$(WGET_GITHUB) -O $(KUBECTL_DLDIR)/README.md https://raw.githubusercontent.com/kubernetes/kubernetes/v$(K8S_VERSION)/README.md
 	touch $@
