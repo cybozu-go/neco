@@ -15,7 +15,7 @@ import (
 
 var (
 	cephClusters                  = []string{"ceph-canary-block", "ceph-dotcom-block-0", "ceph-poc", "ceph-ssd"}
-	nonGracefulNodeShutdownConfig = "/home/cybozu/.kube/nonGracefulNodeShutdown-config"
+	nonGracefulNodeShutdownConfig = "/tmp/non-graceful-node-shutdown-config"
 )
 
 var nonGracefulNodeShutdownCmd = &cobra.Command{
@@ -35,12 +35,14 @@ func IssueAndLoadKubeconfigForNonGracefulNodeShutdown() (client.Client, error) {
 	}
 	defer stdout.Close()
 	issueCmd := exec.Command(neco.CKECLIBin, "kubernetes", "issue")
+	issueCmd.Stdout = stdout
 	err = issueCmd.Run()
 	if err != nil {
 		return nil, err
 	}
+	stdout.Sync()
 
-	config, err := clientcmd.BuildConfigFromFlags("", "/home/cybozu/.kube/shutdown-config")
+	config, err := clientcmd.BuildConfigFromFlags("", nonGracefulNodeShutdownConfig)
 	if err != nil {
 		return nil, err
 	}
