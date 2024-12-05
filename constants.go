@@ -187,6 +187,7 @@ var (
 		filepath.Join(NecoDataDir, "coil.yaml"),
 		filepath.Join(NecoDataDir, "unbound.yaml"),
 		filepath.Join(NecoDataDir, "squid.yaml"),
+		filepath.Join(NecoDataDir, "csi-addons.yaml"),
 	}
 	CKEUserResourceFilesPre = []string{
 		filepath.Join(NecoDataDir, "namespaces.yml"),
@@ -194,6 +195,7 @@ var (
 		filepath.Join(NecoDataDir, "coil-pre.yaml"),
 		filepath.Join(NecoDataDir, "unbound-pre.yaml"),
 		filepath.Join(NecoDataDir, "squid-pre.yaml"),
+		filepath.Join(NecoDataDir, "csi-addons.yaml"),
 	}
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
