@@ -103,12 +103,13 @@ resources:
     cpu: 510m
     memory: 10Gi
 rollOutCiliumPods: true
+routingMode: "native"
 sessionAffinity: true
 socketLB:
   enabled: true
   hostNamespaceOnly: true
-tunnel: "disabled"
+tunnelProtocol: geneve
 updateStrategy:
   rollingUpdate: null
   type: OnDelete
-upgradeCompatibility: "1.12"
+upgradeCompatibility: "1.14"

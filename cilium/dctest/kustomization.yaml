@@ -25,6 +25,11 @@ patches:
         path: /metadata/annotations
         value:
           cke.cybozu.com/rank: "2500"
+      - op: add
+        path: /spec/template/spec/containers/0/livenessProbe/httpGet/httpHeaders/-
+        value:
+          name: require-k8s-connectivity
+          value: "false"
   - target:
       group: batch
       version: v1
@@ -39,3 +44,7 @@ configMapGenerator:
   behavior: merge
   literals:
   - api-rate-limit=endpoint-create=auto-adjust:true,log:true,estimated-processing-duration:5s,max-parallel-requests:16
+- name: cilium-label-prefix
+  namespace: kube-system
+  files:
+    - label-prefix.json
