@@ -101,12 +101,12 @@ resources:
     cpu: 100m
     memory: 400Mi
 rollOutCiliumPods: true
+routingMode: "native"
 sessionAffinity: true
 socketLB:
   enabled: true
   hostNamespaceOnly: true
-tunnel: "disabled"
 updateStrategy:
   rollingUpdate: null
   type: OnDelete
-upgradeCompatibility: "1.12"
+upgradeCompatibility: "1.14"
