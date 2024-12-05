@@ -1,9 +1,5 @@
 images:
-- repository: ghcr.io/cybozu/cilium
-  versions: ["1.15.11.1-rc.1", "1.15.12.1-rc.1", "1.15.13.1"]
-- repository: ghcr.io/cybozu/cilium-certgen
-  versions: ["0.1.15.1"]
-- repository: ghcr.io/cybozu/cilium-operator-generic
-  versions: ["1.15.11.1", "1.15.13.1"]
-- repository: ghcr.io/cybozu/hubble-relay
-  versions: ["1.15.12.1", "1.15.13.1"]
+- repository: ghcr.io/cybozu/etcd
+  versions: ["3.5.18.1"]
+- repository: ghcr.io/cybozu-go/setup-hw
+  versions: ["1.20.0"]
