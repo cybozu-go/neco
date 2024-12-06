@@ -14,6 +14,12 @@
     },
     {
       "type": "cilium-cni"
+    },
+    {
+      "type": "bandwidth",
+      "capabilities": {
+        "bandwidth": true
+      }
     }
   ]
 }
