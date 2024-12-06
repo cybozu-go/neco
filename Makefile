@@ -118,6 +118,14 @@ update-unbound:
 	sed -i -E '/name:.*unbound_exporter$$/!b;n;s/newTag:.*$$/newTag: $(UNBOUND_EXPORTER_VERSION)/' unbound/base/kustomization.yaml
 	bin/kustomize build unbound/$(UNBOUND_OVERLAY) > etc/unbound$(UNBOUND_CONFIG_SUFFIX).yaml
 
+.PHONY: update-csi-addons
+update-csi-addons:
+	rm -rf /tmp/work-csi-addons
+	mkdir -p /tmp/work-csi-addons
+	curl -o /tmp/work-csi-addons/crds.yaml -sSfL https://github.com/csi-addons/kubernetes-csi-addons/releases/download/v${CSI_ADDONS_VERSION}/crds.yaml
+	curl -o /tmp/work-csi-addons/rbac.yaml -sSfL https://github.com/csi-addons/kubernetes-csi-addons/releases/download/v${CSI_ADDONS_VERSION}/rbac.yaml
+	curl -o /tmp/work-csi-addons/setup-controller.yaml -sSfL https://github.com/csi-addons/kubernetes-csi-addons/releases/download/v${CSI_ADDONS_VERSION}/setup-controller.yaml
+	yq /tmp/work-csi-addons/crds.yaml /tmp/work-csi-addons/rbac.yaml /tmp/work-csi-addons/setup-controller.yaml > etc/csi-addons.yaml
 HELM := $(shell pwd)/bin/helm
 .PHONY: helm
 helm: $(HELM) ## Download helm locally if necessary.
