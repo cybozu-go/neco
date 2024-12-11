@@ -82,10 +82,10 @@ operator:
   resources:
     limits:
       cpu: 250m
-      memory: 3300Mi
+      memory: 2300Mi
     requests:
       cpu: 25m
-      memory: 330Mi
+      memory: 230Mi
 policyAuditMode: false
 policyEnforcementMode: "default"
 pprof:
@@ -98,8 +98,8 @@ prometheus:
     - +cilium_bpf_map_pressure
 resources:
   requests:
-    cpu: 100m
-    memory: 400Mi
+    cpu: 510m
+    memory: 10Gi
 rollOutCiliumPods: true
 sessionAffinity: true
 socketLB:
