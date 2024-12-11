@@ -179,8 +179,9 @@ type inventorySpec struct {
 }
 
 type rackMenu struct {
-	Cs int `json:"cs"`
-	Ss int `json:"ss"`
+	Cs  int `json:"cs"`
+	Ss  int `json:"ss"`
+	Ss2 int `json:"ss2"`
 }
 
 type nodeMenu struct {
@@ -247,6 +248,7 @@ const (
 	nodeTypeBoot = nodeType("boot")
 	nodeTypeCS   = nodeType("cs")
 	nodeTypeSS   = nodeType("ss")
+	nodeTypeSS2  = nodeType("ss2")
 )
 
 type menu struct {
