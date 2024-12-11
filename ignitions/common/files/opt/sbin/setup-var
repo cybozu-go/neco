@@ -69,10 +69,16 @@ prepare_lv() {
 }
 
 find_boss() {
-    sdlist=$(cd /sys/block; ls -d sd*)
+    sdlist=$(find /sys/block/ -maxdepth 1 -name "sd*" -printf '%f\n')
+    nvlist=$(find /sys/block/ -maxdepth 1 -name "nvme*" -printf '%f\n')
     for sd in $sdlist; do
-        if grep -q DELLBOSS /sys/block/$sd/device/model; then
+        if grep -q BOSS /sys/block/$sd/device/model; then
             echo /dev/mapper/crypt-$sd
+        fi
+    done
+    for nv in $nvlist; do
+        if grep -q BOSS /sys/block/$nv/device/model; then
+            echo /dev/mapper/crypt-$nv
         fi
     done
 }
