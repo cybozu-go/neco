@@ -1067,6 +1067,8 @@ spec:
       - args:
         - --config-dir=/tmp/cilium/config-map
         - --endpoint-gc-interval=0
+        - --bpf-ct-timeout-regular-tcp=2h13m20s
+        - --bpf-ct-timeout-service-tcp=2h13m20s
         command:
         - cilium-agent
         env:
