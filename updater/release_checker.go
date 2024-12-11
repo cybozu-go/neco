@@ -45,6 +45,7 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 			return "", ErrNoReleases
 		}
 	case neco.TestEnv:
+		log.Info("running in test environment", nil)
 		c.check = func(ctx context.Context) (string, error) {
 			return "9999.12.31-99999", nil
 		}
