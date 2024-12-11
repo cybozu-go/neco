@@ -18,6 +18,10 @@ ifeq ($(CILIUM_PRE), true)
 	CILIUM_CONFIG_SUFFIX = -pre
 	CILIUM_OVERLAY = pre
 endif
+ifeq ($(CILIUM_DCTEST), true)
+	CILIUM_CONFIG_SUFFIX = -dctest
+	CILIUM_OVERLAY = dctest
+endif
 SQUID_VERSION := $(shell awk '/"squid"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
 SQUID_EXPORTER_VERSION := $(shell awk '/"squid-exporter"/ {match($$6, /[0-9.]+/); print substr($$6,RSTART,RLENGTH)}' artifacts.go)
 SQUID_OVERLAY = prod
@@ -152,6 +156,7 @@ check-generate:
 	$(MAKE) update-coil COIL_PRE=true
 	$(MAKE) update-cilium
 	$(MAKE) update-cilium CILIUM_PRE=true
+	$(MAKE) update-cilium CILIUM_DCTEST=true
 	$(MAKE) update-squid
 	$(MAKE) update-squid SQUID_PRE=true
 	$(MAKE) update-unbound

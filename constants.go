@@ -195,6 +195,13 @@ var (
 		filepath.Join(NecoDataDir, "unbound-pre.yaml"),
 		filepath.Join(NecoDataDir, "squid-pre.yaml"),
 	}
+	CKEUserResourceFilesDCTest = []string{
+		filepath.Join(NecoDataDir, "namespaces.yml"),
+		filepath.Join(NecoDataDir, "cilium-dctest.yaml"),
+		filepath.Join(NecoDataDir, "coil-pre.yaml"),
+		filepath.Join(NecoDataDir, "unbound-pre.yaml"),
+		filepath.Join(NecoDataDir, "squid-pre.yaml"),
+	}
 
 	NecoCertFile = filepath.Join(NecoDir, "etcd.crt")
 	NecoKeyFile  = filepath.Join(NecoDir, "etcd.key")
