@@ -211,7 +211,12 @@ options:
       cpuManagerPolicy: static
       maxPods: 150
       topologyManagerPolicy: best-effort
+      enforceNodeAllocatable:
+      - pods
+      evictionHard:
+        memory.available: "0%"
       systemReserved:
+        memory: 10Gi
         cpu: "1"
       imageGCHighThresholdPercent: 65
       imageGCLowThresholdPercent: 60
