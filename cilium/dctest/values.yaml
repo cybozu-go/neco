@@ -1,0 +1,112 @@
+bgp:
+  announce:
+    loadbalancerIP: true
+  enabled: true
+bpf:
+  hostLegacyRouting: true
+  policyMapMax: 65536
+  mapDynamicSizeRatio: 0.005
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+cni:
+  chainingMode: "generic-veth"
+  customConf: true
+conntrackGCMaxInterval: 30m
+datapathMode: "veth"
+devices: "eth+ eno1+ eno2+"
+enableIPv4Masquerade: false
+enableIdentityMark: false
+externalIPs:
+  enabled: true
+extraArgs:
+  - "--endpoint-gc-interval=0"
+extraConfig:
+  bpf-ct-timeout-regular-any: 1h0m0s
+  bpf-ct-timeout-service-any: 1h0m0s
+hostPort:
+  enabled: false
+hubble:
+  relay:
+    enabled: true
+    tls:
+      server:
+        enabled: true
+    rollOutPods: true
+    resources:
+      limits:
+        cpu: 2100m
+        memory: 1200Mi
+      requests:
+        cpu: 210m
+        memory: 120Mi
+    podSecurityContext:
+      fsGroup: 10000
+    securityContext:
+      runAsUser: 10000
+      runAsGroup: 10000
+  tls:
+    auto:
+      method: "cronJob"
+k8sServiceHost: 127.0.0.1
+k8sServicePort: 16443
+kubeProxyReplacement: "partial"
+labels: "
+  k8s:app
+  k8s:io\\.cilium\\.k8s\\.namespace\\.labels\\.team
+  k8s:io\\.kubernetes\\.pod\\.namespace
+  k8s:k8s-app 
+  io\\.cilium\\.k8s\\.policy
+  cybozu\\.io/family
+  app\\.cybozu\\.io
+  neco\\.cybozu\\.io\\/registry
+  identity\\.neco\\.cybozu\\.io
+  "
+loadBalancer:
+  # We can't enable XDP Acceleration because rolling restart Cilium with XDP enabled disrupts in-cluster connectivity
+  acceleration: disabled
+  algorithm: maglev
+  dsrDispatch: geneve
+  dsrL4Translate: backend
+  mode: dsr
+maglev:
+  hashSeed: 3HCx6JennjWtot2U
+nodePort:
+  directRoutingDevice: "e+"
+  enabled: true
+operator:
+  rollOutPods: true
+  prometheus:
+    enabled: true
+  resources:
+    limits:
+      cpu: 250m
+      memory: 3300Mi
+    requests:
+      cpu: 25m
+      memory: 330Mi
+policyAuditMode: false
+policyEnforcementMode: "default"
+pprof:
+  enabled: true
+  address: "0.0.0.0"
+  port: 6060
+prometheus:
+  enabled: true
+  metrics:
+    - +cilium_bpf_map_pressure
+resources:
+  requests:
+    cpu: 100m
+    memory: 400Mi
+rollOutCiliumPods: true
+sessionAffinity: true
+socketLB:
+  enabled: true
+  hostNamespaceOnly: true
+tunnel: "disabled"
+updateStrategy:
+  rollingUpdate: null
+  type: OnDelete
+upgradeCompatibility: "1.12"
