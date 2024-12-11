@@ -145,4 +145,8 @@ WantedBy=multi-user.target`
 			execSafeAt(h, "sudo", "test", "-f", "/etc/sudoers.d/cybozu")
 		}
 	})
+
+	By("Setting env for test")
+	stdout, stderr, err := execAt(bootServers[0], "neco", "config", "set", "env", "test")
+	Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 }
