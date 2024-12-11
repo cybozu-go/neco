@@ -848,6 +848,8 @@ spec:
         args:
         - --config-dir=/tmp/cilium/config-map
         - --endpoint-gc-interval=0
+        - --bpf-ct-timeout-regular-tcp=2h13m20s
+        - --bpf-ct-timeout-service-tcp=2h13m20s
         startupProbe:
           httpGet:
             host: "127.0.0.1"
