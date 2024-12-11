@@ -838,10 +838,10 @@ spec:
         resources:
           limits:
             cpu: 250m
-            memory: 2300Mi
+            memory: 3300Mi
           requests:
             cpu: 25m
-            memory: 230Mi
+            memory: 330Mi
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /tmp/cilium/config-map
@@ -1076,8 +1076,6 @@ spec:
       - args:
         - --config-dir=/tmp/cilium/config-map
         - --endpoint-gc-interval=0
-        - --bpf-ct-timeout-regular-tcp=2h13m20s
-        - --bpf-ct-timeout-service-tcp=2h13m20s
         command:
         - cilium-agent
         env:
@@ -1171,8 +1169,8 @@ spec:
           timeoutSeconds: 5
         resources:
           requests:
-            cpu: 510m
-            memory: 10Gi
+            cpu: 100m
+            memory: 400Mi
         securityContext:
           capabilities:
             add:

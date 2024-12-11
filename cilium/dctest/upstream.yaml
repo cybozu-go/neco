@@ -848,8 +848,6 @@ spec:
         args:
         - --config-dir=/tmp/cilium/config-map
         - --endpoint-gc-interval=0
-        - --bpf-ct-timeout-regular-tcp=2h13m20s
-        - --bpf-ct-timeout-service-tcp=2h13m20s
         startupProbe:
           httpGet:
             host: "127.0.0.1"
@@ -938,8 +936,8 @@ spec:
               - /cni-uninstall.sh
         resources:
           requests:
-            cpu: 510m
-            memory: 10Gi
+            cpu: 100m
+            memory: 400Mi
         ports:
         - name: peer-service
           containerPort: 4244
@@ -1375,10 +1373,10 @@ spec:
         resources:
           limits:
             cpu: 250m
-            memory: 2300Mi
+            memory: 3300Mi
           requests:
             cpu: 25m
-            memory: 230Mi
+            memory: 330Mi
         terminationMessagePolicy: FallbackToLogsOnError
       hostNetwork: true
       restartPolicy: Always

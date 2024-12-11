@@ -22,8 +22,6 @@ externalIPs:
   enabled: true
 extraArgs:
   - "--endpoint-gc-interval=0"
-  - "--bpf-ct-timeout-regular-tcp=2h13m20s"
-  - "--bpf-ct-timeout-service-tcp=2h13m20s"
 extraConfig:
   bpf-ct-timeout-regular-any: 1h0m0s
   bpf-ct-timeout-service-any: 1h0m0s
@@ -84,10 +82,10 @@ operator:
   resources:
     limits:
       cpu: 250m
-      memory: 2300Mi
+      memory: 3300Mi
     requests:
       cpu: 25m
-      memory: 230Mi
+      memory: 330Mi
 policyAuditMode: false
 policyEnforcementMode: "default"
 pprof:
@@ -100,8 +98,8 @@ prometheus:
     - +cilium_bpf_map_pressure
 resources:
   requests:
-    cpu: 510m
-    memory: 10Gi
+    cpu: 100m
+    memory: 400Mi
 rollOutCiliumPods: true
 sessionAffinity: true
 socketLB:

@@ -1,0 +1,41 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base
+  - bgp_config.yaml
+  - upstream.yaml
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: cilium-operator
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cke.cybozu.com/rank: "2500"
+  - target:
+      group: apps
+      version: v1
+      kind: DaemonSet
+      name: cilium
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cke.cybozu.com/rank: "2500"
+  - target:
+      group: batch
+      version: v1
+      kind: Job
+      name: hubble-generate-certs
+    patch: |-
+      - op: remove
+        path: /spec/ttlSecondsAfterFinished
+configMapGenerator:
+- name: cilium-config
+  namespace: kube-system
+  behavior: merge
+  literals:
+  - api-rate-limit=endpoint-create=auto-adjust:true,log:true,estimated-processing-duration:5s,max-parallel-requests:16
