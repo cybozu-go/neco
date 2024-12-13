@@ -6,7 +6,7 @@ go 1.23.3
 replace github.com/armon/go-metrics v0.5.3 => github.com/hashicorp/go-metrics v0.5.3
 
 require (
-	github.com/cybozu-go/cke v1.29.0
+	github.com/cybozu-go/cke v1.29.2
 	github.com/cybozu-go/etcdutil v1.6.9
 	github.com/cybozu-go/log v1.7.0
 	github.com/cybozu-go/netutil v1.4.9
