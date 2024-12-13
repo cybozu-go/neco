@@ -91,6 +91,7 @@ type rack struct {
 	bootNode              *bootNode
 	csList                []*node
 	ssList                []*node
+	ss2List               []*node
 	node0Network          *net.IPNet
 	node1Network          *net.IPNet
 	node2Network          *net.IPNet
@@ -274,7 +275,7 @@ func NewCluster(menu *menu) (*Cluster, error) {
 		}
 
 		for csIdx := 0; csIdx < rackMenu.Cs; csIdx++ {
-			name := fmt.Sprintf("cs%d", csIdx+1)
+			name := fmt.Sprintf("cs-%d", csIdx+1)
 			fullName := fmt.Sprintf("%s-%s", rack.name, name)
 			node := &node{
 				name:         name,
@@ -291,7 +292,7 @@ func NewCluster(menu *menu) (*Cluster, error) {
 		}
 
 		for ssIdx := 0; ssIdx < rackMenu.Ss; ssIdx++ {
-			name := fmt.Sprintf("ss%d", ssIdx+1)
+			name := fmt.Sprintf("ss-%d", ssIdx+1)
 			fullName := fmt.Sprintf("%s-%s", rack.name, name)
 			node := &node{
 				name:         name,
@@ -305,6 +306,23 @@ func NewCluster(menu *menu) (*Cluster, error) {
 				tor2Address:  rack.bootNode.tor2Address,
 			}
 			rack.ssList = append(rack.ssList, node)
+		}
+
+		for ss2Idx := 0; ss2Idx < rackMenu.Ss2; ss2Idx++ {
+			name := fmt.Sprintf("ss2-%d", ss2Idx+1)
+			fullName := fmt.Sprintf("%s-%s", rack.name, name)
+			node := &node{
+				name:         name,
+				fullName:     fullName,
+				spec:         nodeSpecs[nodeTypeSS2],
+				serial:       fmt.Sprintf("%x", sha1.Sum([]byte(fullName))),
+				node0Address: addToIP(node0Network.IP, offsetNodenetServers+ss2Idx+rackMenu.Cs+rackMenu.Ss, 32),
+				node1Address: addToIPNet(node1Network, offsetNodenetServers+ss2Idx+rackMenu.Cs+rackMenu.Ss),
+				node2Address: addToIPNet(node2Network, offsetNodenetServers+ss2Idx+rackMenu.Cs+rackMenu.Ss),
+				tor1Address:  rack.bootNode.tor1Address,
+				tor2Address:  rack.bootNode.tor2Address,
+			}
+			rack.ss2List = append(rack.ss2List, node)
 		}
 
 		rack.tor1 = &tor{

@@ -66,6 +66,7 @@ type RackArgs struct {
 	BootNode NodeArgs
 	CSList   []*NodeArgs
 	SSList   []*NodeArgs
+	SS2List  []*NodeArgs
 }
 
 type NodeArgs struct {
@@ -244,6 +245,19 @@ func (c *Cluster) generateSeedYaml(inputDir, outputDir string) error {
 				}
 			}
 		}
+		for _, ss2 := range rack.ss2List {
+			if ss2.spec.CloudInitTemplate != "" {
+				args := &SeedYamlArgs{
+					Name: fmt.Sprintf("%s-%s", rack.name, ss2.name),
+					Rack: rackArgs,
+				}
+				err := exportFile(filepath.Join(inputDir, ss2.spec.CloudInitTemplate),
+					filepath.Join(outputDir, fmt.Sprintf("seed_%s-%s.yml", rack.name, ss2.name)), args)
+				if err != nil {
+					return err
+				}
+			}
+		}
 	}
 
 	return nil
@@ -332,6 +346,9 @@ func (c *Cluster) generateSabakanData(outputDir string) error {
 		for _, ss := range rack.ssList {
 			ms = append(ms, sabakanMachine(ss.serial, rack.index, "ss"))
 		}
+		for _, ss2 := range rack.ss2List {
+			ms = append(ms, sabakanMachine(ss2.serial, rack.index, "ss2"))
+		}
 	}
 
 	sabakanDir := filepath.Join(outputDir, sabakanDir)
@@ -411,6 +428,13 @@ func newRackArgs(rack *rack) *RackArgs {
 			Name:         ss.name,
 			Node1Address: ss.node1Address.IP.String(),
 			Node2Address: ss.node2Address.IP.String(),
+		})
+	}
+	for _, ss2 := range rack.ss2List {
+		args.SS2List = append(args.SS2List, &NodeArgs{
+			Name:         ss2.name,
+			Node1Address: ss2.node1Address.IP.String(),
+			Node2Address: ss2.node2Address.IP.String(),
 		})
 	}
 
