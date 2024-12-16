@@ -137,7 +137,7 @@ options:
             - system:kube-scheduler
         - level: RequestResponse
     extra_args:
-      - "--feature-gates=ValidatingAdmissionPolicy=true"
+      - "--feature-gates=ValidatingAdmissionPolicy=true,StrictCostEnforcementForVAP=true,StrictCostEnforcementForWebhooks=true"
       - "--audit-log-maxage=1"
       - "--audit-log-maxsize=10"
       - "--audit-log-maxbackup=10"
