@@ -108,7 +108,11 @@ func (o *operator) UpdateNeco(ctx context.Context, req *neco.UpdateRequest) erro
 	if env == neco.DevEnv {
 		deb.Release = "test-" + req.Version
 	}
-	return InstallDebianPackage(ctx, o.proxyClient, o.ghClient, deb, true, map[string]string{"HOME": "/home/cybozu"})
+	token, err := o.storage.GetGitHubToken(ctx)
+	if err != nil {
+		return err
+	}
+	return InstallDebianPackage(ctx, o.proxyClient, token, o.ghClient, deb, true, map[string]string{"HOME": "/home/cybozu"})
 }
 
 func (o *operator) FinalStep() int {

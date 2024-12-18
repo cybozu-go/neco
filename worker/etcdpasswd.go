@@ -39,7 +39,11 @@ func (o *operator) UpdateEtcdpasswd(ctx context.Context, req *neco.UpdateRequest
 		if err != nil {
 			return err
 		}
-		err = InstallDebianPackage(ctx, o.proxyClient, o.ghClient, &deb, false, nil)
+		token, err := o.storage.GetGitHubToken(ctx)
+		if err != nil {
+			return err
+		}
+		err = InstallDebianPackage(ctx, o.proxyClient, token, o.ghClient, &deb, false, nil)
 		if err != nil {
 			return err
 		}

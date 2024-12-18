@@ -16,20 +16,33 @@ import (
 )
 
 // InstallDebianPackage installs a debian package
-// client uses for downloading a debian package.
+// client is used to download a debian package. If token is not empty, it is used as a bearer token.
 // ghClient uses for getting download URL by GitHub API.
 // envvalues uses for giving environment values to systemd-run command when background is true.
-func InstallDebianPackage(ctx context.Context, client *http.Client, ghClient *github.Client, pkg *neco.DebianPackage, background bool, envValues map[string]string) error {
+func InstallDebianPackage(ctx context.Context, client *http.Client, token string, ghClient *github.Client, pkg *neco.DebianPackage, background bool, envValues map[string]string) error {
 	downloadURL, err := GetGitHubDownloadURL(ctx, ghClient, pkg)
 	if err != nil {
 		return err
 	}
 
+	log.Info("installing debian package...", map[string]interface{}{
+		"package": pkg.Name,
+		"release": pkg.Release,
+		"url":     downloadURL,
+	})
 	var data []byte
 	const retryCount = 10
 	err = neco.RetryWithSleep(ctx, retryCount, 10*time.Second,
 		func(ctx context.Context) error {
-			resp, err := client.Get(downloadURL)
+			req, err := http.NewRequest("GET", downloadURL, nil)
+			if err != nil {
+				return err
+			}
+			req.Header.Add("Accept", "application/octet-stream")
+			if token != "" {
+				req.Header.Set("Authorization", "Bearer "+token)
+			}
+			resp, err := client.Do(req)
 			if err != nil {
 				return err
 			}
@@ -117,11 +130,11 @@ func GetGitHubDownloadURL(ctx context.Context, gh *github.Client, pkg *neco.Debi
 	if asset == nil {
 		return "", fmt.Errorf("debian package not found: %s@%s", pkg.Repository, pkg.Release)
 	}
-	if asset.BrowserDownloadURL == nil {
-		return "", fmt.Errorf("asset browser-download-url is empty: %s@%s", pkg.Repository, pkg.Release)
+	if asset.URL == nil {
+		return "", fmt.Errorf("asset url is empty: %s@%s", pkg.Repository, pkg.Release)
 	}
 
-	return *asset.BrowserDownloadURL, nil
+	return *asset.URL, nil
 }
 
 func findDebAsset(assets []*github.ReleaseAsset, name string) *github.ReleaseAsset {
