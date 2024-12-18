@@ -20,6 +20,8 @@ for symlink in $UDEV_LINKS; do
       ;;
     disk/by-path/*-ata-*)
       ;;
+    disk/by-path/*-nvme-*)
+      ;;
     disk/by-path/*)
       output_log "find a symlink:$symlink"
       CRYPT_BASE_PATH=${symlink#disk/by-path/}
