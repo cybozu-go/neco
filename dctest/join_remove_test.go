@@ -165,6 +165,22 @@ func testJoinRemove() {
 		}).Should(Succeed())
 	})
 
+	It("should set Virtual IPs to boot-3", func() {
+		expectedDHCPServerHostname := map[string]string{
+			"10.71.255.1": "gcp0-boot-0",
+			"10.71.255.2": "gcp0-boot-1",
+			"10.71.255.3": "gcp0-boot-2",
+			"10.71.255.4": "gcp0-boot-3",
+		}
+		expectedActiveBootServerHostname := []string{
+			"gcp0-boot-0",
+			"gcp0-boot-1",
+			"gcp0-boot-2",
+			"gcp0-boot-3",
+		}
+		checkBootServerVirtualIPs(expectedDHCPServerHostname, expectedActiveBootServerHostname)
+	})
+
 	It("should remove boot-3", func() {
 		By("Running neco leave 3")
 		token := getVaultToken()
@@ -201,6 +217,20 @@ func testJoinRemove() {
 		// need to wait for boot-1/2 to restart etcd, or the system would become
 		// unstable during tests.
 		time.Sleep(3 * time.Minute)
+	})
+
+	It("should remove virtual IPs from boot-3", func() {
+		expectedDHCPServerHostname := map[string]string{
+			"10.71.255.1": "gcp0-boot-0",
+			"10.71.255.2": "gcp0-boot-1",
+			"10.71.255.3": "gcp0-boot-2",
+		}
+		expectedActiveBootServerHostname := []string{
+			"gcp0-boot-0",
+			"gcp0-boot-1",
+			"gcp0-boot-2",
+		}
+		checkBootServerVirtualIPs(expectedDHCPServerHostname, expectedActiveBootServerHostname)
 	})
 
 	It("should set state of boot-3 to unreachable", func() {
