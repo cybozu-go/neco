@@ -7,7 +7,9 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"slices"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/cybozu-go/neco"
@@ -33,13 +35,16 @@ func setupNetwork(lrn int) error {
 	if err := writeDummyNetworkConf("node0", node0); err != nil {
 		return err
 	}
+	if err := writeDummyNetworkConf("bastion", bastion); err != nil {
+		return err
+	}
+	if err := writeDummyNetworkConf("boot"); err != nil {
+		return err
+	}
 	if err := writePhysNetworkConf(eth0, node1); err != nil {
 		return err
 	}
 	if err := writePhysNetworkConf(eth1, node2); err != nil {
-		return err
-	}
-	if err := writeDummyNetworkConf("bastion", bastion); err != nil {
 		return err
 	}
 
@@ -47,7 +52,19 @@ func setupNetwork(lrn int) error {
 		return err
 	}
 
-	if err := waitNetwork("node0", "bastion", eth0, eth1); err != nil {
+	if err := waitNetwork("node0", node0); err != nil {
+		return err
+	}
+	if err := waitNetwork("bastion", bastion); err != nil {
+		return err
+	}
+	if err := waitNetwork("boot"); err != nil {
+		return err
+	}
+	if err := waitNetwork(eth0, node1); err != nil {
+		return err
+	}
+	if err := waitNetwork(eth1, node2); err != nil {
 		return err
 	}
 
@@ -66,7 +83,7 @@ func setupNetwork(lrn int) error {
 	return nil
 }
 
-func writeDummyNetworkConf(name string, addr net.IP) error {
+func writeDummyNetworkConf(name string, addrs ...net.IP) error {
 	s := fmt.Sprintf(`[NetDev]
 Name=%s
 Kind=dummy
@@ -76,13 +93,21 @@ Kind=dummy
 		return fmt.Errorf("failed to create netdev file for %s: %w", name, err)
 	}
 
-	s = fmt.Sprintf(`[Match]
+	if len(addrs) == 0 {
+		return nil
+	}
+
+	builder := strings.Builder{}
+	head := fmt.Sprintf(`[Match]
 Name=%s
 
 [Network]
-Address=%s/32
-`, name, addr.String())
-	err = os.WriteFile(fmt.Sprintf("/etc/systemd/network/%s.network", name), []byte(s), 0644)
+`, name)
+	builder.WriteString(head)
+	for _, a := range addrs {
+		builder.WriteString(fmt.Sprintf("Address=%s/32\n", a.String()))
+	}
+	err = os.WriteFile(fmt.Sprintf("/etc/systemd/network/%s.network", name), []byte(builder.String()), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create network file for %s: %w", name, err)
 	}
@@ -109,24 +134,31 @@ Scope=link
 	return nil
 }
 
-func waitNetwork(linkNames ...string) error {
-	links := make([]netlink.Link, len(linkNames))
-	for i, lname := range linkNames {
-		l, err := netlink.LinkByName(lname)
-		if err != nil {
-			return fmt.Errorf("failed to lookup %s: %w", lname, err)
-		}
-		links[i] = l
+func waitNetwork(linkName string, addrs ...net.IP) error {
+	link, err := netlink.LinkByName(linkName)
+	if err != nil {
+		return fmt.Errorf("failed to lookup %s: %w", linkName, err)
 	}
 
-	fmt.Fprintln(os.Stderr, "Waiting for the network to be ready...")
+	fmt.Fprintf(os.Stderr, "Waiting for the network interface %s to be ready...\n", linkName)
+
+	expected := make([]string, 0, len(addrs))
+	for _, a := range addrs {
+		expected = append(expected, a.String())
+	}
+	slices.Sort(expected)
+
 RETRY:
-	for _, l := range links {
-		al, _ := netlink.AddrList(l, netlink.FAMILY_V4)
-		if len(al) == 0 {
-			time.Sleep(1 * time.Second)
-			goto RETRY
-		}
+	al, _ := netlink.AddrList(link, netlink.FAMILY_V4)
+	actual := make([]string, 0, len(al))
+	for _, a := range al {
+		actual = append(actual, a.IP.String())
+	}
+	slices.Sort(actual)
+
+	if slices.Compare(expected, actual) != 0 {
+		time.Sleep(1 * time.Second)
+		goto RETRY
 	}
 
 	return nil

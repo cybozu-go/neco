@@ -253,6 +253,25 @@ func execEtcdctlAt(host string, args ...string) ([]byte, []byte, error) {
 	return execAt(host, execArgs...)
 }
 
+func checkDummyNetworkInterfacesOnBoot() {
+	devices := []string{
+		"node0",
+		"bastion",
+		"boot",
+	}
+	Eventually(func() error {
+		for _, host := range bootServers {
+			for _, netdev := range devices {
+				_, _, err := execAt(host, "ip", "link", "show", netdev, "type", "dummy")
+				if err != nil {
+					return fmt.Errorf("%s is not exist on %s", netdev, host)
+				}
+			}
+		}
+		return nil
+	}).Should(Succeed())
+}
+
 func checkSystemdServicesOnBoot() {
 	services := []string{
 		"bird.service",
