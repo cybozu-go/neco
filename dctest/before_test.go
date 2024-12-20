@@ -81,6 +81,9 @@ func runBeforeSuiteInstall() {
 		execSafeAt(host, "sudo", "apt-get", "purge", "-y", "--autoremove", "netplan.io")
 	}
 
+	By("checking dummy network interfaces on the boot servers exist")
+	checkDummyNetworkInterfacesOnBoot()
+
 	By("checking services on the boot servers are running")
 	checkSystemdServicesOnBoot()
 

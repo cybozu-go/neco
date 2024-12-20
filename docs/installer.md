@@ -55,8 +55,8 @@ It assigns link-local addresses to two physical NICs.
 The link local addresses are used to communicate with Top-of-Rack (ToR) switches.
 BIRD is configured to exchange routes with the ToR switches using BGP.
 
-Additionally, it adds two virtual NICs to advertise routable addresses of the boot server.
-One is named `node0`, and another is `bastion`.
+Additionally, it adds three virtual NICs to advertise routable addresses of the boot server.
+Their names are `node0`, `bastion` and `boot`.
 
 ### NTP
 
