@@ -213,6 +213,7 @@ options:
       topologyManagerPolicy: best-effort
       systemReserved:
         cpu: "1"
+        memory: 10Gi
       imageGCHighThresholdPercent: 65
       imageGCLowThresholdPercent: 60
     cri_endpoint: unix:///var/run/k8s-containerd.sock
