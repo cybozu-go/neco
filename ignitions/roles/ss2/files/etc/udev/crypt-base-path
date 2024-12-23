@@ -14,18 +14,25 @@ UDEV_LINKS=$(udevadm info -q symlink -n /dev/$CRYPT_DEV)
 output_log "CRYPT_DEV: $CRYPT_DEV DISK_DEV:$DISK_DEV"
 output_log "UDEV_LINKS:$UDEV_LINKS"
 
-for symlink in $UDEV_LINKS; do
-  case ${symlink} in
-    disk/by-path/virtio-*)
-      ;;
-    disk/by-path/*-ata-*)
-      ;;
-    disk/by-path/*)
-      output_log "find a symlink:$symlink"
-      CRYPT_BASE_PATH=${symlink#disk/by-path/}
-      ;;
-  esac
-done
+if grep -q BOSS /sys/block/$CRYPT_DEV/device/model; then
+    # ignore the BOSS disk
+else
+  for symlink in $UDEV_LINKS; do
+          if grep -q BOSS /sys/block/$sd/device/model; then
+              echo /dev/mapper/crypt-$sd
+          fi
+    case ${symlink} in
+      disk/by-path/virtio-*)
+        ;;
+      disk/by-path/*-ata-*)
+        ;;
+      disk/by-path/*)
+        output_log "find a symlink:$symlink"
+        CRYPT_BASE_PATH=${symlink#disk/by-path/}
+        ;;
+    esac
+  done
+fi
 
 if [ -z "$CRYPT_BASE_PATH" ]; then
   output_log "could not find symlinks"
