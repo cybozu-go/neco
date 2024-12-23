@@ -20,7 +20,7 @@
     }
   },
   {
-    "serial": "ba49d9a971c5a0344edfda5c8116745ea16fa4dd",
+    "serial": "6fe7f121264edcc5ee96a1b5d6693f2e2dfef144",
     "labels": {
       "datacenter": "dc1",
       "machine-type": "qemu",
@@ -40,7 +40,7 @@
     }
   },
   {
-    "serial": "e6abb04b4645a765faf91f97536ec64f9cecfb61",
+    "serial": "51bf2d640b7ef9e6e334e823e8c9b8ac6cea2acc",
     "labels": {
       "datacenter": "dc1",
       "machine-type": "qemu",
@@ -80,7 +80,7 @@
     }
   },
   {
-    "serial": "4ae0771764376e0184274e24e0b18abd8fa5f285",
+    "serial": "385fba40e1af0daa3dfa0466a5de772eadb7f7ff",
     "labels": {
       "datacenter": "dc1",
       "machine-type": "qemu",
@@ -100,7 +100,7 @@
     }
   },
   {
-    "serial": "aec899fb87747909c95a2decaa4f25899f07516e",
+    "serial": "bcd5aad55640610e4c0435bf2718ad8abc13d6a6",
     "labels": {
       "datacenter": "dc1",
       "machine-type": "qemu",
@@ -120,7 +120,7 @@
     }
   },
   {
-    "serial": "1145129a085ecf521ab524028302a6b4a4e49a00",
+    "serial": "01e27f9cbcefee819d69091960b88291033c4bac",
     "labels": {
       "datacenter": "dc1",
       "machine-type": "qemu",
@@ -140,7 +140,7 @@
     }
   },
   {
-    "serial": "628c8c360d0113de66db14a225affcb85fb2a27f",
+    "serial": "91252fd04d0f2dffa1e6e1c8361c09df91178723",
     "labels": {
       "datacenter": "dc1",
       "machine-type": "qemu",
@@ -149,6 +149,26 @@
     "rack": 1,
     "index-in-rack": 0,
     "role": "ss",
+    "ipv4": null,
+    "ipv6": null,
+    "register-date": "0001-01-01T00:00:00Z",
+    "retire-date": "0001-01-01T00:00:00Z",
+    "bmc": {
+      "ipv4": "",
+      "ipv6": "",
+      "type": "IPMI-2.0"
+    }
+  },
+  {
+    "serial": "606273ac220fb4c29b98ab01acdf80d3ac28f901",
+    "labels": {
+      "datacenter": "dc1",
+      "machine-type": "qemu",
+      "product": "vm"
+    },
+    "rack": 1,
+    "index-in-rack": 0,
+    "role": "ss2",
     "ipv4": null,
     "ipv6": null,
     "register-date": "0001-01-01T00:00:00Z",

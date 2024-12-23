@@ -25,6 +25,7 @@ spec:
       ss: 0
     - cs: 2
       ss: 2
+      ss2: 1
 ---
 kind: Image
 name: ubuntu-cloud-image
@@ -86,3 +87,16 @@ spec:
     - device-class: hdd
       count: 3
       size: 100G
+---
+kind: Node
+type: ss2
+spec:
+  cpu: 1
+  memory: 1G
+  data:
+    - docker-image
+  tpm: true
+  disks:
+    - device-class: ssd
+      count: 4
+      size: 50G

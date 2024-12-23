@@ -3,11 +3,13 @@ racks:
   workers:
     cs: 2
     ss: 0
+    ss2: 0
   boot:
     bastion: 10.72.48.0/32
 - name: rack1
   workers:
     cs: 2
     ss: 2
+    ss2: 1
   boot:
     bastion: 10.72.48.1/32
