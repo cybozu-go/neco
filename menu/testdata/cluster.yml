@@ -1,3 +1,4 @@
+---
 address: 10.0.0.1/24
 kind: Network
 name: internet
@@ -127,6 +128,7 @@ interfaces:
 kind: Node
 memory: 2G
 name: boot-0
+numa: {}
 smbios:
   serial: fb8f2417d0b4db30050719c31ce02a2e8141bbd8
 volumes:
@@ -143,21 +145,21 @@ volumes:
   name: sabakan
   path: {{.}}
 ---
-smp:
-  cpus: 12
-  cores: 6
-  sockets: 2
-numa:
-  nodes: 4
-network-device-queue: 24
 interfaces:
 - r0-node1
 - r0-node2
 kind: Node
 memory: 2G
-name: rack0-cs1
+name: rack0-cs-1
+network-device-queue: 24
+numa:
+  nodes: 4
 smbios:
-  serial: ba49d9a971c5a0344edfda5c8116745ea16fa4dd
+  serial: 6fe7f121264edcc5ee96a1b5d6693f2e2dfef144
+smp:
+  cores: 6
+  cpus: 12
+  sockets: 2
 tpm: true
 uefi: true
 volumes:
@@ -176,21 +178,21 @@ volumes:
   kind: image
   name: extra0
 ---
-smp:
-  cpus: 12
-  cores: 6
-  sockets: 2
-numa:
-  nodes: 4
-network-device-queue: 24
 interfaces:
 - r0-node1
 - r0-node2
 kind: Node
 memory: 2G
-name: rack0-cs2
+name: rack0-cs-2
+network-device-queue: 24
+numa:
+  nodes: 4
 smbios:
-  serial: e6abb04b4645a765faf91f97536ec64f9cecfb61
+  serial: 51bf2d640b7ef9e6e334e823e8c9b8ac6cea2acc
+smp:
+  cores: 6
+  cpus: 12
+  sockets: 2
 tpm: true
 uefi: true
 volumes:
@@ -216,6 +218,7 @@ interfaces:
 kind: Node
 memory: 2G
 name: boot-1
+numa: {}
 smbios:
   serial: fa362303b7af8c4291773ab496aaca16726beaa3
 volumes:
@@ -232,21 +235,21 @@ volumes:
   name: sabakan
   path: {{.}}
 ---
-smp:
-  cpus: 12
-  cores: 6
-  sockets: 2
-numa:
-  nodes: 4
-network-device-queue: 24
 interfaces:
 - r1-node1
 - r1-node2
 kind: Node
 memory: 2G
-name: rack1-cs1
+name: rack1-cs-1
+network-device-queue: 24
+numa:
+  nodes: 4
 smbios:
-  serial: 4ae0771764376e0184274e24e0b18abd8fa5f285
+  serial: 385fba40e1af0daa3dfa0466a5de772eadb7f7ff
+smp:
+  cores: 6
+  cpus: 12
+  sockets: 2
 tpm: true
 uefi: true
 volumes:
@@ -265,21 +268,21 @@ volumes:
   kind: image
   name: extra0
 ---
-smp:
-  cpus: 12
-  cores: 6
-  sockets: 2
-numa:
-  nodes: 4
-network-device-queue: 24
 interfaces:
 - r1-node1
 - r1-node2
 kind: Node
 memory: 2G
-name: rack1-cs2
+name: rack1-cs-2
+network-device-queue: 24
+numa:
+  nodes: 4
 smbios:
-  serial: aec899fb87747909c95a2decaa4f25899f07516e
+  serial: bcd5aad55640610e4c0435bf2718ad8abc13d6a6
+smp:
+  cores: 6
+  cpus: 12
+  sockets: 2
 tpm: true
 uefi: true
 volumes:
@@ -299,15 +302,16 @@ volumes:
   name: extra0
 ---
 cpu: 1
-network-device-queue: 2
 interfaces:
 - r1-node1
 - r1-node2
 kind: Node
 memory: 1G
-name: rack1-ss1
+name: rack1-ss-1
+network-device-queue: 2
+numa: {}
 smbios:
-  serial: 1145129a085ecf521ab524028302a6b4a4e49a00
+  serial: 01e27f9cbcefee819d69091960b88291033c4bac
 tpm: true
 volumes:
 - cache: none
@@ -340,15 +344,16 @@ volumes:
   name: extra0
 ---
 cpu: 1
-network-device-queue: 2
 interfaces:
 - r1-node1
 - r1-node2
 kind: Node
 memory: 1G
-name: rack1-ss2
+name: rack1-ss-2
+network-device-queue: 2
+numa: {}
 smbios:
-  serial: 628c8c360d0113de66db14a225affcb85fb2a27f
+  serial: 91252fd04d0f2dffa1e6e1c8361c09df91178723
 tpm: true
 volumes:
 - cache: none
@@ -375,6 +380,48 @@ volumes:
   kind: raw
   name: data2-3
   size: 100G
+- copy-on-write: true
+  image: docker-image
+  kind: image
+  name: extra0
+---
+cpu: 1
+interfaces:
+- r1-node1
+- r1-node2
+kind: Node
+memory: 1G
+name: rack1-ss2-1
+network-device-queue: 2
+numa: {}
+smbios:
+  serial: 606273ac220fb4c29b98ab01acdf80d3ac28f901
+tpm: true
+volumes:
+- cache: none
+  device-class: ssd
+  format: raw
+  kind: raw
+  name: data1-1
+  size: 50G
+- cache: none
+  device-class: ssd
+  format: raw
+  kind: raw
+  name: data1-2
+  size: 50G
+- cache: none
+  device-class: ssd
+  format: raw
+  kind: raw
+  name: data1-3
+  size: 50G
+- cache: none
+  device-class: ssd
+  format: raw
+  kind: raw
+  name: data1-4
+  size: 50G
 - copy-on-write: true
   image: docker-image
   kind: image
@@ -383,33 +430,32 @@ volumes:
 cpu: 2
 ignition: chrony.ign
 interfaces:
-  - core-ntp
+- core-ntp
 kind: Node
 memory: 4G
 name: chrony
+numa: {}
 smbios: {}
 volumes:
-  - cache: writeback
-    copy-on-write: true
-    image: flatcar
-    kind: image
-    name: root
+- cache: writeback
+  copy-on-write: true
+  image: flatcar
+  kind: image
+  name: root
 ---
-kind: NetworkNamespace
-name: core
 apps:
-- name: bird
-  command:
+- command:
   - /usr/sbin/bird
   - -f
   - -c
   - /etc/bird/bird_core.conf
   - -s
   - /var/run/bird/bird_core.ctl
-- name: squid
-  command:
+  name: bird
+- command:
   - /usr/sbin/squid
   - -N
+  name: squid
 init-scripts:
 - setup-iptables
 interfaces:
@@ -417,10 +463,10 @@ interfaces:
   - 10.0.0.2/24
   network: internet
 - addresses:
-    - 10.72.3.1/24
+  - 10.72.3.1/24
   network: core-to-ext
 - addresses:
-    - 10.72.4.1/24
+  - 10.72.4.1/24
   network: core-to-op
 - addresses:
   - 10.0.49.3/32
@@ -434,18 +480,18 @@ interfaces:
 - addresses:
   - 10.72.2.2/31
   network: core-to-s2
----
 kind: NetworkNamespace
-name: spine1
+name: core
+---
 apps:
-- name: bird
-  command:
+- command:
   - /usr/sbin/bird
   - -f
   - -c
   - /etc/bird/bird_spine1.conf
   - -s
   - /var/run/bird/bird_spine1.ctl
+  name: bird
 init-scripts:
 - setup-iptables-spine
 interfaces:
@@ -467,18 +513,18 @@ interfaces:
 - addresses:
   - 10.72.1.6/31
   network: s1-to-r1-2
----
 kind: NetworkNamespace
-name: spine2
+name: spine1
+---
 apps:
-- name: bird
-  command:
+- command:
   - /usr/sbin/bird
   - -f
   - -c
   - /etc/bird/bird_spine2.conf
   - -s
   - /var/run/bird/bird_spine2.ctl
+  name: bird
 init-scripts:
 - setup-iptables-spine
 interfaces:
@@ -500,26 +546,26 @@ interfaces:
 - addresses:
   - 10.72.1.14/31
   network: s2-to-r1-2
----
 kind: NetworkNamespace
-name: rack0-tor1
+name: spine2
+---
 apps:
-- name: bird
-  command:
+- command:
   - /usr/sbin/bird
   - -f
   - -c
   - /etc/bird/bird_rack0-tor1.conf
   - -s
   - /var/run/bird/bird_rack0-tor1.ctl
-- name: dnsmasq
-  command:
+  name: bird
+- command:
   - /usr/sbin/dnsmasq
   - --keep-in-foreground
   - --pid-file=/var/run/dnsmasq_rack0-tor1.pid
   - --log-facility=-
   - --dhcp-relay
   - 10.69.0.65,10.69.0.195
+  name: dnsmasq
 interfaces:
 - addresses:
   - 10.72.1.1/31
@@ -530,26 +576,26 @@ interfaces:
 - addresses:
   - 10.69.0.65/26
   network: r0-node1
----
 kind: NetworkNamespace
-name: rack0-tor2
+name: rack0-tor1
+---
 apps:
-- name: bird
-  command:
+- command:
   - /usr/sbin/bird
   - -f
   - -c
   - /etc/bird/bird_rack0-tor2.conf
   - -s
   - /var/run/bird/bird_rack0-tor2.ctl
-- name: dnsmasq
-  command:
+  name: bird
+- command:
   - /usr/sbin/dnsmasq
   - --keep-in-foreground
   - --pid-file=/var/run/dnsmasq_rack0-tor2.pid
   - --log-facility=-
   - --dhcp-relay
   - 10.69.0.129,10.69.0.195
+  name: dnsmasq
 interfaces:
 - addresses:
   - 10.72.1.3/31
@@ -560,26 +606,26 @@ interfaces:
 - addresses:
   - 10.69.0.129/26
   network: r0-node2
----
 kind: NetworkNamespace
-name: rack1-tor1
+name: rack0-tor2
+---
 apps:
-- name: bird
-  command:
+- command:
   - /usr/sbin/bird
   - -f
   - -c
   - /etc/bird/bird_rack1-tor1.conf
   - -s
   - /var/run/bird/bird_rack1-tor1.ctl
-- name: dnsmasq
-  command:
+  name: bird
+- command:
   - /usr/sbin/dnsmasq
   - --keep-in-foreground
   - --pid-file=/var/run/dnsmasq_rack1-tor1.pid
   - --log-facility=-
   - --dhcp-relay
   - 10.69.1.1,10.69.0.3
+  name: dnsmasq
 interfaces:
 - addresses:
   - 10.72.1.5/31
@@ -590,26 +636,26 @@ interfaces:
 - addresses:
   - 10.69.1.1/26
   network: r1-node1
----
 kind: NetworkNamespace
-name: rack1-tor2
+name: rack1-tor1
+---
 apps:
-- name: bird
-  command:
+- command:
   - /usr/sbin/bird
   - -f
   - -c
   - /etc/bird/bird_rack1-tor2.conf
   - -s
   - /var/run/bird/bird_rack1-tor2.ctl
-- name: dnsmasq
-  command:
+  name: bird
+- command:
   - /usr/sbin/dnsmasq
   - --keep-in-foreground
   - --pid-file=/var/run/dnsmasq_rack1-tor2.pid
   - --log-facility=-
   - --dhcp-relay
   - 10.69.1.65,10.69.0.3
+  name: dnsmasq
 interfaces:
 - addresses:
   - 10.72.1.7/31
@@ -620,21 +666,23 @@ interfaces:
 - addresses:
   - 10.69.1.65/26
   network: r1-node2
----
 kind: NetworkNamespace
-name: external
+name: rack1-tor2
+---
 init-scripts:
 - setup-default-gateway-external
 interfaces:
 - addresses:
   - 10.72.3.2/24
   network: core-to-ext
----
 kind: NetworkNamespace
-name: operation
+name: external
+---
 init-scripts:
 - setup-default-gateway-operation
 interfaces:
 - addresses:
   - 10.72.4.2/24
   network: core-to-op
+kind: NetworkNamespace
+name: operation
