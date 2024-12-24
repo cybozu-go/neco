@@ -147,6 +147,9 @@ func testJoinRemove() {
 		// systemd-networkd-wait-online.service may fail due to timeout on dctest env
 		// Frankly speaking, it is not a problem because the test program can already connect to boot servers.
 		execSafeAt(allBootServers[3], "sudo", "systemctl", "reset-failed", "systemd-networkd-wait-online.service")
+		// etcd-backup.service may fail due to timeout on dctest env
+		// etcdctl is installed by worker, so it may not be ready when etcd-backup.service is started.
+		execSafeAt(allBootServers[3], "sudo", "systemctl", "reset-failed", "etcd-backup.service")
 	})
 
 	It("should set state of boot-3 to healthy", func() {
