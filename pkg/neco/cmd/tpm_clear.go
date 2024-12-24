@@ -25,12 +25,6 @@ var tpmClearForce bool
 
 var supportedMachineTypes = map[string]int{
 	"qemu":         tpmClearLogicTypePowerOff,    // Placemat VM. Clear logic is not implemented on placemat.
-	"r640-boot-1":  tpmClearLogicTypePowerOff,    // Dell, TPM 1.2
-	"r640-boot-2":  tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
-	"r640-cs-1":    tpmClearLogicTypePowerOff,    // Dell, TPM 1.2
-	"r640-cs-2":    tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
-	"r740xd-ss-1":  tpmClearLogicTypePowerOff,    // Dell, TPM 1.2
-	"r740xd-ss-2":  tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
 	"r6525-boot-1": tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
 	"r6525-cs-1":   tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
 	"r6525-cs-2":   tpmClearLogicTypeDellRedfish, // Dell, TPM 2.0
