@@ -198,6 +198,19 @@ func execRetryAt(host string, handler retryHandler, args ...string) []byte {
 	return stdout
 }
 
+func unmarshalSafe[T any](g Gomega, data []byte) *T {
+	ret := new(T)
+	err := json.Unmarshal(data, ret)
+	g.ExpectWithOffset(1, err).NotTo(HaveOccurred(), "unmarshal failed: %w", err)
+	return ret
+}
+
+func kubectlGetSafe[T any](g Gomega, args ...string) *T {
+	args = append([]string{"kubectl"}, args...)
+	data := execSafeGomegaAt(g, bootServers[0], args...)
+	return unmarshalSafe[T](g, data)
+}
+
 // waitRequestComplete waits for the current request to be completed.
 // If check is not "", the contents is also checked against the output from "neco status".
 func waitRequestComplete(check string, recover ...bool) {
