@@ -7,6 +7,8 @@ images:
   versions: ["1.15.11.1"]
 - repository: ghcr.io/cybozu/etcd
   versions: ["3.5.15.1"]
+- repository: ghcr.io/cybozu/hubble-relay
+  versions: ["1.15.12.1"]
 osImage:
 - channel: stable
   versions: ["4081.2.0","4081.2.1"]
