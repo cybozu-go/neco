@@ -13,7 +13,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "neco",
 	Short: "an interactive tool for neco administrators",
-	Long:  `Installs/updates miscellaneous programs as well as maintaining etcd database.`,
+	Long:  `an interactive tool for neco administrators.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		err := well.LogConfig{}.Apply()
 		if err != nil {
