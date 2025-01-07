@@ -31,7 +31,13 @@ func testSabakanStateSetter() {
 		err = json.Unmarshal(stdout, &ssMachines)
 		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
 
-		availableNodes := len(csMachines) + len(ssMachines)
+		stdout, stderr, err = execAt(bootServers[0], "sabactl", "machines", "get", "--role=ss2")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		var ss2Machines []sabakan.Machine
+		err = json.Unmarshal(stdout, &ss2Machines)
+		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
+
+		availableNodes := len(csMachines) + len(ssMachines) + len(ss2Machines)
 		Expect(availableNodes).NotTo(Equal(0))
 
 		By("checking all serf members are active")
