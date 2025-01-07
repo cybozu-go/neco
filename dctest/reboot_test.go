@@ -32,6 +32,9 @@ func testRebootAllBootServers() {
 		err := prepareSSHClients(bootServers...)
 		Expect(err).NotTo(HaveOccurred())
 
+		By("checking dummy network interfaces on the boot servers exist after reboot")
+		checkDummyNetworkInterfacesOnBoot()
+
 		By("checking services on the boot servers are running after reboot")
 		checkSystemdServicesOnBoot()
 

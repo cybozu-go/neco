@@ -10,7 +10,7 @@ protocol device {
 }
 protocol direct singles {
     ipv4;
-    interface "node0", "bastion";
+    interface "node0", "bastion", "boot";
 }
 protocol bfd {
     interface "*" {
