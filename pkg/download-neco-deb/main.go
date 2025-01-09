@@ -53,8 +53,15 @@ func main() {
 		if err != nil {
 			return err
 		}
-
-		resp, err := http.DefaultClient.Get(downloadURL)
+		req, err := http.NewRequest("GET", downloadURL, nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Add("Accept", "application/octet-stream")
+		if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+			req.Header.Set("Authorization", "Bearer "+token)
+		}
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return err
 		}
