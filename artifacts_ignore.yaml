@@ -9,6 +9,8 @@ images:
   versions: ["3.5.15.1"]
 - repository: ghcr.io/cybozu/hubble-relay
   versions: ["1.15.12.1"]
+- repository: ghcr.io/cybozu-go/coil
+  versions: ["2.8.0"]
 osImage:
 - channel: stable
   versions: ["4081.2.0","4081.2.1"]
