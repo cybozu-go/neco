@@ -67,6 +67,13 @@ auto-compaction-retention: "1"
 # etcd 3.5.[0-2] has data inconsistency issue.
 # https://groups.google.com/a/kubernetes.io/g/dev/c/B7gJs88XtQc/m/rSgNOzV2BwAJ
 experimental-initial-corrupt-check: true
+
+# Enabling data corruption detection
+# https://etcd.io/docs/v3.5/op-guide/data_corruption/
+experimental-compact-hash-check-enabled: true
+# sigs.k8s.io/yaml only accepts integer values, nanoseconds.
+# 10800000000000 nanoseconds = 3 hours
+experimental-corrupt-check-time: 10800000000000
 `))
 
 var serviceTmpl = template.Must(template.New("etcd-container.service").

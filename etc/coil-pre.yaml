@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.15.0
+    controller-gen.kubebuilder.io/version: v0.16.4
   labels:
     app.kubernetes.io/name: coil
   name: addressblocks.coil.cybozu.com
@@ -33,7 +33,6 @@ spec:
       openAPIV3Schema:
         description: |-
           AddressBlock is the Schema for the addressblocks API
-
 
           The ownerReferences field contains the AddressPool where the block is carved from.
         properties:
@@ -76,7 +75,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.15.0
+    controller-gen.kubebuilder.io/version: v0.16.4
   labels:
     app.kubernetes.io/name: coil
   name: addresspools.coil.cybozu.com
@@ -133,7 +132,6 @@ spec:
                   For example, if the first item is an IPv4 subnet, the other items must also be
                   an IPv4 subnet.
 
-
                   This field can be updated only by adding subnets to the list.
                 items:
                   description: |-
@@ -161,7 +159,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.15.0
+    controller-gen.kubebuilder.io/version: v0.16.4
   labels:
     app.kubernetes.io/name: coil
   name: blockrequests.coil.cybozu.com
@@ -179,7 +177,6 @@ spec:
       openAPIV3Schema:
         description: |-
           BlockRequest is the Schema for the blockrequests API
-
 
           The ownerReferences field contains the Node on which coild that created this run.
         properties:
@@ -262,7 +259,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.15.0
+    controller-gen.kubebuilder.io/version: v0.16.4
   labels:
     app.kubernetes.io/name: coil
   name: egresses.coil.cybozu.com
@@ -377,9 +374,6 @@ spec:
                     description: |-
                       Rolling update config params. Present only if DeploymentStrategyType =
                       RollingUpdate.
-                      ---
-                      TODO: Update this to follow our convention for oneOf, whatever we decide it
-                      to be.
                     properties:
                       maxSurge:
                         anyOf:
@@ -1133,6 +1127,7 @@ spec:
                                       format: int32
                                       type: integer
                                     service:
+                                      default: ""
                                       type: string
                                   required:
                                   - port
@@ -1239,6 +1234,7 @@ spec:
                                       format: int32
                                       type: integer
                                     service:
+                                      default: ""
                                       type: string
                                   required:
                                   - port
@@ -1437,6 +1433,7 @@ spec:
                                       format: int32
                                       type: integer
                                     service:
+                                      default: ""
                                       type: string
                                   required:
                                   - port
@@ -1838,6 +1835,7 @@ spec:
                                       format: int32
                                       type: integer
                                     service:
+                                      default: ""
                                       type: string
                                   required:
                                   - port
@@ -1944,6 +1942,7 @@ spec:
                                       format: int32
                                       type: integer
                                     service:
+                                      default: ""
                                       type: string
                                   required:
                                   - port
@@ -2142,6 +2141,7 @@ spec:
                                       format: int32
                                       type: integer
                                     service:
+                                      default: ""
                                       type: string
                                   required:
                                   - port
@@ -2557,6 +2557,7 @@ spec:
                                       format: int32
                                       type: integer
                                     service:
+                                      default: ""
                                       type: string
                                   required:
                                   - port
@@ -2663,6 +2664,7 @@ spec:
                                       format: int32
                                       type: integer
                                     service:
+                                      default: ""
                                       type: string
                                   required:
                                   - port
@@ -2861,6 +2863,7 @@ spec:
                                       format: int32
                                       type: integer
                                     service:
+                                      default: ""
                                       type: string
                                   required:
                                   - port
@@ -4142,21 +4145,6 @@ rules:
   - coil.cybozu.com
   resources:
   - blockrequests
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - coil.cybozu.com
-  resources:
-  - blockrequests/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - coil.cybozu.com
-  resources:
   - egresses
   verbs:
   - get
@@ -4165,6 +4153,7 @@ rules:
 - apiGroups:
   - coil.cybozu.com
   resources:
+  - blockrequests/status
   - egresses/status
   verbs:
   - get
@@ -4242,6 +4231,7 @@ rules:
   - ""
   resources:
   - namespaces
+  - pods
   - services
   verbs:
   - get
@@ -4253,14 +4243,6 @@ rules:
   - nodes
   verbs:
   - get
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
-  - watch
 - apiGroups:
   - coil.cybozu.com
   resources:
@@ -4571,7 +4553,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        image: ghcr.io/cybozu-go/coil:2.7.2
+        image: ghcr.io/cybozu-go/coil:2.8.0
         livenessProbe:
           httpGet:
             host: localhost
@@ -4655,7 +4637,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: ghcr.io/cybozu-go/coil:2.7.2
+        image: ghcr.io/cybozu-go/coil:2.8.0
         livenessProbe:
           httpGet:
             host: localhost
@@ -4701,7 +4683,7 @@ spec:
             configMapKeyRef:
               key: cni_netconf
               name: coil-config-tc2gh94mfh
-        image: ghcr.io/cybozu-go/coil:2.7.2
+        image: ghcr.io/cybozu-go/coil:2.8.0
         name: coil-installer
         securityContext:
           privileged: true
