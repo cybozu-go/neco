@@ -97,6 +97,7 @@ if [ -n "${DATACENTER}" ]; then
   cp /assets/ubuntu-*-server-cloudimg-amd64.img \${TEMP_DIR}/installer/build
   mkdir -p \${TEMP_DIR}/dctest/output
   cp /assets/flatcar_production_qemu_image.img \${TEMP_DIR}/dctest/output
+  cp \${NECO_DIR}/github-token \${TEMP_DIR}
 fi
 
 # Run dctest
