@@ -11,6 +11,6 @@ images:
   - name: ghcr.io/cybozu/squid-exporter
     newTag: 1.0.7
   - name: ghcr.io/cybozu/unbound
-    newTag: 1.20.0.2
+    newTag: 1.21.1.1
   - name: ghcr.io/cybozu/unbound_exporter
     newTag: 0.4.6.2
