@@ -41,6 +41,8 @@ FAKEROOT = fakeroot
 ETCD_DIR = /tmp/neco-etcd
 TAGS =
 
+K8S_MINOR_VERSION = $(shell go list -m -f '{{.Version}}' github.com/cybozu-go/cke | cut -d. -f2)
+
 ### for Go
 GOTAGS = $(TAGS)
 
@@ -90,6 +92,7 @@ update-cilium: helm
 	cd /tmp/work-cilium
 	$(HELM) template /tmp/work-cilium/install/kubernetes/cilium/ \
 		--namespace=kube-system \
+		--kube-version=1.$(K8S_MINOR_VERSION) \
 		--values cilium/$(CILIUM_OVERLAY)/values.yaml \
 		--set image.repository=ghcr.io/cybozu/cilium \
 		--set image.tag=$(CILIUM_TAG) \

@@ -1,10 +1,6 @@
 package dctest
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -31,83 +27,32 @@ func testCilium() {
 }
 
 func checkCiliumAgentDaemonSet() {
-	EventuallyWithOffset(1, func() error {
-		stdout, _, err := execAt(bootServers[0], "kubectl", "--namespace=kube-system",
-			"get", "daemonsets/cilium", "-o=json")
-		if err != nil {
-			return err
-		}
+	EventuallyWithOffset(1, func(g Gomega) {
+		ds := kubectlGetSafe[appsv1.DaemonSet](g, "--namespace=kube-system", "daemonsets/cilium")
 
-		daemonset := new(appsv1.DaemonSet)
-		err = json.Unmarshal(stdout, daemonset)
-		if err != nil {
-			return err
-		}
-
-		if daemonset.Status.NumberReady != daemonset.Status.DesiredNumberScheduled {
-			return fmt.Errorf("NumberReady: %d, DesiredNumberScheduled: %d", daemonset.Status.NumberReady, daemonset.Status.DesiredNumberScheduled)
-		}
-		if daemonset.Status.NumberReady == 0 {
-			return errors.New("NumberReady == 0")
-		}
-		return nil
+		g.Expect(ds.Status.NumberReady).To(BeNumerically(">", 0), "NumberReady should be positive")
+		g.Expect(ds.Status.NumberReady).To(Equal(ds.Status.DesiredNumberScheduled),
+			"NumberReady: %d, DesiredNumberScheduled: %d", ds.Status.NumberReady, ds.Status.DesiredNumberScheduled)
 	}).Should(Succeed())
 }
 
 func checkCiliumOperatorDeployment() {
-	EventuallyWithOffset(1, func() error {
-		stdout, _, err := execAt(bootServers[0], "kubectl", "--namespace=kube-system",
-			"get", "deployment/cilium-operator", "-o=json")
-		if err != nil {
-			return err
-		}
-
-		deployment := new(appsv1.Deployment)
-		err = json.Unmarshal(stdout, deployment)
-		if err != nil {
-			return err
-		}
-
-		if deployment.Status.ReadyReplicas != 2 {
-			return fmt.Errorf("ReadyReplicas is not 2 but %d", deployment.Status.ReadyReplicas)
-		}
-		return nil
+	EventuallyWithOffset(1, func(g Gomega) {
+		deployment := kubectlGetSafe[appsv1.Deployment](g, "--namespace=kube-system", "deployment/cilium-operator")
+		g.Expect(deployment.Status.ReadyReplicas).To(Equal(int32(2)),
+			"ReadyReplicas of cilium-operator should be 2 but %d", deployment.Status.ReadyReplicas)
 	}).Should(Succeed())
 }
+
 func checkHubbleRelayDeployment() {
-	EventuallyWithOffset(1, func() error {
-		stdout, _, err := execAt(bootServers[0], "kubectl", "--namespace=kube-system",
-			"get", "deployment/hubble-relay", "-o=json")
-		if err != nil {
-			return err
-		}
+	EventuallyWithOffset(1, func(g Gomega) {
+		deployment := kubectlGetSafe[appsv1.Deployment](g, "--namespace=kube-system", "deployment/hubble-relay")
+		g.Expect(deployment.Status.ReadyReplicas).To(Equal(int32(1)),
+			"ReadyReplicas of hubble-relay should be 1 but %d", deployment.Status.ReadyReplicas)
 
-		deployment := new(appsv1.Deployment)
-		err = json.Unmarshal(stdout, deployment)
-		if err != nil {
-			return err
-		}
-
-		if deployment.Status.ReadyReplicas != 1 {
-			return fmt.Errorf("ReadyReplicas is not 1 but %d", deployment.Status.ReadyReplicas)
-		}
-
-		stdout, _, err = execAt(bootServers[0], "hubble", "status", "-o", "json", "--server",
-			"hubble-relay.kube-system.svc:443", "--tls", "--tls-allow-insecure")
-		if err != nil {
-			return err
-		}
-
-		hubbleStatus := new(hubbleStatus)
-		err = json.Unmarshal(stdout, hubbleStatus)
-		if err != nil {
-			return err
-		}
-
-		if hubbleStatus.NumUnavailableNodes != 0 {
-			return fmt.Errorf("NumUnavailableNodes is not 0 but %d", hubbleStatus.NumUnavailableNodes)
-		}
-
-		return nil
+		hubbleStatus := unmarshalSafe[hubbleStatus](g, execSafeGomegaAt(g, bootServers[0], "hubble", "status", "-o", "json",
+			"--server", "hubble-relay.kube-system.svc:443", "--tls", "--tls-allow-insecure"))
+		g.Expect(hubbleStatus.NumUnavailableNodes).To(Equal(0),
+			"NumUnavailableNodes should be 0 but %d", hubbleStatus.NumUnavailableNodes)
 	}).Should(Succeed())
 }
