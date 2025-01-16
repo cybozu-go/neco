@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cybozu-go/sabakan/v3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -14,16 +13,12 @@ import (
 func testRetireServer() {
 	It("retire worker node", func() {
 		By("getting all machines")
-		stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get")
-		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-
-		var allMachines []*sabakan.Machine
-		err = json.Unmarshal(stdout, &allMachines)
-		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
+		allMachines, err := getSabakanMachines()
+		Expect(err).NotTo(HaveOccurred())
 		Expect(allMachines).NotTo(HaveLen(0))
 
 		By("selecting a target node")
-		stdout, stderr, err = execAt(bootServers[0], "kubectl", "get", "nodes", "-l", "cke.cybozu.com/role=ss", "-o", "json")
+		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "nodes", "-l", "cke.cybozu.com/role=ss", "-o", "json")
 		Expect(err).NotTo(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		var nl corev1.NodeList

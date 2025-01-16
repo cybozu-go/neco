@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/cybozu-go/neco"
-	"github.com/cybozu-go/sabakan/v3"
 	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -48,11 +47,8 @@ func testUpgrade() {
 	// This process makes no effects even if after upgrading to "with label version."
 	// However, we should delete after upgrading.
 	It("should set `machine-type` label", func() {
-		stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		var machines []sabakan.Machine
-		err = json.Unmarshal(stdout, &machines)
-		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
+		machines, err := getSabakanMachines()
+		Expect(err).NotTo(HaveOccurred())
 		for _, m := range machines {
 			By("checking label: " + m.Spec.IPv4[0])
 			if val, ok := m.Spec.Labels["machine-type"]; ok && val != "" {
