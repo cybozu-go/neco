@@ -9,6 +9,14 @@ import (
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/google/go-github/v50/github"
+	"github.com/robfig/cron/v3"
+)
+
+var (
+	checkTimeZone            = "Asia/Tokyo"
+	checkTimeRangeDefault    = []string{"* * * * *"}
+	checkTimeRangeStaging    = []string{"* 0-23 * * 1-5"}
+	checkTimeRangeProduction = []string{"* 22-23 * * 1-5"}
 )
 
 // ReleaseChecker checks newer GitHub releases by polling
@@ -17,8 +25,9 @@ type ReleaseChecker struct {
 	leaderKey string
 	ghClient  *github.Client
 
-	check   func(context.Context) (string, error)
-	current string
+	check      func(context.Context) (string, error)
+	checkTimes []string
+	current    string
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
@@ -44,17 +53,22 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 		c.check = func(ctx context.Context) (string, error) {
 			return "", ErrNoReleases
 		}
+		c.checkTimes = checkTimeRangeDefault
 	case neco.TestEnv:
 		c.check = func(ctx context.Context) (string, error) {
 			return "9999.12.31-99999", nil
 		}
+		c.checkTimes = checkTimeRangeDefault
 	case neco.DevEnv:
 		github.SetTagPrefix("test-")
 		c.check = github.GetLatestPublishedTag
+		c.checkTimes = checkTimeRangeDefault
 	case neco.StagingEnv:
 		c.check = github.GetLatestPublishedTag
+		c.checkTimes = checkTimeRangeStaging
 	case neco.ProdEnv:
 		c.check = github.GetLatestReleaseTag
+		c.checkTimes = checkTimeRangeProduction
 	default:
 		return errors.New("unknown env: " + env)
 	}
@@ -85,6 +99,38 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 }
 
 func (c *ReleaseChecker) update(ctx context.Context) error {
+	var schedules []cron.Schedule
+	tz, err := time.LoadLocation(checkTimeZone)
+	if err != nil {
+		return err
+	}
+	for _, checkTime := range c.checkTimes {
+		schedule, err := cron.ParseStandard(checkTime)
+		if err != nil {
+			return err
+		}
+		schedules = append(schedules, schedule)
+	}
+	now := time.Now().In(tz)
+	isWithinSchedule := false
+	for _, schedule := range schedules {
+		next := schedule.Next(now)
+		// If the next scheduled time is within 1 minutes from now, we consider that it's within the schedule.
+		if next.Sub(now) <= time.Second*60 {
+			isWithinSchedule = true
+			break
+		} else {
+			continue
+		}
+	}
+	if !isWithinSchedule {
+		log.Info("not within schedule", map[string]interface{}{
+			"now":       now,
+			"schedules": c.checkTimes,
+		})
+		return nil
+	}
+
 	latest, err := c.check(ctx)
 	if err == ErrNoReleases {
 		return nil
