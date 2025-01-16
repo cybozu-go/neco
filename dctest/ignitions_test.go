@@ -63,7 +63,7 @@ func parentDev(str string) string {
 func testIgnitions() {
 	It("should create by-path based symlinks for encrypted devices on SS Node", func() {
 		By("getting SS Node IP address")
-		machines, err := getMachinesSpecifiedRole("ss")
+		machines, err := getSabakanMachines("--role=ss")
 		Expect(err).NotTo(HaveOccurred())
 		ssNodeIP := machines[0].Spec.IPv4[0]
 
@@ -90,7 +90,7 @@ func testIgnitions() {
 
 	It("should download Neco operation CLI commands on CS Node", func() {
 		By("getting CS Node IP address")
-		machines, err := getMachinesSpecifiedRole("cs")
+		machines, err := getSabakanMachines("--role=cs")
 		Expect(err).NotTo(HaveOccurred())
 		csNodeIP := machines[0].Spec.IPv4[0]
 

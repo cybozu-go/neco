@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cybozu-go/sabakan/v3"
 	. "github.com/onsi/gomega"
 	"golang.org/x/crypto/ssh"
 )
@@ -332,4 +333,17 @@ func getSerfWorkerMembers() (*serfMemberContainer, error) {
 		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
 	}
 	return &result, nil
+}
+
+func getSabakanMachines(sabactlOpts ...string) ([]sabakan.Machine, error) {
+	stdout, _, err := execAt(bootServers[0], append([]string{"sabactl", "machines", "get"}, sabactlOpts...)...)
+	if err != nil {
+		return nil, err
+	}
+	var machines []sabakan.Machine
+	err = json.Unmarshal(stdout, &machines)
+	if err != nil {
+		return nil, err
+	}
+	return machines, nil
 }
