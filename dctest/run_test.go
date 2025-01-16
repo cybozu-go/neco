@@ -312,12 +312,12 @@ func checkSystemdServicesOnBoot() {
 func getSerfBootMembers() (*serfMemberContainer, error) {
 	stdout, stderr, err := execAt(bootServers[0], "serf", "members", "-format", "json", "-tag", "boot-server=true")
 	if err != nil {
-		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+		return nil, fmt.Errorf("stdout=%s, stderr=%s, err=%w", stdout, stderr, err)
 	}
 	var result serfMemberContainer
 	err = json.Unmarshal(stdout, &result)
 	if err != nil {
-		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+		return nil, fmt.Errorf("stdout=%s, err=%w", stdout, err)
 	}
 	return &result, nil
 }
@@ -325,25 +325,25 @@ func getSerfBootMembers() (*serfMemberContainer, error) {
 func getSerfWorkerMembers() (*serfMemberContainer, error) {
 	stdout, stderr, err := execAt(bootServers[0], "serf", "members", "-format", "json", "-tag", "boot-server=false")
 	if err != nil {
-		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+		return nil, fmt.Errorf("stdout=%s, stderr=%s, err=%w", stdout, stderr, err)
 	}
 	var result serfMemberContainer
 	err = json.Unmarshal(stdout, &result)
 	if err != nil {
-		return nil, fmt.Errorf("stdout=%s, stderr=%s err=%v", stdout, stderr, err)
+		return nil, fmt.Errorf("stdout=%s, err=%w", stdout, err)
 	}
 	return &result, nil
 }
 
 func getSabakanMachines(sabactlOpts ...string) ([]sabakan.Machine, error) {
-	stdout, _, err := execAt(bootServers[0], append([]string{"sabactl", "machines", "get"}, sabactlOpts...)...)
+	stdout, stderr, err := execAt(bootServers[0], append([]string{"sabactl", "machines", "get"}, sabactlOpts...)...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("stdout=%s, stderr=%s, err=%w", stdout, stderr, err)
 	}
 	var machines []sabakan.Machine
 	err = json.Unmarshal(stdout, &machines)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("stdout=%s, err=%w", stdout, err)
 	}
 	return machines, nil
 }
