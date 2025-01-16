@@ -48,9 +48,9 @@ func testInitData() {
 		execSafeAt(bootServers[0], "neco", "config", "set", "lb-address-block-internet-cn", lbAddressBlockInternetCN)
 
 		By("initialize data for sabakan and CKE")
-		cs, err := getMachinesSpecifiedRole("cs")
+		cs, err := getSabakanMachines("--role=cs")
 		Expect(err).NotTo(HaveOccurred())
-		ss, err := getMachinesSpecifiedRole("ss")
+		ss, err := getSabakanMachines("--role=ss")
 		Expect(err).NotTo(HaveOccurred())
 		// substruct the number of control planes
 		csweight := len(cs) - 3

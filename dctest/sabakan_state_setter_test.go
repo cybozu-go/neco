@@ -10,7 +10,6 @@ import (
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
-	"github.com/cybozu-go/sabakan/v3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -19,20 +18,10 @@ import (
 func testSabakanStateSetter() {
 	It("should wait for all nodes to join serf", func() {
 		By("getting machines list")
-		stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		var csMachines []sabakan.Machine
-		err = json.Unmarshal(stdout, &csMachines)
-		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
-
-		stdout, stderr, err = execAt(bootServers[0], "sabactl", "machines", "get", "--role=ss")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		var ssMachines []sabakan.Machine
-		err = json.Unmarshal(stdout, &ssMachines)
-		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
-
-		availableNodes := len(csMachines) + len(ssMachines)
-		Expect(availableNodes).NotTo(Equal(0))
+		machines, err := getSabakanMachines("--without-role=boot")
+		Expect(err).NotTo(HaveOccurred())
+		availableNodeCount := len(machines)
+		Expect(availableNodeCount).NotTo(Equal(0))
 
 		By("checking all serf members are active")
 		Eventually(func() error {
@@ -41,8 +30,8 @@ func testSabakanStateSetter() {
 				return err
 			}
 
-			if len(m.Members) != availableNodes {
-				return fmt.Errorf("too few serf members. expected %d, actual %d", availableNodes, len(m.Members))
+			if len(m.Members) != availableNodeCount {
+				return fmt.Errorf("too few serf members. expected %d, actual %d", availableNodeCount, len(m.Members))
 			}
 
 			return nil
@@ -51,7 +40,7 @@ func testSabakanStateSetter() {
 
 	It("should wait for all machines to become healthy", func() {
 		Eventually(func() error {
-			machines, err := getMachinesSpecifiedRole("")
+			machines, err := getSabakanMachines()
 			if err != nil {
 				return err
 			}
@@ -159,25 +148,4 @@ func getLeaderNode(leaderKeyPrefix string) (string, error) {
 	}
 	log.Info("sabakan-state-setter: leader is "+value, nil)
 	return value, nil
-}
-
-func getMachinesSpecifiedRole(role string) ([]sabakan.Machine, error) {
-	stdout, err := func(role string) ([]byte, error) {
-		if role == "" {
-			stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get")
-			return stdout, err
-		}
-		stdout, _, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role", role)
-		return stdout, err
-	}(role)
-
-	if err != nil {
-		return nil, err
-	}
-	var machines []sabakan.Machine
-	err = json.Unmarshal(stdout, &machines)
-	if err != nil {
-		return nil, err
-	}
-	return machines, nil
 }

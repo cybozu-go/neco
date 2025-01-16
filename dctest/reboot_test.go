@@ -40,11 +40,8 @@ func testRebootAllBootServers() {
 
 		By("checking sabakan is available")
 		Eventually(func() error {
-			stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get")
-			if err != nil {
-				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-			}
-			return nil
+			_, err := getSabakanMachines()
+			return err
 		}).Should(Succeed())
 
 		// .kube directory is mounted by tmpfs, so reissuing config file is necessary

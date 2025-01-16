@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cybozu-go/sabakan/v3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -55,18 +54,10 @@ func testCKESetup() {
 func testCKE() {
 	It("all systemd units are active", func() {
 		By("getting machines list")
-		stdout, stderr, err := execAt(bootServers[0], "sabactl", "machines", "get", "--role=cs")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		var csMachines []sabakan.Machine
-		err = json.Unmarshal(stdout, &csMachines)
-		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
-
-		stdout, stderr, err = execAt(bootServers[0], "sabactl", "machines", "get", "--role=ss")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		var ssMachines []sabakan.Machine
-		err = json.Unmarshal(stdout, &ssMachines)
-		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
-
+		csMachines, err := getSabakanMachines("--role=cs")
+		Expect(err).NotTo(HaveOccurred())
+		ssMachines, err := getSabakanMachines("--role=ss")
+		Expect(err).NotTo(HaveOccurred())
 		availableNodes := len(csMachines) + len(ssMachines)
 		Expect(availableNodes).NotTo(Equal(0))
 
