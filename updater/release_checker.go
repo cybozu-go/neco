@@ -26,7 +26,7 @@ type ReleaseChecker struct {
 
 	check         func(context.Context) (string, error)
 	checkTimes    []cron.Schedule
-	checkTimeZone time.Location
+	checkTimeZone *time.Location
 	current       string
 }
 
@@ -76,7 +76,7 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	c.checkTimeZone = *location
+	c.checkTimeZone = location
 
 	switch env {
 	case neco.NoneEnv:
@@ -124,7 +124,7 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 }
 
 func (c *ReleaseChecker) update(ctx context.Context) error {
-	now := time.Now().In(&c.checkTimeZone)
+	now := time.Now().In(c.checkTimeZone)
 	isWithinSchedule := false
 	for _, schedule := range c.checkTimes {
 		next := schedule.Next(now)
@@ -137,9 +137,19 @@ func (c *ReleaseChecker) update(ctx context.Context) error {
 		}
 	}
 	if !isWithinSchedule {
-		log.Info("not within schedule", map[string]interface{}{
-			"now":       now,
-			"schedules": c.checkTimes,
+		var latestNextSchedule time.Time
+		var minNextDurarion time.Duration
+		for _, schedule := range c.checkTimes {
+			next := schedule.Next(now)
+			if next.Sub(now) < minNextDurarion {
+				minNextDurarion = next.Sub(now)
+				latestNextSchedule = next
+			}
+		}
+		log.Info("not within schedule, skipping the release check", map[string]interface{}{
+			"now":      now,
+			"next":     latestNextSchedule,
+			"timezone": c.checkTimeZone.String(),
 		})
 		return nil
 	}
