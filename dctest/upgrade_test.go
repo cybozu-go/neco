@@ -162,7 +162,14 @@ func testUpgrade() {
 			g.Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 			if strings.TrimSpace(string(stdout)) != "completed" {
-				err := errors.New("CKE should complete operations")
+				// try to get additional information
+				stdout, stderr, err := execAt(bootServers[0], "ckecli", "history", "-n1")
+				if err != nil {
+					err := fmt.Errorf("failed to exec ckecli history. stdout: %s, stderr: %s, err: %w", stdout, stderr, err)
+					g.Expect(err).ShouldNot(HaveOccurred())
+				}
+
+				err = fmt.Errorf("CKE should complete operations. ckecli history: %s", stdout)
 				g.Expect(err).ShouldNot(HaveOccurred())
 			}
 		}).Should(Succeed())
