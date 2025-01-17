@@ -56,14 +56,16 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 			return err
 		}
 	}
+	var checkTimes []cron.Schedule
 	rts := strings.Split(rt, ",")
-	for _, rt := range rts {
-		checkTime, err := cron.ParseStandard(rt)
+	for _, t := range rts {
+		checkTime, err := cron.ParseStandard(t)
 		if err != nil {
 			return err
 		}
-		c.checkTimes = append(c.checkTimes, checkTime)
+		checkTimes = append(checkTimes, checkTime)
 	}
+	c.checkTimes = checkTimes
 
 	tz, err := c.storage.GetReleaseTimeZone(ctx)
 	if err != nil {
