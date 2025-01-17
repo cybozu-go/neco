@@ -3,6 +3,7 @@ package updater
 import (
 	"context"
 	"errors"
+	"math"
 	"strings"
 	"time"
 
@@ -138,7 +139,7 @@ func (c *ReleaseChecker) update(ctx context.Context) error {
 	}
 	if !isWithinSchedule {
 		var latestNextSchedule time.Time
-		var minNextDurarion time.Duration
+		minNextDurarion := time.Duration(math.MaxInt64)
 		for _, schedule := range c.checkTimes {
 			next := schedule.Next(now)
 			if next.Sub(now) < minNextDurarion {
