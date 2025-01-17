@@ -3,6 +3,7 @@ package updater
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/cybozu-go/log"
@@ -13,10 +14,8 @@ import (
 )
 
 var (
-	checkTimeZone            = "Asia/Tokyo"
-	checkTimeRangeDefault    = []string{"* * * * *"}
-	checkTimeRangeStaging    = []string{"* 0-23 * * 1-5"}
-	checkTimeRangeProduction = []string{"* 22-23 * * 1-5"}
+	defaultCheckTimes    = "* * * * *"
+	defaultCheckTimeZone = "Asia/Tokyo"
 )
 
 // ReleaseChecker checks newer GitHub releases by polling
@@ -25,9 +24,10 @@ type ReleaseChecker struct {
 	leaderKey string
 	ghClient  *github.Client
 
-	check      func(context.Context) (string, error)
-	checkTimes []string
-	current    string
+	check         func(context.Context) (string, error)
+	checkTimes    []cron.Schedule
+	checkTimeZone time.Location
+	current       string
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
@@ -47,28 +47,53 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	rt, err := c.storage.GetReleaseTime(ctx)
+	if err != nil {
+		if err == storage.ErrNotFound {
+			rt = defaultCheckTimes
+		} else {
+			return err
+		}
+	}
+	rts := strings.Split(rt, ",")
+	for _, rt := range rts {
+		checkTime, err := cron.ParseStandard(rt)
+		if err != nil {
+			return err
+		}
+		c.checkTimes = append(c.checkTimes, checkTime)
+	}
+
+	tz, err := c.storage.GetReleaseTimeZone(ctx)
+	if err != nil {
+		if err == storage.ErrNotFound {
+			tz = defaultCheckTimeZone
+		} else {
+			return err
+		}
+	}
+	location, err := time.LoadLocation(tz)
+	if err != nil {
+		return err
+	}
+	c.checkTimeZone = *location
 
 	switch env {
 	case neco.NoneEnv:
 		c.check = func(ctx context.Context) (string, error) {
 			return "", ErrNoReleases
 		}
-		c.checkTimes = checkTimeRangeDefault
 	case neco.TestEnv:
 		c.check = func(ctx context.Context) (string, error) {
 			return "9999.12.31-99999", nil
 		}
-		c.checkTimes = checkTimeRangeDefault
 	case neco.DevEnv:
 		github.SetTagPrefix("test-")
 		c.check = github.GetLatestPublishedTag
-		c.checkTimes = checkTimeRangeDefault
 	case neco.StagingEnv:
 		c.check = github.GetLatestPublishedTag
-		c.checkTimes = checkTimeRangeStaging
 	case neco.ProdEnv:
 		c.check = github.GetLatestReleaseTag
-		c.checkTimes = checkTimeRangeProduction
 	default:
 		return errors.New("unknown env: " + env)
 	}
@@ -99,21 +124,9 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 }
 
 func (c *ReleaseChecker) update(ctx context.Context) error {
-	var schedules []cron.Schedule
-	tz, err := time.LoadLocation(checkTimeZone)
-	if err != nil {
-		return err
-	}
-	for _, checkTime := range c.checkTimes {
-		schedule, err := cron.ParseStandard(checkTime)
-		if err != nil {
-			return err
-		}
-		schedules = append(schedules, schedule)
-	}
-	now := time.Now().In(tz)
+	now := time.Now().In(&c.checkTimeZone)
 	isWithinSchedule := false
-	for _, schedule := range schedules {
+	for _, schedule := range c.checkTimes {
 		next := schedule.Next(now)
 		// If the next scheduled time is within 1 minutes from now, we consider that it's within the schedule.
 		if next.Sub(now) <= time.Second*60 {
