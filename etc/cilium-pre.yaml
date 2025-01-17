@@ -557,7 +557,7 @@ data:
   cnp-node-status-gc-interval: 0s
   conntrack-gc-max-interval: 30m
   custom-cni-conf: "true"
-  debug: "false"
+  debug: "true"
   debug-verbose: ""
   devices: eth+ eno1+ eno2+
   direct-routing-device: e+
@@ -761,7 +761,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 015d0c430aff9b337ca0f42115b1f7fd0b9c1e871001aef285870a8f7482f6fa
+        cilium.io/cilium-configmap-checksum: 33be80dd0e19503940a9cb85c0179b11c6e51ec201d6f03e786315ec8fd53532
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -902,6 +902,7 @@ spec:
       containers:
       - args:
         - serve
+        - --debug
         command:
         - hubble-relay
         image: ghcr.io/cybozu/hubble-relay:1.14.14.1
@@ -997,6 +998,7 @@ spec:
           containers:
           - args:
             - --cilium-namespace=kube-system
+            - --debug
             - --ca-generate
             - --ca-reuse-secret
             - --hubble-server-cert-generate
@@ -1051,7 +1053,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 015d0c430aff9b337ca0f42115b1f7fd0b9c1e871001aef285870a8f7482f6fa
+        cilium.io/cilium-configmap-checksum: 33be80dd0e19503940a9cb85c0179b11c6e51ec201d6f03e786315ec8fd53532
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         prometheus.io/port: "9962"
@@ -1478,6 +1480,7 @@ spec:
       containers:
       - args:
         - --cilium-namespace=kube-system
+        - --debug
         - --ca-generate
         - --ca-reuse-secret
         - --hubble-server-cert-generate
