@@ -211,7 +211,7 @@ func (c *Controller) collectEntries(rebootListEntries []*neco.RebootListEntry, r
 				completedEntry = append(completedEntry, entry)
 			} else {
 				queuedEntry = append(queuedEntry, EntrySet{entry, rqEntry})
-				if !c.isRebootable(entry) {
+				if !c.isRebootable(entry) && rqEntry.Status != cke.RebootStatusRebooting {
 					timedOutEntry = append(timedOutEntry, EntrySet{entry, rqEntry})
 				}
 			}
