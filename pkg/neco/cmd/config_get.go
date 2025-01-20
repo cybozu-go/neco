@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
@@ -133,10 +132,7 @@ Possible keys are:
 				if err != nil {
 					return err
 				}
-				ss := strings.Split(t, "\n")
-				for _, s := range ss {
-					fmt.Println(s)
-				}
+				fmt.Println(t)
 			case "release-timezone":
 				tz, err := st.GetReleaseTimeZone(ctx)
 				if err != nil {
