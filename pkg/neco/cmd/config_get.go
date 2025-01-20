@@ -133,7 +133,7 @@ Possible keys are:
 				if err != nil {
 					return err
 				}
-				ss := strings.Split(t, ",")
+				ss := strings.Split(t, "\n")
 				for _, s := range ss {
 					fmt.Println(s)
 				}

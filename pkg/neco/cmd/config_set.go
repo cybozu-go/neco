@@ -183,7 +183,7 @@ Possible keys are:
 						return err
 					}
 				}
-				value = strings.Join(values, ",")
+				value = strings.Join(values, "\n")
 				return st.PutReleaseTime(ctx, value)
 			case "release-timezone":
 				value = args[1]

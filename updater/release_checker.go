@@ -57,7 +57,7 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 		}
 	}
 	var checkTimes []cron.Schedule
-	rts := strings.Split(rt, ",")
+	rts := strings.Split(rt, "\n")
 	for _, t := range rts {
 		checkTime, err := cron.ParseStandard(t)
 		if err != nil {
