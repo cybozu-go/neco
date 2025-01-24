@@ -45,12 +45,12 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	logger.Info("hello!", "interface", *flagInterface, "interval", *flagInterval, "listen address", *flagListenAddress)
+	logger.Info("boot-ip-setter has started", "interface", *flagInterface, "interval", *flagInterval, "listen address", *flagListenAddress)
 
 	netif := NewInterface(*flagInterface)
 	err := subMain(ctx, logger, netif, *flagInterval, *flagListenAddress)
 	if err != nil && !errors.Is(err, context.Canceled) {
-		logger.Error("error exit", "error", err)
+		logger.Error("boot-ip-setter has finished abnormally", "error", err)
 
 		// delete all addresses if this program ends abnormally
 		err := netif.DeleteAllAddr()
@@ -65,7 +65,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger.Info("bye!")
+	logger.Info("boot-ip-setter has finished")
 }
 
 func subMain(ctx context.Context, logger *slog.Logger, netif NetworkInterface, interval time.Duration, listenAddr string) error {
