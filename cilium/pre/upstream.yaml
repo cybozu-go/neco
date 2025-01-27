@@ -1313,7 +1313,7 @@ spec:
     spec:
       containers:
       - name: cilium-operator
-        image: "ghcr.io/cybozu/cilium-operator-generic:1.14.14.1"
+        image: "ghcr.io/cybozu/cilium-operator-generic:1.14.14.2"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-operator-generic
