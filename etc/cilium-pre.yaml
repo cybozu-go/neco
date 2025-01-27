@@ -757,10 +757,7 @@ spec:
       io.cilium/app: operator
       name: cilium-operator
   strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 50%
-    type: RollingUpdate
+    type: Recreate
   template:
     metadata:
       annotations:
