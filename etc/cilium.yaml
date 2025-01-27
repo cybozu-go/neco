@@ -805,7 +805,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: ghcr.io/cybozu/cilium-operator-generic:1.14.14.1
+        image: ghcr.io/cybozu/cilium-operator-generic:1.14.14.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
