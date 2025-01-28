@@ -1,0 +1,15 @@
+[Unit]
+Description=boot ip setter
+After=network-online.target sabakan.service
+Wants=network-online.target sabakan.service
+StartLimitIntervalSec=600s
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+RestartSec=30s
+ExecStart=/usr/sbin/boot-ip-setter
+
+[Install]
+WantedBy=multi-user.target
