@@ -2,27 +2,29 @@ package sss
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	sabakan "github.com/cybozu-go/sabakan/v3"
 )
 
-func newMockController(saba *sabakanMockClient, prom *promMockClient, serf *serfMockClient, neco *necoCmdMockExecutor, mt ...*machineType) *Controller {
+func newMockController(saba *sabakanMockClient, prom *promMockClient, serf *serfMockClient, alertmanager *alertmanagerClient, neco *necoCmdMockExecutor, mt ...*machineType) *Controller {
 	machineTypes := map[string]*machineType{}
 	for _, m := range mt {
 		machineTypes[m.Name] = m
 	}
 
 	return &Controller{
-		interval:          time.Minute,
-		parallelSize:      2,
-		sabakanClient:     saba,
-		promClient:        prom,
-		serfClient:        serf,
-		necoExecutor:      neco,
-		machineTypes:      machineTypes,
-		unhealthyMachines: make(map[string]time.Time),
+		interval:           time.Minute,
+		parallelSize:       2,
+		sabakanClient:      saba,
+		promClient:         prom,
+		serfClient:         serf,
+		alertmanagerClient: alertmanager,
+		necoExecutor:       neco,
+		machineTypes:       machineTypes,
+		unhealthyMachines:  make(map[string]time.Time),
 	}
 }
 
@@ -32,6 +34,22 @@ var machineTypeSerfOnly = &machineType{
 		Duration: time.Millisecond,
 	},
 	MetricsCheckList: []targetMetric{},
+}
+
+var triggerAlerts = []triggerAlert{
+	{
+		Name:        "DiskNotRecognized",
+		SerialLabel: "serial",
+		State:       sabakan.StateUnhealthy,
+		Labels: map[string]string{
+			"severity": "error",
+		},
+	},
+	{
+		Name:         "LLDPDown",
+		AddressLabel: "address",
+		State:        sabakan.StateUnreachable,
+	},
 }
 
 func testControllerRun(t *testing.T) {
@@ -73,12 +91,19 @@ func testControllerRun(t *testing.T) {
 			},
 		},
 	}
+	machineTypeLongWait := &machineType{
+		Name: "longwait",
+		GracePeriod: duration{
+			Duration: time.Hour,
+		},
+	}
 
 	testCases := []struct {
 		message    string
 		machines   []*machine
 		serfStatus map[string]*serfStatus
 		metrics    map[string]string
+		alerts     []map[string]string
 
 		expected map[string]sabakan.MachineState
 	}{
@@ -109,6 +134,18 @@ func testControllerRun(t *testing.T) {
 					IPv4Addr: "10.0.0.103",
 					State:    sabakan.StateHealthy,
 				},
+				{
+					Serial:   "00000004",
+					Type:     "longwait",
+					IPv4Addr: "10.0.0.104",
+					State:    sabakan.StateHealthy,
+				},
+				{
+					Serial:   "00000005",
+					Type:     "longwait",
+					IPv4Addr: "10.0.0.105",
+					State:    sabakan.StateHealthy,
+				},
 			},
 			serfStatus: map[string]*serfStatus{
 				"10.0.0.100": {
@@ -127,15 +164,26 @@ func testControllerRun(t *testing.T) {
 					Status:             "failed",
 					SystemdUnitsFailed: strPtr(""),
 				},
+				"10.0.0.104": {
+					Status:             "alive",
+					SystemdUnitsFailed: strPtr(""),
+				},
+				"10.0.0.105": {
+					Status:             "alive",
+					SystemdUnitsFailed: strPtr(""),
+				},
 			},
 			metrics: map[string]string{
 				"10.0.0.100": `
+# TYPE hw_processor_status_health gauge
 hw_processor_status_health{processor="CPU.Socket.1"} 0
 hw_processor_status_health{processor="CPU.Socket.2"} 1
 `,
 				"10.0.0.101": `
+# TYPE hw_processor_status_health gauge
 hw_processor_status_health{processor="CPU.Socket.1"} 0
 hw_processor_status_health{processor="CPU.Socket.2"} 0
+# TYPE hw_storage_controller_status_health gauge
 hw_storage_controller_status_health{controller="SATAHDD.Slot.1"} 1
 hw_storage_controller_status_health{controller="SATAHDD.Slot.2"} 1
 `,
@@ -148,12 +196,36 @@ hw_storage_controller_status_health{controller="PCIeSSD.Slot.2-C", system="Syste
 hw_storage_controller_status_health{controller="PCIeSSD.Slot.3-C", system="System.Embedded.1"} 0
 hw_storage_controller_status_health{controller="SATAHDD.Slot.1", system="System.Embedded.1"} 0
 hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.Embedded.1"} 1
-`},
+`,
+			},
+			alerts: []map[string]string{
+				{
+					"alertname": "DiskNotRecognized",
+					"serial":    "00000002",
+					"severity":  "warning",
+				},
+				{
+					"alertname": "DiskNotRecognized",
+					"serial":    "00000004",
+					"severity":  "error",
+				},
+				{
+					"alertname": "LLDPDown",
+					"address":   "10.0.0.105",
+				},
+				{
+					"alertname": "DiskNotRecognized",
+					"serial":    "00000005",
+					"severity":  "error",
+				},
+			},
 			expected: map[string]sabakan.MachineState{
 				"00000000": sabakan.StateUnhealthy,   // one of two CPUs is issuing a warning
 				"00000001": sabakan.StateUnhealthy,   // all HDD are unhealthy; # of healthy HDDs falls below MinimumHealthyCount (0 < 1)
-				"00000002": sabakan.StateHealthy,     // one of two HDDs is unhealthy, but it is acceptable
+				"00000002": sabakan.StateHealthy,     // one of two HDDs is unhealthy, but it is acceptable; alert "DiskNotRecognized" is firing but it is still warning
 				"00000003": sabakan.StateUnreachable, // serf status is "failed"
+				"00000004": sabakan.StateUnhealthy,   // alert "DiskNotRecognized" is firing; grace period is ignored
+				"00000005": sabakan.StateUnreachable, // alert "LLDPDown" is firing; alert "DiskNotRecognized" is ignored because it is less severe
 			},
 		},
 		{
@@ -248,8 +320,9 @@ hw_storage_controller_status_health{controller="SATAHDD.Slot.2", system="System.
 		sabaMock := newMockSabakanClient(tc.machines)
 		promMock := newMockPromClient(tc.metrics)
 		serfMock, _ := newMockSerfClient(tc.serfStatus)
+		alertmanagerMock := newMockAlertmanagerClient(triggerAlerts, tc.alerts, nil)
 		necoMock := newMockNecoCmdExecutor()
-		ctr := newMockController(sabaMock, promMock, serfMock, necoMock, machineTypeQEMU, machineTypeSerfOnly)
+		ctr := newMockController(sabaMock, promMock, serfMock, alertmanagerMock, necoMock, machineTypeQEMU, machineTypeSerfOnly, machineTypeLongWait)
 		for i := 0; i < 2; i++ {
 			err := ctr.runOnce(context.Background())
 			if err != nil {
@@ -282,10 +355,44 @@ func testControllerRunSerfError(t *testing.T) {
 	promMock := newMockPromClient(map[string]string{})
 	serfMock, _ := newMockSerfClient(nil) // serfMockClient will return an error.
 	necoMock := newMockNecoCmdExecutor()
-	ctr := newMockController(sabaMock, promMock, serfMock, necoMock, machineTypeSerfOnly)
+	ctr := newMockController(sabaMock, promMock, serfMock, nil, necoMock, machineTypeSerfOnly)
 	err := ctr.runOnce(context.Background())
 	if err == nil {
 		t.Error("return nil")
+	}
+}
+
+func testControllerRunAlertmanagerError(t *testing.T) {
+	t.Parallel()
+
+	machines := []*machine{
+		{
+			Serial:   "00000000",
+			Type:     "serfonly",
+			IPv4Addr: "10.0.0.100",
+			State:    sabakan.StateUninitialized,
+		},
+	}
+
+	sabaMock := newMockSabakanClient(machines)
+	promMock := newMockPromClient(map[string]string{})
+	serfMock, _ := newMockSerfClient(map[string]*serfStatus{
+		"10.0.0.100": {
+			Status:             "alive",
+			SystemdUnitsFailed: strPtr(""),
+		},
+	})
+	alertmanagerMock := newMockAlertmanagerClient(triggerAlerts, nil, errors.New("failed to connect to Alertmanager")) // alertmanagerMock will return an error. The error will be ignored.
+	necoMock := newMockNecoCmdExecutor()
+	ctr := newMockController(sabaMock, promMock, serfMock, alertmanagerMock, necoMock, machineTypeSerfOnly)
+
+	err := ctr.runOnce(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if sabaMock.getState("00000000") != sabakan.StateHealthy {
+		t.Error(`sabaMock.getState("00000000") != sabakan.StateHealthy`)
 	}
 }
 
@@ -308,7 +415,7 @@ func testControllerUnhealthy(t *testing.T) {
 	}
 	baseTime := time.Now()
 
-	ctr := newMockController(nil, nil, nil, nil, mt)
+	ctr := newMockController(nil, nil, nil, nil, nil, mt)
 
 	exceeded := ctr.RegisterUnhealthy(m1, baseTime)
 	if exceeded {
@@ -372,7 +479,7 @@ func testControllerRetire(t *testing.T) {
 	promMock := newMockPromClient(map[string]string{})
 	serfMock, _ := newMockSerfClient(map[string]*serfStatus{})
 	necoMock := newMockNecoCmdExecutor()
-	ctr := newMockController(sabaMock, promMock, serfMock, necoMock, machineTypeSerfOnly)
+	ctr := newMockController(sabaMock, promMock, serfMock, nil, necoMock, machineTypeSerfOnly)
 
 	stateMap := ctr.machineRetire(context.Background(), machines)
 	if stateMap == nil {
@@ -445,7 +552,7 @@ func testControllerShutdown(t *testing.T) {
 	sabaMock := newMockSabakanClient(machines)
 	promMock := newMockPromClient(map[string]string{})
 	serfMock, _ := newMockSerfClient(map[string]*serfStatus{})
-	ctr := newMockController(sabaMock, promMock, serfMock, necoMock, machineTypeSerfOnly)
+	ctr := newMockController(sabaMock, promMock, serfMock, nil, necoMock, machineTypeSerfOnly)
 
 	ctr.machineShutdown(context.Background())
 
@@ -473,6 +580,7 @@ func testControllerShutdown(t *testing.T) {
 func TestController(t *testing.T) {
 	t.Run("Run", testControllerRun)
 	t.Run("RunSerfError", testControllerRunSerfError)
+	t.Run("RunAlertmanagerError", testControllerRunAlertmanagerError)
 	t.Run("Unhealthy", testControllerUnhealthy)
 	t.Run("Retire", testControllerRetire)
 	t.Run("Shutdown", testControllerShutdown)
