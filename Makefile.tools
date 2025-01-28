@@ -266,7 +266,7 @@ kustomize: $(KUSTOMIZE_DOWNLOAD)
 	$(CP) $(KUSTOMIZE_DLDIR)/LICENSE $(DOCDIR)/$@/LICENSE
 	$(CP) $(KUSTOMIZE_DLDIR)/README.md $(DOCDIR)/$@/README.md
 	unzip -o $(KUSTOMIZE_DLDIR)/windows_amd64/kustomize.zip -d $(KUSTOMIZE_DLDIR)/windows_amd64
-	$(CP) $(KUSTOMIZE_DLDIR)/windows_amd64/kustomize $(WINDOWS_BINDIR)/kustomize.exe
+	$(CP) $(KUSTOMIZE_DLDIR)/windows_amd64/kustomize.exe $(WINDOWS_BINDIR)/kustomize.exe
 	$(CP) $(KUSTOMIZE_DLDIR)/LICENSE $(WINDOWS_DOCDIR)/$@/LICENSE
 	$(CP) $(KUSTOMIZE_DLDIR)/README.md $(WINDOWS_DOCDIR)/$@/README.md
 	$(CP) $(KUSTOMIZE_DLDIR)/darwin_amd64/kustomize $(MAC_BINDIR)/kustomize
