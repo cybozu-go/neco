@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/placemat/v2/pkg/types"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"sigs.k8s.io/yaml"
@@ -487,12 +488,8 @@ func (c *Cluster) createToRNetNs(rack *rack, tor *tor, torIdx int) *types.NetNSS
 		fmt.Sprintf("--pid-file=/var/run/dnsmasq_%s.pid", name),
 		"--log-facility=-",
 	}
-	for _, r := range c.racks {
-		if r.name == rack.name {
-			continue
-		}
-		dnsmasqCommand = append(dnsmasqCommand, "--dhcp-relay")
-		dnsmasqCommand = append(dnsmasqCommand, fmt.Sprintf("%s,%s", tor.nodeAddress.IP.String(), r.bootNode.node0Address.IP.String()))
+	for _, ip := range neco.DHCPServerAddressList {
+		dnsmasqCommand = append(dnsmasqCommand, "--dhcp-relay", fmt.Sprintf("%s,%s", tor.nodeAddress.IP.String(), ip))
 	}
 	torNs.Apps = append(torNs.Apps, &types.NetNSAppSpec{
 		Name:    "dnsmasq",
