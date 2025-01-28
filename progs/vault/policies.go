@@ -73,6 +73,18 @@ path "sys/health"
 {
   capabilities = ["read", "sudo"]
 }
+
+# Forces the node to give up active status
+path "sys/step-down"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# Read the HA status of a Vault cluster
+path "sys/ha-status"
+{
+  capabilities = ["read"]
+}
 `
 }
 
