@@ -133,6 +133,24 @@ const (
 	NecoRebooterService = "neco-rebooter"
 )
 
+// Virutal IP
+const (
+	VirtualIPAddrDHCPServer1      = "10.71.255.1"
+	VirtualIPAddrDHCPServer2      = "10.71.255.2"
+	VirtualIPAddrDHCPServer3      = "10.71.255.3"
+	VirtualIPAddrDHCPServer4      = "10.71.255.4"
+	VirtualIPAddrDHCPServer5      = "10.71.255.5"
+	VirtualIPAddrActiveBootServer = "10.71.255.6"
+)
+
+var DHCPServerAddressList = []string{
+	VirtualIPAddrDHCPServer1,
+	VirtualIPAddrDHCPServer2,
+	VirtualIPAddrDHCPServer3,
+	VirtualIPAddrDHCPServer4,
+	VirtualIPAddrDHCPServer5,
+}
+
 // File locations
 var (
 	RackFile        = filepath.Join(NecoDir, "rack")
