@@ -2,7 +2,7 @@
 Description=boot ip setter
 After=network-online.target sabakan.service
 Wants=network-online.target sabakan.service
-StartLimitIntervalSec=600s
+StartLimitIntervalSec=10s
 
 [Service]
 Type=simple
