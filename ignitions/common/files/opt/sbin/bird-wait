@@ -4,7 +4,7 @@ while ! docker exec bird birdc show route for 0.0.0.0/0 | grep -q 'tor[12]'; do
     sleep 1
 done
 
-/usr/sbin/sysctl -w net.ipv4.conf.all.rp_filter=1
+/usr/bin/sysctl -w net.ipv4.conf.all.rp_filter=1
 
 while true; do
     if curl -fs -m 3 {{ MyURL }}/health; then

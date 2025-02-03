@@ -11,5 +11,5 @@ wait_for_address() {
     exit 1
 }
 
-/usr/sbin/sysctl -w net.ipv4.conf.all.rp_filter=2
+/usr/bin/sysctl -w net.ipv4.conf.all.rp_filter=2
 wait_for_address
