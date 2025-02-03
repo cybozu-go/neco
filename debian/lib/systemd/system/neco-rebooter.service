@@ -2,7 +2,7 @@
 Description=neco-rebooter
 Wants=network-online.target cke.service sabakan.service
 After=network-online.target cke.service sabakan.service
-StartLimitIntervalSec=600s
+StartLimitIntervalSec=10s
 
 [Service]
 Type=simple
