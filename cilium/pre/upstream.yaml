@@ -1294,7 +1294,10 @@ spec:
   # otherwise an update might get stuck due to the default maxUnavailable=50% in combination with the
   # podAntiAffinity which prevents deployments of multiple operator replicas on the same node.
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 50%
+    type: RollingUpdate
   template:
     metadata:
       annotations:

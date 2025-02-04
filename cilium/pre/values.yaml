@@ -78,9 +78,6 @@ nodePort:
   directRoutingDevice: "e+"
   enabled: true
 operator:
-  updateStrategy:
-    type: Recreate
-    rollingUpdate: null
   rollOutPods: true
   prometheus:
     enabled: true
