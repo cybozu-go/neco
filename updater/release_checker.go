@@ -3,12 +3,20 @@ package updater
 import (
 	"context"
 	"errors"
+	"math"
+	"strings"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/google/go-github/v50/github"
+	"github.com/robfig/cron/v3"
+)
+
+var (
+	defaultCheckTimes    = "* * * * *"
+	defaultCheckTimeZone = "Asia/Tokyo"
 )
 
 // ReleaseChecker checks newer GitHub releases by polling
@@ -17,8 +25,10 @@ type ReleaseChecker struct {
 	leaderKey string
 	ghClient  *github.Client
 
-	check   func(context.Context) (string, error)
-	current string
+	check         func(context.Context) (string, error)
+	checkTimes    []cron.Schedule
+	checkTimeZone *time.Location
+	current       string
 }
 
 // NewReleaseChecker returns a new ReleaseChecker
@@ -38,6 +48,38 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	rt, err := c.storage.GetReleaseTime(ctx)
+	if err != nil {
+		if err == storage.ErrNotFound {
+			rt = defaultCheckTimes
+		} else {
+			return err
+		}
+	}
+	var checkTimes []cron.Schedule
+	rts := strings.Split(rt, "\n")
+	for _, t := range rts {
+		checkTime, err := cron.ParseStandard(t)
+		if err != nil {
+			return err
+		}
+		checkTimes = append(checkTimes, checkTime)
+	}
+	c.checkTimes = checkTimes
+
+	tz, err := c.storage.GetReleaseTimeZone(ctx)
+	if err != nil {
+		if err == storage.ErrNotFound {
+			tz = defaultCheckTimeZone
+		} else {
+			return err
+		}
+	}
+	location, err := time.LoadLocation(tz)
+	if err != nil {
+		return err
+	}
+	c.checkTimeZone = location
 
 	switch env {
 	case neco.NoneEnv:
@@ -85,6 +127,36 @@ func (c *ReleaseChecker) Run(ctx context.Context) error {
 }
 
 func (c *ReleaseChecker) update(ctx context.Context) error {
+	now := time.Now().In(c.checkTimeZone)
+	isWithinSchedule := false
+	for _, schedule := range c.checkTimes {
+		next := schedule.Next(now)
+		// If the next scheduled time is within 1 minutes from now, we consider that it's within the schedule.
+		if next.Sub(now) <= time.Second*60 {
+			isWithinSchedule = true
+			break
+		} else {
+			continue
+		}
+	}
+	if !isWithinSchedule {
+		var latestNextSchedule time.Time
+		minNextDurarion := time.Duration(math.MaxInt64)
+		for _, schedule := range c.checkTimes {
+			next := schedule.Next(now)
+			if next.Sub(now) < minNextDurarion {
+				minNextDurarion = next.Sub(now)
+				latestNextSchedule = next
+			}
+		}
+		log.Info("not within schedule, skipping the release check", map[string]interface{}{
+			"now":      now,
+			"next":     latestNextSchedule,
+			"timezone": c.checkTimeZone.String(),
+		})
+		return nil
+	}
+
 	latest, err := c.check(ctx)
 	if err == ErrNoReleases {
 		return nil

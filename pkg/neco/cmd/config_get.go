@@ -42,6 +42,8 @@ Possible keys are:
 		"github-token",
 		"node-proxy",
 		"external-ip-address-block",
+		"release-time",
+		"release-timezone",
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
@@ -125,6 +127,18 @@ Possible keys are:
 					return err
 				}
 				fmt.Println(ipBlock)
+			case "release-time":
+				t, err := st.GetReleaseTime(ctx)
+				if err != nil {
+					return err
+				}
+				fmt.Println(t)
+			case "release-timezone":
+				tz, err := st.GetReleaseTimeZone(ctx)
+				if err != nil {
+					return err
+				}
+				fmt.Println(tz)
 			default:
 				return errors.New("unknown key: " + key)
 			}
