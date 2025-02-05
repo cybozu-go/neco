@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/neco"
 	"github.com/cybozu-go/neco/storage"
 	"github.com/cybozu-go/well"
+	"github.com/robfig/cron"
 	"github.com/spf13/cobra"
 )
 
@@ -56,6 +58,8 @@ Possible keys are:
 		"github-token",
 		"node-proxy",
 		"external-ip-address-block",
+		"release-time",
+		"release-timezone",
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		etcd, err := neco.EtcdClient()
@@ -171,6 +175,23 @@ Possible keys are:
 					return errors.New("not IPv4 addr: " + value)
 				}
 				return st.PutLBAddressBlockInternetCN(ctx, block.String())
+			case "release-time":
+				values := args[1:]
+				for _, value := range values {
+					_, err := cron.ParseStandard(value)
+					if err != nil {
+						return err
+					}
+				}
+				value = strings.Join(values, "\n")
+				return st.PutReleaseTime(ctx, value)
+			case "release-timezone":
+				value = args[1]
+				_, err := time.LoadLocation(value)
+				if err != nil {
+					return err
+				}
+				return st.PutReleaseTimeZone(ctx, value)
 			}
 			return errors.New("unknown key: " + key)
 		})

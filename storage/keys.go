@@ -37,6 +37,8 @@ const (
 	KeyLBAddressBlockBastion       = "config/lb-address-block-bastion"
 	KeyLBAddressBlockInternet      = "config/lb-address-block-internet"
 	KeyLBAddressBlockInternetCN    = "config/lb-address-block-internet-cn"
+	KeyReleaseTime                 = "config/release-time"
+	KeyReleaseTimeZone             = "config/release-timezone"
 	KeyVaultUnsealKey              = "vault-unseal-key"
 	KeyVaultRootToken              = "vault-root-token"
 	KeyFinishPrefix                = "finish/"

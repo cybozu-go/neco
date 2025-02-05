@@ -164,3 +164,19 @@ func (s Storage) PutLBAddressBlockInternetCN(ctx context.Context, ipBlock string
 func (s Storage) GetLBAddressBlockInternetCN(ctx context.Context) (string, error) {
 	return s.get(ctx, KeyLBAddressBlockInternetCN)
 }
+
+func (s Storage) PutReleaseTime(ctx context.Context, releaseTime string) error {
+	return s.put(ctx, KeyReleaseTime, releaseTime)
+}
+
+func (s Storage) GetReleaseTime(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyReleaseTime)
+}
+
+func (s Storage) PutReleaseTimeZone(ctx context.Context, tz string) error {
+	return s.put(ctx, KeyReleaseTimeZone, tz)
+}
+
+func (s Storage) GetReleaseTimeZone(ctx context.Context) (string, error) {
+	return s.get(ctx, KeyReleaseTimeZone)
+}
