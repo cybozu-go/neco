@@ -3,19 +3,16 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
-	"os"
 	"os/exec"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	csiaddonsv1alpha1 "github.com/csi-addons/kubernetes-csi-addons/api/csiaddons/v1alpha1"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -28,21 +25,12 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		node := args[0]
 
-		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-		defer stop()
-
+		ctx := context.Background()
 		kubeClient, err := issueAndLoadKubeconfigForNonGracefulNodeShutdown()
 		if err != nil {
 			return err
 		}
 
-		kubernetesNode := &corev1.Node{}
-		err = kubeClient.Get(ctx, client.ObjectKey{Name: node}, kubernetesNode)
-		if err != nil {
-			return err
-		}
-
-		// Shutdown the node
 		fmt.Printf("Shutting down the node: %s\n", node)
 		powerCheckCmd := exec.Command("neco", "power", "status", node)
 		var out bytes.Buffer
@@ -57,14 +45,8 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			//wait for the node to be down
 			fmt.Printf("Waiting for the node %s to be power off\n", node)
 			for {
-				select {
-				case <-ctx.Done():
-					return errors.New("cancelled waiting for the node to be power off")
-				default:
-				}
 				out.Reset()
 				powerCheckCmd := exec.Command("neco", "power", "status", node)
 				powerCheckCmd.Stdout = &out
@@ -80,7 +62,6 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 		}
 		fmt.Printf("Node %s is power off\n", node)
 
-		// Create NetworkFence for ceph clusters
 		g := errgroup.Group{}
 		cephClusters, err := listRBDCephClusters(ctx, kubeClient)
 		if err != nil {
@@ -116,16 +97,9 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 						return err
 					}
 				}
-				fmt.Printf("NetworkFence %s created\n", networkFence.Name)
-				// wait for fence of networkfence to be Succeeded
-				fmt.Println("Waiting for the fence operation to be succeeded")
+				fmt.Printf("Waiting for the fence operation of %s to be succeeded\n", networkFence.Name)
 				networkFence = csiaddonsv1alpha1.NetworkFence{}
 				for {
-					select {
-					case <-ctx.Done():
-						return errors.New("cancelled waiting for fence operation to be succeeded")
-					default:
-					}
 					err := kubeClient.Get(ctx, client.ObjectKey{Name: fenceName}, &networkFence)
 					if err != nil {
 						return err
@@ -146,16 +120,21 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 
 		// Add taint to the node
 		fmt.Println("Adding taint to the node")
+		kubernetesNode := &corev1.Node{}
+		err = kubeClient.Get(ctx, client.ObjectKey{Name: node}, kubernetesNode)
+		if err != nil {
+			return err
+		}
 		tainted := false
 		for _, taint := range kubernetesNode.Spec.Taints {
-			if taint.Key == "node.kubernetes.io/out-of-service" {
+			if taint.Key == outOfServiceTaintKey {
 				tainted = true
 				break
 			}
 		}
 		if !tainted {
 			kubernetesNode.Spec.Taints = append(kubernetesNode.Spec.Taints, corev1.Taint{
-				Key:    "node.kubernetes.io/out-of-service",
+				Key:    outOfServiceTaintKey,
 				Value:  "nodeshutdown",
 				Effect: "NoExecute",
 			})
@@ -163,6 +142,25 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
+		}
+
+		fmt.Println("Waiting for the VolumeAttachment to be deleted")
+		for {
+			volumeAttachmentList := &storagev1.VolumeAttachmentList{}
+			err = kubeClient.List(ctx, volumeAttachmentList)
+			if err != nil {
+				return err
+			}
+			volumeAttachmenCount := 0
+			for _, volumeAttachment := range volumeAttachmentList.Items {
+				if volumeAttachment.Spec.NodeName == node {
+					volumeAttachmenCount++
+				}
+			}
+			if volumeAttachmenCount == 0 {
+				break
+			}
+			time.Sleep(5 * time.Second)
 		}
 		fmt.Println("Non-Graceful Node Shutdown completed")
 		return nil
