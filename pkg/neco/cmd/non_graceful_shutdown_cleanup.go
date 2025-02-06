@@ -2,12 +2,8 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"os"
-	"os/signal"
 	"slices"
-	"syscall"
 	"time"
 
 	csiaddonsv1alpha1 "github.com/csi-addons/kubernetes-csi-addons/api/csiaddons/v1alpha1"
@@ -26,15 +22,13 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		node := args[0]
 
-		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-		defer stop()
+		ctx := context.Background()
 
 		kubeClient, err := issueAndLoadKubeconfigForNonGracefulNodeShutdown()
 		if err != nil {
 			return err
 		}
 
-		//get sabakan status
 		opt := sabakanMachinesGetOpts{}
 		opt.params = map[string]*string{
 			"ipv4": &node,
@@ -45,7 +39,6 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 		}
 		sabakanStatus := machines[0].Status.State
 
-		// remove networkfence
 		cephClusters, err := listRBDCephClusters(ctx, kubeClient)
 		if err != nil {
 			return err
@@ -65,22 +58,13 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 						return err
 					}
 				}
-				// set fence state to Unfenced
 				networkFence.Spec.FenceState = csiaddonsv1alpha1.Unfenced
 				err = kubeClient.Update(ctx, networkFence)
 				if err != nil {
 					return err
 				}
-				fmt.Printf("Unfenced NetworkFence %s\n", networkFence.Name)
-
-				// wait for unfence of networkfence to be Succeeded
-				fmt.Printf("Waiting for Unfence operation to be Succeeded\n")
+				fmt.Printf("Waiting for Unfence operation of %s to be Succeeded\n", networkFence.Name)
 				for {
-					select {
-					case <-ctx.Done():
-						return errors.New("cancelled waiting for Unfence to be Succeeded")
-					default:
-					}
 					err := kubeClient.Get(ctx, client.ObjectKey{Name: fenceName}, networkFence)
 					if err != nil {
 						return err
@@ -110,7 +94,7 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 				return err
 			}
 			for i, taint := range kubernetesNode.Spec.Taints {
-				if taint.Key == "node.kubernetes.io/out-of-service" {
+				if taint.Key == outOfServiceTaintKey {
 					kubernetesNode.Spec.Taints = slices.Delete(kubernetesNode.Spec.Taints, i, i+1)
 				}
 			}

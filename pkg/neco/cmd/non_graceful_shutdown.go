@@ -20,6 +20,7 @@ import (
 
 var (
 	nonGracefulNodeShutdownConfig = "/tmp/non-graceful-node-shutdown-config"
+	outOfServiceTaintKey          = "node.kubernetes.io/out-of-service"
 )
 
 var nonGracefulNodeShutdownCmd = &cobra.Command{
