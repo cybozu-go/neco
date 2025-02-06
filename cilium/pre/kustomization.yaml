@@ -33,6 +33,10 @@ patches:
     patch: |-
       - op: remove
         path: /spec/ttlSecondsAfterFinished
+  - path: cilium-operator-debug.yaml
+    target:
+      kind: Deployment
+      name: cilium-operator
 configMapGenerator:
 - name: cilium-config
   namespace: kube-system

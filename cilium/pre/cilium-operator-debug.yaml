@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cilium-operator
+spec:
+  template:
+    spec:
+      containers:
+      - name: cilium-operator
+        env:
+        - name: CILIUM_DEBUG
+          value: "true"
+          valueFrom: null

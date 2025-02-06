@@ -788,6 +788,8 @@ spec:
         command:
         - cilium-operator-generic
         env:
+        - name: CILIUM_DEBUG
+          value: "true"
         - name: K8S_NODE_NAME
           valueFrom:
             fieldRef:
@@ -798,12 +800,6 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        - name: CILIUM_DEBUG
-          valueFrom:
-            configMapKeyRef:
-              key: debug
-              name: cilium-config
-              optional: true
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
