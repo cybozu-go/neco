@@ -1,12 +1,12 @@
 sabakan-state-setter
 ====================
 
-sabakan-state-setter changes the state of machines. It has the following three functions.
+`sabakan-state-setter` changes the states of machines. It has the following three functions.
 
 1. Health check
-    Decide sabakan machine states according to [serf][] status and [monitor-hw][] metrics. And update the states.
-    The target machines are whose current sabakan machine state is `Uninitialized`, `Healthy`, `Unhealthy`, or `Unreachable`.
-    Health check is just update sabakan machine state. There is no any side effect.
+    Decide sabakan machine states according to [serf][] statuses, [monitor-hw][] metrics, and [Prometheus][] alerts, and then update the states.
+    Not all machines are checked by `sabakan-state-setter`. It observes `Uninitialized`, `Healthy`, `Unhealthy`, and `Unreachable` machines.
+    Health check just updates sabakan machine states. There are no side effects.
 
 2. Retirement
     `sabakan-state-setter` let retiring machines retire.
@@ -32,14 +32,18 @@ Health check
   - serf status is `alive`.
   - serf tags `systemd-units-failed` is set and has no errors.
   - All of later mentioned machine peripherals are healthy.
+  - There are no active Prometheus alerts that match any of `trigger-alerts` in the configuration file.
+    - This condition includes the case when Prometheus Alertmanager is down.
 - Judge as `Unreachable`
   - serf status is `failed`, `left` or machine is not yet as a serf member. It is the same as that `sabakan-state-setter` can not access monitor-hw metrics.
+  - There is an active Prometheus alert which indicates that the machine is unreachable.
 - Judge as `Unhealthy`
   - serf status is `alive`.
   - At least one of them matches:
     - serf tags `systemd-units-failed` is not set or has errors.
     - `sabakan-state-setter` can not retrieve monitor-hw metrics.
     - At least one of later mentioned machine peripherals is unhealthy.
+  - There is an active Prometheus alert which indicates that the machine is unhealthy.
 - Nothing to judge machine state
   - `sabakan-state-setter` can not access to `serf.service` of the same boot server.
   
@@ -50,6 +54,9 @@ sabakan-state-setter waits a grace period before updating a machine's state to `
 
 sabakan-state-setter updates the machine state
 if and only if it judges the machine's state as `unhealthy` for the time specified in this value. 
+
+Note that this grace period is not applied when an active Prometheus alert is the source of the state change.
+We can configure Prometheus alerts to wait a sufficient amount of time before becoming active.
 
 ### Target machine peripherals
 
@@ -88,15 +95,15 @@ Usage
 sabakan-state-setter [OPTIONS]
 ```
 
-| Option              | Default value            | Description                                                                       |
-| ------------------- | ------------------------ | --------------------------------------------------------------------------------- |
-| `-config-file`      | `''`                     | Path of config file.                                                              |
-| `-etcd-session-ttl` | `1m`                     | TTL of etcd session. This value is interpreted as a [duration string][].          |
-| `-interval`         | `1m`                     | Interval of scraping metrics. This value is interpreted as a [duration string][]. |
-| `-parallel`         | `30`                     | The number of parallel execution of getting machines metrics.                     |
-| `-sabakan-url`      | `http://localhost:10080` | sabakan HTTP Server URL.                                                          |
-| `-sabakan-url-https`| `https://localhost:10443`| sabakan HTTPS Server URL.                                                         |
-| `-serf-address`     | `127.0.0.1:7373`         | serf address.                                                                     |
+| Option               | Default value             | Description                                                                       |
+| -------------------- | ------------------------- | --------------------------------------------------------------------------------- |
+| `-config-file`       | `''`                      | Path of config file.                                                              |
+| `-etcd-session-ttl`  | `1m`                      | TTL of etcd session. This value is interpreted as a [duration string][].          |
+| `-interval`          | `1m`                      | Interval of scraping metrics. This value is interpreted as a [duration string][]. |
+| `-parallel`          | `30`                      | The number of parallel execution of getting machines metrics.                     |
+| `-sabakan-url`       | `http://localhost:10080`  | sabakan HTTP Server URL.                                                          |
+| `-sabakan-url-https` | `https://localhost:10443` | sabakan HTTPS Server URL.                                                         |
+| `-serf-address`      | `127.0.0.1:7373`          | serf address.                                                                     |
 
 Config file
 -----------
@@ -105,6 +112,7 @@ Config file
 | ------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `shutdown-schedule` string                        | `""`          | Schedule in Cron format for retired machines shutdown. If this field is omitted, shutdown will not be performed. |
 | `machine-types` [MachineType](#MachineType) array | `nil`         | Machine types is a list of `MachineType`. You should list all machine types used in your data center.            |
+| `alert-monitor` \*[AlertMonitor](#AlertMonitor)   | `nil`         | Configurations to monitor Prometheus alerts.                                                                     |
 
 ### `MachineType`
 
@@ -138,8 +146,25 @@ https://github.com/cybozu-go/setup-hw/blob/master/docs/rule.md
 `labels` and `label-prefix` are AND condition,
 i.e. a metric is selected if and only if all of the conditions are satisfied.
 
+### `AlertMonitor`
+
+| Field                                                | Default value | Description                                                                     |
+| ---------------------------------------------------- | ------------- | ------------------------------------------------------------------------------- |
+| `alertmanager-endpoint` string                       | `''`          | URL of Alertmanager API V2 endpoint (e.g., `http://alertmanager:9093/api/v2/`). |
+| `trigger-alerts` [TriggerAlert](#TriggerAlert) array | `nil`         | Prometheus alerts that are recognized as indications of non-healthy machines.   |
+
+### `TriggerAlert`
+
+| Field                        | Default value | Description                                                                                                                                              |
+| ---------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name` string                | `''`          | Name of a Prometheus alert to be monitored.                                                                                                              |
+| `labels` `map[string]string` | `nil`         | Filtering labels and their values of a Prometheus alert. If a suspicious alert does not contain these labels, the alert is ignored.                      |
+| `address-label` string       | `''`          | Label name of a Prometheus alert that denotes the IP address of a non-healthy machine. Exactly one of `address-label` and `serial-label` is required.    |
+| `serial-label` string        | `''`          | Label name of a Prometheus alert that denotes the serial number of a non-healthy machine. Exactly one of `address-label` and `serial-label` is required. |
+| `state` string               | `''`          | Candidate of the next state of a non-healthy machine. Currently `unreachable` and `unhealthy` are supported.                                             |
 
 [Dell BOSS]: https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-Boot-Optimized-Storage-Solution.pdf
 [duration string]: https://golang.org/pkg/time/#ParseDuration
 [monitor-hw]: https://github.com/cybozu-go/setup-hw/blob/master/docs/monitor-hw.md
 [serf]: https://www.serf.io/
+[Prometheus]: https://prometheus.io/

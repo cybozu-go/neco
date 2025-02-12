@@ -1,6 +1,8 @@
 package sss
 
 import (
+	"fmt"
+
 	"github.com/cybozu-go/log"
 	"github.com/cybozu-go/sabakan/v3"
 	dto "github.com/prometheus/client_model/go"
@@ -14,6 +16,7 @@ const (
 )
 
 const doNotChangeState = sabakan.MachineState("")
+const stateUnhealthyImmediate = sabakan.MachineState("unhealthy_immediate")
 
 // machineStateSource is a struct of machine state collection
 type machineStateSource struct {
@@ -21,20 +24,24 @@ type machineStateSource struct {
 	ipv4   string
 
 	serfStatus  *serfStatus
+	alertStatus *alertStatus
 	machineType *machineType
 	metrics     map[string]*dto.MetricFamily
 }
 
-func newMachineStateSource(m *machine, serfStatuses map[string]*serfStatus, machineTypes map[string]*machineType) *machineStateSource {
+func newMachineStateSource(m *machine, serfStatuses map[string]*serfStatus, alertStatuses map[string]*alertStatus, machineTypes map[string]*machineType) *machineStateSource {
 	return &machineStateSource{
 		serial:      m.Serial,
 		ipv4:        m.IPv4Addr,
 		serfStatus:  serfStatuses[m.IPv4Addr],
+		alertStatus: alertStatuses[m.IPv4Addr],
 		machineType: machineTypes[m.Type],
 	}
 }
 
 func (mss *machineStateSource) decideMachineStateCandidate() sabakan.MachineState {
+	// Check the severest state first.
+
 	if mss.serfStatus == nil {
 		log.Info("unreachable; serf status is nil", map[string]interface{}{
 			"serial": mss.serial,
@@ -50,6 +57,20 @@ func (mss *machineStateSource) decideMachineStateCandidate() sabakan.MachineStat
 			"status": mss.serfStatus.Status,
 		})
 		return sabakan.StateUnreachable
+	}
+
+	// alertStatus can return StateUnreachable, so it should be checked before serfStatus StateUnhealthy.
+	if mss.alertStatus != nil {
+		msg := fmt.Sprintf("%s; alert is firing", mss.alertStatus.State)
+		log.Info(msg, map[string]interface{}{
+			"serial": mss.serial,
+			"ipv4":   mss.ipv4,
+			"alert":  mss.alertStatus.AlertName,
+		})
+		if mss.alertStatus.State == sabakan.StateUnhealthy {
+			return stateUnhealthyImmediate
+		}
+		return mss.alertStatus.State
 	}
 
 	if mss.serfStatus.SystemdUnitsFailed != nil && *mss.serfStatus.SystemdUnitsFailed != "" {
