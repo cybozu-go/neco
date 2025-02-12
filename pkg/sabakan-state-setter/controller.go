@@ -27,10 +27,11 @@ type Controller struct {
 	sessionTTL    time.Duration
 
 	// Clients
-	necoExecutor  NecoCmdExecutor
-	promClient    PrometheusClient
-	sabakanClient SabakanClientWrapper
-	serfClient    SerfClient
+	necoExecutor       NecoCmdExecutor
+	promClient         PrometheusClient
+	sabakanClient      SabakanClientWrapper
+	serfClient         SerfClient
+	alertmanagerClient *alertmanagerClient
 
 	// others
 	interval          time.Duration
@@ -63,7 +64,7 @@ func (c *Controller) ClearUnhealthy(m *machine) {
 
 // NewController returns controller for sabakan-state-setter
 func NewController(etcdClient *clientv3.Client, sabakanAddress, sabakanAddressHTTPS, serfAddress, configFile, electionValue string, interval time.Duration, parallelSize int, sessionTTL time.Duration) (*Controller, error) {
-	shutdownSchedule, machineTypes, err := readConfigFile(configFile)
+	shutdownSchedule, machineTypes, alertMonitor, err := readConfigFile(configFile)
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +79,11 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, sabakanAddressHT
 		return nil, err
 	}
 
+	alertmanagerClient, err := newAlertmanagerClient(alertMonitor)
+	if err != nil {
+		return nil, err
+	}
+
 	promClient := newPromClient()
 	necoExecutor := newNecoCmdExecutor()
 
@@ -86,10 +92,11 @@ func NewController(etcdClient *clientv3.Client, sabakanAddress, sabakanAddressHT
 		electionValue: electionValue,
 		sessionTTL:    sessionTTL,
 
-		necoExecutor:  necoExecutor,
-		promClient:    promClient,
-		sabakanClient: sabakanClient,
-		serfClient:    serfClient,
+		necoExecutor:       necoExecutor,
+		promClient:         promClient,
+		sabakanClient:      sabakanClient,
+		serfClient:         serfClient,
+		alertmanagerClient: alertmanagerClient,
 
 		interval:          interval,
 		parallelSize:      parallelSize,
@@ -253,10 +260,20 @@ func (c *Controller) runOnce(ctx context.Context) error {
 		return err
 	}
 
+	// Get alert statuses
+	alertStatuses, err := c.alertmanagerClient.GetAlertStatuses(machines)
+	if err != nil {
+		log.Warn("failed to get alert statuses", map[string]interface{}{
+			log.FnError: err.Error(),
+		})
+		// It is not a critical error that Alertmanager is down.
+		alertStatuses = nil
+	}
+
 	newStateMap := map[string]sabakan.MachineState{}
 
 	// Do machines health check
-	healthcheckResult := c.machineHealthCheck(ctx, machines, serfStatus)
+	healthcheckResult := c.machineHealthCheck(ctx, machines, serfStatus, alertStatuses)
 	for serial, state := range healthcheckResult {
 		newStateMap[serial] = state
 	}
@@ -271,9 +288,12 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	for _, m := range machines {
 		newState, ok := newStateMap[m.Serial]
 		switch {
-		case !ok || newState == m.State:
+		case !ok || newState == m.State || (newState == stateUnhealthyImmediate && m.State == sabakan.StateUnhealthy):
 			c.ClearUnhealthy(m)
 			continue
+		case newState == stateUnhealthyImmediate:
+			c.ClearUnhealthy(m)
+			newState = sabakan.StateUnhealthy
 		case newState == sabakan.StateUnhealthy:
 			// Wait for the GracePeriod before changing the machine state to unhealthy.
 			if ok := c.RegisterUnhealthy(m, now); !ok {
@@ -316,7 +336,7 @@ func (c *Controller) runOnce(ctx context.Context) error {
 	return nil
 }
 
-func (c *Controller) machineHealthCheck(ctx context.Context, machines []*machine, serfStatus map[string]*serfStatus) map[string]sabakan.MachineState {
+func (c *Controller) machineHealthCheck(ctx context.Context, machines []*machine, serfStatus map[string]*serfStatus, alertStatuses map[string]*alertStatus) map[string]sabakan.MachineState {
 	// Construct a slice of machineStateSource
 	machineStateSources := make([]*machineStateSource, 0, len(machines))
 	for _, m := range machines {
@@ -334,7 +354,7 @@ func (c *Controller) machineHealthCheck(ctx context.Context, machines []*machine
 			})
 			continue
 		}
-		machineStateSources = append(machineStateSources, newMachineStateSource(m, serfStatus, c.machineTypes))
+		machineStateSources = append(machineStateSources, newMachineStateSource(m, serfStatus, alertStatuses, c.machineTypes))
 	}
 
 	// Get machine metrics
