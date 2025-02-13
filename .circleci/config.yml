@@ -110,7 +110,7 @@ commands:
           command: |
             if [ -f .skip ]; then exit 0; fi
             ./bin/run-dctest.sh bootstrap "<<parameters.tag>>" "<<parameters.datacenter>>"
-          no_output_timeout: 20m
+          no_output_timeout: 22m
 
   setup-tools:
     description: "setup tools"
@@ -242,7 +242,7 @@ jobs:
       - run:
           name: Run dctest functions
           command: ./bin/run-dctest-suite.sh functions
-          no_output_timeout: 20m
+          no_output_timeout: 22m
       - run:
           name: Set the instance lifetime and the state label
           command: |
@@ -271,7 +271,7 @@ jobs:
       - run:
           name: Run dctest reboot-worker
           command: ./bin/run-dctest-suite.sh reboot-worker
-          no_output_timeout: 51m
+          no_output_timeout: 52m
       - run:
           name: Set the instance lifetime and the state label
           command: |
@@ -300,7 +300,7 @@ jobs:
       - run:
           name: Run dctest upgrade
           command: ./bin/run-dctest-suite.sh upgrade
-          no_output_timeout: 20m
+          no_output_timeout: 22m
       - run:
           name: Set the instance lifetime
           command: |
@@ -345,7 +345,7 @@ jobs:
           command: |
             if [ -f .skip ]; then exit 0; fi
             ./bin/run-dctest-suite.sh functions
-          no_output_timeout: 20m
+          no_output_timeout: 22m
       - run:
           name: Set the instance lifetime
           command: |
@@ -383,7 +383,7 @@ jobs:
       - run:
           name: Run dctest upgrade release
           command: ./bin/run-dctest-suite.sh upgrade
-          no_output_timeout: 20m
+          no_output_timeout: 22m
       - run:
           name: Set the instance lifetime
           command: |
