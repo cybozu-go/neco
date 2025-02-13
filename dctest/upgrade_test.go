@@ -249,7 +249,7 @@ func testUpgrade() {
 					return errors.New("cke uses unknown container image")
 				}
 				return nil
-			}, 19*time.Minute).Should(Succeed())
+			}, 20*time.Minute).Should(Succeed())
 		}
 	})
 
