@@ -115,3 +115,15 @@ machine-types:
           label-prefix:
             device: Disk.Direct.
         minimum-healthy-count: 2
+alert-monitor:
+  alertmanager-endpoint: http://vmalertmanager-vmalertmanager-largeset.monitoring.svc:9093/api/v2/
+  trigger-alerts:
+    - name: FailedToConnectBMC
+      serial-label: serial
+      state: unhealthy
+    - name: NodeNetworkDown
+      address-label: address
+      state: unhealthy
+    - name: NodeDiskMissing
+      address-label: address
+      state: unhealthy
