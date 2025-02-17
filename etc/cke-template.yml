@@ -51,7 +51,7 @@ repair:
         command_retries: 2
         command_interval: 30
         watch_seconds: 600
-      - repair_command: ["sh", "-c", "neco non-graceful-node-shutdown shutdown $1", "non-graceful-node-shutdown"]
+      - repair_command: ["neco", "non-graceful-node-shutdown", "shutdown"]
         command_timeout_seconds: 300
         command_retries: 3
         command_interval: 30
@@ -69,11 +69,11 @@ repair:
         watch_seconds: 1500
       health_check_command: ["sh", "-c", "check-machine-state $1 healthy retired", "check-machine-state"]
       command_timeout_seconds: 10
-      success_command: ["sh", "-c", "neco non-graceful-node-shutdown cleanup $1", "non-graceful-node-shutdown"]
+      success_command: ["neco", "non-graceful-node-shutdown", "cleanup"]
       success_timeout_seconds: 300
     - operation: unreachable
       repair_steps:
-      - repair_command: ["sh", "-c", "neco non-graceful-node-shutdown shutdown $1", "non-graceful-node-shutdown"]
+      - repair_command: ["neco", "non-graceful-node-shutdown", "shutdown"]
         command_timeout_seconds: 300
         command_retries: 3
         command_interval: 30
@@ -95,7 +95,7 @@ repair:
         watch_seconds: 600
       health_check_command: ["sh", "-c", "check-machine-state $1 healthy retired", "check-machine-state"]
       command_timeout_seconds: 10
-      success_command: ["sh", "-c", "neco non-graceful-node-shutdown cleanup $1", "non-graceful-node-shutdown"]
+      success_command: ["neco", "non-graceful-node-shutdown", "cleanup"]
       success_timeout_seconds: 300
   max_concurrent_repairs: 1
   evict_retries: 30

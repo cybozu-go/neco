@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -51,7 +52,7 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 				networkFence := &csiaddonsv1alpha1.NetworkFence{}
 				err = kubeClient.Get(ctx, client.ObjectKey{Name: fenceName}, networkFence)
 				if err != nil {
-					if client.IgnoreNotFound(err) == nil {
+					if apierrors.IsNotFound(err) {
 						fmt.Println("NetworkFence is already removed")
 						return nil
 					} else {
@@ -88,21 +89,27 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 		}
 
 		if sabakanStatus == sabakan.StateHealthy {
-			kubernetesNode := &corev1.Node{}
+			var kubernetesNode = &corev1.Node{}
 			err = kubeClient.Get(ctx, client.ObjectKey{Name: node}, kubernetesNode)
 			if err != nil {
-				return err
-			}
-			for i, taint := range kubernetesNode.Spec.Taints {
-				if taint.Key == outOfServiceTaintKey {
-					kubernetesNode.Spec.Taints = slices.Delete(kubernetesNode.Spec.Taints, i, i+1)
+				if apierrors.IsNotFound(err) {
+					fmt.Printf("Node %s is already removed from the cluster\n", node)
+				} else {
+					return err
 				}
+			} else {
+				for i, taint := range kubernetesNode.Spec.Taints {
+					if taint.Key == corev1.TaintNodeOutOfService {
+						kubernetesNode.Spec.Taints = slices.Delete(kubernetesNode.Spec.Taints, i, i+1)
+						break
+					}
+				}
+				err = kubeClient.Update(ctx, kubernetesNode)
+				if err != nil {
+					return err
+				}
+				fmt.Println("Removed taint from the node")
 			}
-			err = kubeClient.Update(ctx, kubernetesNode)
-			if err != nil {
-				return err
-			}
-			fmt.Println("Removed taint from the node")
 		}
 		fmt.Println("Non-Graceful Node Shutdown cleanup completed")
 		return nil

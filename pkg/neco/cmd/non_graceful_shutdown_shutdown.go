@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -13,6 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -31,30 +31,33 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 			return err
 		}
 
+		kubernetesNode := &corev1.Node{}
+		err = kubeClient.Get(ctx, client.ObjectKey{Name: node}, kubernetesNode)
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				fmt.Printf("Node %s is not k8s node, skipping\n", node)
+				return nil
+			}
+			return err
+		}
+
 		fmt.Printf("Shutting down the node: %s\n", node)
-		powerCheckCmd := exec.Command("neco", "power", "status", node)
-		var out bytes.Buffer
-		powerCheckCmd.Stdout = &out
-		err = powerCheckCmd.Run()
+		out, err := exec.Command("neco", "power", "status", node).Output()
 		if err != nil {
 			return err
 		}
-		if strings.TrimSpace(out.String()) == "On" {
-			poweroffCmd := exec.Command("neco", "power", "stop", node)
-			err = poweroffCmd.Run()
+		if strings.TrimSpace(string(out)) == "On" {
+			err = exec.Command("neco", "power", "stop", node).Run()
 			if err != nil {
 				return err
 			}
 			fmt.Printf("Waiting for the node %s to be power off\n", node)
 			for {
-				out.Reset()
-				powerCheckCmd := exec.Command("neco", "power", "status", node)
-				powerCheckCmd.Stdout = &out
-				err = powerCheckCmd.Run()
+				out, err := exec.Command("neco", "power", "status", node).Output()
 				if err != nil {
 					return err
 				}
-				if strings.TrimSpace(out.String()) == "Off" {
+				if strings.TrimSpace(string(out)) == "Off" {
 					break
 				}
 				time.Sleep(5 * time.Second)
@@ -74,7 +77,7 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 				networkFence := csiaddonsv1alpha1.NetworkFence{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      fenceName,
-						Namespace: cephCluster.NameSpace,
+						Namespace: cephCluster.Namespace,
 					},
 					Spec: csiaddonsv1alpha1.NetworkFenceSpec{
 						FenceState: csiaddonsv1alpha1.Fenced,
@@ -82,16 +85,16 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 						Cidrs:      []string{node + "/32"},
 						Secret: csiaddonsv1alpha1.SecretSpec{
 							Name:      "rook-csi-rbd-provisioner",
-							Namespace: cephCluster.NameSpace,
+							Namespace: cephCluster.Namespace,
 						},
 						Parameters: map[string]string{
-							"clusterID": cephCluster.NameSpace,
+							"clusterID": cephCluster.Namespace,
 						},
 					},
 				}
 				err = kubeClient.Create(ctx, &networkFence)
 				if err != nil {
-					if client.IgnoreAlreadyExists(err) == nil {
+					if apierrors.IsAlreadyExists(err) {
 						fmt.Printf("NetworkFence %s already exists\n", networkFence.Name)
 					} else {
 						return err
@@ -120,23 +123,22 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 
 		// Add taint to the node
 		fmt.Println("Adding taint to the node")
-		kubernetesNode := &corev1.Node{}
 		err = kubeClient.Get(ctx, client.ObjectKey{Name: node}, kubernetesNode)
 		if err != nil {
 			return err
 		}
 		tainted := false
 		for _, taint := range kubernetesNode.Spec.Taints {
-			if taint.Key == outOfServiceTaintKey {
+			if taint.Key == corev1.TaintNodeOutOfService {
 				tainted = true
 				break
 			}
 		}
 		if !tainted {
 			kubernetesNode.Spec.Taints = append(kubernetesNode.Spec.Taints, corev1.Taint{
-				Key:    outOfServiceTaintKey,
+				Key:    corev1.TaintNodeOutOfService,
 				Value:  "nodeshutdown",
-				Effect: "NoExecute",
+				Effect: corev1.TaintEffectNoExecute,
 			})
 			err = kubeClient.Update(ctx, kubernetesNode)
 			if err != nil {
