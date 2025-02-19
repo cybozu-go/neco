@@ -187,13 +187,16 @@ jobs:
       - setup-tools
       - run: time make deb SUDO="" FAKEROOT=
       - run: time make tools SUDO="" FAKEROOT=
-      - run:
-          command: |
-            if [ "${CIRCLE_BRANCH}" != "main" ]; then
-              go install ./pkg/generate-artifacts/
-              generate-artifacts > /tmp/artifacts.go
-              diff -u artifacts.go /tmp/artifacts.go
-            fi
+
+  build_artifacts:
+    docker:
+      - image: ghcr.io/cybozu/golang:1.23-jammy
+    working_directory: /work
+    steps:
+      - checkout
+      - run: go install ./pkg/generate-artifacts/
+      - run: generate-artifacts > artifacts.go
+      - run: git diff --exit-code artifacts.go
 
   build_release:
     docker:
@@ -447,6 +450,15 @@ workflows:
               ignore:
                 - release
                 - main
+
+  check-artifacts:
+    jobs:
+    - build_artifacts:
+        filters:
+          branches:
+            ignore:
+              - release
+              - main
 
   manual-reboot:
     jobs:
