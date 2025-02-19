@@ -155,6 +155,12 @@ func testUpgrade() {
 
 	It("should wait for completed phase", func() {
 		Eventually(func(g Gomega) {
+			job := kubectlGetSafe[batchv1.Job](g, "job", "-n=kube-system", "hubble-generate-certs")
+			g.Expect(job.Spec.Template.Spec.Containers).To(HaveLen(1))
+			if strings.Contains(job.Spec.Template.Spec.Containers[0].Image, "0.1.14.1") {
+				execSafeGomegaAt(g, bootServers[0], "kubectl", "delete", "job", "-n=kube-system", "hubble-generate-certs")
+			}
+
 			stdout, stderr, err := execAt(bootServers[0], "ckecli", "status")
 			g.Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 

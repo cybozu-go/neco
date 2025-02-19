@@ -39,3 +39,7 @@ configMapGenerator:
   behavior: merge
   literals:
   - api-rate-limit=endpoint-create=auto-adjust:true,log:true,estimated-processing-duration:5s,max-parallel-requests:16
+- name: cilium-label-prefix
+  namespace: kube-system
+  files:
+    - label-prefix.json

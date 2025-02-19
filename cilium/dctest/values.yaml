@@ -22,9 +22,18 @@ externalIPs:
   enabled: true
 extraArgs:
   - "--endpoint-gc-interval=0"
+  - "--label-prefix-file=/etc/label-prefix/label-prefix.json"
+  - "--require-k8s-connectivity=false"
 extraConfig:
   bpf-ct-timeout-regular-any: 1h0m0s
   bpf-ct-timeout-service-any: 1h0m0s
+extraVolumes:
+  - name: label-prefix
+    configMap:
+      name: cilium-label-prefix
+extraVolumeMounts:
+  - name: label-prefix
+    mountPath: /etc/label-prefix
 hostPort:
   enabled: false
 hubble:
@@ -54,7 +63,7 @@ k8sServicePort: 16443
 kubeProxyReplacement: "partial"
 labels: "
   k8s:app
-  k8s:io\\.cilium\\.k8s\\.namespace\\.labels\\.team
+  k8s:io\\.cilium\\.k8s\\.namespace\\.labels
   k8s:io\\.kubernetes\\.pod\\.namespace
   k8s:k8s-app 
   io\\.cilium\\.k8s\\.policy
@@ -101,12 +110,13 @@ resources:
     cpu: 100m
     memory: 400Mi
 rollOutCiliumPods: true
+routingMode: "native"
 sessionAffinity: true
 socketLB:
   enabled: true
   hostNamespaceOnly: true
-tunnel: "disabled"
+tunnelProtocol: geneve
 updateStrategy:
   rollingUpdate: null
   type: OnDelete
-upgradeCompatibility: "1.12"
+upgradeCompatibility: "1.14"
