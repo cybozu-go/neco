@@ -164,7 +164,6 @@ var nonGracefulNodeShutdownShutdownCmd = &cobra.Command{
 			}
 			time.Sleep(5 * time.Second)
 		}
-		fmt.Println("Non-Graceful Node Shutdown completed")
 		return nil
 	},
 }

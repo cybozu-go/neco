@@ -8,10 +8,18 @@ shift
 
 JSON=$(sabactl machines get --ipv4 ${IP_ADDRESS} || sabactl machines get --ipv6 ${IP_ADDRESS})
 STATE=$(echo ${JSON} | jq -r '.[].status.state')
+NODE=$(ckecli kubernetes issue | kubectl --kubeconfig=/dev/stdin get node ${IP_ADDRESS} 2> /dev/null || true)
 
 for expected in $*; do
     if [ ${STATE} = ${expected} ]; then
-        echo "true"
-        exit 0
+        if [ ${expected} = "retired" ]; then
+            if [ -z "${NODE}" ]; then
+                echo "true"
+                exit 0
+            fi
+        else
+            echo "true"
+            exit 0
+        fi
     fi
 done

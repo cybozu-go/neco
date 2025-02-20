@@ -7,7 +7,6 @@ import (
 	"time"
 
 	csiaddonsv1alpha1 "github.com/csi-addons/kubernetes-csi-addons/api/csiaddons/v1alpha1"
-	"github.com/cybozu-go/sabakan/v3"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
@@ -34,11 +33,6 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 		opt.params = map[string]*string{
 			"ipv4": &node,
 		}
-		machines, err := sabakanMachinesGet(ctx, &opt)
-		if err != nil {
-			return err
-		}
-		sabakanStatus := machines[0].Status.State
 
 		cephClusters, err := listRBDCephClusters(ctx, kubeClient)
 		if err != nil {
@@ -88,30 +82,27 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 			return err
 		}
 
-		if sabakanStatus == sabakan.StateHealthy {
-			var kubernetesNode = &corev1.Node{}
-			err = kubeClient.Get(ctx, client.ObjectKey{Name: node}, kubernetesNode)
-			if err != nil {
-				if apierrors.IsNotFound(err) {
-					fmt.Printf("Node %s is already removed from the cluster\n", node)
-				} else {
-					return err
-				}
-			} else {
-				for i, taint := range kubernetesNode.Spec.Taints {
-					if taint.Key == corev1.TaintNodeOutOfService {
-						kubernetesNode.Spec.Taints = slices.Delete(kubernetesNode.Spec.Taints, i, i+1)
-						break
-					}
-				}
-				err = kubeClient.Update(ctx, kubernetesNode)
-				if err != nil {
-					return err
-				}
-				fmt.Println("Removed taint from the node")
+		var kubernetesNode = &corev1.Node{}
+		err = kubeClient.Get(ctx, client.ObjectKey{Name: node}, kubernetesNode)
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				fmt.Printf("Node %s is not in the cluster\n", node)
+				return nil
+			}
+			return err
+		}
+		for i, taint := range kubernetesNode.Spec.Taints {
+			if taint.Key == corev1.TaintNodeOutOfService {
+				kubernetesNode.Spec.Taints = slices.Delete(kubernetesNode.Spec.Taints, i, i+1)
+				break
 			}
 		}
-		fmt.Println("Non-Graceful Node Shutdown cleanup completed")
+		err = kubeClient.Update(ctx, kubernetesNode)
+		if err != nil {
+			return err
+		}
+		fmt.Println("Removed taint from the node")
+
 		return nil
 	},
 }

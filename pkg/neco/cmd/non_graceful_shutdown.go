@@ -19,10 +19,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var (
-	nonGracefulNodeShutdownConfig = "/tmp/non-graceful-node-shutdown-config"
-)
-
 var nonGracefulNodeShutdownCmd = &cobra.Command{
 	Use:   "non-graceful-node-shutdown",
 	Short: "Non-Graceful Node Shutdown related commands",
