@@ -79,6 +79,10 @@ if [ -f download.tgz ]; then
   rm -f download.tgz
 fi
 
+GITHUB_TOKEN_FILE=\${NECO_DIR}/github-token
+GITHUB_TOKEN=\$(cat \${GITHUB_TOKEN_FILE})
+export GITHUB_TOKEN
+
 # Prepare files
 mkdir -p \${NECO_DIR}/installer/build
 cp /assets/ubuntu-*-server-cloudimg-amd64.img \${NECO_DIR}/installer/build
