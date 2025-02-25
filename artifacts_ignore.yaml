@@ -9,5 +9,3 @@ images:
   versions: ["1.15.12.1", "1.15.13.1"]
 - repository: ghcr.io/cybozu/etcd
   versions: ["3.5.18.1"]
-- repository: ghcr.io/cybozu-go/setup-hw
-  versions: ["1.20.0", "1.20.1"]
