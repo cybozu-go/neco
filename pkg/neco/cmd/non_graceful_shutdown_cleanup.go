@@ -29,11 +29,6 @@ var nonGracefulShutdownCleanupCmd = &cobra.Command{
 			return err
 		}
 
-		opt := sabakanMachinesGetOpts{}
-		opt.params = map[string]*string{
-			"ipv4": &node,
-		}
-
 		cephClusters, err := listRBDCephClusters(ctx, kubeClient)
 		if err != nil {
 			return err
