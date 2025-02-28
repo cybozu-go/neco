@@ -237,6 +237,6 @@ clean:
 	rm -rf $(ETCD_DIR) $(WORKDIR) $(DEB) $(OPWORKDIR) $(OPWORKWINDIR) $(OPWORKMACDIR) $(OP_DEB) $(OP_WIN_ZIP) $(OP_MAC_ZIP)
 
 define get-unbound-version
-$(eval UNBOUND_VERSION := $(shell curl -sSfL https://raw.githubusercontent.com/cybozu-go/cke/v$(CKE_VERSION)/images.go | awk -F'"' '/UnboundImage/ {match($$2, /([0-9]+).([0-9]+).([0-9]+).([0-9]+)/); print substr($$2,RSTART,RLENGTH)}'))
-$(eval UNBOUND_EXPORTER_VERSION := $(shell curl -sSfL https://raw.githubusercontent.com/cybozu-go/cke/v$(CKE_VERSION)/images.go | awk -F'"' '/UnboundExporterImage/ {match($$2, /([0-9]+).([0-9]+).([0-9]+).([0-9]+)/); print substr($$2,RSTART,RLENGTH)}'))
+$(eval UNBOUND_VERSION := $(shell curl -sSfL https://raw.githubusercontent.com/cybozu-go/cke/$(CKE_VERSION)/images.go | awk -F'"' '/UnboundImage/ {match($$2, /([0-9]+).([0-9]+).([0-9]+).([0-9]+)/); print substr($$2,RSTART,RLENGTH)}'))
+$(eval UNBOUND_EXPORTER_VERSION := $(shell curl -sSfL https://raw.githubusercontent.com/cybozu-go/cke/$(CKE_VERSION)/images.go | awk -F'"' '/UnboundExporterImage/ {match($$2, /([0-9]+).([0-9]+).([0-9]+).([0-9]+)/); print substr($$2,RSTART,RLENGTH)}'))
 endef
