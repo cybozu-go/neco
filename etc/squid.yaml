@@ -93,6 +93,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: squid
+        identity.neco.cybozu.io/name: squid
     spec:
       affinity:
         podAntiAffinity:
