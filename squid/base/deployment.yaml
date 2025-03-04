@@ -16,6 +16,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: squid
+        identity.neco.cybozu.io/name: squid
     spec:
       # system priority class cannot be specified for pods in namespaces
       # other than kube-system as of k8s 1.12.
