@@ -35,7 +35,10 @@ Possible keys are:
 	lb-address-block-default     - LoadBalancer address block for default.
 	lb-address-block-bastion     - LoadBalancer address block for bastion.
 	lb-address-block-internet    - LoadBalancer address block for internet.
-	lb-address-block-internet-cn - LoadBalancer address block for internet-cn.`,
+	lb-address-block-internet-cn - LoadBalancer address block for internet-cn.
+	release-time				 - Time range of neco-updater checking latest neco release.
+	release-timezone			 - Timezone of release-time.
+	`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {

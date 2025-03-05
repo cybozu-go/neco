@@ -17,6 +17,7 @@ var configGetCmd = &cobra.Command{
 	Use:   "get KEY",
 	Short: "show the current configuration value",
 	Long: `Show the current configuration value.
+If the value associated with the key has never been set, this command returns a not found error.
 
 Possible keys are:
     env                          - "staging" or "prod".  Default is "staging".
@@ -30,7 +31,10 @@ Possible keys are:
     lb-address-block-default     - LoadBalancer address block for default.
     lb-address-block-bastion     - LoadBalancer address block for bastion.
     lb-address-block-internet    - LoadBalancer address block for internet.
-    lb-address-block-internet-cn - LoadBalancer address block for internet-cn.`,
+    lb-address-block-internet-cn - LoadBalancer address block for internet-cn.
+	release-time				 - Time range of neco-updater checking latest neco release.
+	release-timezone			 - Timezone of release-time.
+	`,
 
 	Args: cobra.ExactArgs(1),
 	ValidArgs: []string{
