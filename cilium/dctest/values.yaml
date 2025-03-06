@@ -41,6 +41,8 @@ hubble:
       requests:
         cpu: 210m
         memory: 120Mi
+    podLabels:
+      identity.neco.cybozu.io/name: hubble-relay
     podSecurityContext:
       fsGroup: 10000
     securityContext:

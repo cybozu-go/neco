@@ -886,6 +886,7 @@ spec:
       labels:
         app.kubernetes.io/name: hubble-relay
         app.kubernetes.io/part-of: cilium
+        identity.neco.cybozu.io/name: hubble-relay
         k8s-app: hubble-relay
     spec:
       affinity:
