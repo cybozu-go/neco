@@ -89,6 +89,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: unbound
+        identity.neco.cybozu.io/name: unbound
     spec:
       affinity:
         podAntiAffinity:
