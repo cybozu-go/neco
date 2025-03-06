@@ -118,9 +118,6 @@ machine-types:
 alert-monitor:
   alertmanager-endpoint: http://vmalertmanager-vmalertmanager-largeset.monitoring.svc:9093/api/v2/
   trigger-alerts:
-    - name: FailedToConnectBMC
-      serial-label: serial
-      state: unhealthy
     - name: NodeNetworkDown
       address-label: address
       state: unhealthy
