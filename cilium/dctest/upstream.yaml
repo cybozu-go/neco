@@ -53,7 +53,7 @@ data:
   nodes-gc-interval: "5m0s"
   skip-cnp-status-startup-clean: "false"
   # To include or exclude matched resources from cilium identity evaluation
-  labels: " k8s:app k8s:io\\.cilium\\.k8s\\.namespace\\.labels\\.team k8s:io\\.kubernetes\\.pod\\.namespace k8s:k8s-app io\\.cilium\\.k8s\\.policy cybozu\\.io/family app\\.cybozu\\.io neco\\.cybozu\\.io\\/registry identity\\.neco\\.cybozu\\.io "
+  labels: " k8s:app k8s:io\\.cilium\\.k8s\\.namespace\\.labels k8s:io\\.kubernetes\\.pod\\.namespace k8s:k8s-app io\\.cilium\\.k8s\\.policy cybozu\\.io/family app\\.cybozu\\.io neco\\.cybozu\\.io\\/registry identity\\.neco\\.cybozu\\.io "
 
   # If you want to run cilium in debug mode change this value to true
   debug: "false"
@@ -62,6 +62,7 @@ data:
   # default, always and never.
   # https://docs.cilium.io/en/latest/security/policy/intro/#policy-enforcement-modes
   enable-policy: "default"
+  policy-cidr-match-mode: ""
   # If you want metrics enabled in all of your Cilium agents, set the port for
   # which the Cilium agents will have their metrics exposed.
   # This option deprecates the "prometheus-serve-addr" in the
@@ -74,6 +75,12 @@ data:
   # metric_bar).
   metrics:
     +cilium_bpf_map_pressure
+  # A space-separated list of controller groups for which to enable metrics.
+  # The special values of "all" and "none" are supported.
+  controller-group-metrics:
+    write-cni-file
+    sync-host-ips
+    sync-lb-maps-with-k8s-services
   # Port to expose Envoy metrics (e.g. "9964"). Envoy metrics listener will be disabled if this
   # field is not set.
   proxy-prometheus-port: "9964"
@@ -156,6 +163,8 @@ data:
   #   - vxlan (default)
   #   - geneve
   routing-mode: "native"
+  tunnel-protocol: "geneve"
+  service-no-backend-response: "reject"
 
 
   # Enables L7 proxy for L7 policy enforcement and visibility
@@ -179,6 +188,7 @@ data:
   enable-ipv4-big-tcp: "false"
   enable-ipv6-big-tcp: "false"
   enable-ipv6-masquerade: "true"
+  enable-masquerade-to-route-source: "false"
 
   enable-xt-socket-fallback: "true"
   install-no-conntrack-iptables-rules: "false"
@@ -198,6 +208,7 @@ data:
   enable-node-port: "true"
   direct-routing-device: "e+"
   enable-health-check-nodeport: "true"
+  enable-health-check-loadbalancer-ip: "false"
   node-port-bind-protection: "true"
   enable-auto-protect-node-port-range: "true"
   bpf-lb-mode: "dsr"
@@ -225,6 +236,8 @@ data:
   enable-hubble: "true"
   # UNIX domain socket for Hubble server to listen to.
   hubble-socket-path: "/var/run/cilium/hubble.sock"
+  hubble-export-file-max-size-mb: "10"
+  hubble-export-file-max-backups: "5"
   # An additional address for Hubble server to listen to (e.g. ":4244").
   hubble-listen-address: ":4244"
   hubble-disable-tls: "false"
@@ -235,8 +248,6 @@ data:
   ipam-cilium-node-update-rate: "15s"
   cluster-pool-ipv4-cidr: "10.0.0.0/8"
   cluster-pool-ipv4-mask-size: "24"
-  disable-cnp-status-updates: "true"
-  cnp-node-status-gc-interval: "0s"
   egress-gateway-reconciliation-trigger-interval: "1s"
   enable-vtep: "false"
   vtep-endpoint: ""
@@ -250,8 +261,9 @@ data:
   cgroup-root: "/sys/fs/cgroup"
   enable-k8s-terminating-endpoint: "true"
   enable-sctp: "false"
-  k8s-client-qps: "5"
-  k8s-client-burst: "10"
+
+  k8s-client-qps: "10"
+  k8s-client-burst: "20"
   remove-cilium-node-taints: "true"
   set-cilium-node-taints: "true"
   set-cilium-is-up-condition: "true"
@@ -263,9 +275,6 @@ data:
   tofqdns-idle-connection-grace-period: "0s"
   tofqdns-max-deferred-connection-deletes: "10000"
   tofqdns-proxy-response-max-delay: "100ms"
-  
-  bpf-ct-timeout-regular-any: 1h0m0s
-  bpf-ct-timeout-service-any: 1h0m0s
   agent-not-ready-taint-key: "node.cilium.io/agent-not-ready"
 
   mesh-auth-enabled: "true"
@@ -281,6 +290,13 @@ data:
   proxy-idle-timeout-seconds: "60"
 
   external-envoy-proxy: "false"
+  max-connected-clusters: "255"
+
+# Extra config allows adding arbitrary properties to the cilium config.
+# By putting it at the end of the ConfigMap, it's also possible to override existing properties.
+  
+  bpf-ct-timeout-regular-any: 1h0m0s
+  bpf-ct-timeout-service-any: 1h0m0s
 ---
 # Source: cilium/templates/hubble-relay/configmap.yaml
 apiVersion: v1
@@ -357,6 +373,9 @@ rules:
   resources:
   - ciliumloadbalancerippools
   - ciliumbgppeeringpolicies
+  - ciliumbgpnodeconfigs
+  - ciliumbgpadvertisements
+  - ciliumbgppeerconfigs
   - ciliumclusterwideenvoyconfigs
   - ciliumclusterwidenetworkpolicies
   - ciliumegressgatewaypolicies
@@ -412,6 +431,7 @@ rules:
   - ciliumendpoints/status
   - ciliumendpoints
   - ciliuml2announcementpolicies/status
+  - ciliumbgpnodeconfigs/status
   verbs:
   - patch
 ---
@@ -549,6 +569,9 @@ rules:
   resources:
   - ciliumendpointslices
   - ciliumenvoyconfigs
+  - ciliumbgppeerconfigs
+  - ciliumbgpadvertisements
+  - ciliumbgpnodeconfigs
   verbs:
   - create
   - update
@@ -575,6 +598,11 @@ rules:
   resourceNames:
   - ciliumloadbalancerippools.cilium.io
   - ciliumbgppeeringpolicies.cilium.io
+  - ciliumbgpclusterconfigs.cilium.io
+  - ciliumbgppeerconfigs.cilium.io
+  - ciliumbgpadvertisements.cilium.io
+  - ciliumbgpnodeconfigs.cilium.io
+  - ciliumbgpnodeconfigoverrides.cilium.io
   - ciliumclusterwideenvoyconfigs.cilium.io
   - ciliumclusterwidenetworkpolicies.cilium.io
   - ciliumegressgatewaypolicies.cilium.io
@@ -595,6 +623,8 @@ rules:
   resources:
   - ciliumloadbalancerippools
   - ciliumpodippools
+  - ciliumbgpclusterconfigs
+  - ciliumbgpnodeconfigoverrides
   verbs:
   - get
   - list
@@ -828,26 +858,25 @@ spec:
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "015d0c430aff9b337ca0f42115b1f7fd0b9c1e871001aef285870a8f7482f6fa"
-        # Set app AppArmor's profile to "unconfined". The value of this annotation
-        # can be modified as long users know which profiles they have available
-        # in AppArmor.
-        container.apparmor.security.beta.kubernetes.io/cilium-agent: "unconfined"
-        container.apparmor.security.beta.kubernetes.io/clean-cilium-state: "unconfined"
+        cilium.io/cilium-configmap-checksum: "cc88dd31d5373cc4394deb84f4e792efc239f18c2712e79556fe6540d609ac54"
       labels:
         k8s-app: cilium
         app.kubernetes.io/name: cilium-agent
         app.kubernetes.io/part-of: cilium
     spec:
+      securityContext:
+        appArmorProfile:
+          type: Unconfined
       containers:
       - name: cilium-agent
-        image: "ghcr.io/cybozu/cilium:1.14.14.1"
+        image: "ghcr.io/cybozu/cilium:1.15.13.2"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
         args:
         - --config-dir=/tmp/cilium/config-map
         - --endpoint-gc-interval=0
+        - --label-prefix-file=/etc/label-prefix/label-prefix.json
         startupProbe:
           httpGet:
             host: "127.0.0.1"
@@ -860,6 +889,7 @@ spec:
           failureThreshold: 105
           periodSeconds: 2
           successThreshold: 1
+          initialDelaySeconds: 5
         livenessProbe:
           httpGet:
             host: "127.0.0.1"
@@ -899,6 +929,11 @@ spec:
               fieldPath: metadata.namespace
         - name: CILIUM_CLUSTERMESH_CONFIG
           value: /var/lib/cilium/clustermesh/
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+              divisor: '1'
         - name: KUBERNETES_SERVICE_HOST
           value: "127.0.0.1"
         - name: KUBERNETES_SERVICE_PORT
@@ -1012,12 +1047,14 @@ spec:
           readOnly: true
         - name: tmp
           mountPath: /tmp
+        - mountPath: /etc/label-prefix
+          name: label-prefix
       initContainers:
       - name: config
-        image: "ghcr.io/cybozu/cilium:1.14.14.1"
+        image: "ghcr.io/cybozu/cilium:1.15.13.2"
         imagePullPolicy: IfNotPresent
         command:
-        - cilium
+        - cilium-dbg
         - build-config
         env:
         - name: K8S_NODE_NAME
@@ -1037,9 +1074,11 @@ spec:
         volumeMounts:
         - name: tmp
           mountPath: /tmp
+        - mountPath: /etc/label-prefix
+          name: label-prefix
         terminationMessagePolicy: FallbackToLogsOnError
       - name: apply-sysctl-overwrites
-        image: "ghcr.io/cybozu/cilium:1.14.14.1"
+        image: "ghcr.io/cybozu/cilium:1.15.13.2"
         imagePullPolicy: IfNotPresent
         env:
         - name: BIN_PATH
@@ -1077,7 +1116,7 @@ spec:
       # from a privileged container because the mount propagation bidirectional
       # only works from privileged containers.
       - name: mount-bpf-fs
-        image: "ghcr.io/cybozu/cilium:1.14.14.1"
+        image: "ghcr.io/cybozu/cilium:1.15.13.2"
         imagePullPolicy: IfNotPresent
         args:
         - 'mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf'
@@ -1093,7 +1132,7 @@ spec:
           mountPath: /sys/fs/bpf
           mountPropagation: Bidirectional
       - name: clean-cilium-state
-        image: "ghcr.io/cybozu/cilium:1.14.14.1"
+        image: "ghcr.io/cybozu/cilium:1.15.13.2"
         imagePullPolicy: IfNotPresent
         command:
         - /init-container.sh
@@ -1109,6 +1148,12 @@ spec:
             configMapKeyRef:
               name: cilium-config
               key: clean-cilium-bpf-state
+              optional: true
+        - name: WRITE_CNI_CONF_WHEN_READY
+          valueFrom:
+            configMapKeyRef:
+              name: cilium-config
+              key: write-cni-conf-when-ready
               optional: true
         - name: KUBERNETES_SERVICE_HOST
           value: "127.0.0.1"
@@ -1135,10 +1180,12 @@ spec:
           mountPath: /sys/fs/cgroup
           mountPropagation: HostToContainer
         - name: cilium-run
-          mountPath: /var/run/cilium # wait-for-kube-proxy
+          mountPath: /var/run/cilium
+        - mountPath: /etc/label-prefix
+          name: label-prefix # wait-for-kube-proxy
       # Install the CNI binaries in an InitContainer so we don't have a writable host mount in the agent
       - name: install-cni-binaries
-        image: "ghcr.io/cybozu/cilium:1.14.14.1"
+        image: "ghcr.io/cybozu/cilium:1.15.13.2"
         imagePullPolicy: IfNotPresent
         command:
           - "/install-plugin.sh"
@@ -1159,7 +1206,6 @@ spec:
             mountPath: /host/opt/cni/bin # .Values.cni.install
       restartPolicy: Always
       priorityClassName: system-node-critical
-      serviceAccount: "cilium"
       serviceAccountName: "cilium"
       automountServiceAccountToken: true
       terminationGracePeriodSeconds: 1
@@ -1267,6 +1313,9 @@ spec:
                 path: server.key
               - key: ca.crt
                 path: client-ca.crt
+      - configMap:
+          name: cilium-label-prefix
+        name: label-prefix
 ---
 # Source: cilium/templates/cilium-operator/deployment.yaml
 apiVersion: apps/v1
@@ -1300,7 +1349,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "015d0c430aff9b337ca0f42115b1f7fd0b9c1e871001aef285870a8f7482f6fa"
+        cilium.io/cilium-configmap-checksum: "cc88dd31d5373cc4394deb84f4e792efc239f18c2712e79556fe6540d609ac54"
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -1381,7 +1430,6 @@ spec:
       hostNetwork: true
       restartPolicy: Always
       priorityClassName: system-cluster-critical
-      serviceAccount: "cilium-operator"
       serviceAccountName: "cilium-operator"
       automountServiceAccountToken: true
       # In HA mode, cilium-operator pods must not be scheduled on the same
@@ -1446,7 +1494,7 @@ spec:
             runAsGroup: 10000
             runAsNonRoot: true
             runAsUser: 10000
-          image: "ghcr.io/cybozu/hubble-relay:1.14.14.1"
+          image: "ghcr.io/cybozu/hubble-relay:1.15.13.1"
           imagePullPolicy: IfNotPresent
           command:
             - hubble-relay
@@ -1456,11 +1504,37 @@ spec:
             - name: grpc
               containerPort: 4245
           readinessProbe:
-            tcpSocket:
-              port: grpc
+            grpc:
+              port: 4222
+            timeoutSeconds: 3
+          # livenessProbe will kill the pod, we should be very conservative
+          # here on failures since killing the pod should be a last resort, and
+          # we should provide enough time for relay to retry before killing it.
           livenessProbe:
-            tcpSocket:
-              port: grpc
+            grpc:
+              port: 4222
+            timeoutSeconds: 10
+            # Give relay time to establish connections and make a few retries
+            # before starting livenessProbes.
+            initialDelaySeconds: 10
+            # 10 second * 12 failures = 2 minutes of failure.
+            # If relay cannot become healthy after 2 minutes, then killing it
+            # might resolve whatever issue is occurring.
+            #
+            # 10 seconds is a reasonable retry period so we can see if it's
+            # failing regularly or only sporadically.
+            periodSeconds: 10
+            failureThreshold: 12
+          startupProbe:
+            grpc:
+              port: 4222
+            # Give relay time to get it's certs and establish connections and
+            # make a few retries before starting startupProbes.
+            initialDelaySeconds: 10
+            # 20 * 3 seconds = 1 minute of failure before we consider startup as failed.
+            failureThreshold: 20
+            # Retry more frequently at startup so that it can be considered started more quickly.
+            periodSeconds: 3
           resources:
             limits:
               cpu: 2100m
@@ -1478,7 +1552,6 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
       restartPolicy: Always
       priorityClassName: 
-      serviceAccount: "hubble-relay"
       serviceAccountName: "hubble-relay"
       automountServiceAccountToken: false
       terminationGracePeriodSeconds: 1
@@ -1530,7 +1603,6 @@ metadata:
     k8s-app: hubble-generate-certs
     app.kubernetes.io/name: hubble-generate-certs
     app.kubernetes.io/part-of: cilium
-  annotations:
 spec:
   schedule: "0 0 1 */4 *"
   concurrencyPolicy: Forbid
@@ -1543,7 +1615,7 @@ spec:
         spec:
           containers:
             - name: certgen
-              image: "ghcr.io/cybozu/cilium-certgen:0.1.14.1"
+              image: "ghcr.io/cybozu/cilium-certgen:0.1.15.1"
               imagePullPolicy: IfNotPresent
               command:
                 - "/usr/bin/cilium-certgen"
@@ -1566,12 +1638,8 @@ spec:
           serviceAccountName: "hubble-generate-certs"
           automountServiceAccountToken: true
           restartPolicy: OnFailure
+          affinity:
       ttlSecondsAfterFinished: 1800
----
-# Source: cilium/templates/cilium-secrets-namespace.yaml
-# Only create the namespace if it's different from Ingress secret namespace or Ingress is not enabled.
-
-# Only create the namespace if it's different from Ingress and Gateway API secret namespaces (if enabled).
 ---
 # Source: cilium/templates/hubble/tls-cronjob/job.yaml
 apiVersion: batch/v1
@@ -1593,7 +1661,7 @@ spec:
     spec:
       containers:
         - name: certgen
-          image: "ghcr.io/cybozu/cilium-certgen:0.1.14.1"
+          image: "ghcr.io/cybozu/cilium-certgen:0.1.15.1"
           imagePullPolicy: IfNotPresent
           command:
             - "/usr/bin/cilium-certgen"
@@ -1616,4 +1684,5 @@ spec:
       serviceAccountName: "hubble-generate-certs"
       automountServiceAccountToken: true
       restartPolicy: OnFailure
+      affinity:
   ttlSecondsAfterFinished: 1800

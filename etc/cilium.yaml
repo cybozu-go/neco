@@ -147,6 +147,9 @@ rules:
   resources:
   - ciliumloadbalancerippools
   - ciliumbgppeeringpolicies
+  - ciliumbgpnodeconfigs
+  - ciliumbgpadvertisements
+  - ciliumbgppeerconfigs
   - ciliumclusterwideenvoyconfigs
   - ciliumclusterwidenetworkpolicies
   - ciliumegressgatewaypolicies
@@ -201,6 +204,7 @@ rules:
   - ciliumendpoints/status
   - ciliumendpoints
   - ciliuml2announcementpolicies/status
+  - ciliumbgpnodeconfigs/status
   verbs:
   - patch
 ---
@@ -324,6 +328,9 @@ rules:
   resources:
   - ciliumendpointslices
   - ciliumenvoyconfigs
+  - ciliumbgppeerconfigs
+  - ciliumbgpadvertisements
+  - ciliumbgpnodeconfigs
   verbs:
   - create
   - update
@@ -346,6 +353,11 @@ rules:
   resourceNames:
   - ciliumloadbalancerippools.cilium.io
   - ciliumbgppeeringpolicies.cilium.io
+  - ciliumbgpclusterconfigs.cilium.io
+  - ciliumbgppeerconfigs.cilium.io
+  - ciliumbgpadvertisements.cilium.io
+  - ciliumbgpnodeconfigs.cilium.io
+  - ciliumbgpnodeconfigoverrides.cilium.io
   - ciliumclusterwideenvoyconfigs.cilium.io
   - ciliumclusterwidenetworkpolicies.cilium.io
   - ciliumegressgatewaypolicies.cilium.io
@@ -370,6 +382,8 @@ rules:
   resources:
   - ciliumloadbalancerippools
   - ciliumpodippools
+  - ciliumbgpclusterconfigs
+  - ciliumbgpnodeconfigoverrides
   verbs:
   - get
   - list
@@ -554,14 +568,13 @@ data:
   cluster-pool-ipv4-cidr: 10.0.0.0/8
   cluster-pool-ipv4-mask-size: "24"
   cni-chaining-mode: generic-veth
-  cnp-node-status-gc-interval: 0s
   conntrack-gc-max-interval: 30m
+  controller-group-metrics: write-cni-file sync-host-ips sync-lb-maps-with-k8s-services
   custom-cni-conf: "true"
   debug: "false"
   debug-verbose: ""
   devices: eth+ eno1+ eno2+
   direct-routing-device: e+
-  disable-cnp-status-updates: "true"
   dnsproxy-socket-linger-timeout: "10"
   egress-gateway-reconciliation-trigger-interval: 1s
   enable-auto-protect-node-port-range: "true"
@@ -569,6 +582,7 @@ data:
   enable-bpf-clock-probe: "false"
   enable-endpoint-health-checking: "false"
   enable-external-ips: "true"
+  enable-health-check-loadbalancer-ip: "false"
   enable-health-check-nodeport: "true"
   enable-health-checking: "true"
   enable-host-legacy-routing: "true"
@@ -587,6 +601,7 @@ data:
   enable-l7-proxy: "true"
   enable-local-node-route: "false"
   enable-local-redirect-policy: "false"
+  enable-masquerade-to-route-source: "false"
   enable-metrics: "true"
   enable-node-port: "true"
   enable-policy: default
@@ -599,6 +614,8 @@ data:
   enable-xt-socket-fallback: "true"
   external-envoy-proxy: "false"
   hubble-disable-tls: "false"
+  hubble-export-file-max-backups: "5"
+  hubble-export-file-max-size-mb: "10"
   hubble-listen-address: :4244
   hubble-socket-path: /var/run/cilium/hubble.sock
   hubble-tls-cert-file: /var/lib/cilium/tls/hubble/server.crt
@@ -610,13 +627,14 @@ data:
   install-no-conntrack-iptables-rules: "false"
   ipam: cluster-pool
   ipam-cilium-node-update-rate: 15s
-  k8s-client-burst: "10"
-  k8s-client-qps: "5"
+  k8s-client-burst: "20"
+  k8s-client-qps: "10"
   kube-proxy-replacement: partial
   kube-proxy-replacement-healthz-bind-address: ""
   labels: ' k8s:app k8s:io\.cilium\.k8s\.namespace\.labels\.team k8s:io\.kubernetes\.pod\.namespace
     k8s:k8s-app io\.cilium\.k8s\.policy cybozu\.io/family app\.cybozu\.io neco\.cybozu\.io\/registry
     identity\.neco\.cybozu\.io '
+  max-connected-clusters: "255"
   mesh-auth-enabled: "true"
   mesh-auth-gc-interval: 5m0s
   mesh-auth-queue-size: "1024"
@@ -630,6 +648,7 @@ data:
   operator-api-serve-addr: 127.0.0.1:9234
   operator-prometheus-serve-addr: :9963
   policy-audit-mode: "false"
+  policy-cidr-match-mode: ""
   preallocate-bpf-maps: "false"
   procfs: /host/proc
   prometheus-serve-addr: :9962
@@ -642,6 +661,7 @@ data:
   proxy-xff-num-trusted-hops-ingress: "0"
   remove-cilium-node-taints: "true"
   routing-mode: native
+  service-no-backend-response: reject
   set-cilium-is-up-condition: "true"
   set-cilium-node-taints: "true"
   sidecar-istio-proxy-image: cilium/istio_proxy
@@ -653,6 +673,7 @@ data:
   tofqdns-idle-connection-grace-period: 0s
   tofqdns-max-deferred-connection-deletes: "10000"
   tofqdns-proxy-response-max-delay: 100ms
+  tunnel-protocol: geneve
   unmanaged-pod-watcher-interval: "15"
   vtep-cidr: ""
   vtep-endpoint: ""
@@ -761,7 +782,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 7188fd0419596c94ed545f61231bf8ad68dfbdb39bc79447cb2d063a0c4c6a50
+        cilium.io/cilium-configmap-checksum: 955e8c1833bcbc683ee6c3f67ee6449fe43f891d10918b78ac63cf33edd25941
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -849,7 +870,6 @@ spec:
         kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       restartPolicy: Always
-      serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
       tolerations:
       - operator: Exists
@@ -901,18 +921,23 @@ spec:
         - serve
         command:
         - hubble-relay
-        image: ghcr.io/cybozu/hubble-relay:1.14.14.1
+        image: ghcr.io/cybozu/hubble-relay:1.15.13.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
-          tcpSocket:
-            port: grpc
+          failureThreshold: 12
+          grpc:
+            port: 4222
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
         name: hubble-relay
         ports:
         - containerPort: 4245
           name: grpc
         readinessProbe:
-          tcpSocket:
-            port: grpc
+          grpc:
+            port: 4222
+          timeoutSeconds: 3
         resources:
           requests:
             cpu: 100m
@@ -924,6 +949,12 @@ spec:
           runAsGroup: 10000
           runAsNonRoot: true
           runAsUser: 10000
+        startupProbe:
+          failureThreshold: 20
+          grpc:
+            port: 4222
+          initialDelaySeconds: 10
+          periodSeconds: 3
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /etc/hubble-relay
@@ -938,7 +969,6 @@ spec:
       restartPolicy: Always
       securityContext:
         fsGroup: 10000
-      serviceAccount: hubble-relay
       serviceAccountName: hubble-relay
       terminationGracePeriodSeconds: 1
       volumes:
@@ -987,6 +1017,7 @@ spec:
           labels:
             k8s-app: hubble-generate-certs
         spec:
+          affinity: null
           automountServiceAccountToken: true
           containers:
           - args:
@@ -1002,7 +1033,7 @@ spec:
             - --hubble-relay-server-cert-validity-duration=94608000s
             command:
             - /usr/bin/cilium-certgen
-            image: ghcr.io/cybozu/cilium-certgen:0.1.14.1
+            image: ghcr.io/cybozu/cilium-certgen:0.1.15.1
             imagePullPolicy: IfNotPresent
             name: certgen
           hostNetwork: true
@@ -1045,9 +1076,7 @@ spec:
   template:
     metadata:
       annotations:
-        cilium.io/cilium-configmap-checksum: 7188fd0419596c94ed545f61231bf8ad68dfbdb39bc79447cb2d063a0c4c6a50
-        container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
-        container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
+        cilium.io/cilium-configmap-checksum: 955e8c1833bcbc683ee6c3f67ee6449fe43f891d10918b78ac63cf33edd25941
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
       labels:
@@ -1084,11 +1113,16 @@ spec:
               fieldPath: metadata.namespace
         - name: CILIUM_CLUSTERMESH_CONFIG
           value: /var/lib/cilium/clustermesh/
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              divisor: "1"
+              resource: limits.memory
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: ghcr.io/cybozu/cilium:1.14.14.1
+        image: ghcr.io/cybozu/cilium:1.15.13.2
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -1194,6 +1228,7 @@ spec:
             path: /healthz
             port: 9879
             scheme: HTTP
+          initialDelaySeconds: 5
           periodSeconds: 2
           successThreshold: 1
         terminationMessagePolicy: FallbackToLogsOnError
@@ -1230,7 +1265,7 @@ spec:
       hostNetwork: true
       initContainers:
       - command:
-        - cilium
+        - cilium-dbg
         - build-config
         env:
         - name: K8S_NODE_NAME
@@ -1247,7 +1282,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: ghcr.io/cybozu/cilium:1.14.14.1
+        image: ghcr.io/cybozu/cilium:1.15.13.2
         imagePullPolicy: IfNotPresent
         name: config
         terminationMessagePolicy: FallbackToLogsOnError
@@ -1264,7 +1299,7 @@ spec:
         env:
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: ghcr.io/cybozu/cilium:1.14.14.1
+        image: ghcr.io/cybozu/cilium:1.15.13.2
         imagePullPolicy: IfNotPresent
         name: apply-sysctl-overwrites
         securityContext:
@@ -1290,7 +1325,7 @@ spec:
         - /bin/bash
         - -c
         - --
-        image: ghcr.io/cybozu/cilium:1.14.14.1
+        image: ghcr.io/cybozu/cilium:1.15.13.2
         imagePullPolicy: IfNotPresent
         name: mount-bpf-fs
         securityContext:
@@ -1315,11 +1350,17 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
+        - name: WRITE_CNI_CONF_WHEN_READY
+          valueFrom:
+            configMapKeyRef:
+              key: write-cni-conf-when-ready
+              name: cilium-config
+              optional: true
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "16443"
-        image: ghcr.io/cybozu/cilium:1.14.14.1
+        image: ghcr.io/cybozu/cilium:1.15.13.2
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
@@ -1345,7 +1386,7 @@ spec:
           name: cilium-run
       - command:
         - /install-plugin.sh
-        image: ghcr.io/cybozu/cilium:1.14.14.1
+        image: ghcr.io/cybozu/cilium:1.15.13.2
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
@@ -1367,7 +1408,9 @@ spec:
         kubernetes.io/os: linux
       priorityClassName: system-node-critical
       restartPolicy: Always
-      serviceAccount: cilium
+      securityContext:
+        appArmorProfile:
+          type: Unconfined
       serviceAccountName: cilium
       terminationGracePeriodSeconds: 1
       tolerations:
@@ -1468,6 +1511,7 @@ spec:
       labels:
         k8s-app: hubble-generate-certs
     spec:
+      affinity: null
       automountServiceAccountToken: true
       containers:
       - args:
@@ -1483,7 +1527,7 @@ spec:
         - --hubble-relay-server-cert-validity-duration=94608000s
         command:
         - /usr/bin/cilium-certgen
-        image: ghcr.io/cybozu/cilium-certgen:0.1.14.1
+        image: ghcr.io/cybozu/cilium-certgen:0.1.15.1
         imagePullPolicy: IfNotPresent
         name: certgen
       hostNetwork: true
