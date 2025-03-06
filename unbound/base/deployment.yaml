@@ -16,6 +16,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: unbound
+        identity.neco.cybozu.io/name: unbound
     spec:
       # system priority class cannot be specified for pods in namespaces
       # other than kube-system as of k8s 1.12.

@@ -1436,6 +1436,7 @@ spec:
         k8s-app: hubble-relay
         app.kubernetes.io/name: hubble-relay
         app.kubernetes.io/part-of: cilium
+        identity.neco.cybozu.io/name: hubble-relay
     spec:
       securityContext:
         fsGroup: 10000
