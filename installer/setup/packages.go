@@ -66,9 +66,17 @@ func installChromium() error {
 	if err := runCmd("snap", "refresh", "snapd"); err != nil {
 		return fmt.Errorf("failed to update snapd with snap: %w", err)
 	}
-
-	if err := runCmd("snap", "install", "chromium"); err != nil {
-		return fmt.Errorf("failed to install chromium with snap: %w", err)
+	retryCount := 0
+	for {
+		err := runCmd("snap", "install", "chromium")
+		if err != nil {
+			if retryCount > 3 {
+				return fmt.Errorf("failed to install chromium with snap: %w", err)		
+			}
+			retryCount++
+		} else {
+			break
+		}
 	}
 	return nil
 }
