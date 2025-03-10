@@ -72,7 +72,7 @@ func installChromium() error {
 		retryCount++
 		if err != nil {
 			if retryCount > 3 {
-				return fmt.Errorf("failed to install chromium with snap: %w", err)		
+				return fmt.Errorf("failed to install chromium with snap: %w", err)
 			}
 		} else {
 			break
