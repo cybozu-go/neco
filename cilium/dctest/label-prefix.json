@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "valid-prefixes": [
+    {
+      "invert": false,
+      "prefix": ".*",
+      "source": "reserved"
+    },
+    {
+      "invert": false,
+      "prefix": "io\\.kubernetes\\.pod\\.namespace",
+      "source": "any"
+    },
+    {
+      "invert": false,
+      "prefix": "io\\.cilium\\.k8s\\.namespace\\.labels",
+      "source": "any"
+    },
+    {
+      "invert": false,
+      "prefix": "app\\.kubernetes\\.io",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "io\\.kubernetes",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "kubernetes\\.io",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "statefulset\\.kubernetes\\.io/pod-name",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "batch\\.kubernetes\\.io/job-completion-index",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "batch\\.kubernetes\\.io/controller-uid",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": ".*beta\\.kubernetes\\.io",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "k8s\\.io",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "pod-template-generation",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "pod-template-hash",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "controller-revision-hash",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "controller-uid",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "annotation.*",
+      "source": "any"
+    },
+    {
+      "invert": true,
+      "prefix": "etcd_node",
+      "source": "any"
+    }
+  ]
+}
