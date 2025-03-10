@@ -56,7 +56,7 @@ data:
   labels: " k8s:app k8s:io\\.cilium\\.k8s\\.namespace\\.labels\\.team k8s:io\\.kubernetes\\.pod\\.namespace k8s:k8s-app io\\.cilium\\.k8s\\.policy cybozu\\.io/family app\\.cybozu\\.io neco\\.cybozu\\.io\\/registry identity\\.neco\\.cybozu\\.io "
 
   # If you want to run cilium in debug mode change this value to true
-  debug: "false"
+  debug: "true"
   debug-verbose: ""
   # The agent can be put into the following three policy enforcement modes
   # default, always and never.
@@ -828,7 +828,7 @@ spec:
         prometheus.io/port: "9962"
         prometheus.io/scrape: "true"
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "015d0c430aff9b337ca0f42115b1f7fd0b9c1e871001aef285870a8f7482f6fa"
+        cilium.io/cilium-configmap-checksum: "33be80dd0e19503940a9cb85c0179b11c6e51ec201d6f03e786315ec8fd53532"
         # Set app AppArmor's profile to "unconfined". The value of this annotation
         # can be modified as long users know which profiles they have available
         # in AppArmor.
@@ -1300,7 +1300,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "015d0c430aff9b337ca0f42115b1f7fd0b9c1e871001aef285870a8f7482f6fa"
+        cilium.io/cilium-configmap-checksum: "33be80dd0e19503940a9cb85c0179b11c6e51ec201d6f03e786315ec8fd53532"
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -1452,6 +1452,7 @@ spec:
             - hubble-relay
           args:
             - serve
+            - --debug
           ports:
             - name: grpc
               containerPort: 4245
@@ -1552,6 +1553,7 @@ spec:
               # the values used in past runs by inspecting the completed pod.
               args:
                 - "--cilium-namespace=kube-system"
+                - "--debug"
                 - "--ca-generate"
                 - "--ca-reuse-secret"
                 - "--hubble-server-cert-generate"
@@ -1602,6 +1604,7 @@ spec:
           # the values used in past runs by inspecting the completed pod.
           args:
             - "--cilium-namespace=kube-system"
+            - "--debug"
             - "--ca-generate"
             - "--ca-reuse-secret"
             - "--hubble-server-cert-generate"
