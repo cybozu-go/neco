@@ -1,11 +1,6 @@
 package dctest
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"strings"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -17,33 +12,14 @@ import (
 func testSquid() {
 	It("should be available", func() {
 		By("checking squid Deployment")
-		Eventually(func() error {
-			stdout, _, err := execAt(bootServers[0], "kubectl", "--namespace=internet-egress",
-				"get", "deployments/squid", "-o=json")
-			if err != nil {
-				return err
-			}
-
-			deployment := new(appsv1.Deployment)
-			err = json.Unmarshal(stdout, deployment)
-			if err != nil {
-				return err
-			}
-
-			if int(deployment.Status.AvailableReplicas) != 3 {
-				return fmt.Errorf("AvailableReplicas is not 3: %d", int(deployment.Status.AvailableReplicas))
-			}
-			return nil
+		Eventually(func(g Gomega) {
+			deployment := kubectlGetSafe[appsv1.Deployment](g, "--namespace=internet-egress", "deployments/squid")
+			g.Expect(int(deployment.Status.AvailableReplicas)).To(Equal(3), "AvailableReplicas is not 3: %d", int(deployment.Status.AvailableReplicas))
 		}).Should(Succeed())
+
 		By("checking PodDisruptionBudget for squid Deployment")
-		pdb := policyv1.PodDisruptionBudget{}
-		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "poddisruptionbudgets", "squid-pdb", "-n", "internet-egress", "-o", "json")
-		if err != nil {
-			Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		}
-		err = json.Unmarshal(stdout, &pdb)
-		Expect(err).ShouldNot(HaveOccurred(), "data=%s", stdout)
-		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(3)))
+		pdb := kubectlGetSafe[policyv1.PodDisruptionBudget](Default, "poddisruptionbudgets", "squid-pdb", "-n", "internet-egress")
+		Expect(int(pdb.Status.CurrentHealthy)).Should(Equal(3))
 
 		checkUnboundExporter("app.kubernetes.io/name=squid")
 		checkSquidExporter("app.kubernetes.io/name=squid")
@@ -53,22 +29,9 @@ func testSquid() {
 		By("running a testhttpd pod")
 		execSafeAt(bootServers[0], "kubectl", "run", "testhttpd", "--image=ghcr.io/cybozu/testhttpd:0")
 
-		Eventually(func() error {
-			stdout, _, err := execAt(bootServers[0], "kubectl", "get", "pod/testhttpd", "-o=json")
-			if err != nil {
-				return err
-			}
-
-			pod := new(corev1.Pod)
-			err = json.Unmarshal(stdout, pod)
-			if err != nil {
-				return err
-			}
-
-			if pod.Status.Phase != corev1.PodRunning {
-				return fmt.Errorf("Pod is not running: %s", pod.Status.Phase)
-			}
-			return nil
+		Eventually(func(g Gomega) {
+			pod := kubectlGetSafe[corev1.Pod](g, "pod/testhttpd")
+			g.Expect(pod.Status.Phase).To(Equal(corev1.PodRunning), "Pod is not running: %s", pod.Status.Phase)
 		}).Should(Succeed())
 
 		By("removing the testhttpd pod")
@@ -77,28 +40,13 @@ func testSquid() {
 }
 
 func checkSquidExporter(podLabelSelector string) {
-	// should be called in It
 	By("checking squid_exporter")
-	Eventually(func() error {
-		stdout, stderr, err := execAt(bootServers[0], "kubectl", "get", "pod", "-n", "internet-egress", "-l", podLabelSelector, "-o", "json")
-		if err != nil {
-			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-		}
-		podList := new(corev1.PodList)
-		err = json.Unmarshal(stdout, &podList)
-		if err != nil {
-			return fmt.Errorf("data: %s, err: %v", stdout, err)
-		}
-		stdout, stderr, err = execAt(bootServers[0], "curl", "-sSf", "http://"+podList.Items[0].Status.PodIP+":9100/metrics")
-		if err != nil {
-			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-		}
-		if !strings.Contains(string(stdout), "cpu_time_total") {
-			return errors.New("should contain 'cpu_time_total' in the metrics")
-		}
-		if !strings.Contains(string(stdout), `squid_service_times_http_requests_all{percentile="5", duration_minutes="5"}`) {
-			return errors.New(`should contain 'squid_service_times_http_requests_all{percentile="5", duration_minutes="5"}' in the metrics`)
-		}
-		return nil
+	Eventually(func(g Gomega) {
+		podList := kubectlGetSafe[corev1.PodList](g, "pod", "-n", "internet-egress", "-l", podLabelSelector)
+		stdout, stderr, err := execAt(bootServers[0], "curl", "-sSf", "http://"+podList.Items[0].Status.PodIP+":9100/metrics")
+		g.Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+		g.Expect(string(stdout)).To(ContainSubstring("cpu_time_total"), "should contain 'cpu_time_total' in the metrics")
+		g.Expect(string(stdout)).To(ContainSubstring(`squid_service_times_http_requests_all{percentile="5", duration_minutes="5"}`),
+			`should contain 'squid_service_times_http_requests_all{percentile="5", duration_minutes="5"}' in the metrics`)
 	}).Should(Succeed())
 }
