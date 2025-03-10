@@ -1,8 +1,6 @@
 package dctest
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
@@ -19,17 +17,8 @@ func testCoilSetup() {
 		checkCoilNodeDaemonSet()
 		checkCoilControllerDeployment()
 
-		Eventually(func() error {
-			stdout, _, err := execAt(bootServers[0], "kubectl", "get", "nodes", "-o", "json")
-			if err != nil {
-				return err
-			}
-
-			var nl corev1.NodeList
-			err = json.Unmarshal(stdout, &nl)
-			if err != nil {
-				return err
-			}
+		Eventually(func(g Gomega) error {
+			nl := kubectlGetSafe[corev1.NodeList](g, "nodes")
 
 		OUTER:
 			for _, n := range nl.Items {
@@ -37,28 +26,21 @@ func testCoilSetup() {
 					if cond.Type != corev1.NodeReady {
 						continue
 					}
-					if cond.Status != corev1.ConditionTrue {
-						return fmt.Errorf("node %s is not ready", n.Name)
-					}
+					g.Expect(cond.Status).To(Equal(corev1.ConditionTrue), "node %s is not ready", n.Name)
 					continue OUTER
 				}
-
 				return fmt.Errorf("node %s has no readiness status", n.Name)
 			}
 			return nil
 		}).Should(Succeed())
 
 		By("creating IP address pool")
-		Eventually(func() error {
+		Eventually(func(g Gomega) {
 			data, err := os.ReadFile(addressPoolsFile)
-			if err != nil {
-				return err
-			}
+			g.Expect(err).NotTo(HaveOccurred())
+
 			stdout, stderr, err := execAtWithInput(bootServers[0], data, "kubectl", "apply", "-f", "-")
-			if err != nil {
-				return fmt.Errorf("err=%s stdout=%s, stderr=%s", err, stdout, stderr)
-			}
-			return nil
+			g.Expect(err).NotTo(HaveOccurred(), "err=%s stdout=%s, stderr=%s", err, stdout, stderr)
 		}).Should(Succeed())
 	})
 }
@@ -75,46 +57,17 @@ func testCoil() {
 }
 
 func checkCoilNodeDaemonSet() {
-	EventuallyWithOffset(1, func() error {
-		stdout, _, err := execAt(bootServers[0], "kubectl", "--namespace=kube-system",
-			"get", "daemonsets/coild", "-o=json")
-		if err != nil {
-			return err
-		}
-
-		daemonset := new(appsv1.DaemonSet)
-		err = json.Unmarshal(stdout, daemonset)
-		if err != nil {
-			return err
-		}
-
-		if daemonset.Status.NumberReady != daemonset.Status.DesiredNumberScheduled {
-			return fmt.Errorf("NumberReady: %d, DesiredNumberScheduled: %d", daemonset.Status.NumberReady, daemonset.Status.DesiredNumberScheduled)
-		}
-		if daemonset.Status.NumberReady == 0 {
-			return errors.New("NumberReady == 0")
-		}
-		return nil
+	EventuallyWithOffset(1, func(g Gomega) {
+		daemonset := kubectlGetSafe[appsv1.DaemonSet](g, "--namespace=kube-system", "daemonsets/coild")
+		g.Expect(daemonset.Status.NumberReady).To(Equal(daemonset.Status.DesiredNumberScheduled),
+			"NumberReady: %d, DesiredNumberScheduled: %d", daemonset.Status.NumberReady, daemonset.Status.DesiredNumberScheduled)
+		g.Expect(int(daemonset.Status.NumberReady)).NotTo(Equal(0), "NumberReady == 0")
 	}).Should(Succeed())
 }
 
 func checkCoilControllerDeployment() {
-	EventuallyWithOffset(1, func() error {
-		stdout, _, err := execAt(bootServers[0], "kubectl", "--namespace=kube-system",
-			"get", "deployment/coil-controller", "-o=json")
-		if err != nil {
-			return err
-		}
-
-		deployment := new(appsv1.Deployment)
-		err = json.Unmarshal(stdout, deployment)
-		if err != nil {
-			return err
-		}
-
-		if deployment.Status.ReadyReplicas != 2 {
-			return fmt.Errorf("ReadyReplicas is not 2 but %d", deployment.Status.ReadyReplicas)
-		}
-		return nil
+	EventuallyWithOffset(1, func(g Gomega) {
+		deployment := kubectlGetSafe[appsv1.Deployment](g, "--namespace=kube-system", "deployment/coil-controller")
+		g.Expect(int(deployment.Status.ReadyReplicas)).To(Equal(2), "ReadyReplicas should be 2 but %d", deployment.Status.ReadyReplicas)
 	}).Should(Succeed())
 }

@@ -1,8 +1,6 @@
 package dctest
 
 import (
-	"encoding/json"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -11,10 +9,7 @@ import (
 func testNodeDNS() {
 	It("should resolve Service domain names", func() {
 		By("getting a Node address")
-		pods := &corev1.PodList{}
-		stdout := execSafeAt(bootServers[0], "kubectl", "-n", "kube-system", "get", "pods", "-o", "json")
-		err := json.Unmarshal(stdout, pods)
-		Expect(err).NotTo(HaveOccurred(), "data=%s", stdout)
+		pods := kubectlGetSafe[corev1.PodList](Default, "-n", "kube-system", "pods")
 		Expect(pods.Items).NotTo(BeEmpty())
 		nodeAddr := pods.Items[0].Spec.NodeName
 
@@ -25,10 +20,10 @@ func testNodeDNS() {
 
 	It("should run kube-proxy on boot servers", func() {
 		By("running curl over squid.internet-egress.svc")
-		Eventually(func() error {
+		Eventually(func(g Gomega) {
 			_, _, err := execAt(bootServers[0], "env", "https_proxy=http://squid.internet-egress.svc:3128",
 				"curl", "-fs", "https://www.cybozu.com/")
-			return err
+			g.Expect(err).NotTo(HaveOccurred())
 		}).Should(Succeed())
 	})
 }
